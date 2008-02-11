@@ -1,12 +1,12 @@
 package HTML::FormWidgets::Password;
 
-# @(#)$Id: Password.pm 196 2007-10-15 01:07:07Z pjf $
+# @(#)$Id$
 
 use strict;
 use warnings;
 use base qw(HTML::FormWidgets);
 
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 196 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
 
 sub _render {
    my ($me, $ref) = @_; my $text;

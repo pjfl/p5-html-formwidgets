@@ -1,12 +1,12 @@
 package HTML::FormWidgets::RadioGroup;
 
-# @(#)$Id: RadioGroup.pm 196 2007-10-15 01:07:07Z pjf $
+# @(#)$Id$
 
 use strict;
 use warnings;
 use base qw(HTML::FormWidgets);
 
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 196 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
 
 sub _render {
    my ($me, $ref)   = @_;

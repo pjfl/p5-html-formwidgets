@@ -1,12 +1,12 @@
 package HTML::FormWidgets::Table;
 
-# @(#)$Id: Table.pm 285 2008-01-24 18:17:08Z pjf $
+# @(#)$Id$
 
 use strict;
 use warnings;
 use base qw(HTML::FormWidgets);
 
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 285 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
 
 sub _render {
    my ($me, $ref) = @_;

@@ -1,12 +1,12 @@
 package HTML::FormWidgets::Anchor;
 
-# @(#)$Id: Anchor.pm 141 2007-08-13 04:41:37Z PFlanigan $
+# @(#)$Id$
 
 use strict;
 use warnings;
 use base qw(HTML::FormWidgets);
 
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 141 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
 
 sub _render {
    my ($me, $ref)  = @_;

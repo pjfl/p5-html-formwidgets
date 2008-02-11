@@ -1,6 +1,6 @@
 package HTML::FormWidgets::Template;
 
-# @(#)$Id: Template.pm 223 2007-10-27 03:45:20Z pjf $
+# @(#)$Id$
 
 use strict;
 use warnings;
@@ -9,7 +9,7 @@ use English qw(-no_match_vars);
 use File::Spec::Functions;
 use IO::All;
 
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 223 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
 
 sub _render {
    my ($me, $ref) = @_; my ($content, $path);

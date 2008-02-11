@@ -1,12 +1,12 @@
 package HTML::FormWidgets::ImageButton;
 
-# @(#)$Id: ImageButton.pm 301 2008-01-28 16:55:20Z pjf $
+# @(#)$Id$
 
 use strict;
 use warnings;
 use base qw(HTML::FormWidgets);
 
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 301 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
 
 sub _render {
    my ($me, $ref) = @_; my $text;

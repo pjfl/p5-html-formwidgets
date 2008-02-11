@@ -1,12 +1,12 @@
 package HTML::FormWidgets::Label;
 
-# @(#)$Id: Label.pm 280 2008-01-17 23:51:08Z pjf $
+# @(#)$Id$
 
 use strict;
 use warnings;
 use base qw(HTML::FormWidgets);
 
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 280 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
 
 sub _render {
    my ($me, $ref) = @_; my $markup;

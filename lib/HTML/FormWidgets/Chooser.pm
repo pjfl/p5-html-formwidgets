@@ -1,12 +1,12 @@
 package HTML::FormWidgets::Chooser;
 
-# @(#)$Id: Chooser.pm 228 2007-11-18 17:11:52Z pjf $
+# @(#)$Id$
 
 use strict;
 use warnings;
 use base qw(HTML::FormWidgets);
 
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 228 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
 
 sub _render {
    my ($me, $ref) = @_; my $onclick;

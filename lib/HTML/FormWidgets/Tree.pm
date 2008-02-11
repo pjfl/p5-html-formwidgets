@@ -1,6 +1,6 @@
 package HTML::FormWidgets::Tree;
 
-# @(#)$Id: Tree.pm 196 2007-10-15 01:07:07Z pjf $
+# @(#)$Id$
 
 use strict;
 use warnings;
@@ -8,7 +8,7 @@ use base qw(HTML::FormWidgets);
 use English qw(-no_match_vars);
 use Readonly;
 
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 196 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
 
 Readonly my $NUL => q();
 

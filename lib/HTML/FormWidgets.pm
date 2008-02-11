@@ -1,6 +1,6 @@
 package HTML::FormWidgets;
 
-# @(#)$Id: FormWidgets.pm 285 2008-01-24 18:17:08Z pjf $
+# @(#)$Id$
 
 use strict;
 use warnings;
@@ -11,7 +11,7 @@ use Readonly;
 
 use HTML::Accessors;
 
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 285 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
 
 Readonly my $NUL   => q();
 Readonly my $TTS   => q(~);
@@ -332,6 +332,67 @@ sub _render {
 }
 
 1;
+
+__END__
+
+=pod
+
+=head1 Name
+
+HTML::FormWidgets - Create HTML form markup
+
+=head1 Version
+
+0.1.$Revision$
+
+=head1 Synopsis
+
+   use <HTML::FormWidgets>;
+
+=head1 Description
+
+=head1 Subroutines/Methods
+
+=head1 Diagnostics
+
+=head1 Configuration and Environment
+
+=head1 Dependencies
+
+=over 4
+
+=item L<Class::Accessor::Fast>
+
+=item L<HTML::Accessors>
+
+=back
+
+=head1 Incompatibilities
+
+There are no known incompatibilities in this module.
+
+=head1 Bugs and Limitations
+
+There are no known bugs in this module.
+Please report problems to the address below.
+Patches are welcome.
+
+=head1 Author
+
+Peter Flanigan, C<< <Support at RoxSoft.co.uk> >>
+
+=head1 License and Copyright
+
+Copyright (c) 2007 RoxSoft Limited. All rights reserved.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself. See L<perlartistic>.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+=cut
 
 # Local Variables:
 # mode: perl

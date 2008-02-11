@@ -1,6 +1,6 @@
 package HTML::FormWidgets::File;
 
-# @(#)$Id: File.pm 236 2007-11-26 19:59:28Z pjf $
+# @(#)$Id$
 
 use strict;
 use warnings;
@@ -11,7 +11,7 @@ use Syntax::Highlight::Perl;
 use Text::ParseWords;
 use Text::Tabs;
 
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 236 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
 
 Readonly my %SCHEME =>
    ( Variable_Scalar   => ['<font color="#CC6600">', '</font>'],

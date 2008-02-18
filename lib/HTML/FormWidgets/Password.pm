@@ -11,7 +11,8 @@ use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
 sub _render {
    my ($me, $ref) = @_; my $text;
 
-   $ref->{size} = $me->width; $text = $me->elem->password_field( $ref );
+   $ref->{size} = $me->width || 20;
+   $text        = $me->elem->password_field( $ref );
 
    return $text unless ($me->subtype && $me->subtype eq 'verify');
 

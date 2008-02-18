@@ -14,12 +14,12 @@ use HTML::Accessors;
 use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
 
 Readonly my $NUL   => q();
-Readonly my $TTS   => q(~);
+Readonly my $TTS   => q( ~ );
 Readonly my %ATTRS =>
    ( ajaxid     => undef,        ajaxtext   => undef,
-     align      => 'left',       all        => [],
+     align      => q(left),      all        => [],
      assets     => $NUL,         atitle     => 'All',
-     base       => $NUL,         behaviour  => 'classic',
+     base       => $NUL,         behaviour  => q(classic),
      button     => $NUL,         checked    => 0,
      class      => $NUL,         clear      => $NUL,
      columns    => undef,        container  => undef,
@@ -29,46 +29,46 @@ Readonly my %ATTRS =>
      elem       => undef,        evnt_hndlr => 'checkObj.CheckField',
      field      => $NUL,         fields     => {},
      footer     => $NUL,         form       => {},
-     fhelp      => $NUL,         header     => undef,
-     height     => undef,        hide       => [],
-     hint_title => 'Handy Hint', href       => undef,
-     id         => undef,        id2key     => {},
-     key        => $NUL,         key2id     => {},
-     key2url    => {},           labels     => undef,
-     max_length => undef,        messages   => {},
-     name       => $NUL,         nb_symbol  => '&nbsp;&dagger;',
+     'format'   => undef,        fhelp      => $NUL,
+     header     => undef,        height     => undef,
+     hide       => [],           hint_title => 'Handy Hint',
+     href       => undef,        id         => undef,
+     id2key     => {},           key        => $NUL,
+     key2id     => {},           key2url    => {},
+     labels     => undef,        max_length => undef,
+     messages   => {},           name       => $NUL,
+     nb_symbol  => q(&nbsp;&dagger;),
      node       => undef,        nowrap     => 0,
      npages     => 1,            onblur     => undef,
      onchange   => undef,        onkeypress => undef,
      palign     => undef,        path       => undef,
      prompt     => $NUL,         fields     => {},
-     pwidth     => '40',         required   => 0,
+     pwidth     => 40,           required   => 0,
      root       => undef,        screen     => 1000,
-     select     => $NUL,         sep        => '&nbsp;:&nbsp;',
-     skindir    => undef,        space      => '&nbsp;' x 3,
+     select     => $NUL,         sep        => q(&nbsp;:&nbsp;),
+     skindir    => undef,        space      => q(&nbsp;) x 3,
      stepno     => undef,        style      => $NUL,
      subtype    => undef,        target     => $NUL,
      text       => $NUL,         tip        => $NUL,
-     tiptype    => 'dagger',     title      => $NUL,
+     tiptype    => q(dagger),    title      => $NUL,
      type       => undef,        url        => undef,
      value      => 1,            values     => [],
      where      => {},           width      => undef );
 
-Readonly my @STATIC =>
-   ( qw(atitle align behaviour checked class clear container ctitle edit
-        fhelp height hint_title max_length max_value min_length min_value
-        nowrap onchange onkeypress palign prompt pwidth required select sep
-        stepno subtype text tip tiptype width) );
+Readonly my @STATIC => (
+   qw(atitle align behaviour checked class clear
+      container ctitle edit fhelp format height hint_title max_length
+      max_value min_length min_value nowrap onchange onkeypress palign
+      prompt pwidth required select sep stepno subtype text tip tiptype
+      width) );
 
 __PACKAGE__->mk_classaccessors( keys %ATTRS );
 
 # Class methods
 
 sub build {
-   my ($me, $c, $form) = @_;
-   my ($html, $item, $legend, $list, $ref, $s, @tmp, $widget);
-
-   $s = $c->stash;
+   my ($me, $c, $form) = @_; my $s = $c->stash;
+   my ($html, $item, $legend, $list, $ref, @tmp, $widget);
 
    for $list (@{ $form }) {
       @tmp = ();
@@ -180,7 +180,7 @@ sub new {
 
    # Your basic factory method trick
    $class = __PACKAGE__.q(::).(ucfirst $self->{type});
-   eval "require $class";
+   eval "require $class;";
 
    if ($EVAL_ERROR) {
       $self->{text} = $EVAL_ERROR;
@@ -217,11 +217,6 @@ sub new {
    unless (defined $self->height) {
       $self->height( $self->type eq 'groupMembership' ||
                      $self->type eq 'scrollingList' ? 10 : 5 );
-   }
-
-   unless (defined $self->width) {
-      $self->width( $self->type eq 'textarea' ||
-                    $self->type eq 'textfield' ? 60 : 20 );
    }
 
    if ($self->pwidth && ($self->pwidth =~ m{ \A \d+ \z }mx)) {
@@ -292,7 +287,7 @@ sub render {
 
    if ($tip = $me->tip) {
       $tip  =~ s{ \n }{ }gmx;
-      $tip  = $me->hint_title.' '.$TTS.' '.$tip if ($tip !~ m{ $TTS }mx);
+      $tip  = $me->hint_title.$TTS.$tip if ($tip !~ m{ $TTS }mx);
       $tip  =~ s{ \s+ }{ }gmx;
       $ref  = { class => 'help tips', title => $tip };
 

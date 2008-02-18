@@ -5,13 +5,44 @@ package HTML::FormWidgets::Date;
 use strict;
 use warnings;
 use base qw(HTML::FormWidgets);
+use Readonly;
 
 use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
 
-sub _render {
-   my ($me, $ref) = @_; $ref->{size} = $me->width;
+Readonly my $TTS => q(~);
 
-   return $me->elem->textfield( $ref );
+sub _render {
+   my ($me, $ref) = @_; my ($format, $htag, $html, $text, $tip);
+
+   $htag            = $me->elem;
+   $ref->{size   }  = $me->width || 10;
+   $format          = $me->format || q(dd/MM/yyyy);
+   $html            = $htag->div( { class => q(container) },
+                                  $htag->textfield( $ref ) );
+   $html           .= $htag->div( { class => q(separator) }, q(&nbsp;) );
+   $text            = 'var cal_'.$me->name.' = new CalendarPopup(\'';
+   $text           .= $me->name.'_calendar\');';
+   $text            = $htag->script( $text );
+   $ref             = {};
+   $ref->{class  }  = q(icon);
+   $ref->{src    }  = $me->assets.'calendar.png';
+   $text           .= $htag->img( $ref );
+   $ref             = {};
+   $ref->{class  }  = q(tips);
+   $ref->{href   }  = q();
+   $ref->{id     }  = 'anchor_'.$me->name;
+   $ref->{onclick}  = 'cal_'.$me->name.'.select( document.forms[0].'.$me->name;
+   $ref->{onclick} .= ', '.'\'anchor_'.$me->name.'\', \''.$format.'\' ); ';
+   $ref->{onclick} .= 'return false;';
+   $tip             = $me->hint_title.$TTS;
+   $tip            .= 'Click the calendar icon to open ';
+   $tip            .= 'a date selection window';
+   $ref->{title  }  = $tip;
+   $text            = $htag->a( $ref, $text);
+   $html           .= $htag->div( { class => q(container) }, $text );
+   $html           .= $htag->div( { class => q(calendar hidden),
+                                    id    => $me->name.'_calendar' } );
+   return $html;
 }
 
 1;

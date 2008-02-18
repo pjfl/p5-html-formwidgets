@@ -24,8 +24,8 @@ sub _render {
    }
    else { $onclick .= '\'\', \'\', ' }
 
-   $onclick       .= '\'width='.$me->width.', screenX=100, ';
-   $onclick       .= 'height='.$me->height.', screenY=50, ';
+   $onclick       .= '\'width='.($me->width || 250).', screenX=100, ';
+   $onclick       .= 'height='.($me->height || 150).', screenY=50, ';
    $onclick       .= 'dependent=yes, titlebar=no, scrollbars=yes\')';
    $ref->{onclick} = $onclick;
    $ref->{value}   = $me->button;

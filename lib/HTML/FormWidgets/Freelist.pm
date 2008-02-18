@@ -12,7 +12,7 @@ sub _render {
    my ($me, $ref) = @_; my ($html, $rNo, $text, $text1, $tip, $val);
 
    $ref->{name}     = 'new'.$me->name;
-   $ref->{size}     = $me->width;
+   $ref->{size}     = $me->width || 20;
    $html            = $me->elem->div({ class => 'container' },
                                      $me->elem->textfield($ref));
    $html           .= $me->elem->div({ class => 'separator' }, '&nbsp;');

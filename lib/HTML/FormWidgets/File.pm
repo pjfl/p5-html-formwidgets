@@ -43,9 +43,9 @@ sub _render {
    my ($attr, $box, $cells, $cNo, $elem, $fld, $fmt, $key, $line, $npages);
    my ($pat, $path, @printers, $rdr, $rNo, $rows, $span, $text);
 
-   $me->header( [] )      unless (defined $me->header);
-   $me->select( -1 )      unless (defined $me->select);
-   $me->subtype( 'file' ) unless (defined $me->subtype);
+   $me->header( [] )       unless (defined $me->header);
+   $me->select( -1 )       unless (defined $me->select);
+   $me->subtype( q(file) ) unless (defined $me->subtype);
 
    $elem = $me->elem; $path = $me->path;
 
@@ -53,7 +53,7 @@ sub _render {
       $me->footer->{left} = $me->_getFooter();
    }
 
-   if ($me->subtype eq 'html') {
+   if ($me->subtype eq q(html)) {
       $pat   = $me->root;
 
       if ($path =~ m{ \A $pat }msx) {
@@ -71,26 +71,26 @@ sub _render {
    }
 
    return 'Not found '.$path   unless (-f $path);
-   return 'Cannot read '.$path unless ($rdr = IO::File->new( $path, 'r' ));
+   return 'Cannot read '.$path unless ($rdr = IO::File->new( $path, q(r) ));
 
    $text = do { local $RS = undef; <$rdr> }; $rdr->close();
 
-   if ($me->subtype eq 'source') {
+   if ($me->subtype eq q(source)) {
       $fmt  = Syntax::Highlight::Perl->new();
       $fmt->set_format( \%SCHEME );
-      $fmt->define_substitution( q(<) => '&lt;',
-                                 q(>) => '&gt;',
-                                 q(&) => '&amp;' );
+      $fmt->define_substitution( q(<) => q(&lt;),
+                                 q(>) => q(&gt;),
+                                 q(&) => q(&amp;) );
       $tabstop = 3;
       $text    = expand( $text );
       $text    = $fmt->format_string( $text );
 
-      return $elem->pre( { class => 'source'}, $text );
+      return $elem->pre( { class => q(source) }, $text );
    }
 
-   $rNo = 0; $rows = ''; $span = 1;
+   $rNo = 0; $rows = q(); $span = 1;
 
-   if ($me->subtype eq 'logfile') {
+   if ($me->subtype eq q(logfile)) {
       # TODO: Add Prev and next links to append div
       for $line (split m { \n }mx, $text) {
          $line   = $elem->pre( $elem->escape_html( $line, 0 ) );
@@ -106,17 +106,17 @@ sub _render {
 
    for $line (split m { \n }mx, $text) {
       $line  = $elem->escape_html( $line, 0 );
-      $cells = ''; $cNo = 0;
+      $cells = q(); $cNo = 0;
 
-      if ($me->subtype eq 'csv') {
+      if ($me->subtype eq q(csv)) {
          for $fld (parse_line( q(,), 0, $line )) {
             if ($rNo == 0 && $line =~ m{ \A \# }mx) {
                $fld = substr $fld, 1 if ($cNo == 0);
                $me->header->[ $cNo ] = $fld unless ($me->header->[ $cNo ]);
             }
             else {
-               $attr   = { class => $me->subtype.' '.($cNo % 2 == 0 ?
-                                                      'even' : 'odd') };
+               $attr   = { class => $me->subtype.q( ).($cNo % 2 == 0 ?
+                                                      q(even) : q(odd)) };
                $cells .= $elem->td( $attr, $fld );
             }
 
@@ -132,13 +132,14 @@ sub _render {
       }
 
       if ($me->select >= 0) {
-         $box   = $elem->checkbox( { label => '', name => 'select'.$rNo,
+         $box   = $elem->checkbox( { label => q(),
+                                     name  => q(select).$rNo,
                                      value => $key } );
-         $cells = $elem->td( { class => 'odd' }, $box ).$cells;
-         $attr  = { class => 'lineNumber even' };
+         $cells = $elem->td( { class => q(odd) }, $box ).$cells;
+         $attr  = { class => q(lineNumber even) };
          $cNo++;
       }
-      else { $attr = { class => 'lineNumber odd' } }
+      else { $attr = { class => q(lineNumber odd) } }
 
       $cells = $elem->td( $attr, $rNo+1 ).$cells;
       $cNo++;
@@ -148,29 +149,29 @@ sub _render {
       $rNo++;
    }
 
-   $cells = $elem->th( { class => 'small table minimal' }, chr 35 );
+   $cells = $elem->th( { class => q(small table minimal) }, chr 35 );
    $cNo   = 1;
 
    if ($me->select >= 0) {
-      $cells .= $elem->th( { class => 'small table minimal' }, 'M' );
+      $cells .= $elem->th( { class => q(small table minimal) }, q(M) );
       $cNo++;
    }
 
-   if ($me->subtype eq 'csv') {
+   if ($me->subtype eq q(csv)) {
       if ($me->header->[0]) {
          for $text (@{ $me->header }) {
-            $cells .= $elem->th( { class => 'small table' }, $text );
+            $cells .= $elem->th( { class => q(small table) }, $text );
             last if (++$cNo >= $span);
          }
       }
       else {
          for $text ('A' .. 'Z') {
-            $cells .= $elem->th( { class => 'small table' }, $text );
+            $cells .= $elem->th( { class => q(small table) }, $text );
             last if (++$cNo >= $span);
          }
       }
    }
-   else { $cells .= $elem->th( { class => 'small table' }, 'Lines' ) }
+   else { $cells .= $elem->th( { class => q(small table) }, 'Lines' ) }
 
    $rows  = $elem->tr( $cells ).$rows;
 

@@ -9,7 +9,7 @@ use Readonly;
 
 use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
 
-Readonly my $TTS => q(~);
+Readonly my $TTS => q( ~ );
 
 sub _render {
    my ($me, $ref) = @_; my ($format, $htag, $html, $text, $tip);
@@ -17,8 +17,8 @@ sub _render {
    $htag            = $me->elem;
    $ref->{size   }  = $me->width || 10;
    $format          = $me->format || q(dd/MM/yyyy);
-   $html            = $htag->div( { class => q(container) },
-                                  $htag->textfield( $ref ) );
+   $text            = $htag->textfield( $ref );
+   $html            = $htag->div( { class => q(container) }, $text );
    $html           .= $htag->div( { class => q(separator) }, q(&nbsp;) );
    $text            = 'var cal_'.$me->name.' = new CalendarPopup(\'';
    $text           .= $me->name.'_calendar\');';
@@ -38,7 +38,7 @@ sub _render {
    $tip            .= 'Click the calendar icon to open ';
    $tip            .= 'a date selection window';
    $ref->{title  }  = $tip;
-   $text            = $htag->a( $ref, $text);
+   $text            = $htag->a( $ref, $text );
    $html           .= $htag->div( { class => q(container) }, $text );
    $html           .= $htag->div( { class => q(calendar hidden),
                                     id    => $me->name.'_calendar' } );

@@ -6,6 +6,7 @@ use strict;
 use warnings;
 use base qw(HTML::FormWidgets);
 use English qw(-no_match_vars);
+use IO::File;
 use Readonly;
 use Syntax::Highlight::Perl;
 use Text::ParseWords;
@@ -14,44 +15,40 @@ use Text::Tabs;
 use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
 
 Readonly my %SCHEME =>
-   ( Variable_Scalar   => ['<font color="#CC6600">', '</font>'],
-     Variable_Array    => ['<font color="#FFCC00">', '</font>'],
-     Variable_Hash     => ['<font color="#990099">', '</font>'],
-     Variable_Typeglob => ['<font color="#000000">', '</font>'],
-     Subroutine        => ['<font color="#339933">', '</font>'],
-     Quote             => ['<font color="#000000">', '</font>'],
-     String            => ['<font color="#3399FF">', '</font>'],
-     Comment_Normal    => ['<font color="#ff0000"><i>', '</i></font>'],
-     Comment_POD       => ['<font color="#ff9999">', '</font>'],
-     Bareword          => ['<font color="#000000">', '</font>'],
-     Package           => ['<font color="#000000">', '</font>'],
-     Number            => ['<font color="#003333">', '</font>'],
-     Operator          => ['<font color="#999999">', '</font>'],
-     Symbol            => ['<font color="#000000">', '</font>'],
-     Keyword           => ['<font color="#0000ff"><b>', '</b></font>'],
-     Builtin_Operator  => ['<font color="#000000">', '</font>'],
-     Builtin_Function  => ['<font color="#000000">', '</font>'],
-     Character         => ['<font color="#3399FF"><b>', '</b></font>'],
-     Directive         => ['<font color="#000000"><i><b>',
-                           '</b></i></font>'],
-     Label             => ['<font color="#000000">', '</font>'],
-     Line              => ['<font color="#000000">', '</font>'], );
+   ( Variable_Scalar   => [ '<font color="#CC6600">', '</font>' ],
+     Variable_Array    => [ '<font color="#FFCC00">', '</font>' ],
+     Variable_Hash     => [ '<font color="#990099">', '</font>' ],
+     Variable_Typeglob => [ '<font color="#000000">', '</font>' ],
+     Subroutine        => [ '<font color="#339933">', '</font>' ],
+     Quote             => [ '<font color="#000000">', '</font>' ],
+     String            => [ '<font color="#3399FF">', '</font>' ],
+     Comment_Normal    => [ '<font color="#ff0000"><i>', '</i></font>' ],
+     Comment_POD       => [ '<font color="#ff9999">', '</font>' ],
+     Bareword          => [ '<font color="#000000">', '</font>' ],
+     Package           => [ '<font color="#000000">', '</font>' ],
+     Number            => [ '<font color="#003333">', '</font>' ],
+     Operator          => [ '<font color="#999999">', '</font>' ],
+     Symbol            => [ '<font color="#000000">', '</font>' ],
+     Keyword           => [ '<font color="#0000ff"><b>', '</b></font>' ],
+     Builtin_Operator  => [ '<font color="#000000">', '</font>' ],
+     Builtin_Function  => [ '<font color="#000000">', '</font>' ],
+     Character         => [ '<font color="#3399FF"><b>', '</b></font>' ],
+     Directive         => [ '<font color="#000000"><i><b>',
+                           '</b></i></font>' ],
+     Label             => [ '<font color="#000000">', '</font>' ],
+     Line              => [ '<font color="#000000">', '</font>' ], );
 
 sub _render {
    # Subtypes: file, csv, html, source, and logfile
    my ($me, $ref) = @_;
-   my ($attr, $box, $cells, $cNo, $elem, $fld, $fmt, $key, $line, $npages);
-   my ($pat, $path, @printers, $rdr, $rNo, $rows, $span, $text);
+   my ($attr, $box, $cells, $c_no, $fld, $fmt, $htag, $key, $line, $npages);
+   my ($pat, $path, @printers, $r_no, $rdr, $rows, $span, $text);
 
    $me->header( [] )       unless (defined $me->header);
    $me->select( -1 )       unless (defined $me->select);
    $me->subtype( q(file) ) unless (defined $me->subtype);
 
-   $elem = $me->elem; $path = $me->path;
-
-   if ($me->footer and $me->footer->{left}) {
-      $me->footer->{left} = $me->_getFooter();
-   }
+   $htag = $me->elem; $path = $me->path;
 
    if ($me->subtype eq q(html)) {
       $pat   = $me->root;
@@ -65,7 +62,7 @@ sub _render {
       $text  = 'border: 0px; bottom: 0px; position: absolute; ';
       $text .= 'top: 0px; width: 100%; '.$me->style;
 
-      return $elem->iframe( { src       => $path,
+      return $htag->iframe( { src       => $path,
                               scrolling => 'auto',
                               style     => $text }, '&nbsp;' );
    }
@@ -85,122 +82,101 @@ sub _render {
       $text    = expand( $text );
       $text    = $fmt->format_string( $text );
 
-      return $elem->pre( { class => q(source) }, $text );
+      return $htag->pre( { class => $me->subtype }, $text );
    }
 
-   $rNo = 0; $rows = q(); $span = 1;
+   $r_no = 0; $rows = q(); $span = 1;
 
    if ($me->subtype eq q(logfile)) {
       # TODO: Add Prev and next links to append div
       for $line (split m { \n }mx, $text) {
-         $line   = $elem->pre( $elem->escape_html( $line, 0 ) );
-         $cells  = $elem->td( { class => $me->subtype }, $line );
-         $rows  .= $elem->tr( { class => $me->subtype }, $cells );
-         $rNo++;
+         $line   = $htag->escape_html( $line, 0 );
+         $line   = $htag->pre( { class => $me->subtype }, $line );
+         $cells  = $htag->td(  { class => $me->subtype }, $line );
+         $rows  .= $htag->tr(  { class => $me->subtype }, $cells )."\n";
+         $r_no++;
       }
 
-      push @{ $me->hide }, $elem->hidden( { name => 'nRows', value => $rNo });
+      $text = $htag->hidden( { name => q(nRows), value => $r_no } );
+      push @{ $me->hide }, $text;
 
-      return $elem->table( { cellpadding => 0, cellspacing => 0 }, $rows );
+      return $htag->table( { cellpadding => 0, cellspacing => 0 }, $rows );
    }
 
    for $line (split m { \n }mx, $text) {
-      $line  = $elem->escape_html( $line, 0 );
-      $cells = q(); $cNo = 0;
+      $line  = $htag->escape_html( $line, 0 );
+      $cells = q(); $c_no = 0;
 
       if ($me->subtype eq q(csv)) {
          for $fld (parse_line( q(,), 0, $line )) {
-            if ($rNo == 0 && $line =~ m{ \A \# }mx) {
-               $fld = substr $fld, 1 if ($cNo == 0);
-               $me->header->[ $cNo ] = $fld unless ($me->header->[ $cNo ]);
+            if ($r_no == 0 && $line =~ m{ \A \# }mx) {
+               $fld = substr $fld, 1 if ($c_no == 0);
+               $me->header->[ $c_no ] = $fld unless ($me->header->[ $c_no ]);
             }
             else {
-               $attr   = { class => $me->subtype.q( ).($cNo % 2 == 0 ?
+               $attr   = { class => $me->subtype.q( ).($c_no % 2 == 0 ?
                                                       q(even) : q(odd)) };
-               $cells .= $elem->td( $attr, $fld );
+               $cells .= $htag->td( $attr, $fld );
             }
 
-            $key = $fld if ($cNo == $me->select);
-            $cNo++;
+            $key = $fld if ($c_no == $me->select);
+            $c_no++;
          }
 
-         next if ($rNo == 0 && $line =~ m{ \A \# }msx);
+         next if ($r_no == 0 && $line =~ m{ \A \# }msx);
       }
       else {
-         $cells .= $elem->td( { class => $me->subtype }, $line );
-         $cNo++;
+         $cells .= $htag->td( { class => $me->subtype }, $line );
+         $c_no++;
       }
 
       if ($me->select >= 0) {
-         $box   = $elem->checkbox( { label => q(),
-                                     name  => q(select).$rNo,
+         $box   = $htag->checkbox( { label => q(),
+                                     name  => q(select).$r_no,
                                      value => $key } );
-         $cells = $elem->td( { class => q(odd) }, $box ).$cells;
+         $cells = $htag->td( { class => q(odd) }, $box ).$cells;
          $attr  = { class => q(lineNumber even) };
-         $cNo++;
+         $c_no++;
       }
       else { $attr = { class => q(lineNumber odd) } }
 
-      $cells = $elem->td( $attr, $rNo+1 ).$cells;
-      $cNo++;
+      $cells = $htag->td( $attr, $r_no+1 ).$cells;
+      $c_no++;
 
-      $span  = $cNo if ($cNo > $span);
-      $rows .= $elem->tr( { class => $me->subtype }, $cells );
-      $rNo++;
+      $span  = $c_no if ($c_no > $span);
+      $rows .= $htag->tr( { class => $me->subtype }, $cells );
+      $r_no++;
    }
 
-   $cells = $elem->th( { class => q(small table minimal) }, chr 35 );
-   $cNo   = 1;
+   $cells = $htag->th( { class => q(small table minimal) }, chr 35 );
+   $c_no  = 1;
 
    if ($me->select >= 0) {
-      $cells .= $elem->th( { class => q(small table minimal) }, q(M) );
-      $cNo++;
+      $cells .= $htag->th( { class => q(small table minimal) }, q(M) );
+      $c_no++;
    }
 
    if ($me->subtype eq q(csv)) {
       if ($me->header->[0]) {
          for $text (@{ $me->header }) {
-            $cells .= $elem->th( { class => q(small table) }, $text );
-            last if (++$cNo >= $span);
+            $cells .= $htag->th( { class => q(small table) }, $text );
+            last if (++$c_no >= $span);
          }
       }
       else {
          for $text ('A' .. 'Z') {
-            $cells .= $elem->th( { class => q(small table) }, $text );
-            last if (++$cNo >= $span);
+            $cells .= $htag->th( { class => q(small table) }, $text );
+            last if (++$c_no >= $span);
          }
       }
    }
-   else { $cells .= $elem->th( { class => q(small table) }, 'Lines' ) }
+   else { $cells .= $htag->th( { class => q(small table) }, 'Lines' ) }
 
-   $rows  = $elem->tr( $cells ).$rows;
+   $rows  = $htag->tr( $cells ).$rows;
 
-   push @{ $me->hide }, $elem->hidden( { name => 'nRows', value => $rNo } );
+   push @{ $me->hide }, $htag->hidden( { name => q(nRows), value => $r_no } );
 
-   return $elem->table( $rows );
-}
-
-sub _getFooter {
-   my ($me) = @_; my ($npages, @printers, $text);
-
-   return if ($me->footer->{left} ne 'printer_controls');
-# Should have stashed this sooner
-   @printers = (qw(a b));
-#     @printers = @{PM::Model::File::Printers->retrieve()->printers};
-   $npages   = ($me->npages ? $me->npages : 1);
-#     $me->hide->[-1] = hidden({ name => 'pathName', value => $path });
-   $text  = 'Page&nbsp;';
-   $text .= $me->elem->textfield({ default => '1',
-                                   name    => 'fromPage', size => '3'});
-   $text .= '&nbsp;to&nbsp;';
-   $text .= $me->elem->textfield({ default => $npages,
-                                   name    => 'toPage', size => '3'});
-   $text .= '&nbsp;Select printer&nbsp;';
-   $text .= $me->elem->popup_menu({ name   => 'printer',
-                                    values => \@printers });
-   $text .= '&nbsp;'.$me->elem->submit({ name  => 'button',
-                                         value => 'Print' });
-   return $text;
+   return $htag->table( $rows );
 }
 
 1;

@@ -28,16 +28,15 @@ Readonly my %ATTRS =>
      dropcap    => 0,            edit       => 0,
      elem       => undef,        evnt_hndlr => 'checkObj.CheckField',
      field      => $NUL,         fields     => {},
-     footer     => $NUL,         form       => {},
-     'format'   => undef,        fhelp      => $NUL,
-     header     => undef,        height     => undef,
-     hide       => [],           hint_title => 'Handy Hint',
-     href       => undef,        id         => undef,
-     id2key     => {},           key        => $NUL,
-     key2id     => {},           key2url    => {},
-     labels     => undef,        max_length => undef,
-     messages   => {},           name       => $NUL,
-     nb_symbol  => q(&nbsp;&dagger;),
+     form       => {},           'format'   => undef,
+     fhelp      => $NUL,         header     => undef,
+     height     => undef,        hide       => [],
+     hint_title => 'Handy Hint', href       => undef,
+     id         => undef,        id2key     => {},
+     key        => $NUL,         key2id     => {},
+     key2url    => {},           labels     => undef,
+     max_length => undef,        messages   => {},
+     name       => $NUL,         nb_symbol  => q(&nbsp;&dagger;),
      node       => undef,        nowrap     => 0,
      npages     => 1,            onblur     => undef,
      onchange   => undef,        onkeypress => undef,
@@ -176,7 +175,7 @@ sub new {
       $self->{type} = $self->{fields}->{ $self->{id} }->{type};
    }
 
-   $self->{type} = 'textfield' unless ($self->{type});
+   $self->{type} = q(textfield) unless ($self->{type});
 
    # Your basic factory method trick
    $class = __PACKAGE__.q(::).(ucfirst $self->{type});
@@ -189,7 +188,7 @@ sub new {
 
    bless $self, $class;
 
-   $self->{nodeId} = 'node_0'; # Define accessor by hand to auto increment
+   $self->{nodeId} = q(node_0); # Define accessor by hand to auto increment
 
    # Pander to lazy filling out of static definitions
    $self->container( $self->type =~ m{ file|label|note }mx ? 0 : 1 )
@@ -215,18 +214,18 @@ sub new {
    $self->hint_title( $text ) if ($text = $self->messages->{handy_hint_title});
 
    unless (defined $self->height) {
-      $self->height( $self->type eq 'groupMembership' ||
-                     $self->type eq 'scrollingList' ? 10 : 5 );
+      $self->height( $self->type eq q(groupMembership) ||
+                     $self->type eq q(scrollingList) ? 10 : 5 );
    }
 
    if ($self->pwidth && ($self->pwidth =~ m{ \A \d+ \z }mx)) {
-      $self->pwidth( (int $self->pwidth * $self->screen / 100).'px' );
+      $self->pwidth( (int $self->pwidth * $self->screen / 100).q(px) );
    }
 
-   $self->sep( $NUL ) if ($self->type eq 'note');
+   $self->sep( $NUL ) if ($self->type eq q(note));
    $self->sep( $NUL ) if (!$self->prompt && !$self->fhelp);
    $self->sep( $NUL ) if ($self->sep =~ m{ \A \d+ \z }mx && $self->sep == 0);
-   $self->sep( $self->space ) if ($self->sep && $self->sep eq 'space');
+   $self->sep( $self->space ) if ($self->sep && $self->sep eq q(space));
 
    if (defined $self->stepno && $self->stepno == 0) {
       $self->stepno( $self->space );
@@ -247,14 +246,14 @@ sub render {
    return $me->text || $NUL unless ($me->type);
 
    $htag  = $me->elem;
-   $html  = $me->clear eq 'left' ? $htag->br() : "\n";
+   $html  = $me->clear eq q(left) ? $htag->br() : "\n";
 
    if ($me->stepno) {
-      $html .= $htag->span( { class => 'lineNumber' }, $me->stepno );
+      $html .= $htag->span( { class => q(lineNumber) }, $me->stepno );
    }
 
    if ($me->prompt) {
-      $ref           = { class => 'prompt' };
+      $ref           = { class => q(prompt) };
       $ref->{for  }  = $me->id                         if ($me->id);
       $ref->{style} .= 'text-align: '.$me->palign.'; ' if ($me->palign);
       $ref->{style} .= 'white-space: nowrap; '         if ($me->nowrap);
@@ -262,17 +261,17 @@ sub render {
       $html         .= $htag->label( $ref, $me->prompt );
    }
 
-   if ($me->type eq 'groupMembership') {
-      $ref           = { class => 'instructions' };
+   if ($me->type eq q(groupMembership)) {
+      $ref           = { class => q(instructions) };
       $ref->{style} .= 'text-align: '.$me->palign.'; ' if ($me->palign);
       $ref->{style} .= 'width: '.$me->pwidth.q(;)      if ($me->pwidth);
       $html         .= $htag->div( $ref, $me->fhelp );
    }
 
-   $html .= $htag->div( { class => 'separator' }, $me->sep ) if ($me->sep);
+   $html .= $htag->div( { class => q(separator) }, $me->sep ) if ($me->sep);
 
    $ref               = {};
-   $ref->{class     } = 'required'      if ($me->required);
+   $ref->{class     } = q(required)     if ($me->required);
    $ref->{default   } = $me->default    if ($me->default);
    $ref->{id        } = $me->id         if ($me->id);
    $ref->{name      } = $me->name       if ($me->name);
@@ -282,25 +281,25 @@ sub render {
    return $html unless ($text = $me->_render( $ref ));
 
    if ($me->container) {
-      $text = $htag->div( { class => 'container '.$me->align }, $text );
+      $text = $htag->div( { class => q(container ).$me->align }, $text );
    }
 
    if ($tip = $me->tip) {
       $tip  =~ s{ \n }{ }gmx;
       $tip  = $me->hint_title.$TTS.$tip if ($tip !~ m{ $TTS }mx);
       $tip  =~ s{ \s+ }{ }gmx;
-      $ref  = { class => 'help tips', title => $tip };
+      $ref  = { class => q(help tips), title => $tip };
 
-      if ($me->tiptype ne 'dagger') { $text = $htag->span( $ref, $text ) }
+      if ($me->tiptype ne q(dagger)) { $text = $htag->span( $ref, $text ) }
       else { $text .= $htag->span( $ref, $me->nb_symbol ) }
 
-      $text = $htag->div( { class => 'container' }, $text );
+      $text = $htag->div( { class => q(container) }, $text );
    }
 
    if ($me->ajaxid) {
-      $ref   = { class => 'hidden', id => $me->ajaxid.'_checkField' };
+      $ref   = { class => q(hidden), id => $me->ajaxid.q(_checkField) };
       $text .= $htag->span( $ref, $me->ajaxtext );
-      $text  = $htag->div( { class => 'container' }, $text );
+      $text  = $htag->div( { class => q(container) }, $text );
    }
 
    return $html.$text;
@@ -311,7 +310,7 @@ sub render {
 sub _arg_list {
    my ($me, @rest) = @_;
 
-   return $rest[0] && ref $rest[0] eq 'HASH' ? $rest[0] : { @rest };
+   return $rest[0] && ref $rest[0] eq q(HASH) ? $rest[0] : { @rest };
 }
 
 sub _classfile {

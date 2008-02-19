@@ -4,7 +4,7 @@ package HTML::FormWidgets;
 
 use strict;
 use warnings;
-use base qw(Class::Data::Accessor);
+use base qw(Class::Accessor::Fast);
 use English qw(-no_match_vars);
 use File::Spec::Functions;
 use Readonly;
@@ -61,7 +61,7 @@ Readonly my @STATIC => (
       prompt pwidth required select sep stepno subtype text tip tiptype
       width) );
 
-__PACKAGE__->mk_classaccessors( keys %ATTRS );
+__PACKAGE__->mk_accessors( keys %ATTRS );
 
 # Class methods
 

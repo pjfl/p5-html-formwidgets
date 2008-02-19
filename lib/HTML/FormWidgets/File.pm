@@ -42,7 +42,7 @@ sub _render {
    # Subtypes: file, csv, html, source, and logfile
    my ($me, $ref) = @_;
    my ($attr, $box, $cells, $c_no, $fld, $fmt, $htag, $key, $line, $npages);
-   my ($pat, $path, @printers, $r_no, $rdr, $rows, $span, $text);
+   my ($pat, $path, $r_no, $rdr, $rows, $span, $text);
 
    $me->header( [] )       unless (defined $me->header);
    $me->select( -1 )       unless (defined $me->select);
@@ -57,14 +57,13 @@ sub _render {
          $path = $me->base.($path =~ s{ \A $pat }{ / }msx);
       }
 
-      $path  = $path =~ m{ \A http: }msx ? $path : $me->webserver.$path;
       $path  = $path =~ m{ \A http: }msx ? $path : $me->base.$path;
       $text  = 'border: 0px; bottom: 0px; position: absolute; ';
       $text .= 'top: 0px; width: 100%; '.$me->style;
 
       return $htag->iframe( { src       => $path,
-                              scrolling => 'auto',
-                              style     => $text }, '&nbsp;' );
+                              scrolling => q(auto),
+                              style     => $text }, q(&nbsp;) );
    }
 
    return 'Not found '.$path   unless (-f $path);

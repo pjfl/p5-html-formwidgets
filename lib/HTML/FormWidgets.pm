@@ -4,7 +4,7 @@ package HTML::FormWidgets;
 
 use strict;
 use warnings;
-use base qw(Class::Accessor::Fast);
+use base qw(Class::Data::Accessor);
 use English qw(-no_match_vars);
 use File::Spec::Functions;
 use Readonly;
@@ -38,7 +38,7 @@ Readonly my %ATTRS =>
      max_length => undef,        messages   => {},
      name       => $NUL,         nb_symbol  => q(&nbsp;&dagger;),
      node       => undef,        nowrap     => 0,
-     npages     => 1,            onblur     => undef,
+     onblur     => undef,
      onchange   => undef,        onkeypress => undef,
      palign     => undef,        path       => undef,
      prompt     => $NUL,         fields     => {},
@@ -61,50 +61,25 @@ Readonly my @STATIC => (
       prompt pwidth required select sep stepno subtype text tip tiptype
       width) );
 
-__PACKAGE__->mk_accessors( keys %ATTRS );
+__PACKAGE__->mk_classaccessors( keys %ATTRS );
 
 # Class methods
 
 sub build {
-   my ($me, $c, $form) = @_; my $s = $c->stash;
-   my ($html, $item, $legend, $list, $ref, @tmp, $widget);
+   my ($me, $c, $form) = @_; my ($item, $list, $ref, @tmp, $widget);
 
    for $list (@{ $form }) {
-      @tmp = ();
-
       next unless ($list && ref $list eq q(HASH));
+
+      @tmp = ();
 
       for $item (@{ $list->{items} }) {
          if (ref $item->{content} eq q(HASH)) {
             if ($item->{content}->{group}) {
-               $html = $NUL;
-
-               for (1 .. $item->{content}->{nitems}) {
-                  $ref  = pop @tmp;
-                  chomp $ref->{content};
-                  $html = $ref->{content}.$html;
-               }
-
-               $widget = __PACKAGE__->new();
-               $legend = $widget->elem->legend( $item->{content}->{text} );
-               $ref = { content => $widget->elem->fieldset( $legend.$html ) };
+               $ref = { content => $me->_group_fields( $item, \@tmp ) };
             }
             elsif ($item->{content}->{widget}) {
-               $ref             = $item->{content};
-               $ref->{assets  } = $s->{assets};
-               $ref->{base    } = $c->req->base;
-               $ref->{fields  } = $s->{fields};
-               $ref->{form    } = $s->{form};
-               $ref->{footer  } = $s->{footer};
-               $ref->{hide    } = $s->{iFrame}->{hidden};
-               $ref->{messages} = $s->{messages};
-               $ref->{npages  } = $c->req->params->{nPages};
-               $ref->{root    } = $c->config->{root};
-               $ref->{screen  } = $s->{width} if ($s->{width});
-               $ref->{skindir } = catdir($s->{skindir}, $s->{skin});
-               $ref->{url     } = $c->req->path;
-
-               $widget = __PACKAGE__->new( $ref );
+               $widget = $me->new( $me->_make_conf( $c, $item ) );
                $ref    = { content => $widget->render };
                $ref->{class} = $widget->class if ($widget->class);
             }
@@ -199,19 +174,17 @@ sub new {
               ? $self->fields->{ $self->ajaxid }->{validate}
               : $NUL;
       $msg_id = $msg_id->[0] if (ref $msg_id eq q(ARRAY));
-      $text   = $msg_id && $self->messages->{ $msg_id }
-              ? $self->messages->{ $msg_id }->{text}
-              : $NUL;
-
-      $self->ajaxtext( $text )                 if     ($text);
-      $self->ajaxtext( 'Invalid field value' ) unless ($self->ajaxtext);
+      $text   = $self->msg( $msg_id ) || 'Invalid field value';
+      $self->ajaxtext( $text );
 
       # Install default JavaScript event handler
-      $self->onblur( $self->evnt_hndlr.'(\''.$self->ajaxid.'\', this.value)' )
-         unless ($self->onblur || $self->onchange || $self->onkeypress);
+      unless ($self->onblur || $self->onchange || $self->onkeypress) {
+         $text = $self->evnt_hndlr.'(\''.$self->ajaxid.'\', this.value)';
+         $self->onblur( $text );
+      }
    }
 
-   $self->hint_title( $text ) if ($text = $self->messages->{handy_hint_title});
+   $self->hint_title( $text ) if ($text = $self->msg( q(handy_hint_title) ));
 
    unless (defined $self->height) {
       $self->height( $self->type eq q(groupMembership) ||
@@ -239,6 +212,12 @@ sub new {
 }
 
 # Object methods
+
+sub msg {
+   my ($me, $key) = @_;
+
+   return $me->messages->{ $key || q() }->{text} || q();
+}
 
 sub render {
    my $me = shift; my ($htag, $html, $method, $ref, $text, $tip);
@@ -317,6 +296,36 @@ sub _classfile {
    my ($me, $class) = @_; $class =~ s{ :: }{/}gmx; return $class.q(.pm);
 }
 
+sub _group_fields {
+   my ($me, $item, $list) = @_; my $html = $NUL; my $ref;
+
+   for (1 .. $item->{content}->{nitems}) {
+      $ref  = pop @{ $list }; chomp $ref->{content};
+      $html = $ref->{content}.$html;
+   }
+
+   my $htag   = HTML::Accessors->new();
+   my $legend = $htag->legend( $item->{content}->{text} );
+   return $htag->fieldset( $legend.$html );
+}
+
+sub _make_conf {
+   my ($me, $c, $item) = @_; my $s = $c->stash; my $ref;
+
+   $ref             = $item->{content};
+   $ref->{root    } = $c->config->{root};
+   $ref->{base    } = $c->req->base;
+   $ref->{url     } = $c->req->path;
+   $ref->{assets  } = $s->{assets};
+   $ref->{fields  } = $s->{fields} || {};
+   $ref->{form    } = $s->{form};
+   $ref->{hide    } = $s->{iFrame}->{hidden};
+   $ref->{messages} = $s->{messages} || {};
+   $ref->{screen  } = $s->{width} if ($s->{width});
+   $ref->{skindir } = catdir( $s->{skindir}, $s->{skin} );
+   return $ref;
+}
+
 sub _render {
    my ($me, $ref) = @_;
 
@@ -337,7 +346,7 @@ HTML::FormWidgets - Create HTML form markup
 
 =head1 Version
 
-0.1.$Revision$
+0.1.$Rev$
 
 =head1 Synopsis
 
@@ -345,11 +354,75 @@ HTML::FormWidgets - Create HTML form markup
 
 =head1 Description
 
+=head1 Configuration and Environment
+
+The following are passed by C<build> to C<new> via C<_make_conf>:
+
+=over 3
+
+=item $c-E<gt>config-E<gt>{root}
+
+=item $c-E<gt>req-E<gt>base
+
+=item $c-E<gt>req-E<gt>path
+
+=item $s-E<gt>{assets}
+
+=item $s-E<gt>{fields}
+
+=item $s-E<gt>{form}
+
+=item $s-E<gt>{iFrame}-E<gt>{hidden}
+   So that the C<::File> and C<::Table> subclasses can store the
+   number of rows added as the hidden form variable B<nRows>
+
+=item $s-E<gt>{messages}
+
+=item $s-E<gt>{width}
+
+=item $s-E<gt>{skindir}
+
+=item $s-E<gt>{skin}
+
+=back
+
+Sensible defaults are provided by C<new> if any of the above are undefined
+
 =head1 Subroutines/Methods
+
+=head2 build
+
+=head2 new
+
+=head2 render
+
+=head2 _arg_list
+
+Accepts either a single argument of a hash ref or a list of key/value
+pairs. Returns a hash ref in either case.
+
+=head2 _classfile
+
+Substitutes slashes for double colons in the supplied class name and
+appends the ".pm" suffix to the result which it returns
+
+=head2 _group_fields
+
+Wraps the top elements on the build stack in a fieldset element with a legend
+
+=head2 _make_conf
+
+Return a hash ref containing the parameters for a specific widget
+
+=head2 _render
+
+This should have been overriden in the factory subclass. If it gets
+called its probably an error so return the value of our C<text>
+attribute if set or an error message otherwise
 
 =head1 Diagnostics
 
-=head1 Configuration and Environment
+None
 
 =head1 Dependencies
 
@@ -358,6 +431,8 @@ HTML::FormWidgets - Create HTML form markup
 =item L<Class::Accessor::Fast>
 
 =item L<HTML::Accessors>
+
+=item L<Readonly>
 
 =back
 
@@ -377,7 +452,7 @@ Peter Flanigan, C<< <Support at RoxSoft.co.uk> >>
 
 =head1 License and Copyright
 
-Copyright (c) 2007 RoxSoft Limited. All rights reserved.
+Copyright (c) 2008 Peter Flanigan. All rights reserved.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself. See L<perlartistic>.

@@ -41,7 +41,7 @@ Readonly my %SCHEME =>
 sub _render {
    # Subtypes: file, csv, html, source, and logfile
    my ($me, $ref) = @_;
-   my ($attr, $box, $cells, $c_no, $fld, $fmt, $htag, $key, $line, $npages);
+   my ($attr, $box, $cells, $c_no, $fld, $fmt, $htag, $key, $line);
    my ($pat, $path, $r_no, $rdr, $rows, $span, $text);
 
    $me->header( [] )       unless (defined $me->header);
@@ -54,7 +54,7 @@ sub _render {
       $pat   = $me->root;
 
       if ($path =~ m{ \A $pat }msx) {
-         $path = $me->base.($path =~ s{ \A $pat }{ / }msx);
+         $path = $me->base.($path =~ s{ \A $pat }{/}msx);
       }
 
       $path  = $path =~ m{ \A http: }msx ? $path : $me->base.$path;
@@ -72,7 +72,7 @@ sub _render {
    $text = do { local $RS = undef; <$rdr> }; $rdr->close();
 
    if ($me->subtype eq q(source)) {
-      $fmt  = Syntax::Highlight::Perl->new();
+      $fmt = Syntax::Highlight::Perl->new();
       $fmt->set_format( \%SCHEME );
       $fmt->define_substitution( q(<) => q(&lt;),
                                  q(>) => q(&gt;),

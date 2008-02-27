@@ -14,10 +14,10 @@ sub _render {
    $ref->{size} = $me->width || 20;
    $text        = $me->elem->password_field( $ref );
 
-   return $text unless ($me->subtype && $me->subtype eq 'verify');
+   return $text unless ($me->subtype && $me->subtype eq q(verify));
 
-   $text .= $me->messages->{vPasswordPrompt}->{text};
-   $ref->{name} =~ s/1/2/; $ref->{id} =~ s/1/2/;
+   $text .= $me->msg( vPasswordPrompt );
+   $ref->{name} =~ s{ 1 }{2}mx; $ref->{id} =~ s{ 1 }{2}mx;
    $text .= $me->elem->password_field( $ref );
    return $text;
 }

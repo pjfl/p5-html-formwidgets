@@ -12,7 +12,7 @@ use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
 Readonly my $TTS => q( ~ );
 
 sub _render {
-   my ($me, $ref) = @_; my ($format, $htag, $html, $text, $tip);
+   my ($me, $ref) = @_; my ($format, $htag, $html, $text);
 
    $htag            = $me->elem;
    $ref->{size   }  = $me->width || 10;
@@ -34,10 +34,7 @@ sub _render {
    $ref->{onclick}  = 'cal_'.$me->name.'.select( document.forms[0].'.$me->name;
    $ref->{onclick} .= ', '.'\'anchor_'.$me->name.'\', \''.$format.'\' ); ';
    $ref->{onclick} .= 'return false;';
-   $tip             = $me->hint_title.$TTS;
-   $tip            .= 'Click the calendar icon to open ';
-   $tip            .= 'a date selection window';
-   $ref->{title  }  = $tip;
+   $ref->{title  }  = $me->hint_title.$TTS.$me->msg( q(dateWidgetTip) );
    $text            = $htag->a( $ref, $text );
    $html           .= $htag->div( { class => q(container) }, $text );
    $html           .= $htag->div( { class => q(calendar hidden),

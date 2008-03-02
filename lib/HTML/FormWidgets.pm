@@ -35,7 +35,7 @@ Readonly my %ATTRS =>
      id         => undef,        id2key     => {},
      key        => $NUL,         key2id     => {},
      key2url    => {},           labels     => undef,
-     max_length => undef,        messages   => {},
+     max_length => undef,        messages   => undef,
      name       => $NUL,         nb_symbol  => q(&nbsp;&dagger;),
      node       => undef,        nowrap     => 0,
      onblur     => undef,
@@ -216,7 +216,11 @@ sub new {
 sub msg {
    my ($me, $key) = @_;
 
-   return $me->messages->{ $key || q() }->{text} || q();
+   return q() unless ($me->messages);
+
+   my $msg = $me->messages->{ $key || q() } || {};
+
+   return $msg->{text} || q();
 }
 
 sub render {
@@ -293,7 +297,7 @@ sub _arg_list {
 }
 
 sub _classfile {
-   my ($me, $class) = @_; $class =~ s{ :: }{/}gmx; return $class.q(.pm);
+   my ($me, $class) = @_; return catfile( split m{ :: }mx, $class.q(.pm) );
 }
 
 sub _group_fields {
@@ -320,7 +324,7 @@ sub _make_conf {
    $ref->{fields  } = $s->{fields} || {};
    $ref->{form    } = $s->{form};
    $ref->{hide    } = $s->{iFrame}->{hidden};
-   $ref->{messages} = $s->{messages} || {};
+   $ref->{messages} = $s->{messages};
    $ref->{screen  } = $s->{width} if ($s->{width});
    $ref->{skindir } = catdir( $s->{skindir}, $s->{skin} );
    return $ref;
@@ -393,6 +397,8 @@ Sensible defaults are provided by C<new> if any of the above are undefined
 =head2 build
 
 =head2 new
+
+=head2 msg
 
 =head2 render
 

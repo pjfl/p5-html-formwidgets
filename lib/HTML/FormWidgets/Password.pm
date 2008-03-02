@@ -16,7 +16,7 @@ sub _render {
 
    return $text unless ($me->subtype && $me->subtype eq q(verify));
 
-   $text .= $me->msg( vPasswordPrompt );
+   $text .= $me->msg( q(vPasswordPrompt) );
    $ref->{name} =~ s{ 1 }{2}mx; $ref->{id} =~ s{ 1 }{2}mx;
    $text .= $me->elem->password_field( $ref );
    return $text;

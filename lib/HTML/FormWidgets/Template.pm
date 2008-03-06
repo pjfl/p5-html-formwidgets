@@ -14,7 +14,7 @@ use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
 sub _render {
    my ($me, $ref) = @_; my ($content, $path);
 
-   $path = catfile( $me->skindir, $me->id.'.tt' );
+   $path = catfile( $me->templatedir, $me->id.'.tt' );
 
    return 'Not found '.$path unless (-f $path);
 

@@ -4,55 +4,54 @@ package HTML::FormWidgets;
 
 use strict;
 use warnings;
-use base qw(Class::Data::Accessor);
+use base    qw(Class::Data::Accessor);
 use English qw(-no_match_vars);
 use File::Spec::Functions;
-use Readonly;
-
 use HTML::Accessors;
+use Readonly;
 
 use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
 
 Readonly my $NUL   => q();
 Readonly my $TTS   => q( ~ );
 Readonly my %ATTRS =>
-   ( ajaxid     => undef,        ajaxtext   => undef,
-     align      => q(left),      all        => [],
-     assets     => $NUL,         atitle     => 'All',
-     base       => $NUL,         behaviour  => q(classic),
-     button     => $NUL,         checked    => 0,
-     class      => $NUL,         clear      => $NUL,
-     columns    => undef,        container  => undef,
-     ctitle     => 'Current',    current    => [],
-     data       => {},           default    => undef,
-     dropcap    => 0,            edit       => 0,
-     elem       => undef,        evnt_hndlr => 'checkObj.CheckField',
-     field      => $NUL,         fields     => {},
-     form       => {},           'format'   => undef,
-     fhelp      => $NUL,         header     => undef,
-     height     => undef,        hide       => [],
-     hint_title => 'Handy Hint', href       => undef,
-     id         => undef,        id2key     => {},
-     key        => $NUL,         key2id     => {},
-     key2url    => {},           labels     => undef,
-     max_length => undef,        messages   => undef,
-     name       => $NUL,         nb_symbol  => q(&nbsp;&dagger;),
-     node       => undef,        nowrap     => 0,
-     onblur     => undef,
-     onchange   => undef,        onkeypress => undef,
-     palign     => undef,        path       => undef,
-     prompt     => $NUL,         fields     => {},
-     pwidth     => 40,           required   => 0,
-     root       => undef,        screen     => 1000,
-     select     => $NUL,         sep        => q(&nbsp;:&nbsp;),
-     skindir    => undef,        space      => q(&nbsp;) x 3,
-     stepno     => undef,        style      => $NUL,
-     subtype    => undef,        target     => $NUL,
-     text       => $NUL,         tip        => $NUL,
-     tiptype    => q(dagger),    title      => $NUL,
-     type       => undef,        url        => undef,
-     value      => 1,            values     => [],
-     where      => {},           width      => undef );
+   ( ajaxid      => undef,         ajaxtext    => undef,
+     align       => q(left),       all         => [],
+     assets      => $NUL,          atitle      => 'All',
+     base        => $NUL,          behaviour   => q(classic),
+     button      => $NUL,          checked     => 0,
+     class       => $NUL,          clear       => $NUL,
+     columns     => undef,         container   => undef,
+     ctitle      => 'Current',     current     => [],
+     data        => {},            default     => undef,
+     dropcap     => 0,             edit        => 0,
+     elem        => undef,         evnt_hndlr  => 'checkObj.CheckField',
+     field       => $NUL,          fields      => {},
+     form        => {},            'format'    => undef,
+     fhelp       => $NUL,          header      => undef,
+     height      => undef,         hide        => [],
+     hint_title  => 'Handy Hint',  href        => undef,
+     id          => undef,         id2key      => {},
+     key         => $NUL,          key2id      => {},
+     key2url     => {},            labels      => undef,
+     max_length  => undef,         messages    => undef,
+     name        => $NUL,          nb_symbol   => q(&nbsp;&dagger;),
+     node        => undef,         nowrap      => 0,
+     onblur      => undef,         onchange    => undef,
+     onkeypress  => undef,         palign      => undef,
+     path        => undef,         prompt      => $NUL,
+     fields      => {},            pwidth      => 40,
+     required    => 0,             root        => undef,
+     select      => $NUL,          sep         => q(&nbsp;:&nbsp;),
+     space       => q(&nbsp;) x 3, stepno      => undef,
+     style       => $NUL,          subtype     => undef,
+     swidth      => 1000,          target      => $NUL,
+     templatedir => undef,         text        => $NUL,
+     tip         => $NUL,          tiptype     => q(dagger),
+     title       => $NUL,          type        => undef,
+     url         => undef,         value       => 1,
+     values      => [],            where       => {},
+     width       => undef );
 
 Readonly my @STATIC => (
    qw(atitle align behaviour checked class clear
@@ -66,7 +65,7 @@ __PACKAGE__->mk_classaccessors( keys %ATTRS );
 # Class methods
 
 sub build {
-   my ($me, $c, $form) = @_; my ($item, $list, $ref, @tmp, $widget);
+   my ($me, $config, $form) = @_; my ($item, $list, $ref, @tmp, $widget);
 
    for $list (@{ $form }) {
       next unless ($list && ref $list eq q(HASH));
@@ -79,7 +78,7 @@ sub build {
                $ref = { content => $me->_group_fields( $item, \@tmp ) };
             }
             elsif ($item->{content}->{widget}) {
-               $widget = $me->new( $me->_make_conf( $c, $item ) );
+               $widget = $me->new( $me->_merge_config( $config, $item ) );
                $ref    = { content => $widget->render };
                $ref->{class} = $widget->class if ($widget->class);
             }
@@ -154,11 +153,12 @@ sub new {
 
    # Your basic factory method trick
    $class = __PACKAGE__.q(::).(ucfirst $self->{type});
+   ## no critic
    eval "require $class;";
+   ## critic
 
    if ($EVAL_ERROR) {
-      $self->{text} = $EVAL_ERROR;
-      $self->{type} = undef;
+      $self->{text} = $EVAL_ERROR; $self->{type} = undef;
    }
 
    bless $self, $class;
@@ -192,7 +192,7 @@ sub new {
    }
 
    if ($self->pwidth && ($self->pwidth =~ m{ \A \d+ \z }mx)) {
-      $self->pwidth( (int $self->pwidth * $self->screen / 100).q(px) );
+      $self->pwidth( (int $self->pwidth * $self->swidth / 100).q(px) );
    }
 
    $self->sep( $NUL ) if ($self->type eq q(note));
@@ -224,7 +224,7 @@ sub msg {
 }
 
 sub render {
-   my $me = shift; my ($htag, $html, $method, $ref, $text, $tip);
+   my $me = shift; my ($field, $htag, $html, $method, $ref, $tip);
 
    return $me->text || $NUL unless ($me->type);
 
@@ -261,31 +261,31 @@ sub render {
    $ref->{onblur    } = $me->onblur     if ($me->onblur);
    $ref->{onkeypress} = $me->onkeypress if ($me->onkeypress);
 
-   return $html unless ($text = $me->_render( $ref ));
+   return $html unless ($field = $me->_render( $ref ));
 
    if ($me->container) {
-      $text = $htag->div( { class => q(container ).$me->align }, $text );
+      $field = $htag->div( { class => q(container ).$me->align }, $field );
    }
 
    if ($tip = $me->tip) {
-      $tip  =~ s{ \n }{ }gmx;
-      $tip  = $me->hint_title.$TTS.$tip if ($tip !~ m{ $TTS }mx);
-      $tip  =~ s{ \s+ }{ }gmx;
-      $ref  = { class => q(help tips), title => $tip };
+      $tip =~ s{ \n }{ }gmx;
+      $tip = $me->hint_title.$TTS.$tip if ($tip !~ m{ $TTS }mx);
+      $tip =~ s{ \s+ }{ }gmx;
+      $ref = { class => q(help tips), title => $tip };
 
-      if ($me->tiptype ne q(dagger)) { $text = $htag->span( $ref, $text ) }
-      else { $text .= $htag->span( $ref, $me->nb_symbol ) }
+      if ($me->tiptype ne q(dagger)) { $field = $htag->span( $ref, $field ) }
+      else { $field .= $htag->span( $ref, $me->nb_symbol ) }
 
-      $text = $htag->div( { class => q(container) }, $text );
+      $field = $htag->div( { class => q(container) }, $field );
    }
 
    if ($me->ajaxid) {
-      $ref   = { class => q(hidden), id => $me->ajaxid.q(_checkField) };
-      $text .= $htag->span( $ref, $me->ajaxtext );
-      $text  = $htag->div( { class => q(container) }, $text );
+      $ref    = { class => q(hidden), id => $me->ajaxid.q(_checkField) };
+      $field .= $htag->span( $ref, $me->ajaxtext );
+      $field  = $htag->div( { class => q(container) }, $field );
    }
 
-   return $html.$text;
+   return $html.$field;
 }
 
 # Private methods
@@ -294,10 +294,6 @@ sub _arg_list {
    my ($me, @rest) = @_;
 
    return $rest[0] && ref $rest[0] eq q(HASH) ? $rest[0] : { @rest };
-}
-
-sub _classfile {
-   my ($me, $class) = @_; return catfile( split m{ :: }mx, $class.q(.pm) );
 }
 
 sub _group_fields {
@@ -313,21 +309,10 @@ sub _group_fields {
    return $htag->fieldset( $legend.$html );
 }
 
-sub _make_conf {
-   my ($me, $c, $item) = @_; my $s = $c->stash; my $ref;
+sub _merge_config {
+   my ($me, $config, $item) = @_;
 
-   $ref             = $item->{content};
-   $ref->{root    } = $c->config->{root};
-   $ref->{base    } = $c->req->base;
-   $ref->{url     } = $c->req->path;
-   $ref->{assets  } = $s->{assets};
-   $ref->{fields  } = $s->{fields} || {};
-   $ref->{form    } = $s->{form};
-   $ref->{hide    } = $s->{iFrame}->{hidden};
-   $ref->{messages} = $s->{messages};
-   $ref->{screen  } = $s->{width} if ($s->{width});
-   $ref->{skindir } = catdir( $s->{skindir}, $s->{skin} );
-   return $ref;
+   return { %{ $config }, %{ $item->{content} } };
 }
 
 sub _render {
@@ -354,71 +339,123 @@ HTML::FormWidgets - Create HTML form markup
 
 =head1 Synopsis
 
-   use <HTML::FormWidgets>;
+   package MyApp::View::HTML;
+
+   use base qw(CatalystX::Usul::View::HTML);
+   use HTML::FormWidgets;
+
+   sub build_form {
+      my ($me, $c) = @_;
+      my $s        = $c->stash;
+      my $form     = [ $s->{iFrame} ];
+      my $config   = {};
+
+      $config->{root       } = $c->config->{root};
+      $config->{base       } = $c->req->base;
+      $config->{url        } = $c->req->path;
+      $config->{assets     } = $s->{assets};
+      $config->{fields     } = $s->{fields} || {};
+      $config->{form       } = $s->{form};
+      $config->{hide       } = $s->{iFrame}->{hidden};
+      $config->{messages   } = $s->{messages};
+      $config->{swidth     } = $s->{width} if ($s->{width});
+      $config->{templatedir} = $c->config->{dynamic_templates};
+
+      HTML::FormWidgets->build( $config, $form );
+      return;
+   }
 
 =head1 Description
 
-=head1 Configuration and Environment
+Transforms Perl data structures into scalars containing XHTML. Each
+data structure defines a "widget". Each widget is comprised of these
+optional components: a line or question number, a prompt string, a
+separator, an input field, additional field help, and Ajax field error
+string.
 
-The following are passed by C<build> to C<new> via C<_make_conf>:
-
-=over 3
-
-=item $c-E<gt>config-E<gt>{root}
-
-=item $c-E<gt>req-E<gt>base
-
-=item $c-E<gt>req-E<gt>path
-
-=item $s-E<gt>{assets}
-
-=item $s-E<gt>{fields}
-
-=item $s-E<gt>{form}
-
-=item $s-E<gt>{iFrame}-E<gt>{hidden}
-   So that the C<::File> and C<::Table> subclasses can store the
-   number of rows added as the hidden form variable B<nRows>
-
-=item $s-E<gt>{messages}
-
-=item $s-E<gt>{width}
-
-=item $s-E<gt>{skindir}
-
-=item $s-E<gt>{skin}
-
-=back
-
-Sensible defaults are provided by C<new> if any of the above are undefined
+Input fields are selected by the widget C<type> attribute. A factory
+subclass implements the method that generates the XHTML for that input
+field type. Adding more widget types is straightforward
 
 =head1 Subroutines/Methods
 
 =head2 build
 
+The C<build> method iterates over a data structure that represents the
+form. One or more lists of widgets are processed in turn. New widgets
+are created and their rendered ouput replaces their definitons in the
+data structure
+
 =head2 new
+
+Construct a widget. Mostly this is called by the C<build> method. It
+requires the factory subclass for the widget type
 
 =head2 msg
 
+Use the supplied key to return a value from the C<$me-E<gt>messages>
+hash. This hash was passed to the constructor and should contain any
+literal text used by any of the widgets
+
 =head2 render
+
+Assemble the components of the generated field. Each component is
+concatenated onto a scalar wgich is the returned value. This method
+calls C<_render> which should be defined in the factory subclass for
+this widget.
+
+This method uses these attributes:
+
+=over 3
+
+=item C<$me-E<gt>clear>
+
+If set to B<left> the widget begins with an <br> element
+
+=item C<$me-E<gt>stepno>
+
+If true it's value is wrapped in a B<span> element of class B<lineNumber>
+and appended to the return value
+
+=item C<$me-E<gt>prompt>
+
+If true it's value is wrapped in a B<label> element of class B<prompt> and
+appended to the return value. The C<$me-E<gt>id> attribute is used to
+set the B<for> attribute of the B<label> element.  The
+C<$me-E<gt>palign> attribute sets the text align style for the
+B<label> element. The C<$me-E<gt>nowrap> attribute sets whitespace
+style to nowrap in the B<label> element. The C<$me-E<gt>pwidth>
+attribute sets the width style attribute in the B<label> element
+
+=item C<$me-E<gt>sep>
+
+If true it's value is wrapped in a B<div> element of class B<separator>
+and appended to the return value
+
+=item C<$me-E<gt>container>
+
+If true the value return by the C<_render> method is wrapped in B<div>
+element of classes B<container> and C<$me-E<gt>align>
+
+=item C<$me-E<gt>tip>
+
+=item C<$me-E<gt>ajaxid>
+
+=back
 
 =head2 _arg_list
 
 Accepts either a single argument of a hash ref or a list of key/value
 pairs. Returns a hash ref in either case.
 
-=head2 _classfile
-
-Substitutes slashes for double colons in the supplied class name and
-appends the ".pm" suffix to the result which it returns
-
 =head2 _group_fields
 
 Wraps the top elements on the build stack in a fieldset element with a legend
 
-=head2 _make_conf
+=head2 _merge_config
 
-Return a hash ref containing the parameters for a specific widget
+Does a simple merging of the two hash refs that are passed as
+arguments. The second argument takes precedence over the first
 
 =head2 _render
 
@@ -426,13 +463,120 @@ This should have been overriden in the factory subclass. If it gets
 called its probably an error so return the value of our C<text>
 attribute if set or an error message otherwise
 
+=head1 Configuration and Environment
+
+The following are passed to C<build> in the B<config> hash:
+
+=over 3
+
+=item $c->config->{root}
+
+The path to the document root for this application
+
+=item $c->config->{dynamic_templates}
+
+The path to template files used by the C<::Template> subclass
+
+=item $c->req->base
+
+This is the prefix for our URI
+
+=item $c->req->path
+
+Only used by the C<::Tree> subclass to create self referential URIs
+
+=item $s->{assets}
+
+Some of the widgets require image files. This attribute is used to
+create the URI for those images
+
+=item $s->{fields}
+
+This hash ref contains the fields definitions. Static parameters for
+each widget can be stored in configuration files. This reduces the
+number of attributes that have to be passed in the call to the
+constructor
+
+=item $s->{form}
+
+Used by the C<::Chooser> subclass
+
+=item $s->{iFrame}->{hidden}
+
+So that the C<::File> and C<::Table> subclasses can store the
+number of rows added as the hidden form variable B<nRows>
+
+=item $s->{messages}
+
+Many of the subclasses use this hash to supply literal text in a
+language of the users choosing
+
+=item $s->{width}
+
+Width in pixels of the browser window. This is used to calculate the
+width of the field prompt. The field prompt needs to be a fixed length
+so that the separator colond align vertically
+
+=back
+
+Sensible defaults are provided by C<new> if any of the above are undefined
+
+=head1 Factory Subclasses
+
+These are the possible values for the C<type> attribute which defaults
+to B<textfield>. Each subclass implements the C<_render> method it
+receives a hash ref of options an returns a scalar containing some
+XHTML.
+
+=head2 Anchor
+
+Returns an B<anchor> element of class C<$me-E<gt>class> or B<linkFade>
+with it's B<href> attribute set to C<$me-E<gt>href>. The anchor body
+is set to C<$me-E<gt>text>
+
+=head2 Checkbox
+
+=head2 Chooser
+
+=head2 Date
+
+=head2 File
+
+=head2 Freelist
+
+=head2 GroupMembership
+
+=head2 ImageButton
+
+=head2 Label
+
+=head2 Note
+
+=head2 Password
+
+=head2 PopupMenu
+
+=head2 RadioGroup
+
+=head2 ScrollingList
+
+=head2 Table
+
+=head2 Template
+
+=head2 Textarea
+
+=head2 Textfield
+
+=head2 Tree
+
 =head1 Diagnostics
 
 None
 
 =head1 Dependencies
 
-=over 4
+=over 3
 
 =item L<Class::Accessor::Fast>
 

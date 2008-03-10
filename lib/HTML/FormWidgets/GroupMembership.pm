@@ -9,29 +9,30 @@ use base qw(HTML::FormWidgets);
 use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
 
 sub _render {
-   my ($me, $ref) = @_; my ($html, $text);
+   my ($me, $ref) = @_; my ($htag, $html, $text);
 
-   $text               = $me->elem->span({ class => 'title' },
-                                         $me->atitle).$me->elem->br();
-   $ref->{class}      .= ' group';
-   $ref->{id}          = $me->id      if ($me->id);
-   $ref->{labels}      = $me->labels  if ($me->labels);
-   $ref->{multiple}    = 'true';
-   $ref->{size}        = $me->height;
-   $ref->{name}        = 'add';
-   $ref->{name}       .= $me->name    if ($me->name);
-   $ref->{values}      = $me->all;
-   $text              .= $me->elem->scrolling_list($ref);
-   $html               = $me->elem->div({ class => 'container' }, $text);
-   $html              .= $me->elem->div({ class => 'separator' }, '&nbsp;');
-   $text               = $me->elem->span({ class => 'title' },
-                                         $me->ctitle).$me->elem->br();
+   $htag             = $me->elem;
+   $text             = $htag->span( { class => q(title) }, $me->atitle );
+   $text            .= $htag->br();
+   $ref->{class   } .= q( group);
+   $ref->{id      }  = $me->id     if ($me->id);
+   $ref->{labels  }  = $me->labels if ($me->labels);
+   $ref->{multiple}  = q(true);
+   $ref->{size    }  = $me->height;
+   $ref->{name    }  = q(add);
+   $ref->{name    } .= $me->name   if ($me->name);
+   $ref->{values  }  = $me->all;
+   $text            .= $htag->scrolling_list( $ref );
+   $html             = $htag->div(  { class => q(container) }, $text );
+   $html            .= $htag->div(  { class => q(separator) }, q(&nbsp;) );
+   $text             = $htag->span( { class => q(title)     }, $me->ctitle );
+   $text            .= $htag->br();
    delete $ref->{id};
-   $ref->{name}        = 'remove';
-   $ref->{name}       .= $me->name    if ($me->name);
-   $ref->{values}      = $me->current;
-   $text              .= $me->elem->scrolling_list($ref);
-   $html              .= $me->elem->div({ class => 'container' }, $text);
+   $ref->{name    }  = q(remove);
+   $ref->{name    } .= $me->name   if ($me->name);
+   $ref->{values  }  = $me->current;
+   $text            .= $htag->scrolling_list( $ref );
+   $html            .= $htag->div( { class => q(container) }, $text );
 
    return $html;
 }

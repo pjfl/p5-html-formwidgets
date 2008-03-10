@@ -13,7 +13,7 @@ sub _render {
 
    $ref            = {};
    $ref->{class  } = q(button);
-   $ref->{name}    = q(_verb);
+   $ref->{name   } = q(_verb);
    $ref->{onclick} = 'submit()';
    $ref->{src    } = $me->assets.$me->name.'.png';
    $ref->{value  } = ucfirst $me->name;

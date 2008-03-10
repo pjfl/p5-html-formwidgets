@@ -267,7 +267,7 @@ sub render {
       $field = $htag->div( { class => q(container ).$me->align }, $field );
    }
 
-   if ($tip = $me->tip) {
+   if ($tip = $me->tip and $me->type ne q(imageButton)) {
       $tip =~ s{ \n }{ }gmx;
       $tip = $me->hint_title.$TTS.$tip if ($tip !~ m{ $TTS }mx);
       $tip =~ s{ \s+ }{ }gmx;
@@ -367,11 +367,10 @@ HTML::FormWidgets - Create HTML form markup
 
 =head1 Description
 
-Transforms Perl data structures into scalars containing XHTML. Each
-data structure defines a "widget". Each widget is comprised of these
-optional components: a line or question number, a prompt string, a
-separator, an input field, additional field help, and Ajax field error
-string.
+Transforms a Perl data structure which defines one or more "widgets"
+into XHTML. Each widget is comprised of these optional components: a
+line or question number, a prompt string, a separator, an input field,
+additional field help, and Ajax field error string.
 
 Input fields are selected by the widget C<type> attribute. A factory
 subclass implements the method that generates the XHTML for that input
@@ -389,7 +388,11 @@ data structure
 =head2 new
 
 Construct a widget. Mostly this is called by the C<build> method. It
-requires the factory subclass for the widget type
+requires the factory subclass for the widget type.
+
+This method takes a large number of options with each widget using
+only few of them. Each option is described in the factory subclasses
+which use that option
 
 =head2 msg
 
@@ -399,10 +402,10 @@ literal text used by any of the widgets
 
 =head2 render
 
-Assemble the components of the generated field. Each component is
-concatenated onto a scalar wgich is the returned value. This method
+Assemble the components of the generated widget. Each component is
+concatenated onto a scalar which is the returned value. This method
 calls C<_render> which should be defined in the factory subclass for
-this widget.
+this widget type.
 
 This method uses these attributes:
 
@@ -439,7 +442,17 @@ element of classes B<container> and C<$me-E<gt>align>
 
 =item C<$me-E<gt>tip>
 
+The text of the field help. If C<$me-E<gt>nb_symbol> is set to
+B<dagger> (which is the default) then a dagger symbol is wrapped in a
+B<span> of class B<help tips> and this is appended to the returned
+input field.  The tip text is used as the B<title> attribute. If
+the B<nb_symbol> is not set to B<dagger> then the help text is wrapped
+around the input field itself
+
 =item C<$me-E<gt>ajaxid>
+
+The text of the message which is displayed if the field's value fails
+server side validation
 
 =back
 
@@ -450,7 +463,8 @@ pairs. Returns a hash ref in either case.
 
 =head2 _group_fields
 
-Wraps the top elements on the build stack in a fieldset element with a legend
+Wraps the top B<nitems> widgets on the build stack in a fieldset
+element with a legend
 
 =head2 _merge_config
 
@@ -469,49 +483,49 @@ The following are passed to C<build> in the B<config> hash:
 
 =over 3
 
-=item $c->config->{root}
+=item C<$c-E<gt>config-E<gt>{root}>
 
 The path to the document root for this application
 
-=item $c->config->{dynamic_templates}
+=item C<$c-E<gt>config-E<gt>{dynamic_templates}>
 
 The path to template files used by the C<::Template> subclass
 
-=item $c->req->base
+=item C<$c-E<gt>req-E<gt>base>
 
 This is the prefix for our URI
 
-=item $c->req->path
+=item C<$c-E<gt>req-E<gt>path>
 
 Only used by the C<::Tree> subclass to create self referential URIs
 
-=item $s->{assets}
+=item C<$c-E<gt>stash-E<gt>{assets}>
 
 Some of the widgets require image files. This attribute is used to
 create the URI for those images
 
-=item $s->{fields}
+=item C<$c-E<gt>stash-E<gt>{fields}>
 
 This hash ref contains the fields definitions. Static parameters for
 each widget can be stored in configuration files. This reduces the
 number of attributes that have to be passed in the call to the
 constructor
 
-=item $s->{form}
+=item C<$c-E<gt>stash-E<gt>{form}>
 
 Used by the C<::Chooser> subclass
 
-=item $s->{iFrame}->{hidden}
+=item C<$c-E<gt>stash-E<gt>{iFrame}-E<gt>{hidden}>
 
 So that the C<::File> and C<::Table> subclasses can store the
 number of rows added as the hidden form variable B<nRows>
 
-=item $s->{messages}
+=item C<$c-E<gt>stash-E<gt>{messages}>
 
 Many of the subclasses use this hash to supply literal text in a
 language of the users choosing
 
-=item $s->{width}
+=item C<$c-E<gt>stash-E<gt>{width}>
 
 Width in pixels of the browser window. This is used to calculate the
 width of the field prompt. The field prompt needs to be a fixed length
@@ -524,7 +538,7 @@ Sensible defaults are provided by C<new> if any of the above are undefined
 =head1 Factory Subclasses
 
 These are the possible values for the C<type> attribute which defaults
-to B<textfield>. Each subclass implements the C<_render> method it
+to B<textfield>. Each subclass implements the C<_render> method, it
 receives a hash ref of options an returns a scalar containing some
 XHTML.
 
@@ -536,9 +550,21 @@ is set to C<$me-E<gt>text>
 
 =head2 Checkbox
 
+Return a B<checkbox> element of value C<$me-E<gt>value>. Use the
+element's value as key to the C<$me-E<gt>labels> hash. The hash value
+(which defaults null) is used as the displayed label. The
+C<$me-E<gt>checked> attribute determines the checkbox's initial
+setting
+
 =head2 Chooser
 
+
+
 =head2 Date
+
+Return another text field, this time with a calendar icon which when
+clicked pops up a Javescript date picker. Requires the appropriate JS
+library to have been loaded by the page
 
 =head2 File
 
@@ -585,6 +611,30 @@ None
 =item L<Readonly>
 
 =back
+
+Included in the distribution are the Javascript files whose functions
+are called by the event handlers associated with these widgets
+
+=head2 01mootools.js
+
+   Mootools - My Object Oriented javascript.
+   License: MIT-style license.
+   WWW: http://mootools.net/
+
+Implements the Ajax methods used to perform server side field validation
+
+=head2 03calendar.js
+
+   Author: Matt Kruse <matt@mattkruse.com>
+   WWW: http://www.mattkruse.com/
+
+which has a stupid license restriction so I'll drop this next
+release. Only used by C<::Date> subclass
+
+=head2 behaviour.js
+
+Is included from the L<App::Munchies> default skin. It uses the
+MooTools library to implement the server side field validation
 
 =head1 Incompatibilities
 

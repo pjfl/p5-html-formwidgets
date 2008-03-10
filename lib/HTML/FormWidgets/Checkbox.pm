@@ -12,12 +12,13 @@ sub _render {
    my ($me, $ref)  = @_;
 
    $ref->{checked} = $me->checked if ($me->checked);
-   $ref->{label  } = $me->labels && $me->labels->{ $me->value }
-                   ? $me->labels->{ $me->value }
-                   : ' ';
    $ref->{value  } = $me->value;
-
-   return $me->elem->checkbox( $ref );
+   my $htag        = $me->elem;
+   my $html        = $htag->checkbox( $ref );
+   my $label       = $me->labels && $me->labels->{ $me->value }
+                   ? $me->labels->{ $me->value }
+                   : undef;
+   return $html.$htag->span( { class => q(note) }, $label )
 }
 
 1;

@@ -628,8 +628,9 @@ Implements the Ajax methods used to perform server side field validation
    Author: Matt Kruse <matt@mattkruse.com>
    WWW: http://www.mattkruse.com/
 
-which has a stupid license restriction so I'll drop this next
-release. Only used by C<::Date> subclass
+which has a stupid license restriction that prevents inclusion in
+other distributions so I'll drop this at the next release. Only used by
+C<::Date> subclass
 
 =head2 behaviour.js
 

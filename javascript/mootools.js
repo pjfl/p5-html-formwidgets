@@ -1,4 +1,4 @@
-/* @(#)$Id: 01mootools.js 194 2007-09-17 08:49:07Z pjf $
+/* @(#)$Id$
 
 Script: Core.js
 	Mootools - My Object Oriented javascript.

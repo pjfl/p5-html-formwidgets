@@ -1,4 +1,4 @@
-/* $Id: behaviour.js 356 2008-02-19 16:17:28Z pjf $ */
+/* $Id$ */
 
 var checkObj = {
 	CheckField : function( id, val ) {

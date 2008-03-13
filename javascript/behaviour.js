@@ -2,10 +2,9 @@
 
 var checkObj = {
 	CheckField : function( id, val ) {
-      new Ajax( url + 'ajax',
+      new Ajax( url + 'ajax_check_field',
          { method    : 'get',
-           data      : 'path=' + path + '&method=ajax_check_field'
-                       + '&id=' + id + '&val=' + val,
+           data      : 'id=' + id + '&val=' + val,
            onComplete: this.UpdateClass } ).request();
 	},
 
@@ -207,10 +206,9 @@ var gridObj = {
 					gridObj.gridKey = key;
 					gridObj.gridId  = id;
 					gridObj.pageSz  = (pageSz ? pageSz : 10);
-               new Ajax( url + 'ajax',
+               new Ajax( url + key +  '_grid_table',
                   { method    : 'get',
-                    data      : 'path=' + path + '&method=' + key
-                                 + '_grid_table&id=' + id + '&val=' + pageSz,
+                    data      : 'id=' + id + '&val=' + pageSz,
                     onComplete: this.CreateGrid } ).request();
 				}
 			}
@@ -230,11 +228,11 @@ var gridObj = {
 			prefetchBuffer   : true,
          onscroll         : gridObj.UpdateHeader,
          onFirstContent   : function() { gridObj.UpdateHeader(0) },
-			requestParameters: 'path=' + path + '&method='
-                            + gridObj.gridKey + '_grid_rows',
          totalRows        : count
       };
-		gridObj.gridLive = new LiveGrid( keyid + '_grid', url + 'ajax', opts );
+		gridObj.gridLive = new LiveGrid( keyid + '_grid',
+                                       url + gridObj.gridKey + '_grid_rows',
+                                       opts );
 	},
 
 	UpdateHeader : function(offset) {
@@ -251,8 +249,8 @@ var gridObj = {
 		}
       else sortInfo = '';
 
-		text  = url + 'ajax?path=' + path + '&method=' + gridObj.gridKey;
-		text += '_gridPage&data_grid_index=' + offset + sortInfo;
+		text  = url + gridObj.gridKey + '_gridPage?data_grid_index=';
+      text += offset + sortInfo;
       $( gridObj.gridKey + gridObj.gridId + '_header' ).href = text;
 
       $$( '.tips' ).each( stateObj.tips.build, stateObj.tips );
@@ -261,10 +259,9 @@ var gridObj = {
 
 var loadMoreObj = {
    Request: function( method, id, val ) {
-      new Ajax( url + 'ajax',
+      new Ajax( url + method,
          { method    : 'get',
-           data      : 'path=' + path + '&method='
-                       + method + '&id=' + id + '&val=' + val,
+           data      : 'id=' + id + '&val=' + val,
            onComplete: this.Response } ).request();
    },
 
@@ -607,7 +604,7 @@ var windowObj = {
    Resize: function() {
       var append, content, elem, elemHeight, elemWidth, h = window.getHeight();
       var height, w = window.getWidth();
-
+      var random_number = this.generateRandNum();
       height = 5;
       cookieObj.SetCookie( 'width', w );
       cookieObj.SetCookie( 'height', h );

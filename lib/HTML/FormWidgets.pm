@@ -615,15 +615,17 @@ None
 Included in the distribution are the Javascript files whose functions
 are called by the event handlers associated with these widgets
 
-=head2 01mootools.js
+=head2 mootools.js
 
    Mootools - My Object Oriented javascript.
    License: MIT-style license.
    WWW: http://mootools.net/
 
-Implements the Ajax methods used to perform server side field validation
+Implements the Ajax methods used to perform server side field
+validation. The included copy has a few hacks that improve the
+Accordion widget
 
-=head2 03calendar.js
+=head2 calendar.js
 
    Author: Matt Kruse <matt@mattkruse.com>
    WWW: http://www.mattkruse.com/

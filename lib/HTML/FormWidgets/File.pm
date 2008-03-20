@@ -77,7 +77,7 @@ sub _render {
       $fmt->define_substitution( q(<) => q(&lt;),
                                  q(>) => q(&gt;),
                                  q(&) => q(&amp;) );
-      $tabstop = 3;
+      $tabstop = $me->tabstop;
       $text    = expand( $text );
       $text    = $fmt->format_string( $text );
 

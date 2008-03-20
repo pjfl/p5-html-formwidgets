@@ -45,19 +45,19 @@ Readonly my %ATTRS =>
      select      => $NUL,          sep         => q(&nbsp;:&nbsp;),
      space       => q(&nbsp;) x 3, stepno      => undef,
      style       => $NUL,          subtype     => undef,
-     swidth      => 1000,          target      => $NUL,
-     templatedir => undef,         text        => $NUL,
-     tip         => $NUL,          tiptype     => q(dagger),
-     title       => $NUL,          type        => undef,
-     url         => undef,         value       => 1,
-     values      => [],            where       => {},
-     width       => undef );
+     swidth      => 1000,          tabstop     => 3,
+     target      => $NUL,          templatedir => undef,
+     text        => $NUL,          tip         => $NUL,
+     tiptype     => q(dagger),     title       => $NUL,
+     type        => undef,         url         => undef,
+     value       => 1,             values      => [],
+     where       => {},            width       => undef );
 
 Readonly my @STATIC => (
-   qw(atitle align behaviour checked class clear
-      container ctitle edit fhelp format height hint_title max_length
-      max_value min_length min_value nowrap onchange onkeypress palign
-      prompt pwidth required select sep stepno subtype text tip tiptype
+   qw(atitle align behaviour checked class clear container ctitle edit
+      fhelp format height hint_title max_length max_value min_length
+      min_value nowrap onchange onkeypress palign prompt pwidth
+      required select sep stepno subtype tabstop text tip tiptype
       width) );
 
 __PACKAGE__->mk_classaccessors( keys %ATTRS );
@@ -376,6 +376,9 @@ Input fields are selected by the widget C<type> attribute. A factory
 subclass implements the method that generates the XHTML for that input
 field type. Adding more widget types is straightforward
 
+This module is using the MooTools Javascript library
+L<http://mootools.net/> to modify default browser behaviour
+
 =head1 Subroutines/Methods
 
 =head2 build
@@ -485,24 +488,26 @@ The following are passed to C<build> in the B<config> hash:
 
 =item C<$c-E<gt>config-E<gt>{root}>
 
-The path to the document root for this application
+The path to the document root for this application (C<$config-E<gt>root>)
 
 =item C<$c-E<gt>config-E<gt>{dynamic_templates}>
 
 The path to template files used by the C<::Template> subclass
+(C<$config-E<gt>templatedir>)
 
 =item C<$c-E<gt>req-E<gt>base>
 
-This is the prefix for our URI
+This is the prefix for our URI (C<$config-E<gt>base>)
 
 =item C<$c-E<gt>req-E<gt>path>
 
 Only used by the C<::Tree> subclass to create self referential URIs
+(C<$config-E<gt>url>)
 
 =item C<$c-E<gt>stash-E<gt>{assets}>
 
 Some of the widgets require image files. This attribute is used to
-create the URI for those images
+create the URI for those images (C<$config-E<gt>assets>)
 
 =item C<$c-E<gt>stash-E<gt>{fields}>
 
@@ -513,12 +518,12 @@ constructor
 
 =item C<$c-E<gt>stash-E<gt>{form}>
 
-Used by the C<::Chooser> subclass
+Used by the C<::Chooser> subclass (C<$config-E<gt>form>)
 
 =item C<$c-E<gt>stash-E<gt>{iFrame}-E<gt>{hidden}>
 
-So that the C<::File> and C<::Table> subclasses can store the
-number of rows added as the hidden form variable B<nRows>
+So that the C<::File> and C<::Table> subclasses can store the number
+of rows added as the hidden form variable B<nRows> (C<$config-E<gt>hide>)
 
 =item C<$c-E<gt>stash-E<gt>{messages}>
 
@@ -529,7 +534,7 @@ language of the users choosing
 
 Width in pixels of the browser window. This is used to calculate the
 width of the field prompt. The field prompt needs to be a fixed length
-so that the separator colond align vertically
+so that the separator colons align vertically (C<$config-E<gt>swidth>)
 
 =back
 
@@ -541,6 +546,8 @@ These are the possible values for the C<type> attribute which defaults
 to B<textfield>. Each subclass implements the C<_render> method, it
 receives a hash ref of options an returns a scalar containing some
 XHTML.
+
+The distribution ships with the following factory subclasses:
 
 =head2 Anchor
 
@@ -558,15 +565,55 @@ setting
 
 =head2 Chooser
 
-
+Creates a popup window which allows one item to be selected from a
+B<long> list of items
 
 =head2 Date
 
 Return another text field, this time with a calendar icon which when
 clicked pops up a Javescript date picker. Requires the appropriate JS
-library to have been loaded by the page
+library to have been loaded by the page. Attribute C<$me-E<gt>width>
+controls the size of the textfield (default 10 characters) and
+C<$me-E<gt>format> defaults to I<dd/mm/yyyy>
 
 =head2 File
+
+Display the contents of a file pointed to by
+C<$me-E<gt>path>. Supports the following subtypes:
+
+=over 3
+
+=item csv
+
+Return a table containing the CSV formatted file. This and the I<file>
+subtype are selectable if C<$me-E<gt>select> >= 0 and represents the
+column number of the key field
+
+=item file
+
+Default subtype. Like the logfile subtype but without the B<pre> tags
+
+=item html
+
+The C<_render> method returns an B<iframe> tag whose B<src> attribute
+is set to C<$me-E<gt>path>. Paths that begin with C<$me-E<gt>root>
+will have that replaced with C<$me-E<gt>base>. Paths that do not begin
+with "http:" will have C<$me-E<gt>base> prepended to them
+
+=item logfile
+
+The C<_render> method returns a table where each line of the logfile
+appears as a seperate row containing one cell. The logfile lines are
+each wrapped in B<pre> tags
+
+=item source
+
+The module C<Syntax::Highlight::Perl> is used to provide colour
+highlights for the Perl source code. Tabs are expanded to
+C<$me-E<gt>tabstop> spaces and the result is returned wrapped in
+B<pre> tags
+
+=back
 
 =head2 Freelist
 
@@ -578,9 +625,24 @@ library to have been loaded by the page
 
 =head2 Note
 
+Calls C<$me-E<gt>msg> with C<$me-E<gt>name> as the
+message key. If the text does not exist C<$me-E<gt>text> is used.
+
 =head2 Password
 
+Returns a password field of width C<$me-E<gt>width> which defaults to
+twenty characters. If C<$me-E<gt>subtype> equals I<verify> then the
+message I<vPasswordPrompt> and another password field are
+appended. The fields C<$me-E<gt>id> and C<$me-E<gt>name> are expected
+to contain the digit 1 which will be substituted for the digit 2 in
+the attributes of the second field
+
 =head2 PopupMenu
+
+Returns a list of B<option> elements wrapped in a B<select>
+element. The list of options is passed in C<$me-E<gt>values> with the
+display labels in C<$me-E<gt>labels>. The onchange event handler will
+be set to C<$me-E<gt>onchange>
 
 =head2 RadioGroup
 
@@ -588,13 +650,31 @@ library to have been loaded by the page
 
 =head2 Table
 
+The input data is in C<$me-E<gt>data-E<gt>{values}> which is an array
+ref for which each element is an array ref containing the list of
+field values.
+
 =head2 Template
+
+Look in C<$me-E<gt>templatedir> for a L<Template::Toolkit> template
+called C<$me-E<gt>id> with a I<.tt> extension. Slurp it in and return
+it as the content for this widget. This provides for a "user defined"
+widget type
 
 =head2 Textarea
 
+A text area. It defaults to five lines high (C<$me-E<gt>height>) and
+sixty characters wide (C<$me-E<gt>width>)
+
 =head2 Textfield
 
+This is the default widget type. Your basic text field which defaults
+to sixty characters wide (C<$me-E<gt>width>)
+
 =head2 Tree
+
+Implements an expanding hierachy of selectable objects. See L<Bugs and
+Limitations>
 
 =head1 Diagnostics
 
@@ -604,11 +684,17 @@ None
 
 =over 3
 
-=item L<Class::Accessor::Fast>
+=item L<Class::Data::Accessor>
 
 =item L<HTML::Accessors>
 
 =item L<Readonly>
+
+=item L<Syntax::Highlight::Perl>
+
+=item L<Text::ParseWords>
+
+=item L<Text::Tabs>
 
 =back
 
@@ -639,11 +725,22 @@ C<::Date> subclass
 Is included from the L<App::Munchies> default skin. It uses the
 MooTools library to implement the server side field validation
 
+Also included in the C<images> subdirectory of the distribution are
+example PNG files used by some of the widgets.
+
 =head1 Incompatibilities
 
 There are no known incompatibilities in this module.
 
 =head1 Bugs and Limitations
+
+The Javascript for the B<tree> widget is not included due to copyright
+issues, so that widget doesn't work. Same for the B<date> widget except
+that there is a link in L<Dependencies> to a web site where the
+Javascript might be available
+
+The installation script does nothing with the Javascript or PNG files
+which are included in the distribution for completeness
 
 There are no known bugs in this module.
 Please report problems to the address below.

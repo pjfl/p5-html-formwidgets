@@ -12,8 +12,8 @@ sub _render {
    my ($me, $ref) = @_; my $text;
 
    $ref           = { class => q(note) };
-   $ref->{style} .= 'text-align: '.$me->palign.'; ' if ($me->palign);
-   $ref->{style} .= 'width: '.$me->pwidth.q(;)      if ($me->pwidth);
+   $ref->{style} .= 'text-align: '.$me->align.q(;) if ($me->align);
+   $ref->{style} .= ' width: '.$me->width.q(;)     if ($me->width);
 
    ($text = $me->msg( $me->name ) || $me->text || q()) =~ s{ \A \n }{}msx;
 

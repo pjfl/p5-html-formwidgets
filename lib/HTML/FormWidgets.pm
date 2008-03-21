@@ -51,7 +51,7 @@ Readonly my %ATTRS =>
      tiptype     => q(dagger),     title       => $NUL,
      type        => undef,         url         => undef,
      value       => 1,             values      => [],
-     where       => {},            width       => undef );
+     where       => {},            width       => undef, );
 
 Readonly my @STATIC => (
    qw(atitle align behaviour checked class clear container ctitle edit
@@ -385,7 +385,7 @@ L<http://mootools.net/> to modify default browser behaviour
 
 The C<build> method iterates over a data structure that represents the
 form. One or more lists of widgets are processed in turn. New widgets
-are created and their rendered ouput replaces their definitons in the
+are created and their rendered output replaces their definitions in the
 data structure
 
 =head2 new
@@ -476,7 +476,7 @@ arguments. The second argument takes precedence over the first
 
 =head2 _render
 
-This should have been overriden in the factory subclass. If it gets
+This should have been overridden in the factory subclass. If it gets
 called its probably an error so return the value of our C<text>
 attribute if set or an error message otherwise
 
@@ -571,7 +571,7 @@ B<long> list of items
 =head2 Date
 
 Return another text field, this time with a calendar icon which when
-clicked pops up a Javescript date picker. Requires the appropriate JS
+clicked pops up a Javascript date picker. Requires the appropriate JS
 library to have been loaded by the page. Attribute C<$me-E<gt>width>
 controls the size of the textfield (default 10 characters) and
 C<$me-E<gt>format> defaults to I<dd/mm/yyyy>
@@ -603,7 +603,7 @@ with "http:" will have C<$me-E<gt>base> prepended to them
 =item logfile
 
 The C<_render> method returns a table where each line of the logfile
-appears as a seperate row containing one cell. The logfile lines are
+appears as a separate row containing one cell. The logfile lines are
 each wrapped in B<pre> tags
 
 =item source
@@ -617,16 +617,36 @@ B<pre> tags
 
 =head2 Freelist
 
+New values entered into a text field can be added to the
+list. Existing list values (passed in C<$me-E<gt>values>) can be
+removed. The height of the list is set by C<$me-E<gt>height>.
+
 =head2 GroupMembership
+
+Displays two lists which allow for membership of a group. The first
+scrolling list contains "all" values (C<$me-E<gt>all>), the second
+contains those values currently selected (C<$me-E<gt>current>). The
+height of the scrolling lists is set by C<$me-E<gt>height>
 
 =head2 ImageButton
 
+Generates an image button where C<$me-E<gt>name> identifies the image
+file in C<$me-E<gt>assets> and is also used as the return value. The
+button name is set to I<_verb>
+
 =head2 Label
+
+Calls C<$me-E<gt>msg> with C<$me-E<gt>name> as the message key. If the
+text does not exist C<$me-E<gt>text> is used. If C<$me-E<gt>dropcap>
+is true the first character of the text is wrapped in a B<span> of
+class I<dropcap>
 
 =head2 Note
 
-Calls C<$me-E<gt>msg> with C<$me-E<gt>name> as the
-message key. If the text does not exist C<$me-E<gt>text> is used.
+Calls C<$me-E<gt>msg> with C<$me-E<gt>name> as the message key. If the
+text does not exist C<$me-E<gt>text> is used. The text is wrapped in a
+B<div> of class I<note> with C<$me-E<gt>align> setting the style text
+alignment and C<$me-E<gt>width> setting the style width
 
 =head2 Password
 
@@ -646,7 +666,17 @@ be set to C<$me-E<gt>onchange>
 
 =head2 RadioGroup
 
+The attribute C<$me-E<gt>columns> sets the number of columns for the
+returned table of radio buttons. The list of button values is passed in
+C<$me-E<gt>values> with the display labels in C<$me-E<gt>labels>. The
+onchange event handler will be set to C<$me-E<gt>onchange>
+
 =head2 ScrollingList
+
+The C<$me-E<gt>height> attribute controls the height of the scrolling
+list.  The list of options is passed in C<$me-E<gt>values> with the
+display labels in C<$me-E<gt>labels>. The onchange event handler will
+be set to C<$me-E<gt>onchange>
 
 =head2 Table
 
@@ -673,7 +703,7 @@ to sixty characters wide (C<$me-E<gt>width>)
 
 =head2 Tree
 
-Implements an expanding hierachy of selectable objects. See L<Bugs and
+Implements an expanding tree of selectable objects. See L<Bugs and
 Limitations>
 
 =head1 Diagnostics

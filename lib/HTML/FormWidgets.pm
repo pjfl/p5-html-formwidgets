@@ -42,7 +42,7 @@ Readonly my %ATTRS =>
      path        => undef,         prompt      => $NUL,
      fields      => {},            pwidth      => 40,
      required    => 0,             root        => undef,
-     select      => $NUL,          sep         => q(&nbsp;:&nbsp;),
+     select      => undef,         sep         => q(&nbsp;:&nbsp;),
      space       => q(&nbsp;) x 3, stepno      => undef,
      style       => $NUL,          subtype     => undef,
      swidth      => 1000,          tabstop     => 3,

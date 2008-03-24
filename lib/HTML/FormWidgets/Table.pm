@@ -17,6 +17,8 @@ sub _render {
    my $data       = $me->data  || { flds => [], values => [] };
    my $htag       = $me->elem;
 
+   $me->select( q() ) unless (defined $me->select);
+
    if ($me->select eq q(left)) {
       $ref           = { class => $def_class };
       $ref->{class} .= $me->edit ? q( select) : q( minimal);

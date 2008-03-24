@@ -22,9 +22,8 @@ sub _render {
    $html           .= $htag->div( { class => q(separator) }, q(&nbsp;) );
    $text            = 'var cal_'.$me->name.' = new CalendarPopup(\'';
    $text           .= $me->name.'_calendar\');';
-   $text            = $htag->script( $text );
-   $ref             = {};
-   $ref->{class  }  = q(icon);
+   $text            = $htag->script( { type => q(text/javascript) }, $text );
+   $ref             = { alt => q(Calendar), class => q(icon) };
    $ref->{src    }  = $me->assets.'calendar.png';
    $text           .= $htag->img( $ref );
    $ref             = {};

@@ -379,6 +379,9 @@ field type. Adding more widget types is straightforward
 This module is using the MooTools Javascript library
 L<http://mootools.net/> to modify default browser behaviour
 
+This module is used by L<CatalystX::Usul::View::HTML> and as such its
+main use is a form generator within a L<Catalyst> application
+
 =head1 Subroutines/Methods
 
 =head2 build
@@ -482,7 +485,8 @@ attribute if set or an error message otherwise
 
 =head1 Configuration and Environment
 
-The following are passed to C<build> in the B<config> hash:
+The following are passed to C<build> in the B<config> hash (they
+reflect this modules primary use within a L<Catalyst> application):
 
 =over 3
 
@@ -746,7 +750,7 @@ Accordion widget
    Author: Matt Kruse <matt@mattkruse.com>
    WWW: http://www.mattkruse.com/
 
-which has a stupid license restriction that prevents inclusion in
+which has a license restriction that prevents inclusion in
 other distributions so I'll drop this at the next release. Only used by
 C<::Date> subclass
 

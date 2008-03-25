@@ -7,7 +7,7 @@ use warnings;
 use English    qw(-no_match_vars);
 use FindBin    qw($Bin);
 use lib        qq($Bin/../lib);
-use Test::More tests => 11;
+use Test::More tests => 15;
 
 use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 9 $ =~ /\d+/gmx );
 
@@ -72,4 +72,40 @@ $widget = HTML::FormWidgets->new( id      => q(test),
 ok( $widget->render =~ m{ <option \s value="2">Two</option> }mx,
     q(Popup menu) );
 
-warn $widget->render;
+$widget = HTML::FormWidgets->new( columns => 3,
+                                  id      => q(test),
+                                  labels  => { 1 => q(One),   2 => q(Two),
+                                               3 => q(Three), 4 => q(Four),
+                                               5 => q(Five),  6 => q(Six) },
+                                  type    => q(radioGroup),
+                                  values  => [ 1, 2, 3, 4, 5, 6 ] );
+
+ok( $widget->render =~ m{ value="6" \s name="test" \s type="radio" }mx,
+    q(Radio group) );
+
+$widget = HTML::FormWidgets->new( data   => {
+   flds   => [ qw(Field1 Field2) ],
+   labels => { Field1 => q(Label1),
+               Field2 => q(Label2) },
+   sizes  => { Field1 => 20, Field2 => 20 },
+   values => [ { Field1 => q(Row1 Value1),
+                 Field2 => q(Row1 Value2) },
+               { Field1 => q(Row2 Value1),
+                 Field2 => q(Row2 Value2) } ] },
+                                  hide   => [],
+                                  name   => q(table),
+                                  type   => q(table) );
+
+ok( $widget->render =~ m{ tr \s id="rowtable1" }mx, q(Table) );
+
+$widget = HTML::FormWidgets->new( name => q(textarea),
+                                  type => q(textarea) );
+
+ok( $widget->render =~ m{ id="textarea" \s rows="5" \s cols="60" }mx,
+    q(Text area) );
+
+$widget = HTML::FormWidgets->new( default => q(test),
+                                  name    => q(textfield),
+                                  type    => q(textfield) );
+
+ok( $widget->render =~ m{ input \s value="test" \s name="textfield" \s type="text" \s id="textfield" \s size="60" }mx, q(Textfield) );

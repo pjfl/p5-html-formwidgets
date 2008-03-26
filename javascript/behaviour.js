@@ -466,7 +466,7 @@ var submitObj = {
 
    ConfirmSubmit: function( key, text ) {
       if (text.length < 1 || window.confirm( text )) {
-         document.forms[0].pressed.value = key;
+         document.forms[0]._verb.value = key;
          document.forms[0].submit();
          return true;
       }
@@ -485,14 +485,14 @@ var submitObj = {
          if (field.focus) field.focus();
       }
 
-      if (form && key) { form.pressed.value = key; form.submit() }
+      if (form && key) { form._verb.value = key; form.submit() }
 
       win.close();
       return false;
    },
 
    SubmitForm: function( key ) {
-      document.forms[0].pressed.value = key; document.forms[0].submit();
+      document.forms[0]._verb.value = key; document.forms[0].submit();
    },
 
    SubmitOnReturn: function( evt, key ) {
@@ -502,7 +502,7 @@ var submitObj = {
 
       if (code == 13) {
          if (document.forms) {
-            document.forms[0].pressed.value = key;
+            document.forms[0]._verb.value = key;
             document.forms[0].submit();
          }
          else { window.alert( 'Document contains no forms' ) }
@@ -604,7 +604,7 @@ var windowObj = {
    Resize: function() {
       var append, content, elem, elemHeight, elemWidth, h = window.getHeight();
       var height, w = window.getWidth();
-      var random_number = this.generateRandNum();
+
       height = 5;
       cookieObj.SetCookie( 'width', w );
       cookieObj.SetCookie( 'height', h );

@@ -38,11 +38,12 @@ Readonly my %ATTRS =>
      name        => $NUL,          nb_symbol   => q(&nbsp;&dagger;),
      node        => undef,         nowrap      => 0,
      onblur      => undef,         onchange    => undef,
-     onkeypress  => undef,         palign      => undef,
-     path        => undef,         prompt      => $NUL,
-     fields      => {},            pwidth      => 40,
-     required    => 0,             root        => undef,
-     select      => undef,         sep         => q(&nbsp;:&nbsp;),
+     onclick     => undef,         onkeypress  => undef,
+     palign      => undef,         path        => undef,
+     prompt      => $NUL,          fields      => {},
+     pwidth      => 40,            required    => 0,
+     root        => undef,         select      => undef,
+     sep         => q(&nbsp;:&nbsp;),
      space       => q(&nbsp;) x 3, stepno      => undef,
      style       => $NUL,          subtype     => undef,
      swidth      => 1000,          tabstop     => 3,
@@ -51,7 +52,7 @@ Readonly my %ATTRS =>
      tiptype     => q(dagger),     title       => $NUL,
      type        => undef,         url         => undef,
      value       => 1,             values      => [],
-     where       => {},            width       => undef, );
+     width       => undef, );
 
 Readonly my @STATIC => (
    qw(atitle align behaviour checked class clear container ctitle edit
@@ -448,12 +449,12 @@ element of classes B<container> and C<$me-E<gt>align>
 
 =item C<$me-E<gt>tip>
 
-The text of the field help. If C<$me-E<gt>nb_symbol> is set to
-B<dagger> (which is the default) then a dagger symbol is wrapped in a
-B<span> of class B<help tips> and this is appended to the returned
-input field.  The tip text is used as the B<title> attribute. If
-the B<nb_symbol> is not set to B<dagger> then the help text is wrapped
-around the input field itself
+The text of the field help. If C<$me-E<gt>tiptype> is set to B<dagger>
+(which is the default) then a dagger symbol C<$me-E<gt>nb_symbol> is
+wrapped in a B<span> of class B<help tips> and this is appended to the
+returned input field.  The tip text is used as the B<title>
+attribute. If the B<tiptype> is not set to B<dagger> then the help
+text is wrapped around the input field itself
 
 =item C<$me-E<gt>ajaxid>
 

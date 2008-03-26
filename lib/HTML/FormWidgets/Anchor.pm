@@ -11,8 +11,11 @@ use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
 sub _render {
    my ($me, $ref)  = @_;
 
-   return $me->elem->a( { class => $me->class || 'linkFade',
-                          href  => $me->href }, $me->text );
+   $ref->{class  } = $me->class || q(linkFade);
+   $ref->{href   } = $me->href  || q();
+   $ref->{onclick} = $me->onclick if ($me->onclick);
+
+   return $me->elem->a( $ref, $me->text || q(link) );
 }
 
 1;

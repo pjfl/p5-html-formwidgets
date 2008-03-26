@@ -446,8 +446,7 @@ var stateObj = {
 }
 
 var submitObj = {
-   Chooser: function(value, formObj, button, url, formName, title, className,
-                     field, whereFld, whereVal, winPrefs) {
+   Chooser: function(value, formObj, button, url, winPrefs) {
       if (value && value.indexOf( '%' ) < 0) {
          if (formObj && button) {
             formObj._verb.value = button; formObj.submit();
@@ -456,10 +455,7 @@ var submitObj = {
          return false;
       }
 
-      url += '?button='+button+'&class='+className+'&field='+field;
-      url += '&form='+formName+'&pressed=chooser&title='+title+'&value='+value;
-      url += '&whereFld='+whereFld+'&whereVal='+whereVal;
-      top.chooser = window.open( url, 'chooser', winPrefs );
+      top.chooser = window.open( url+'?value='+value, 'chooser', winPrefs );
       top.chooser.opener = top;
       return false;
    },

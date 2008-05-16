@@ -15,44 +15,45 @@ use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
 Readonly my $NUL   => q();
 Readonly my $TTS   => q( ~ );
 Readonly my %ATTRS =>
-   ( ajaxid      => undef,         ajaxtext    => undef,
-     align       => q(left),       all         => [],
-     assets      => $NUL,          atitle      => 'All',
-     base        => $NUL,          behaviour   => q(classic),
-     button      => $NUL,          checked     => 0,
-     class       => $NUL,          clear       => $NUL,
-     columns     => undef,         container   => undef,
-     ctitle      => 'Current',     current     => [],
-     data        => {},            default     => undef,
-     dropcap     => 0,             edit        => 0,
-     elem        => undef,         evnt_hndlr  => 'checkObj.CheckField',
-     field       => $NUL,          fields      => {},
-     form        => {},            'format'    => undef,
-     fhelp       => $NUL,          header      => undef,
-     height      => undef,         hide        => [],
-     hint_title  => 'Handy Hint',  href        => undef,
-     id          => undef,         id2key      => {},
-     key         => $NUL,          key2id      => {},
-     key2url     => {},            labels      => undef,
-     max_length  => undef,         messages    => undef,
-     name        => $NUL,          nb_symbol   => q(&nbsp;&dagger;),
-     node        => undef,         nowrap      => 0,
-     onblur      => undef,         onchange    => undef,
-     onclick     => undef,         onkeypress  => undef,
-     palign      => undef,         path        => undef,
-     prompt      => $NUL,          fields      => {},
-     pwidth      => 40,            required    => 0,
-     root        => undef,         select      => undef,
-     sep         => q(&nbsp;:&nbsp;),
-     space       => q(&nbsp;) x 3, stepno      => undef,
-     style       => $NUL,          subtype     => undef,
-     swidth      => 1000,          tabstop     => 3,
-     target      => $NUL,          templatedir => undef,
-     text        => $NUL,          tip         => $NUL,
-     tiptype     => q(dagger),     title       => $NUL,
-     type        => undef,         url         => undef,
-     value       => 1,             values      => [],
-     width       => undef, );
+   ( ajaxid       => undef,         ajaxtext     => undef,
+     align        => q(left),       all          => [],
+     assets       => $NUL,          atitle       => 'All',
+     base         => $NUL,          behaviour    => q(classic),
+     button       => $NUL,          checked      => 0,
+     class        => $NUL,          clear        => $NUL,
+     columns      => undef,         container    => undef,
+     content_type => q(application/xhtml+xml),
+     ctitle       => 'Current',     current      => [],
+     data         => {},            default      => undef,
+     dropcap      => 0,             edit         => 0,
+     elem         => undef,         evnt_hndlr   => 'checkObj.CheckField',
+     field        => $NUL,          fields       => {},
+     form         => {},            'format'     => undef,
+     fhelp        => $NUL,          header       => undef,
+     height       => undef,         hide         => [],
+     hint_title   => 'Handy Hint',  href         => undef,
+     id           => undef,         id2key       => {},
+     key          => $NUL,          key2id       => {},
+     key2url      => {},            labels       => undef,
+     max_length   => undef,         messages     => undef,
+     name         => $NUL,          nb_symbol    => q(&nbsp;&dagger;),
+     node         => undef,         nowrap       => 0,
+     onblur       => undef,         onchange     => undef,
+     onclick      => undef,         onkeypress   => undef,
+     palign       => undef,         path         => undef,
+     prompt       => $NUL,          fields       => {},
+     pwidth       => 40,            required     => 0,
+     root         => undef,         select       => undef,
+     sep          => q(&nbsp;:&nbsp;),
+     space        => q(&nbsp;) x 3, stepno       => undef,
+     style        => $NUL,          subtype      => undef,
+     swidth       => 1000,          tabstop      => 3,
+     target       => $NUL,          templatedir  => undef,
+     text         => $NUL,          tip          => $NUL,
+     tiptype      => q(dagger),     title        => $NUL,
+     type         => undef,         url          => undef,
+     value        => 1,             values       => [],
+     width        => undef, );
 
 Readonly my @STATIC => (
    qw(atitle align behaviour checked class clear container ctitle edit
@@ -100,13 +101,14 @@ sub build {
 sub new {
    my ($me, @rest) = @_;
    my $args        = $me->_arg_list( @rest );
-   my ($class, $method, $msg_id, $self, $text, @tmp, $val);
+   my ($class, $method, $msg_id, $ref, $self, $text, @tmp, $val);
 
    # Start with some hard coded defaults;
    $self = { %ATTRS };
 
    # Now we can create HTML elements like we could with CGI.pm
-   $self->{elem} = HTML::Accessors->new();
+   $ref = { content_type => $args->{content_type} } if ($args->{content_type});
+   $self->{elem} = HTML::Accessors->new( $ref );
 
    # Bare minimum is fields + id to get a useful widget
    for (qw(ajaxid fields id name)) {
@@ -294,7 +296,9 @@ sub render {
 sub _arg_list {
    my ($me, @rest) = @_;
 
-   return $rest[0] && ref $rest[0] eq q(HASH) ? $rest[0] : { @rest };
+   return {} unless ($rest[0]);
+
+   return ref $rest[0] eq q(HASH) ? $rest[0] : { @rest };
 }
 
 sub _group_fields {

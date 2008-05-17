@@ -59,7 +59,7 @@ sub _render {
 
       $path  = $path =~ m{ \A http: }msx ? $path : $me->base.$path;
       $text  = 'border: 0px; bottom: 0px; position: absolute; ';
-      $text .= 'top: 0px; width: 100%; '.$me->style;
+      $text .= 'top: 0px; width: 100%; height: 100%; '.$me->style;
 
       return $htag->iframe( { src       => $path,
                               scrolling => q(auto),

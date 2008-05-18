@@ -12,7 +12,7 @@ my $dist     = q(lib/HTML/FormWidgets.pm);
 my $requires = { 'perl'                    => q(5.8),
                  'version'                 => q(0.74),
                  'Class::Data::Accessor'   => q(0.04001),
-                 'HTML::Accessors'         => q(0.1.0),
+                 'HTML::Accessors'         => q(0.1.22),
                  'Readonly'                => q(1.03),
                  'Syntax::Highlight::Perl' => q(1.00),
                  'Text::ParseWords'        => q(3.22),

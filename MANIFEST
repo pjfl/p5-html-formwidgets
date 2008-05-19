@@ -2,7 +2,9 @@ Changes
 images/AddItem.png
 images/RemoveItem.png
 javascript/behaviour.js
+javascript/htmlparser.js
 javascript/mootools.js
+javascript/ourtools.js
 lib/HTML/FormWidgets.pm
 lib/HTML/FormWidgets/Anchor.pm
 lib/HTML/FormWidgets/Checkbox.pm

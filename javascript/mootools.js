@@ -1,5 +1,4 @@
-/* @(#)$Id$
-
+/*
 Script: Core.js
 	Mootools - My Object Oriented javascript.
 
@@ -30,8 +29,8 @@ Arguments:
 */
 
 function $defined(obj){
-	return (obj !== undefined);
-}
+	return (obj != undefined);
+};
 
 /*
 Function: $type
@@ -1318,24 +1317,8 @@ String.extend({
 
 	escapeRegExp: function(){
 		return this.replace(/([.*+?^${}()|[\]\/\\])/g, '\\$1');
-   },
+	}
 
-   stripTags: function() {
-      return this.replace(/<\/?[^>]+>/gi, '');
-   },
-
-   escapeHTML: function() {
-      var div = document.createElement('div');
-      var text = document.createTextNode(this);
-      div.appendChild(text);
-      return div.innerHTML;
-   },
-
-   unescapeHTML: function() {
-      var div = document.createElement('div');
-      div.innerHTML = this.stripTags();
-      return div.childNodes[0] ? div.childNodes[0].nodeValue : '';
-   }
 });
 
 Array.extend({
@@ -2452,22 +2435,6 @@ Element.extend({
 
 	setProperties: function(source){
 		return Element.setMany(this, 'setProperty', source);
-	},
-
-	/*
-	Property: setHTML
-		Sets the innerHTML of the Element.
-
-	Arguments:
-		html - string; the new innerHTML for the element.
-
-	Example:
-		>$('myElement').setHTML(newHTML) //the innerHTML of myElement is now = newHTML
-	*/
-
-	setHTML: function(){
-		this.innerHTML = $A(arguments).join('');
-		return this;
 	},
 
 	/*
@@ -5534,6 +5501,124 @@ var Cookie = new Abstract({
 });
 
 /*
+Script: Json.js
+	Simple Json parser and Stringyfier, See: <http://www.json.org/>
+
+License:
+	MIT-style license.
+*/
+
+/*
+Class: Json
+	Simple Json parser and Stringyfier, See: <http://www.json.org/>
+*/
+
+var Json = {
+
+	/*
+	Property: toString
+		Converts an object to a string, to be passed in server-side scripts as a parameter. Although its not normal usage for this class, this method can also be used to convert functions and arrays to strings.
+
+	Arguments:
+		obj - the object to convert to string
+
+	Returns:
+		A json string
+
+	Example:
+		(start code)
+		Json.toString({apple: 'red', lemon: 'yellow'}); '{"apple":"red","lemon":"yellow"}'
+		(end)
+	*/
+
+	toString: function(obj){
+		switch($type(obj)){
+			case 'string':
+				return '"' + obj.replace(/(["\\])/g, '\\$1') + '"';
+			case 'array':
+				return '[' + obj.map(Json.toString).join(',') + ']';
+			case 'object':
+				var string = [];
+				for (var property in obj) string.push(Json.toString(property) + ':' + Json.toString(obj[property]));
+				return '{' + string.join(',') + '}';
+			case 'number':
+				if (isFinite(obj)) break;
+			case false:
+				return 'null';
+		}
+		return String(obj);
+	},
+
+	/*
+	Property: evaluate
+		converts a json string to an javascript Object.
+
+	Arguments:
+		str - the string to evaluate. if its not a string, it returns false.
+		secure - optionally, performs syntax check on json string. Defaults to false.
+
+	Credits:
+		Json test regexp is by Douglas Crockford <http://crockford.org>.
+
+	Example:
+		>var myObject = Json.evaluate('{"apple":"red","lemon":"yellow"}');
+		>//myObject will become {apple: 'red', lemon: 'yellow'}
+	*/
+
+	evaluate: function(str, secure){
+		return (($type(str) != 'string') || (secure && !str.test(/^("(\\.|[^"\\\n\r])*?"|[,:{}\[\]0-9.\-+Eaeflnr-u \n\r\t])+?$/))) ? null : eval('(' + str + ')');
+	}
+
+};
+
+/*
+Script: Json.Remote.js
+	Contains <Json.Remote>.
+
+License:
+	MIT-style license.
+*/
+
+/*
+Class: Json.Remote
+	Wrapped XHR with automated sending and receiving of Javascript Objects in Json Format.
+	Inherits methods, properties, options and events from <XHR>.
+
+Arguments:
+	url - the url you want to send your object to.
+	options - see <XHR> options
+
+Example:
+	this code will send user information based on name/last name
+	(start code)
+	var jSonRequest = new Json.Remote("http://site.com/tellMeAge.php", {onComplete: function(person){
+		alert(person.age); //is 25 years
+		alert(person.height); //is 170 cm
+		alert(person.weight); //is 120 kg
+	}}).send({'name': 'John', 'lastName': 'Doe'});
+	(end)
+*/
+
+Json.Remote = XHR.extend({
+
+	initialize: function(url, options){
+		this.url = url;
+		this.addEvent('onSuccess', this.onComplete);
+		this.parent(options);
+		this.setHeader('X-Request', 'JSON');
+	},
+
+	send: function(obj){
+		return this.parent(this.url, 'json=' + Json.toString(obj));
+	},
+
+	onComplete: function(){
+		this.fireEvent('onComplete', [Json.evaluate(this.response.text, this.options.secure)]);
+	}
+
+});
+
+/*
 Script: Assets.js
 	provides dynamic loading for images, css and javascript files.
 
@@ -6600,221 +6685,6 @@ var Sortables = new Class({
 Sortables.implement(new Events, new Options);
 
 /*
-Script: Tips.js
-	Tooltips, BubbleTips, whatever they are, they will appear on mouseover
-
-License:
-	MIT-style license.
-
-Credits:
-	The idea behind Tips.js is based on Bubble Tooltips (<http://web-graphics.com/mtarchive/001717.php>) by Alessandro Fulcitiniti <http://web-graphics.com>
-*/
-
-/*
-Class: Tips
-	Display a tip on any element with a title and/or href.
-
-Note:
-	Tips requires an XHTML doctype.
-
-Arguments:
-	elements - a collection of elements to apply the tooltips to on mouseover.
-	options - an object. See options Below.
-
-Options:
-	maxTitleChars - the maximum number of characters to display in the title of the tip. defaults to 30.
-	showDelay - the delay the onShow method is called. (defaults to 100 ms)
-	hideDelay - the delay the onHide method is called. (defaults to 100 ms)
-
-	className - the prefix for your tooltip classNames. defaults to 'tool'.
-
-		the whole tooltip will have as classname: tool-tip
-
-		the title will have as classname: tool-title
-
-		the text will have as classname: tool-text
-
-	offsets - the distance of your tooltip from the mouse. an Object with x/y properties.
-	fixed - if set to true, the toolTip will not follow the mouse.
-	
-Events:
-	onShow - optionally you can alter the default onShow behaviour with this option (like displaying a fade in effect);
-	onHide - optionally you can alter the default onHide behaviour with this option (like displaying a fade out effect);
-
-Example:
-	(start code)
-	<img src="/images/i.png" title="The body of the tooltip is stored in the title" class="toolTipImg"/>
-	<script>
-		var myTips = new Tips($$('.toolTipImg'), {
-			maxTitleChars: 50	//I like my captions a little long
-		});
-	</script>
-	(end)
-
-Note:
-	The title of the element will always be used as the tooltip body. If you put ~ in your title, the text before the ~ will become the tooltip title.
-*/
-
-var Tips = new Class({
-	options: {
-		onShow: function( tip ) { tip.setStyle( 'visibility', 'visible' ) },
-		onHide: function( tip ) { tip.setStyle( 'visibility', 'hidden'  ) },
-		maxTitleChars: 40,
-		showDelay: 100,
-		hideDelay: 100,
-		className: 'tool',
-		offsets: { 'x': 20, 'y': 20 },
-      separator: '~',
-      timeout: 30000,
-		fixed: false
-	},
-
-	initialize: function( elements, options ) {
-      var cell, row, table;
-
-		this.setOptions( options );
-      this.toolTip = new Element( 'div', {
-			'class' : this.options.className + '-tip',
-			'styles': { 'position'  : 'absolute',
-                     'top'       : '0',
-                     'left'      : '0',
-                     'visibility': 'hidden' } } ).inject( document.body );
-      table = new Element( 'table',
-         { 'cellpadding': '0', 'cellspacing': '0' } ).inject( this.toolTip );
-      row   = new Element( 'tr' ).inject( table );
-      this.titleCell = new Element( 'td',
-         { 'class': this.options.className + '-tip-topLeft'} ).inject( row );
-      this.title = new Element( 'span' ).inject( this.titleCell );
-
-      cell  = new Element( 'td',
-         { 'class': this.options.className + '-tip-topRight'} ).inject( row );
-      (new Element( 'span' ).inject( cell )).setHTML( '&nbsp;&nbsp;&nbsp;' );
-
-      row   = new Element( 'tr' ).inject( table );
-      this.textCell  = new Element( 'td', { 'class': this.options.className
-                                   + '-tip-bottomLeft'} ).inject( row );
-      this.text = new Element( 'span' ).inject( this.textCell );
-
-      cell  = new Element( 'td', { 'class': this.options.className
-                                   + '-tip-bottomRight' } ).inject( row );
-      (new Element( 'span' ).inject( cell )).setHTML( '&nbsp;&nbsp;&nbsp;' );
-
-      $$( elements ).each( this.build, this );
-
-		if (this.options.initialize) this.options.initialize.call( this );
-	},
-
-	build: function( el ) {
-      if (el.$tmp.myTitle || el.$tmp.myText) return;
-
-		el.$tmp.myTitle
-         = (el.href && el.getTag() == 'a') ? el.href.replace( 'http://', '' )
-         :                                   (el.rel || false);
-
-		if (el.title){
-			var dual = el.title.split( this.options.separator );
-
-			if (dual.length > 1){
-				el.$tmp.myTitle = dual[0].trim();
-				el.$tmp.myText  = dual[1].trim();
-			}
-         else {
-				if (!el.$tmp.myTitle) el.$tmp.myTitle = '&hellip;';
-
-				el.$tmp.myText = el.title;
-			}
-
-			el.removeAttribute( 'title' );
-		}
-      else { el.$tmp.myText = false }
-
-		if (el.$tmp.myTitle && el.$tmp.myTitle.length >
-          this.options.maxTitleChars) {
-         el.$tmp.myTitle
-            = el.$tmp.myTitle.substr( 0, this.options.maxTitleChars - 1 )
-            + "&hellip;";
-      }
-
-		el.addEvent( 'mouseenter', function( event ) {
-			this.start( el );
-
-			if (!this.options.fixed) this.locate( event );
-			else this.position( el );
-		}.bind( this ) );
-
-		if (!this.options.fixed)
-         el.addEvent( 'mousemove', this.locate.bindWithEvent( this ) );
-
-		el.addEvent( 'mouseleave', this.end.bind( this ) );
-		el.addEvent( 'trash', this.hide.bind( this ) );
-	},
-
-	end: function( event ) {
-		$clear( this.timer );
-		this.timer = this.hide.delay( this.options.hideDelay, this );
-	},
-
-	hide: function() {
-		this.fireEvent( 'onHide', [this.toolTip] );
-	},
-
-	locate: function( event ) {
-		var win = { 'x': window.getWidth(), 'y': window.getHeight() };
-		var scroll
-         = { 'x': window.getScrollLeft(), 'y': window.getScrollTop() };
-		var tip
-         = { 'x': this.toolTip.offsetWidth, 'y': this.toolTip.offsetHeight };
-		var prop = { 'x': 'left', 'y': 'top' };
-
-		for (var z in prop) {
-			var pos = event.page[z] + this.options.offsets[z];
-			if ((pos + tip[z] - scroll[z]) > win[z])
-            pos = event.page[z] - this.options.offsets[z] - tip[z];
-			this.toolTip.setStyle( prop[z], pos );
-		};
-	},
-
-	position: function( element ) {
-		var pos = element.getPosition();
-		this.toolTip.setStyles({
-			'left': pos.x + this.options.offsets.x,
-			'top': pos.y + this.options.offsets.y
-		});
-	},
-
-   show: function() {
-      if ( this.options.timeout )
-         this.timer = this.hide.delay( this.options.timeout, this );
-      this.fireEvent( 'onShow', [this.toolTip] );
-   },
-
-   start: function(el) {
-      var len, width, w = 100;
-
-		if (el.$tmp.myText) {
-         width = window.getWidth();
-         len = el.$tmp.myTitle.length > el.$tmp.myText.length
-            ? el.$tmp.myTitle.length : el.$tmp.myText.length;
-         w = 10 * len;
-
-         if (w < 100) w = 100;
-
-         if (w > width / 4) w = width / 4;
-      }
-
-      this.titleCell.setStyle( 'width', parseInt( w ) + 'px' );
-		this.title.setHTML( el.$tmp.myTitle || '' );
-      this.textCell.setStyle( 'width', parseInt( w ) + 'px' );
-		this.text.setHTML( el.$tmp.myText || '' );
-
-		$clear( this.timer );
-		this.timer = this.show.delay( this.options.showDelay, this );
-	}
-});
-
-Tips.implement(new Events, new Options);
-
-/*
 Script: Group.js
 	For Grouping Classes or Elements Events. The Event added to the Group will fire when all of the events of the items of the group are fired.
 
@@ -6888,179 +6758,3 @@ var Group = new Class({
 	}
 
 });
-
-/*
-Script: Accordion.js
-	Contains <Accordion>
-
-License:
-	MIT-style license.
-*/
-
-/*
-Class: Accordion
-	The Accordion class creates a group of elements that are toggled when their handles are clicked. When one elements toggles in, the others toggles back.
-	Inherits methods, properties, options and events from <Fx.Elements>.
-	
-Note:
-	The Accordion requires an XHTML doctype.
-
-Arguments:
-	togglers - required, a collection of elements, the elements handlers that will be clickable.
-	elements - required, a collection of elements the transitions will be applied to.
-	options - optional, see options below, and <Fx.Base> options and events.
-
-Options:
-	show - integer, the Index of the element to show at start.
-	display - integer, the Index of the element to show at start (with a transition). defaults to 0.
-	fixedHeight - integer, if you want the elements to have a fixed height. defaults to false.
-	fixedWidth - integer, if you want the elements to have a fixed width. defaults to false.
-	height - boolean, will add a height transition to the accordion if true. defaults to true.
-	opacity - boolean, will add an opacity transition to the accordion if true. defaults to true.
-	width - boolean, will add a width transition to the accordion if true. defaults to false, css mastery is required to make this work!
-	alwaysHide - boolean, will allow to hide all elements if true, instead of always keeping one element shown. defaults to false.
-	
-Events:
-	onActive - function to execute when an element starts to show
-	onBackground - function to execute when an element starts to hide
-*/
-
-var Accordion = Fx.Elements.extend({
-
-	options: {
-		onActive: Class.empty,
-		onBackground: Class.empty,
-		display: 0,
-		show: false,
-		height: true,
-		width: false,
-		opacity: true,
-		fixedHeight: false,
-		fixedWidth: false,
-		wait: false,
-		alwaysHide: false
-	},
-
-	initialize: function(){
-		var options, togglers, elements, container;
-		$each(arguments, function(argument, i){
-			switch($type(argument)){
-				case 'object': options = argument; break;
-				case 'element': container = $(argument); break;
-				default:
-					var temp = $$(argument);
-					if (!togglers) togglers = temp;
-					else elements = temp;
-			}
-		});
-		this.togglers = togglers || [];
-		this.elements = elements || [];
-		this.container = $(container);
-		this.setOptions(options);
-		this.previous = -1;
-		if (this.options.alwaysHide) this.options.wait = true;
-		if ($chk(this.options.show)){
-			this.options.display = false;
-			this.previous = this.options.show;
-		}
-		if (this.options.start){
-			this.options.display = false;
-			this.options.show = false;
-		}
-		this.effects = {};
-		if (this.options.opacity) this.effects.opacity = 'fullOpacity';
-		if (this.options.width) this.effects.width = this.options.fixedWidth ? 'fullWidth' : 'offsetWidth';
-		if (this.options.height) this.effects.height = this.options.fixedHeight ? 'fullHeight' : 'scrollHeight';
-		for (var i = 0, l = this.togglers.length; i < l; i++) this.addSection(this.togglers[i], this.elements[i]);
-		this.elements.each(function(el, i){
-			if (this.options.show === i){
-				this.fireEvent('onActive', [this.togglers[i], el]);
-			} else {
-				for (var fx in this.effects) el.setStyle(fx, 0);
-			}
-		}, this);
-		this.parent(this.elements);
-		if ($chk(this.options.display)) this.display(this.options.display);
-	},
-
-	/*
-	Property: addSection
-		Dynamically adds a new section into the accordion at the specified position.
-
-	Arguments:
-		toggler - (dom element) the element that toggles the accordion section open.
-		element - (dom element) the element that stretches open when the toggler is clicked.
-		pos - (integer) the index where these objects are to be inserted within the accordion.
-	*/
-
-	addSection: function(toggler, element, pos){
-		toggler = $(toggler);
-		element = $(element);
-		var test = this.togglers.contains(toggler);
-		var len = this.togglers.length;
-		this.togglers.include(toggler);
-		this.elements.include(element);
-		if (len && (!test || pos)){
-			pos = $pick(pos, len - 1);
-			toggler.injectBefore(this.togglers[pos]);
-			element.injectAfter(toggler);
-		} else if (this.container && !test){
-			toggler.inject(this.container);
-			element.inject(this.container);
-		}
-		var idx = this.togglers.indexOf(toggler);
-		toggler.addEvent('click', this.display.bind(this, idx));
-		if (this.options.height) element.setStyles({ 'padding-top': 0, 'padding-bottom': 0 });
-		if (this.options.width) element.setStyles({ 'padding-left': 0, 'padding-right': 0 });
-		element.fullOpacity = 1;
-		if (this.options.fixedWidth) element.fullWidth = this.options.fixedWidth;
-		if (this.options.fixedHeight) element.fullHeight = this.options.fixedHeight;
-		element.setStyle('overflow', 'hidden');
-		if (!test){
-			for (var fx in this.effects) element.setStyle(fx, 0);
-		}
-		return this;
-	},
-
-	/*
-	Property: display
-		Shows a specific section and hides all others. Useful when triggering an accordion from outside.
-
-	Arguments:
-		index - integer, the index of the item to show, or the actual element to show.
-	*/
-
-	display: function(index){
-		index = ($type(index) == 'element') ? this.elements.indexOf(index) : index;
-		if ((this.timer && this.options.wait) || (index === this.previous && !this.options.alwaysHide)) return this;
-		this.previous = index;
-		var obj = {};
-		this.elements.each(function(el, i){
-			obj[i] = {};
-			var hide = (i != index) || (this.options.alwaysHide && (el.offsetHeight > 0));
-			this.fireEvent(hide ? 'onBackground' : 'onActive', [this.togglers[i], el]);
-			for (var fx in this.effects) obj[i][fx] = hide ? 0 : el[this.effects[fx]];
-		}, this);
-		return this.start(obj);
-	},
-
-   showThisHideOpen: function( index ) { this.display( index ) },
-
-   redisplay: function() {
-      var index = this.previous;
-      this.previous = -1;
-      this.display( index );
-   },
-
-   reload: function() { this.togglers[ 0 ].onclick() },
-
-   resize: function( height, width ) {
-      this.elements.each( function( el ) {
-         if (height) el.fullHeight = this.options.fixedHeight = height;
-         if (width)  el.fullWidth  = this.options.fixedWidth  = width;
-      }, this );
-      this.redisplay();
-   }
-});
-
-Fx.Accordion = Accordion;

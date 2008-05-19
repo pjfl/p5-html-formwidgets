@@ -1,0 +1,8 @@
+2008-05-19  Peter Flanigan  <pjf@localhost>
+
+	* lib/HTML/FormWidgets.pm (_render):
+
+	Added support form HTML 4.01.
+	Added Cloud subclass
+
+

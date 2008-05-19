@@ -355,16 +355,17 @@ HTML::FormWidgets - Create HTML form markup
       my $form     = [ $s->{iFrame} ];
       my $config   = {};
 
-      $config->{root       } = $c->config->{root};
-      $config->{base       } = $c->req->base;
-      $config->{url        } = $c->req->path;
-      $config->{assets     } = $s->{assets};
-      $config->{fields     } = $s->{fields} || {};
-      $config->{form       } = $s->{form};
-      $config->{hide       } = $s->{iFrame}->{hidden};
-      $config->{messages   } = $s->{messages};
-      $config->{swidth     } = $s->{width} if ($s->{width});
-      $config->{templatedir} = $c->config->{dynamic_templates};
+      $config->{root        } = $c->config->{root};
+      $config->{base        } = $c->req->base;
+      $config->{content_type} = $c->config->{content_type};
+      $config->{url         } = $c->req->path;
+      $config->{assets      } = $s->{assets};
+      $config->{fields      } = $s->{fields} || {};
+      $config->{form        } = $s->{form};
+      $config->{hide        } = $s->{iFrame}->{hidden};
+      $config->{messages    } = $s->{messages};
+      $config->{swidth      } = $s->{width} if ($s->{width});
+      $config->{templatedir } = $c->config->{dynamic_templates};
 
       HTML::FormWidgets->build( $config, $form );
       return;
@@ -373,13 +374,13 @@ HTML::FormWidgets - Create HTML form markup
 =head1 Description
 
 Transforms a Perl data structure which defines one or more "widgets"
-into XHTML. Each widget is comprised of these optional components: a
-line or question number, a prompt string, a separator, an input field,
-additional field help, and Ajax field error string.
+into HTML or XHTML. Each widget is comprised of these optional
+components: a line or question number, a prompt string, a separator,
+an input field, additional field help, and Ajax field error string.
 
 Input fields are selected by the widget C<type> attribute. A factory
-subclass implements the method that generates the XHTML for that input
-field type. Adding more widget types is straightforward
+subclass implements the method that generates the HTML or XHTML for
+that input field type. Adding more widget types is straightforward
 
 This module is using the MooTools Javascript library
 L<http://mootools.net/> to modify default browser behaviour
@@ -495,55 +496,58 @@ reflect this modules primary use within a L<Catalyst> application):
 
 =over 3
 
-=item C<$c-E<gt>config-E<gt>{root}>
-
-The path to the document root for this application (C<$config-E<gt>root>)
-
-=item C<$c-E<gt>config-E<gt>{dynamic_templates}>
-
-The path to template files used by the C<::Template> subclass
-(C<$config-E<gt>templatedir>)
-
-=item C<$c-E<gt>req-E<gt>base>
-
-This is the prefix for our URI (C<$config-E<gt>base>)
-
-=item C<$c-E<gt>req-E<gt>path>
-
-Only used by the C<::Tree> subclass to create self referential URIs
-(C<$config-E<gt>url>)
-
-=item C<$c-E<gt>stash-E<gt>{assets}>
+=item B<assets>
 
 Some of the widgets require image files. This attribute is used to
-create the URI for those images (C<$config-E<gt>assets>)
+create the URI for those images
 
-=item C<$c-E<gt>stash-E<gt>{fields}>
+=item B<base>
+
+This is the prefix for our URI
+
+=item B<content_type>
+
+Either I<application/xhtml+xml> which generates XHTML 1.1 and is the
+default or I<text/html> which generates HTML 4.01
+
+=item B<fields>
 
 This hash ref contains the fields definitions. Static parameters for
 each widget can be stored in configuration files. This reduces the
 number of attributes that have to be passed in the call to the
 constructor
 
-=item C<$c-E<gt>stash-E<gt>{form}>
+=item B<form>
 
-Used by the C<::Chooser> subclass (C<$config-E<gt>form>)
+Used by the C<::Chooser> subclass
 
-=item C<$c-E<gt>stash-E<gt>{iFrame}-E<gt>{hidden}>
+=item B<hide>
 
 So that the C<::File> and C<::Table> subclasses can store the number
-of rows added as the hidden form variable B<nRows> (C<$config-E<gt>hide>)
+of rows added as the hidden form variable B<nRows>
 
-=item C<$c-E<gt>stash-E<gt>{messages}>
+=item B<messages>
 
 Many of the subclasses use this hash to supply literal text in a
 language of the users choosing
 
-=item C<$c-E<gt>stash-E<gt>{width}>
+=item B<root>
+
+The path to the document root for this application
+
+=item B<swidth>
 
 Width in pixels of the browser window. This is used to calculate the
 width of the field prompt. The field prompt needs to be a fixed length
-so that the separator colons align vertically (C<$config-E<gt>swidth>)
+so that the separator colons align vertically
+
+=item B<templatedir>
+
+The path to template files used by the C<::Template> subclass
+
+=item B<url>
+
+Only used by the C<::Tree> subclass to create self referential URIs
 
 =back
 
@@ -576,6 +580,10 @@ setting
 
 Creates a popup window which allows one item to be selected from a
 B<long> list of items
+
+=head2 Cloud
+
+Creates list of links from the data set supplied in C<$me-E<gt>data>
 
 =head2 Date
 

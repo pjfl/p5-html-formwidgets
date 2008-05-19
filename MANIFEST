@@ -1,3 +1,4 @@
+Changes
 images/AddItem.png
 images/RemoveItem.png
 javascript/behaviour.js
@@ -6,6 +7,7 @@ lib/HTML/FormWidgets.pm
 lib/HTML/FormWidgets/Anchor.pm
 lib/HTML/FormWidgets/Checkbox.pm
 lib/HTML/FormWidgets/Chooser.pm
+lib/HTML/FormWidgets/Cloud.pm
 lib/HTML/FormWidgets/Date.pm
 lib/HTML/FormWidgets/File.pm
 lib/HTML/FormWidgets/Freelist.pm

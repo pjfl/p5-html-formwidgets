@@ -25,13 +25,13 @@ sub _render {
       $attrs      = { class => $class_pref.q(HeaderFade),
                       id    => $id_pref.$ref->{name} };
 
-      $style     .= "font-size: ".$item->{size}."em; " if ($item->{size});
-      $style     .= "color: #".$item->{colour}."; "    if ($item->{colour});
+      $style     .= 'font-size: '.$item->{size}.'em; ' if ($item->{size});
+      $style     .= 'color: #'.$item->{colour}.'; '    if ($item->{colour});
 
       if (!$href && !$onclick ) {
-         $href     = "javascript:windowObj.Expand_Collapse()";
-         $onclick  = "gridObj.Table('".$id_pref."', '".$ref->{name};
-         $onclick .= "', 'a~b', ".$ref->{table_len}.", 1)";
+         $href     = 'javascript:windowObj.Expand_Collapse()';
+         $onclick  = "gridObj.Table('$id_pref', '".$ref->{name};
+         $onclick .= "', 'a~b', $ref->{table_len}, 1)";
       }
 
       $attrs->{href   } = $href    if ($href);
@@ -46,7 +46,7 @@ sub _render {
       $html      .= $hacc->div( { class => $class }, "\n".$anchor )."\n";
 
       if (!$ref->{href} && !$ref->{onclick}) {
-         $style   = "clear: left; display: none; width: ".$ref->{width}."px;";
+         $style   = 'display: none; width: '.$ref->{width}.'px;';
          $html   .= $hacc->div( { class => $class_pref.q(Panel),
                                   id    => $id_pref.$ref->{name}.q(Disp),
                                   style => $style }, 'Loading...' );

@@ -169,7 +169,7 @@ sub new {
    $self->{nodeId} = q(node_0); # Define accessor by hand to auto increment
 
    # Pander to lazy filling out of static definitions
-   $self->container( $self->type =~ m{ file|label|note }mx ? 0 : 1 )
+   $self->container( $self->type =~ m{ chooser|file|label|note }mx ? 0 : 1 )
       unless (defined $self->container);
 
    if ($self->ajaxid) {

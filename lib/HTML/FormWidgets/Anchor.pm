@@ -11,6 +11,7 @@ use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
 sub _render {
    my ($me, $ref)  = @_;
 
+   delete $ref->{name};
    $ref->{class  } = $me->class || q(linkFade);
    $ref->{href   } = $me->href  || q();
    $ref->{onclick} = $me->onclick if ($me->onclick);

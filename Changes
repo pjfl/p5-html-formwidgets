@@ -1,3 +1,10 @@
+2008-05-25  Peter Flanigan  <pjf@localhost>
+
+	* lib/HTML/FormWidgets.pm:
+
+	Fixed invalid output from anchor and chooser widgets
+	Added POD test
+
 2008-05-19  Peter Flanigan  <pjf@localhost>
 
 	* lib/HTML/FormWidgets.pm (_render):

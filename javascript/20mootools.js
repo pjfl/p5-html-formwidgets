@@ -5257,17 +5257,16 @@ Example:
 */
 
 var Ajax = XHR.extend({
-
 	options: {
 		data: null,
 		update: null,
 		onComplete: Class.empty,
 		evalScripts: false,
-		evalResponse: false
+      evalResponse: false
 	},
 
 	initialize: function(url, options){
-		this.addEvent('onSuccess', this.onComplete);
+      this.addEvent('onSuccess', this.onComplete);
 		this.setOptions(options);
 		/*compatibility*/
 		this.options.data = this.options.data || this.options.postBody;
@@ -5534,7 +5533,7 @@ var Json = {
 	toString: function(obj){
 		switch($type(obj)){
 			case 'string':
-				return '"' + obj.replace(/(["\\])/g, '\\$1') + '"';
+				return '"' + obj.replace(/(["\\])/g, '\\$1') + '"'; // '
 			case 'array':
 				return '[' + obj.map(Json.toString).join(',') + ']';
 			case 'object':
@@ -5566,7 +5565,7 @@ var Json = {
 	*/
 
 	evaluate: function(str, secure){
-		return (($type(str) != 'string') || (secure && !str.test(/^("(\\.|[^"\\\n\r])*?"|[,:{}\[\]0-9.\-+Eaeflnr-u \n\r\t])+?$/))) ? null : eval('(' + str + ')');
+		return (($type(str) != 'string') || (secure && !str.test(/^("(\\.|[^"\\\n\r])*?"|[,:{}\[\]0-9.\-+Eaeflnr-u \n\r\t])+?$/))) ? null : eval('(' + str + ')'); // "
 	}
 
 };

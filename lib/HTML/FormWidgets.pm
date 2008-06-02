@@ -408,7 +408,7 @@ which use that option
 
 =head2 msg
 
-Use the supplied key to return a value from the C<$me-E<gt>messages>
+Use the supplied key to return a value from the B<messages>
 hash. This hash was passed to the constructor and should contain any
 literal text used by any of the widgets
 
@@ -423,45 +423,45 @@ This method uses these attributes:
 
 =over 3
 
-=item C<$me-E<gt>clear>
+=item clear
 
 If set to B<left> the widget begins with an <br> element
 
-=item C<$me-E<gt>stepno>
+=item stepno
 
 If true it's value is wrapped in a B<span> element of class B<lineNumber>
 and appended to the return value
 
-=item C<$me-E<gt>prompt>
+=item prompt
 
 If true it's value is wrapped in a B<label> element of class B<prompt> and
-appended to the return value. The C<$me-E<gt>id> attribute is used to
+appended to the return value. The B<id> attribute is used to
 set the B<for> attribute of the B<label> element.  The
-C<$me-E<gt>palign> attribute sets the text align style for the
-B<label> element. The C<$me-E<gt>nowrap> attribute sets whitespace
-style to nowrap in the B<label> element. The C<$me-E<gt>pwidth>
+B<palign> attribute sets the text align style for the
+B<label> element. The B<nowrap> attribute sets whitespace
+style to nowrap in the B<label> element. The B<pwidth>
 attribute sets the width style attribute in the B<label> element
 
-=item C<$me-E<gt>sep>
+=item sep
 
 If true it's value is wrapped in a B<div> element of class B<separator>
 and appended to the return value
 
-=item C<$me-E<gt>container>
+=item container
 
 If true the value return by the C<_render> method is wrapped in B<div>
-element of classes B<container> and C<$me-E<gt>align>
+element of classes B<container> and B<align>
 
-=item C<$me-E<gt>tip>
+=item tip
 
-The text of the field help. If C<$me-E<gt>tiptype> is set to B<dagger>
-(which is the default) then a dagger symbol C<$me-E<gt>nb_symbol> is
+The text of the field help. If B<tiptype> is set to B<dagger>
+(which is the default) then a dagger symbol B<nb_symbol> is
 wrapped in a B<span> of class B<help tips> and this is appended to the
 returned input field.  The tip text is used as the B<title>
 attribute. If the B<tiptype> is not set to B<dagger> then the help
 text is wrapped around the input field itself
 
-=item C<$me-E<gt>ajaxid>
+=item ajaxid
 
 The text of the message which is displayed if the field's value fails
 server side validation
@@ -496,56 +496,56 @@ reflect this modules primary use within a L<Catalyst> application):
 
 =over 3
 
-=item B<assets>
+=item assets
 
 Some of the widgets require image files. This attribute is used to
 create the URI for those images
 
-=item B<base>
+=item base
 
 This is the prefix for our URI
 
-=item B<content_type>
+=item content_type
 
 Either I<application/xhtml+xml> which generates XHTML 1.1 and is the
 default or I<text/html> which generates HTML 4.01
 
-=item B<fields>
+=item fields
 
 This hash ref contains the fields definitions. Static parameters for
 each widget can be stored in configuration files. This reduces the
 number of attributes that have to be passed in the call to the
 constructor
 
-=item B<form>
+=item form
 
 Used by the C<::Chooser> subclass
 
-=item B<hide>
+=item hide
 
 So that the C<::File> and C<::Table> subclasses can store the number
 of rows added as the hidden form variable B<nRows>
 
-=item B<messages>
+=item messages
 
 Many of the subclasses use this hash to supply literal text in a
 language of the users choosing
 
-=item B<root>
+=item root
 
 The path to the document root for this application
 
-=item B<swidth>
+=item swidth
 
 Width in pixels of the browser window. This is used to calculate the
 width of the field prompt. The field prompt needs to be a fixed length
 so that the separator colons align vertically
 
-=item B<templatedir>
+=item templatedir
 
 The path to template files used by the C<::Template> subclass
 
-=item B<url>
+=item url
 
 Only used by the C<::Tree> subclass to create self referential URIs
 
@@ -555,8 +555,8 @@ Sensible defaults are provided by C<new> if any of the above are undefined
 
 =head1 Factory Subclasses
 
-These are the possible values for the C<type> attribute which defaults
-to B<textfield>. Each subclass implements the C<_render> method, it
+These are the possible values for the B<type> attribute which defaults
+to I<textfield>. Each subclass implements the C<_render> method, it
 receives a hash ref of options an returns a scalar containing some
 XHTML.
 
@@ -564,16 +564,16 @@ The distribution ships with the following factory subclasses:
 
 =head2 Anchor
 
-Returns an B<anchor> element of class C<$me-E<gt>class> or B<linkFade>
-with it's B<href> attribute set to C<$me-E<gt>href>. The anchor body
-is set to C<$me-E<gt>text>
+Returns an B<anchor> element of class option B<class> (which defaults
+to I<linkFade>) with it's B<href> attribute set to the B<href>
+option. The anchor body is set to the B<text> option
 
 =head2 Checkbox
 
-Return a B<checkbox> element of value C<$me-E<gt>value>. Use the
-element's value as key to the C<$me-E<gt>labels> hash. The hash value
+Return a B<checkbox> element of value B<value>. Use the
+element's value as key to the B<labels> hash. The hash value
 (which defaults null) is used as the displayed label. The
-C<$me-E<gt>checked> attribute determines the checkbox's initial
+B<checked> option determines the checkbox's initial
 setting
 
 =head2 Chooser
@@ -583,27 +583,27 @@ B<long> list of items
 
 =head2 Cloud
 
-Creates list of links from the data set supplied in C<$me-E<gt>data>
+Creates list of links from the data set supplied in the I<data> option
 
 =head2 Date
 
 Return another text field, this time with a calendar icon which when
 clicked pops up a Javascript date picker. Requires the appropriate JS
-library to have been loaded by the page. Attribute C<$me-E<gt>width>
+library to have been loaded by the page. Attribute B<width>
 controls the size of the textfield (default 10 characters) and
-C<$me-E<gt>format> defaults to I<dd/mm/yyyy>
+B<format> defaults to I<dd/mm/yyyy>
 
 =head2 File
 
-Display the contents of a file pointed to by
-C<$me-E<gt>path>. Supports the following subtypes:
+Display the contents of a file pointed to by B<path>. Supports the
+following subtypes:
 
 =over 3
 
 =item csv
 
 Return a table containing the CSV formatted file. This and the I<file>
-subtype are selectable if C<$me-E<gt>select> >= 0 and represents the
+subtype are selectable if B<select> >= 0 and represents the
 column number of the key field
 
 =item file
@@ -613,9 +613,9 @@ Default subtype. Like the logfile subtype but without the B<pre> tags
 =item html
 
 The C<_render> method returns an B<iframe> tag whose B<src> attribute
-is set to C<$me-E<gt>path>. Paths that begin with C<$me-E<gt>root>
-will have that replaced with C<$me-E<gt>base>. Paths that do not begin
-with "http:" will have C<$me-E<gt>base> prepended to them
+is set to B<path>. Paths that begin with B<root>
+will have that replaced with B<base>. Paths that do not begin
+with "http:" will have B<base> prepended to them
 
 =item logfile
 
@@ -627,7 +627,7 @@ each wrapped in B<pre> tags
 
 The module C<Syntax::Highlight::Perl> is used to provide colour
 highlights for the Perl source code. Tabs are expanded to
-C<$me-E<gt>tabstop> spaces and the result is returned wrapped in
+B<tabstop> spaces and the result is returned wrapped in
 B<pre> tags
 
 =back
@@ -635,88 +635,88 @@ B<pre> tags
 =head2 Freelist
 
 New values entered into a text field can be added to the
-list. Existing list values (passed in C<$me-E<gt>values>) can be
-removed. The height of the list is set by C<$me-E<gt>height>.
+list. Existing list values (passed in B<values>) can be
+removed. The height of the list is set by B<height>.
 
 =head2 GroupMembership
 
 Displays two lists which allow for membership of a group. The first
-scrolling list contains "all" values (C<$me-E<gt>all>), the second
-contains those values currently selected (C<$me-E<gt>current>). The
-height of the scrolling lists is set by C<$me-E<gt>height>
+scrolling list contains "all" values (B<all>), the second
+contains those values currently selected (B<current>). The
+height of the scrolling lists is set by B<height>
 
 =head2 ImageButton
 
-Generates an image button where C<$me-E<gt>name> identifies the image
-file in C<$me-E<gt>assets> and is also used as the return value. The
+Generates an image button where B<name> identifies the image
+file in B<assets> and is also used as the return value. The
 button name is set to I<_verb>
 
 =head2 Label
 
-Calls C<$me-E<gt>msg> with C<$me-E<gt>name> as the message key. If the
-text does not exist C<$me-E<gt>text> is used. If C<$me-E<gt>dropcap>
+Calls B<msg> with B<name> as the message key. If the
+text does not exist B<text> is used. If B<dropcap>
 is true the first character of the text is wrapped in a B<span> of
 class I<dropcap>
 
 =head2 Note
 
-Calls C<$me-E<gt>msg> with C<$me-E<gt>name> as the message key. If the
-text does not exist C<$me-E<gt>text> is used. The text is wrapped in a
-B<div> of class I<note> with C<$me-E<gt>align> setting the style text
-alignment and C<$me-E<gt>width> setting the style width
+Calls B<msg> with B<name> as the message key. If the
+text does not exist B<text> is used. The text is wrapped in a
+B<div> of class I<note> with B<align> setting the style text
+alignment and B<width> setting the style width
 
 =head2 Password
 
-Returns a password field of width C<$me-E<gt>width> which defaults to
-twenty characters. If C<$me-E<gt>subtype> equals I<verify> then the
+Returns a password field of width B<width> which defaults to
+twenty characters. If B<subtype> equals I<verify> then the
 message I<vPasswordPrompt> and another password field are
-appended. The fields C<$me-E<gt>id> and C<$me-E<gt>name> are expected
+appended. The fields B<id> and B<name> are expected
 to contain the digit 1 which will be substituted for the digit 2 in
 the attributes of the second field
 
 =head2 PopupMenu
 
 Returns a list of B<option> elements wrapped in a B<select>
-element. The list of options is passed in C<$me-E<gt>values> with the
-display labels in C<$me-E<gt>labels>. The onchange event handler will
-be set to C<$me-E<gt>onchange>
+element. The list of options is passed in B<values> with the
+display labels in B<labels>. The onchange event handler will
+be set to B<onchange>
 
 =head2 RadioGroup
 
-The attribute C<$me-E<gt>columns> sets the number of columns for the
+The attribute B<columns> sets the number of columns for the
 returned table of radio buttons. The list of button values is passed in
-C<$me-E<gt>values> with the display labels in C<$me-E<gt>labels>. The
-onchange event handler will be set to C<$me-E<gt>onchange>
+B<values> with the display labels in B<labels>. The
+onchange event handler will be set to B<onchange>
 
 =head2 ScrollingList
 
-The C<$me-E<gt>height> attribute controls the height of the scrolling
-list.  The list of options is passed in C<$me-E<gt>values> with the
-display labels in C<$me-E<gt>labels>. The onchange event handler will
-be set to C<$me-E<gt>onchange>
+The B<height> attribute controls the height of the scrolling
+list.  The list of options is passed in B<values> with the
+display labels in B<labels>. The onchange event handler will
+be set to B<onchange>
 
 =head2 Table
 
-The input data is in C<$me-E<gt>data-E<gt>{values}> which is an array
+The input data is in B<data-E<gt>{values}> which is an array
 ref for which each element is an array ref containing the list of
 field values.
 
 =head2 Template
 
-Look in C<$me-E<gt>templatedir> for a L<Template::Toolkit> template
-called C<$me-E<gt>id> with a I<.tt> extension. Slurp it in and return
+Look in B<templatedir> for a L<Template::Toolkit> template
+called B<id> with a I<.tt> extension. Slurp it in and return
 it as the content for this widget. This provides for a "user defined"
 widget type
 
 =head2 Textarea
 
-A text area. It defaults to five lines high (C<$me-E<gt>height>) and
-sixty characters wide (C<$me-E<gt>width>)
+A text area. It defaults to five lines high (B<height>) and
+sixty characters wide (B<width>)
 
 =head2 Textfield
 
 This is the default widget type. Your basic text field which defaults
-to sixty characters wide (C<$me-E<gt>width>)
+to sixty characters wide (B<width>)
 
 =head2 Tree
 
@@ -745,20 +745,32 @@ None
 
 =back
 
-Included in the distribution are the Javascript files whose functions
+Included in the distribution are the Javascript files whose methods
 are called by the event handlers associated with these widgets
 
-=head2 mootools.js
+=head2 10htmlparser.js
+
+   HTML Parser By John Resig (ejohn.org)
+   Original code by Erik Arvidsson, Mozilla Public License
+   http://erik.eae.net/simplehtmlparser/simplehtmlparser.js
+
+Used to reimplement "innerHTML" assignments from XHTML
+
+=head2 20mootools.js
 
    Mootools - My Object Oriented javascript.
    License: MIT-style license.
    WWW: http://mootools.net/
 
-Implements the Ajax methods used to perform server side field
-validation. The included copy has a few hacks that improve the
-Accordion widget
+This is the main JS library used with this package
 
-=head2 calendar.js
+=head2 30ourtools.js
+
+Replaces Mootools' C<setHTML> method with one that uses the HTML
+parser. The included copy has a few hacks that improve the Accordion
+widget
+
+=head2 40calendar.js
 
    Author: Matt Kruse <matt@mattkruse.com>
    WWW: http://www.mattkruse.com/
@@ -791,7 +803,7 @@ which are included in the distribution for completeness
 
 There are no known bugs in this module.
 Please report problems to the address below.
-Patches are welcome.
+Patches are welcome
 
 =head1 Author
 
@@ -799,14 +811,14 @@ Peter Flanigan, C<< <Support at RoxSoft.co.uk> >>
 
 =head1 License and Copyright
 
-Copyright (c) 2008 Peter Flanigan. All rights reserved.
+Copyright (c) 2008 Peter Flanigan. All rights reserved
 
 This program is free software; you can redistribute it and/or modify it
-under the same terms as Perl itself. See L<perlartistic>.
+under the same terms as Perl itself. See L<perlartistic>
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE
 
 =cut
 

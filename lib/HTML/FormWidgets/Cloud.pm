@@ -29,8 +29,8 @@ sub _render {
       $style     .= 'color: #'.$item->{colour}.'; '    if ($item->{colour});
 
       if (!$href && !$onclick ) {
-         $href     = 'javascript:windowObj.Expand_Collapse()';
-         $onclick  = "gridObj.Table('$id_pref', '".$ref->{name};
+         $href     = 'javascript:Expand_Collapse()';
+         $onclick  = "tableObj.liveGrid('$id_pref', '".$ref->{name};
          $onclick .= "', 'a~b', $ref->{table_len}, 1)";
       }
 

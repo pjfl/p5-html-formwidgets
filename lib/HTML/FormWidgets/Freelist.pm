@@ -20,7 +20,7 @@ sub _render {
 
    $ref             = {};
    $ref->{class   } = $ref->{name} = q(button);
-   $ref->{onclick } = 'return freeListObj.AddItem(\''.$me->name.'\')';
+   $ref->{onclick } = 'return freeListObj.addItem(\''.$me->name.'\')';
    $ref->{src     } = $me->assets.'AddItem.png';
    $ref->{value   } = q(add).(ucfirst $me->name);
    $text            = $htag->image_button( $ref );
@@ -31,7 +31,7 @@ sub _render {
 
    $ref             = {};
    $ref->{class   } = $ref->{name} = q(button);
-   $ref->{onclick } = 'return freeListObj.RemoveItem(\''.$me->name.'\')';
+   $ref->{onclick } = 'return freeListObj.removeItem(\''.$me->name.'\')';
    $ref->{src     } = $me->assets.'RemoveItem.png';
    $ref->{value   } = q(remove).(ucfirst $me->name);
    $text            = $htag->image_button( $ref );

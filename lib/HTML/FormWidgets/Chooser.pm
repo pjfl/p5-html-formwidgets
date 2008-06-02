@@ -11,7 +11,7 @@ use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
 sub _render {
    my ($me, $ref) = @_; my $onclick;
 
-   $onclick  = 'return submitObj.Chooser(';
+   $onclick  = 'return submitObj.chooser(';
    $onclick .= 'document.forms[0].'.$me->field.'.value, ';
    $onclick .= 'document.forms[0], ';
    $onclick .= '\''.$me->key.'\', ';

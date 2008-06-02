@@ -119,7 +119,7 @@ sub _render {
 
       $ref            = {};
       $ref->{class  } = $ref->{name} = q(button);
-      $ref->{onclick} = 'return tableObj.AddTableRow(\''.$me->name.'\', 1)';
+      $ref->{onclick} = 'return tableObj.addTableRow(\''.$me->name.'\', 1)';
       $ref->{src    } = $me->assets.'AddItem.png';
       $ref->{value  } = q(add).(ucfirst $me->name);
       $text           = $htag->image_button( $ref );
@@ -132,7 +132,7 @@ sub _render {
       if ($me->select) {
          $ref            = {};
          $ref->{class  } = $ref->{name} = q(button);
-         $ref->{onclick} = 'return tableObj.RemoveTableRow(\''.$me->name.'\')';
+         $ref->{onclick} = 'return tableObj.removeTableRow(\''.$me->name.'\')';
          $ref->{src    } = $me->assets.'RemoveItem.png';
          $ref->{value  } = q(remove).(ucfirst $me->name);
          $text1          = $htag->image_button( $ref );

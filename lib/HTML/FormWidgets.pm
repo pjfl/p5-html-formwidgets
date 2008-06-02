@@ -26,7 +26,7 @@ Readonly my %ATTRS =>
      ctitle       => 'Current',     current      => [],
      data         => {},            default      => undef,
      dropcap      => 0,             edit         => 0,
-     elem         => undef,         evnt_hndlr   => 'checkObj.checkField',
+     elem         => undef,         evnt_hndlr   => 'serverObj.checkField',
      field        => $NUL,          fields       => {},
      form         => {},            'format'     => undef,
      fhelp        => $NUL,          header       => undef,

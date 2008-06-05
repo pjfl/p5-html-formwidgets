@@ -1,10 +1,10 @@
 Changes
 images/AddItem.png
 images/RemoveItem.png
+javascript/10htmlparser.js
+javascript/20mootools.js
+javascript/30ourtools.js
 javascript/behaviour.js
-javascript/htmlparser.js
-javascript/mootools.js
-javascript/ourtools.js
 lib/HTML/FormWidgets.pm
 lib/HTML/FormWidgets/Anchor.pm
 lib/HTML/FormWidgets/Checkbox.pm
@@ -26,6 +26,7 @@ lib/HTML/FormWidgets/Template.pm
 lib/HTML/FormWidgets/Textarea.pm
 lib/HTML/FormWidgets/Textfield.pm
 lib/HTML/FormWidgets/Tree.pm
+LICENSE
 Makefile.PL
 MANIFEST			This list of files
 META.yml

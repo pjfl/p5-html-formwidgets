@@ -9,30 +9,27 @@ use base qw(HTML::FormWidgets);
 use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
 
 sub _render {
-   my ($me, $ref) = @_;
-   my $htag       = $me->elem;
-   my $html       = $htag->hr( { class => $me->class } );
-   my $cells      = $htag->td( { class => q(minimal) }, $html );
+   my ($me, $ref) = @_; my ($cells, $html); my $htag = $me->elem;
 
    $me->container( undef );
 
    if ($me->imgclass) {
-      $html = $htag->img( { alt   => $me->alt,
-                            class => $me->imgclass,
-                            src   => $me->text } );
+      $html  = $htag->hr(  { class => $me->class } );
+      $cells = $htag->td(  { class => q(minimal) }, $html );
+      $html  = $htag->img( { alt   => $me->alt,
+                             class => $me->imgclass,
+                             src   => $me->text } );
    }
    else { $html = $me->text }
 
-   if ($me->href) {
-      $html = $htag->a( { href => $me->href }, $html );
-   }
+   $html = $htag->a( { href => $me->href }, $html ) if ($me->href);
 
    if ($me->tip) {
       $html = $htag->span( { class => q(tips), title => $me->tip }, $html );
       $me->tip( undef );
    }
 
-   $cells .= $htag->td( { class => q(minimal) }, $html );
+   $cells .= $htag->td( { class => q(minimal) }, $html ) if ($html);
    $html   = $htag->hr( { class => $me->class } );
    $cells .= $htag->td( $html );
    return $htag->table( $htag->tr( $cells ) );

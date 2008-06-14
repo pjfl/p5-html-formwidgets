@@ -17,6 +17,7 @@ Readonly my $TTS   => q( ~ );
 Readonly my %ATTRS =>
    ( ajaxid       => undef,         ajaxtext     => undef,
      align        => q(left),       all          => [],
+     alt          => undef,
      assets       => $NUL,          atitle       => 'All',
      base         => $NUL,          behaviour    => q(classic),
      button       => $NUL,          checked      => 0,
@@ -33,6 +34,7 @@ Readonly my %ATTRS =>
      height       => undef,         hide         => [],
      hint_title   => 'Handy Hint',  href         => undef,
      id           => undef,         id2key       => {},
+     imgclass     => undef,
      key          => $NUL,          key2id       => {},
      key2url      => {},            labels       => undef,
      max_length   => undef,         messages     => undef,

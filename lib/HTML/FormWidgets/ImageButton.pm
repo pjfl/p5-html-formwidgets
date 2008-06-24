@@ -19,6 +19,7 @@ sub _render {
    $ref->{value  } = ucfirst $me->name;
    $text           = $me->elem->image_button( $ref );
    $ref            = { class => q(help tips), title => $me->tip };
+   $me->tip( undef );
    return $me->elem->span( $ref, $text );
 }
 

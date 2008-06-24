@@ -272,7 +272,7 @@ sub render {
       $field = $htag->div( { class => q(container ).$me->align }, $field );
    }
 
-   if ($tip = $me->tip and $me->type ne q(imageButton)) {
+   if ($tip = $me->tip) {
       $tip =~ s{ \n }{ }gmx;
       $tip = $me->hint_title.$TTS.$tip if ($tip !~ m{ $TTS }mx);
       $tip =~ s{ \s+ }{ }gmx;

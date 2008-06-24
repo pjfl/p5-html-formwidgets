@@ -51,7 +51,7 @@ sub _render {
       $cells = q(); $c_no = 0;
 
       if ($me->select eq q(left) and $data->{values}->[0]) {
-         $cells .= $me->_checkBox( $r_no, $c_no, $val );
+         $cells .= $me->_check_box( $r_no, $c_no, $val );
       }
 
       for $fld (@{ $data->{flds} }) {
@@ -60,7 +60,7 @@ sub _render {
             $ref->{default  } = $val->{ $fld };
             $ref->{maxlength} = $data->{maxlengths}->{ $fld }
                if (exists $data->{maxlengths}->{ $fld });
-            $ref->{name     } = $fld.$r_no;
+            $ref->{name     } = $me->name.q(_).$fld.q(_).$r_no;
             $ref->{size     } = exists $data->{sizes}->{ $fld }
                               ? $data->{sizes}->{ $fld } : 10;
             $text             = $htag->textfield( $ref );
@@ -93,24 +93,24 @@ sub _render {
       }
 
       if ($me->select eq q(right) and $data->{values}->[0]) {
-         $cells .= $me->_checkBox( $r_no, $c_no, $val );
+         $cells .= $me->_check_box( $r_no, $c_no, $val );
       }
 
-      $ref   = { id => q(row).$me->name.$r_no };
+      $ref   = { id => $me->name.q(_row).$r_no };
       $rows .= $htag->tr( $ref, $cells ); $r_no++;
    }
 
-   push @{ $me->hide }, { name => q(nRows).$me->name, value => $r_no };
+   push @{ $me->hide }, { name => $me->name.q(_nrows), value => $r_no };
 
    if ($me->edit) {
       $cells = q();
 
       for $c_no (0 .. $#{ $data->{flds} }) {
          $fld              = $data->{flds}->[ $c_no ];
-         $ref              = { id => q(add).$me->name.$c_no };
+         $ref              = { id => $me->name.q(_add).$c_no };
          $ref->{maxlength} = $data->{maxlengths}->{ $fld }
             if (exists $data->{maxlengths}->{ $fld });
-         $ref->{name     } = $fld;
+         $ref->{name     } = $me->name.q(_).$fld;
          $ref->{size     } = exists $data->{sizes}->{ $fld }
                            ? $data->{sizes}->{ $fld } : 10;
          $text             = $htag->textfield( $ref );
@@ -121,7 +121,7 @@ sub _render {
       $ref->{class  } = $ref->{name} = q(button);
       $ref->{onclick} = 'return tableObj.addTableRow(\''.$me->name.'\', 1)';
       $ref->{src    } = $me->assets.'AddItem.png';
-      $ref->{value  } = q(add).(ucfirst $me->name);
+      $ref->{value  } = $me->name.q(_add);
       $text           = $htag->image_button( $ref );
       $tip            = 'Enter a new item into the adjacent text ';
       $tip           .= 'fields and then click this button to add ';
@@ -134,7 +134,7 @@ sub _render {
          $ref->{class  } = $ref->{name} = q(button);
          $ref->{onclick} = 'return tableObj.removeTableRow(\''.$me->name.'\')';
          $ref->{src    } = $me->assets.'RemoveItem.png';
-         $ref->{value  } = q(remove).(ucfirst $me->name);
+         $ref->{value  } = $me->name.q(_remove);
          $text1          = $htag->image_button( $ref );
          $tip            = 'Select one or more items from the ';
          $tip           .= 'above list and then click this button ';
@@ -144,7 +144,7 @@ sub _render {
       }
 
       $cells .= $htag->td( $text );
-      $rows  .= $htag->tr( { id => q(add).$me->name }, $cells );
+      $rows  .= $htag->tr( { id => $me->name.q(_add) }, $cells );
    }
 
    return $htag->table( { class => ($me->prompt ? q(form) : q(std))}, $rows );
@@ -152,13 +152,13 @@ sub _render {
 
 # Private methods
 
-sub _checkBox {
+sub _check_box {
    my ($me, $r_no, $c_no, $val) = @_; my ($text, $ref);
 
-   $ref  = { name => 'select'.$me->name.$r_no };
+   $ref  = { name => $me->name.q(_select).$r_no };
    $ref->{value} = $val->{id} if ($val->{id});
    $text = $me->elem->checkbox( $ref );
-   $ref  = { align => 'center', class => ($c_no % 2 == 0 ? 'even' : 'odd') };
+   $ref  = { align => q(center), class => $c_no % 2 == 0 ? q(even) : q(odd) };
    return $me->elem->td( $ref, $text );
 }
 

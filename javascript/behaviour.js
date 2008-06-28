@@ -152,10 +152,10 @@ var State = new Class({
 
       this.resize();
 
-      if (first_fld) $( first_fld ).focus();
+      if (first_fld && (elem = $( first_fld ))) elem.focus();
    },
 
-   Toggle: function( e ) {
+   toggle: function( e ) {
       var elem = $( e.id + 'Disp' );
 
       if (elem.getStyle( 'display' ) != 'none') {
@@ -168,13 +168,13 @@ var State = new Class({
       this.resize();
    },
 
-   ToggleState: function( id ) {
+   toggleState: function( id ) {
       var elem = $( id + 'Box' );
 
       this.cookies.set( id, (elem.checked ? 'true' : 'false') );
    },
 
-   ToggleSwap: function( e, s1, s2 ) {
+   toggleSwap: function( e, s1, s2 ) {
       var elem;
 
       if (elem = $( e.id + 'Disp' )) {
@@ -195,7 +195,7 @@ var State = new Class({
       this.resize();
    },
 
-   ToggleSwapImg: function( e, s1, s2 ) {
+   toggleSwapImg: function( e, s1, s2 ) {
       var elem;
 
       if (elem = $( e.id + 'Disp' )) {
@@ -216,7 +216,7 @@ var State = new Class({
       this.resize();
    },
 
-   ToggleSwapText: function( id, cookie, s1, s2 ) {
+   toggleSwapText: function( id, cookie, s1, s2 ) {
       var elem = $( id );
 
       if (this.cookies.get( cookie ) == 'true') {
@@ -242,16 +242,17 @@ State.implement( new Options );
 
 function Expand_Collapse() {}
 
-var freeListObj = new FreeList();
-var loadMoreObj = new LoadMore(      { url   : url } );
-var serverObj   = new ServerMethods( { url   : url } );
-var stateObj    = new State(         { path  : sessionPath,
-                                       prefix: sessionPrefix } );
-var submitObj   = new SubmitUtils(   { path  : sessionPath,
-                                       prefix: sessionPrefix } );
-var tableObj    = new TableUtils(    { url   : url } );
-var windowObj   = new WindowUtils(   { path  : sessionPath,
-                                       prefix: sessionPrefix } );
+var freeListObj    = new FreeList();
+var groupMemberObj = new GroupMember();
+var loadMoreObj    = new LoadMore(      { url   : url } );
+var serverObj      = new ServerMethods( { url   : url } );
+var stateObj       = new State(         { path  : sessionPath,
+                                          prefix: sessionPrefix } );
+var submitObj      = new SubmitUtils(   { path  : sessionPath,
+                                          prefix: sessionPrefix } );
+var tableObj       = new TableUtils(    { url   : url } );
+var windowObj      = new WindowUtils(   { path  : sessionPath,
+                                          prefix: sessionPrefix } );
 
 if (target && target == 'top') windowObj.placeOnTop();
 

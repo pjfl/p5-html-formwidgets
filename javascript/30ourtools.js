@@ -1,7 +1,7 @@
-// @(#)$Id: 30ourtools.js 421 2008-06-02 10:59:56Z pjf $
+// @(#)$Id: 30ourtools.js 429 2008-06-28 00:43:12Z pjf $
 
 /* Property: setHTML
-      Sets the innerHTML of the Element.
+      Sets the innerHTML of the Element. Should work for application/xhtml+xml
 
    Arguments:
       html - string; the new innerHTML for the element.
@@ -356,52 +356,126 @@ Cookies.implement( new Options() );
 
 var FreeList = new Class({
    addItem: function( name ) {
-      var nelem = document.forms[0].elements[ 'new' + name ];
-      var celem = document.forms[0].elements[ 'cur' + name ];
-      var body, elem, rNo;
+      var form     = document.forms[0];
+      var new_elem = form.elements[ name + '_new'];
+      var cur_elem = form.elements[ name + '_current' ];
 
-      if (nelem && celem) {
-         celem.options[ celem.length ] = new Option( nelem.value );
+      cur_elem.options[ cur_elem.length ] = new Option( new_elem.value );
+      this.createHidden( form, name, new_elem.value );
+      new_elem.value = '';
+      return false;
+   },
 
-         if (body = $( 'body' )) {
-            if (elem = document.forms[0].elements[ 'nRows' + name ]) {
-               rNo  = elem.value;
-               elem.value = parseInt( rNo, 10 ) + 1;
-               elem = document.createElement( 'input' );
-               elem.setAttribute( 'value', nelem.value );
-               elem.setAttribute( 'type', 'hidden' );
-               elem.setAttribute( 'id', name + rNo );
-               elem.setAttribute( 'name', name );
-               body.appendChild( elem );
-            }
+   createHidden: function( form, name, val ) {
+      var row_elem = form.elements[ name + '_n_rows' ];
+      var nrows    = parseInt( row_elem.value, 10 );
+
+      hidden = document.createElement( 'input' );
+      hidden.setAttribute( 'type', 'hidden' );
+      hidden.setAttribute( 'id', name + nrows );
+      hidden.setAttribute( 'name', name );
+      hidden.setAttribute( 'value', val );
+      $( 'body' ).appendChild( hidden );
+      row_elem.value = nrows + 1;
+      return;
+   },
+
+   deleteHidden: function( form, name, val ) {
+      var row_elem = form.elements[ name + '_n_rows' ];
+      var nrows    = parseInt( row_elem.value, 10 );
+      var hidden;
+
+      for (var i = 0; i < nrows; i++) {
+         if ((hidden = $( name + i )) && (hidden.value == val)) {
+            hidden.remove(); row_elem.value = nrows - 1;
+            return true;
          }
-
-         nelem.value = '';
       }
 
       return false;
    },
 
    removeItem: function(name) {
-      var elem, hidden, i, j, nRows;
+      var form     = document.forms[0];
+      var cur_elem = form.elements[ name + '_current' ];
 
-      if (elem = document.forms[0].elements[ 'nRows' + name ]) {
-         nRows = parseInt( elem.value, 10 );
+      for (var i = cur_elem.length - 1; i >= 0; i--) {
+         if (cur_elem.options[ i ].selected == true) {
+            this.deleteHidden( form, name, cur_elem.options[ i ].value );
+            cur_elem.options[ i ] = null;
+         }
+      }
 
-         if (elem = document.forms[0].elements[ 'cur' + name ]) {
-            for (i = elem.length-1; i >= 0; i--) {
-               if (elem.options[ i ].selected == true) {
-                  for (j = 0; j < nRows; j++) {
-                     if (hidden = document.getElementById( name + j )) {
-                        if (hidden.value == elem.options[ i ].value) {
-                           hidden.name = 'del' + name; j = nRows;
-                        }
-                     }
-                  }
+      return false;
+   }
+});
 
-                  elem.options[ i ] = null;
-               }
+var GroupMember = new Class({
+   addItem: function( name ) {
+      var form     = document.forms[0];
+      var all_elem = form.elements[ name + '_all' ];
+      var cur_elem = form.elements[ name + '_current' ];
+
+      for (var i = all_elem.length - 1; i >= 0; i--) {
+         if (all_elem.options[ i ].selected == true) {
+            var val = all_elem.options[ i ].value;
+            cur_elem.options[ cur_elem.length ] = new Option( val );
+
+            if(!this.deleteHidden( form, name, 'deleted', val )) {
+               this.createHidden( form, name, 'added', val );
             }
+
+            all_elem.options[ i ] = null;
+         }
+      }
+
+      return false;
+   },
+
+   createHidden: function( form, name, type, val ) {
+      var row_elem = form.elements[ name + '_n_' + type ];
+      var nrows    = parseInt( row_elem.value, 10 );
+
+      hidden = document.createElement( 'input' );
+      hidden.setAttribute( 'type', 'hidden' );
+      hidden.setAttribute( 'id', name + '_' + type + nrows );
+      hidden.setAttribute( 'name', name + '_' + type );
+      hidden.setAttribute( 'value', val );
+      $( 'body' ).appendChild( hidden );
+      row_elem.value = nrows + 1;
+      return;
+   },
+
+   deleteHidden: function( form, name, type, val ) {
+      var row_elem = form.elements[ name + '_n_' + type ];
+      var nrows    = parseInt( row_elem.value, 10 );
+      var hidden;
+
+      for (var i = 0; i < nrows; i++) {
+         if ((hidden = $( name + '_' + type + i )) && (hidden.value == val)) {
+            hidden.remove(); row_elem.value = nrows - 1;
+            return true;
+         }
+      }
+
+      return false;
+   },
+
+   removeItem: function( name ) {
+      var form     = document.forms[0];
+      var all_elem = form.elements[ name + '_all' ];
+      var cur_elem = form.elements[ name + '_current' ];
+
+      for (var i = cur_elem.length - 1; i >= 0; i--) {
+         if (cur_elem.options[ i ].selected == true) {
+            var val = cur_elem.options[ i ].value;
+            all_elem.options[ all_elem.length ] = new Option( val );
+
+            if (!this.deleteHidden( form, name, 'added', val )) {
+               this.createHidden( form, name, 'deleted', val );
+            }
+
+            cur_elem.options[ i ] = null;
          }
       }
 
@@ -597,7 +671,7 @@ var LiveGridScroller = new Class({
    createScrollBar: function() {
       var table              = this.liveGrid.table;
       var visibleHeight      = table.offsetHeight;
-      this.lineHeight        =  visibleHeight/this.metaData.getPageSize();
+      this.lineHeight        = visibleHeight / this.metaData.getPageSize();
       this.scrollerDiv       = document.createElement( 'div' );
       var scrollerStyle      = this.scrollerDiv.style;
       scrollerStyle.position = 'relative';
@@ -998,21 +1072,21 @@ var TableUtils = new Class({
    },
 
    addTableRow: function( name, edit ) {
-      var aelem, cell, cNo = 0, elem, fld, nelem, nRows, row;
+      var aelem, cell, cNo = 0, elem, fld, nelem, nrows, row;
 
-      if (nelem = document.forms[0].elements[ 'nRows' + name ]) {
-         nRows = parseInt( nelem.value, 10 );
+      if (nelem = document.forms[0].elements[ name + '_nrows' ]) {
+         nrows = parseInt( nelem.value, 10 );
 
-         if (elem = $( 'add' + name )) {
+         if (elem = $( name + '_add' )) {
             row = document.createElement( 'tr' );
-            row.setAttribute( 'id', 'row' + name + nRows );
+            row.setAttribute( 'id', name + '_row' + nrows );
 
-            while (aelem = $( 'add' + name + cNo )) {
+            while (aelem = $( name + '_add' + cNo )) {
                if (edit) {
                   fld = document.createElement( 'input' );
                   fld.setAttribute( 'value', aelem.value );
                   fld.setAttribute( 'type', 'input' );
-                  fld.setAttribute( 'name', aelem.name + nRows );
+                  fld.setAttribute( 'name', aelem.name + nrows );
                   if (aelem.size) { fld.setAttribute( 'size', aelem.size ) }
                   if (aelem.maxlength) {
                      fld.setAttribute( 'maxlength', aelem.maxlength );
@@ -1030,7 +1104,7 @@ var TableUtils = new Class({
 
             if (edit) {
                fld = document.createElement( 'input' );
-               fld.setAttribute( 'name', 'select' + name + nRows );
+               fld.setAttribute( 'name', name + '_select' + nrows );
                fld.setAttribute( 'type', 'checkbox' );
                cell = document.createElement( 'td' );
                cell.setAttribute( 'align', 'center' );
@@ -1040,7 +1114,7 @@ var TableUtils = new Class({
             }
 
             elem.parentNode.insertBefore( row, elem );
-            nelem.value = nRows + 1;
+            nelem.value = nrows + 1;
          }
       }
 
@@ -1068,20 +1142,23 @@ var TableUtils = new Class({
    },
 
    removeTableRow: function( name ) {
-      var elem, hidden, i, j, nRows;
+      var count, elem, hidden, i, nelem, nrows; var form = document.forms[0];
 
-      if (elem = document.forms[0].elements[ 'nRows' + name ]) {
-         nRows = parseInt( elem.value, 10 );
+      if (nelem = form.elements[ name + '_nrows' ]) {
+         nrows = parseInt( nelem.value, 10 ); count = 0;
 
-         for (i = 0; i < nRows; i++) {
-            if (elem = document.forms[0].elements[ 'select' + name + i ]) {
+         for (i = 0; i < nrows; i++) {
+            if (elem = form.elements[ name + '_select' + i ]) {
                if (elem.checked) {
-                  if (elem = document.getElementById( 'row' + name + i )) {
+                  if (elem = $( name + '_row' + i )) {
                      elem.parentNode.removeChild( elem );
+                     count++;
                   }
                }
             }
          }
+
+         nelem.value = nrows - count;
       }
 
       return false;

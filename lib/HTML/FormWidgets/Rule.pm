@@ -30,9 +30,8 @@ sub _render {
    }
 
    $cells .= $htag->td( { class => q(minimal) }, $html ) if ($html);
-   $html   = $htag->hr( { class => $me->class } );
-   $cells .= $htag->td( $html );
-   return $htag->table( $htag->tr( $cells ) );
+   $cells .= $htag->td( $htag->hr( { class => $me->class } ) );
+   return $htag->table( { class => q(rule) }, $htag->tr( $cells ) );
 }
 
 1;

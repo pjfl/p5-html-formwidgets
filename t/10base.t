@@ -31,7 +31,7 @@ ok( $widget->render
 
 $widget = HTML::FormWidgets->new( id => q(test), type => q(date) );
 
-ok( $widget->render =~ m{ href="" \s class="tips" \s id="anchor_test" }mx,
+ok( $widget->render =~ m{ href="" \s class="tips" \s id="test_anchor" }mx,
     q(Date) );
 
 $widget = HTML::FormWidgets->new( hide => [],
@@ -96,7 +96,7 @@ $widget = HTML::FormWidgets->new( data   => {
                                   name   => q(table),
                                   type   => q(table) );
 
-ok( $widget->render =~ m{ tr \s id="rowtable1" }mx, q(Table) );
+ok( $widget->render =~ m{ tr \s id="table_row1" }mx, q(Table) );
 
 $widget = HTML::FormWidgets->new( name => q(textarea),
                                   type => q(textarea) );

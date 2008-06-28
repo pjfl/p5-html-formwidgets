@@ -20,8 +20,8 @@ sub _render {
    $text            = $htag->textfield( $ref );
    $html            = $htag->div( { class => q(container) }, $text );
    $html           .= $htag->div( { class => q(separator) }, q(&nbsp;) );
-   $text            = 'var cal_'.$me->name.' = new CalendarPopup(\'';
-   $text           .= $me->name.'_calendar\');';
+   $text            = 'var '.$me->name."_cal = new CalendarPopup('";
+   $text           .= $me->name."_calendar');";
    $text            = $htag->script( { type => q(text/javascript) }, $text );
    $ref             = { alt => q(Calendar), class => q(icon) };
    $ref->{src    }  = $me->assets.'calendar.png';
@@ -29,9 +29,9 @@ sub _render {
    $ref             = {};
    $ref->{class  }  = q(tips);
    $ref->{href   }  = q();
-   $ref->{id     }  = 'anchor_'.$me->name;
-   $ref->{onclick}  = 'cal_'.$me->name.'.select( document.forms[0].'.$me->name;
-   $ref->{onclick} .= ', '.'\'anchor_'.$me->name.'\', \''.$format.'\' ); ';
+   $ref->{id     }  = $me->name.'_anchor';
+   $ref->{onclick}  = $me->name.'_cal.select( document.forms[0].'.$me->name;
+   $ref->{onclick} .= ", '".$me->name."_anchor', '".$format."' ); ";
    $ref->{onclick} .= 'return false;';
    $ref->{title  }  = $me->hint_title.$TTS.$me->msg( q(dateWidgetTip) );
    $text            = $htag->a( $ref, $text );

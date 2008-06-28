@@ -268,10 +268,6 @@ sub render {
 
    return $html unless ($field = $me->_render( $ref ));
 
-   if ($me->container) {
-      $field = $htag->div( { class => q(container ).$me->align }, $field );
-   }
-
    if ($tip = $me->tip) {
       $tip =~ s{ \n }{ }gmx;
       $tip = $me->hint_title.$TTS.$tip if ($tip !~ m{ $TTS }mx);
@@ -280,14 +276,18 @@ sub render {
 
       if ($me->tiptype ne q(dagger)) { $field = $htag->span( $ref, $field ) }
       else { $field .= $htag->span( $ref, $me->nb_symbol ) }
+   }
 
-      $field = $htag->div( { class => q(container) }, $field );
+   if ($me->container) {
+      $ref   = { class => q(container ).$me->align };
+      $field = $htag->div( $ref, $field );
    }
 
    if ($me->ajaxid) {
       $ref    = { class => q(hidden), id => $me->ajaxid.q(_checkField) };
-      $field .= $htag->span( $ref, $me->ajaxtext );
-      $field  = $htag->div( { class => q(container) }, $field );
+      $field .= $htag->div( $ref, $htag->br().$me->ajaxtext );
+      $ref    = { class => q(container) };
+      $field  = $htag->div( $ref, $field );
    }
 
    return $html.$field;
@@ -313,7 +313,7 @@ sub _group_fields {
 
    my $htag   = HTML::Accessors->new();
    my $legend = $htag->legend( $item->{content}->{text} );
-   return $htag->fieldset( $legend.$html );
+   return "\n".$htag->fieldset( "\n".$legend.$html );
 }
 
 sub _merge_config {

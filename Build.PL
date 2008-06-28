@@ -25,7 +25,7 @@ my $build = Module::Build->new
      dist_version_from  => q(lib/HTML/FormWidgets.pm),
      license            => q(perl),
      module_name        => q(HTML::FormWidgets),
-     notes              => { cpan_testers => 1 },
+     notes              => { cpan_testers_version => 1 },
      requires           => $requires );
 
 $build->create_build_script();

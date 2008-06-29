@@ -690,6 +690,10 @@ returned table of radio buttons. The list of button values is passed in
 B<values> with the display labels in B<labels>. The
 onchange event handler will be set to B<onchange>
 
+=head2 Rule
+
+Generates a horizontal rule with optional clickable action
+
 =head2 ScrollingList
 
 The B<height> attribute controls the height of the scrolling

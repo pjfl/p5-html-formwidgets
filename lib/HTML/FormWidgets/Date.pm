@@ -20,12 +20,18 @@ sub _render {
    $text            = $htag->textfield( $ref );
    $html            = $htag->div( { class => q(container) }, $text );
    $html           .= $htag->div( { class => q(separator) }, q(&nbsp;) );
-   $text            = 'var '.$me->name."_cal = new CalendarPopup('";
-   $text           .= $me->name."_calendar');";
-   $text            = $htag->script( { type => q(text/javascript) }, $text );
+   $text            = 'function getAnchorPosition(anchorname) {';
+   $text           .= 'var coordinates = new Object();';
+	$text           .= 'coordinates.x = 0; coordinates.y = 0;';
+	$text           .= 'return coordinates; }';
+   $text           .= 'var '.$me->name."_cal = new CalendarPopup('";
+   $text           .= $me->name."_calendar'); ";
+   $text           .= $me->name."_cal.offsetX = 0; ";
+   $text           .= $me->name."_cal.offsetY = 0; ";
+   $html           .= $htag->script( { type => q(text/javascript) }, $text );
    $ref             = { alt => q(Calendar), class => q(icon) };
    $ref->{src    }  = $me->assets.'calendar.png';
-   $text           .= $htag->img( $ref );
+   $text            = $htag->img( $ref );
    $ref             = {};
    $ref->{class  }  = q(tips);
    $ref->{href   }  = q();
@@ -35,9 +41,9 @@ sub _render {
    $ref->{onclick} .= 'return false;';
    $ref->{title  }  = $me->hint_title.$TTS.$me->msg( q(dateWidgetTip) );
    $text            = $htag->a( $ref, $text );
-   $html           .= $htag->div( { class => q(container) }, $text );
-   $html           .= $htag->div( { class => q(calendar hidden),
+   $text           .= $htag->div( { class => q(calendar hidden),
                                     id    => $me->name.'_calendar' } );
+   $html           .= $htag->div( { class => q(container) }, $text );
    return $html;
 }
 

@@ -1,3 +1,9 @@
+2008-07-21
+
+	* lib/HTML/FormWidgets.pm:
+
+   Added support for markdown
+
 2008-06-02
 
 	* Build.PL:

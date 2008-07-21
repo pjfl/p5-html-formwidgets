@@ -9,6 +9,7 @@ use English qw(-no_match_vars);
 use File::Spec::Functions;
 use HTML::Accessors;
 use Readonly;
+use Text::Markdown qw(markdown);
 
 use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
 
@@ -37,6 +38,7 @@ Readonly my %ATTRS =>
      imgclass     => undef,
      key          => $NUL,          key2id       => {},
      key2url      => {},            labels       => undef,
+     mark_obj     => undef,
      max_length   => undef,         messages     => undef,
      name         => $NUL,          nb_symbol    => q(&nbsp;&dagger;),
      node         => undef,         nowrap       => 0,
@@ -103,7 +105,7 @@ sub build {
 sub new {
    my ($me, @rest) = @_;
    my $args        = $me->_arg_list( @rest );
-   my ($class, $method, $msg_id, $ref, $self, $text, @tmp, $val);
+   my ($class, $method, $msg_id, $ref, $self, $suffix, $text, @tmp, $val);
 
    # Start with some hard coded defaults;
    $self = { %ATTRS };
@@ -111,6 +113,9 @@ sub new {
    # Now we can create HTML elements like we could with CGI.pm
    $ref = { content_type => $args->{content_type} } if ($args->{content_type});
    $self->{elem} = HTML::Accessors->new( $ref );
+
+   $suffix = $args->{content_type} && $args->{content_type} eq q(text/html)
+           ? q(>) : q( />);
 
    # Bare minimum is fields + id to get a useful widget
    for (qw(ajaxid fields id name)) {
@@ -170,6 +175,10 @@ sub new {
 
    $self->{nodeId} = q(node_0); # Define accessor by hand to auto increment
 
+   $self->mark_obj( Text::Markdown->new
+                    ( empty_element_suffix => $suffix,
+                      tab_width            => $self->tabstop ) );
+
    # Pander to lazy filling out of static definitions
    $self->container( $self->type =~ m{ chooser|file|label|note }mx ? 0 : 1 )
       unless (defined $self->container);
@@ -219,13 +228,28 @@ sub new {
 # Object methods
 
 sub msg {
-   my ($me, $key) = @_;
+   # Return the language dependant text of the requested message
+   my ($me, $name, $args) = @_; my ($key, $msgs, $pat, $text, $val);
 
-   return q() unless ($me->messages);
+   return q() unless ($name && ($msgs = $me->messages));
 
-   my $msg = $me->messages->{ $key || q() } || {};
+   if (exists $msgs->{ $name } && ($text = $msgs->{ $name }->{text})) {
+      if ($msgs->{ $name }->{markdown}) {
+         $text = $me->mark_obj->markdown( $text );
+      }
 
-   return $msg->{text} || q();
+      if ($args) {
+         # Inflate arg values enclosed in [%%]
+         for $key (keys %{ $args }) {
+            $pat  = q(\[% \s+ ).$key.q( \s+ %\]);
+            $val  = $args->{ $key } || q();
+            $text =~ s{ $pat }{$val}gmx;
+         }
+      }
+   }
+   else { $text = q() }
+
+   return $text;
 }
 
 sub render {
@@ -744,6 +768,8 @@ None
 =item L<Readonly>
 
 =item L<Syntax::Highlight::Perl>
+
+=item L<Text::Markdown>
 
 =item L<Text::ParseWords>
 

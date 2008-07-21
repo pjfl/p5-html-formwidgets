@@ -14,6 +14,7 @@ my $requires = { 'perl'                    => q(5.008),
                  'HTML::Accessors'         => q(0.1.22),
                  'Readonly'                => q(1.03),
                  'Syntax::Highlight::Perl' => q(1.00),
+                 'Text::Markdown'          => q(1.0.20),
                  'Text::ParseWords'        => q(3.22),
                  'Text::Tabs'              => q(98.112801) };
 my $build = Module::Build->new

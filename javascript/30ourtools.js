@@ -1470,6 +1470,11 @@ var WindowUtils = new Class({
       this.copts = { path: options.path || '/', domain: options.domain || '' };
    },
 
+   openWindow: function( href, key, prefs ) {
+      window.open( href, key, prefs );
+      return;
+   },
+
    placeOnTop: function() {
       if (self != top) {
          if (document.images) top.location.replace( window.location.href );

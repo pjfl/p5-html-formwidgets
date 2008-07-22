@@ -38,7 +38,6 @@ Readonly my %ATTRS =>
      imgclass     => undef,
      key          => $NUL,          key2id       => {},
      key2url      => {},            labels       => undef,
-     mark_obj     => undef,
      max_length   => undef,         messages     => undef,
      name         => $NUL,          nb_symbol    => q(&nbsp;&dagger;),
      node         => undef,         nowrap       => 0,
@@ -53,7 +52,8 @@ Readonly my %ATTRS =>
      style        => $NUL,          subtype      => undef,
      swidth       => 1000,          tabstop      => 3,
      target       => $NUL,          templatedir  => undef,
-     text         => $NUL,          tip          => $NUL,
+     text         => $NUL,
+     text_obj     => undef,         tip          => $NUL,
      tiptype      => q(dagger),     title        => $NUL,
      type         => undef,         url          => undef,
      value        => 1,             values       => [],
@@ -175,7 +175,7 @@ sub new {
 
    $self->{nodeId} = q(node_0); # Define accessor by hand to auto increment
 
-   $self->mark_obj( Text::Markdown->new
+   $self->text_obj( Text::Markdown->new
                     ( empty_element_suffix => $suffix,
                       tab_width            => $self->tabstop ) );
 
@@ -235,7 +235,7 @@ sub msg {
 
    if (exists $msgs->{ $name } && ($text = $msgs->{ $name }->{text})) {
       if ($msgs->{ $name }->{markdown}) {
-         $text = $me->mark_obj->markdown( $text );
+         $text = $me->text_obj->markdown( $text );
       }
 
       if ($args) {

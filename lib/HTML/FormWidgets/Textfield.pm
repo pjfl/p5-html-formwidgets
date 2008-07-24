@@ -11,7 +11,7 @@ use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
 sub _render {
    my ($me, $ref) = @_;
 
-   $ref->{size} = $me->width || 60;
+   $ref->{size} = $me->width || 40;
 
    return $me->elem->textfield( $ref );
 }

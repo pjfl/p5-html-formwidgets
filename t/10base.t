@@ -108,4 +108,4 @@ $widget = HTML::FormWidgets->new( default => q(test),
                                   name    => q(textfield),
                                   type    => q(textfield) );
 
-ok( $widget->render =~ m{ input \s value="test" \s name="textfield" \s type="text" \s id="textfield" \s size="60" }mx, q(Textfield) );
+ok( $widget->render =~ m{ input \s value="test" \s name="textfield" \s type="text" \s id="textfield" \s size="40" }mx, q(Textfield) );

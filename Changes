@@ -1,3 +1,9 @@
+2008-08-15
+
+   * MANIFEST
+
+   Removed second SIGNATURE entry
+
 2008-07-21
 
 	* lib/HTML/FormWidgets.pm:

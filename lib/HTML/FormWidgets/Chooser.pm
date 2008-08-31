@@ -22,8 +22,6 @@ sub _render {
    $ref->{onclick} = $onclick;
    $ref->{value}   = $me->button;
 
-   push @{ $me->hide }, { name => q(_verb), value => q() };
-
    return $me->elem->submit( $ref );
 }
 

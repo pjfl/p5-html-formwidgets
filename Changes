@@ -1,3 +1,9 @@
+2008-08-31
+
+	* lib/HTML/FormWidgets/Chooser.pm:
+
+	Removed hidden field _verb as unecessary
+
 2008-08-15
 
    * MANIFEST

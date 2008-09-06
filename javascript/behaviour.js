@@ -25,8 +25,11 @@ var State = new Class({
       var append, content, elem, elemHeight, elemWidth, height = 5;
       var h = window.getHeight(), w = window.getWidth();
 
-      this.cookies.set( 'width',  w );
-      this.cookies.set( 'height', h );
+      if (!isPopup) {
+         this.cookies.set( 'width',  w );
+         this.cookies.set( 'height', h );
+      }
+
       window.defaultStatus = 'w: ' + w + ' h: ' + h;
 
       if (! (content = $( 'content' ))) return;

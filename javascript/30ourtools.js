@@ -1,4 +1,4 @@
-// @(#)$Id: 30ourtools.js 429 2008-06-28 00:43:12Z pjf $
+// @(#)$Id: 30ourtools.js 473 2008-08-31 20:45:33Z pjf $
 
 /* Property: setHTML
       Sets the innerHTML of the Element. Should work for application/xhtml+xml
@@ -1036,8 +1036,6 @@ var SubmitUtils = new Class({
 
          if (field.focus) field.focus();
       }
-
-      if (form && key) { form._verb.value = key; form.submit() }
 
       window.close();
       return false;

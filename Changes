@@ -1,3 +1,9 @@
+2008-09-06
+
+	* lib/HTML/FormWidgets.pm:
+
+	Tweaked POD. Bumping release to fix broken CPAN Testers database.
+
 2008-08-31
 
 	* lib/HTML/FormWidgets/Chooser.pm:

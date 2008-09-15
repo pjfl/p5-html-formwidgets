@@ -40,26 +40,26 @@ Readonly my %SCHEME =>
 
 sub _render {
    # Subtypes: file, csv, html, source, and logfile
-   my ($me, $ref) = @_;
+   my ($self, $ref) = @_;
    my ($attr, $box, $cells, $c_no, $fld, $fmt, $htag, $key, $line);
    my ($pat, $path, $r_no, $rdr, $rows, $span, $text);
 
-   $me->header( [] )       unless (defined $me->header);
-   $me->select( -1 )       unless (defined $me->select);
-   $me->subtype( q(file) ) unless (defined $me->subtype);
+   $self->header( [] )       unless (defined $self->header);
+   $self->select( -1 )       unless (defined $self->select);
+   $self->subtype( q(file) ) unless (defined $self->subtype);
 
-   $htag = $me->elem; $path = $me->path;
+   $htag = $self->elem; $path = $self->path;
 
-   if ($me->subtype eq q(html)) {
-      $pat   = $me->root;
+   if ($self->subtype eq q(html)) {
+      $pat   = $self->root;
 
       if ($path =~ m{ \A $pat }msx) {
-         $path = $me->base.($path =~ s{ \A $pat }{/}msx);
+         $path = $self->base.($path =~ s{ \A $pat }{/}msx);
       }
 
-      $path  = $path =~ m{ \A http: }msx ? $path : $me->base.$path;
+      $path  = $path =~ m{ \A http: }msx ? $path : $self->base.$path;
       $text  = 'border: 0px; bottom: 0px; position: absolute; ';
-      $text .= 'top: 0px; width: 100%; height: 100%; '.$me->style;
+      $text .= 'top: 0px; width: 100%; height: 100%; '.$self->style;
 
       return $htag->iframe( { src       => $path,
                               scrolling => q(auto),
@@ -71,33 +71,33 @@ sub _render {
 
    $text = do { local $RS = undef; <$rdr> }; $rdr->close();
 
-   if ($me->subtype eq q(source)) {
+   if ($self->subtype eq q(source)) {
       $fmt = Syntax::Highlight::Perl->new();
       $fmt->set_format( \%SCHEME );
       $fmt->define_substitution( q(<) => q(&lt;),
                                  q(>) => q(&gt;),
                                  q(&) => q(&amp;) );
-      $tabstop = $me->tabstop;
+      $tabstop = $self->tabstop;
       $text    = expand( $text );
       $text    = $fmt->format_string( $text );
 
-      return $htag->pre( { class => $me->subtype }, $text );
+      return $htag->pre( { class => $self->subtype }, $text );
    }
 
    $r_no = 0; $rows = q(); $span = 1;
 
-   if ($me->subtype eq q(logfile)) {
+   if ($self->subtype eq q(logfile)) {
       # TODO: Add Prev and next links to append div
       for $line (split m { \n }mx, $text) {
          $line   = $htag->escape_html( $line, 0 );
-         $line   = $htag->pre( { class => $me->subtype }, $line );
-         $cells  = $htag->td(  { class => $me->subtype }, $line );
-         $rows  .= $htag->tr(  { class => $me->subtype }, $cells )."\n";
+         $line   = $htag->pre( { class => $self->subtype }, $line );
+         $cells  = $htag->td(  { class => $self->subtype }, $line );
+         $rows  .= $htag->tr(  { class => $self->subtype }, $cells )."\n";
          $r_no++;
       }
 
       $text = $htag->hidden( { name => q(nRows), value => $r_no } );
-      push @{ $me->hide }, $text;
+      push @{ $self->hide }, $text;
 
       return $htag->table( { cellpadding => 0, cellspacing => 0 }, $rows );
    }
@@ -106,30 +106,33 @@ sub _render {
       $line  = $htag->escape_html( $line, 0 );
       $cells = q(); $c_no = 0;
 
-      if ($me->subtype eq q(csv)) {
+      if ($self->subtype eq q(csv)) {
          for $fld (parse_line( q(,), 0, $line )) {
             if ($r_no == 0 && $line =~ m{ \A \# }mx) {
                $fld = substr $fld, 1 if ($c_no == 0);
-               $me->header->[ $c_no ] = $fld unless ($me->header->[ $c_no ]);
+
+               unless ($self->header->[ $c_no ]) {
+                  $self->header->[ $c_no ] = $fld;
+               }
             }
             else {
-               $attr   = { class => $me->subtype.q( ).($c_no % 2 == 0 ?
-                                                      q(even) : q(odd)) };
+               $attr   = { class => $self->subtype.q( ).($c_no % 2 == 0 ?
+                                                         q(even) : q(odd)) };
                $cells .= $htag->td( $attr, $fld );
             }
 
-            $key = $fld if ($c_no == $me->select);
+            $key = $fld if ($c_no == $self->select);
             $c_no++;
          }
 
          next if ($r_no == 0 && $line =~ m{ \A \# }msx);
       }
       else {
-         $cells .= $htag->td( { class => $me->subtype }, $line );
+         $cells .= $htag->td( { class => $self->subtype }, $line );
          $c_no++;
       }
 
-      if ($me->select >= 0) {
+      if ($self->select >= 0) {
          $box   = $htag->checkbox( { label => q(),
                                      name  => q(select).$r_no,
                                      value => $key } );
@@ -143,21 +146,21 @@ sub _render {
       $c_no++;
 
       $span  = $c_no if ($c_no > $span);
-      $rows .= $htag->tr( { class => $me->subtype }, $cells );
+      $rows .= $htag->tr( { class => $self->subtype }, $cells );
       $r_no++;
    }
 
    $cells = $htag->th( { class => q(small table minimal) }, chr 35 );
    $c_no  = 1;
 
-   if ($me->select >= 0) {
+   if ($self->select >= 0) {
       $cells .= $htag->th( { class => q(small table minimal) }, q(M) );
       $c_no++;
    }
 
-   if ($me->subtype eq q(csv)) {
-      if ($me->header->[0]) {
-         for $text (@{ $me->header }) {
+   if ($self->subtype eq q(csv)) {
+      if ($self->header->[0]) {
+         for $text (@{ $self->header }) {
             $cells .= $htag->th( { class => q(small table) }, $text );
             last if (++$c_no >= $span);
          }
@@ -173,7 +176,8 @@ sub _render {
 
    $rows  = $htag->tr( $cells ).$rows;
 
-   push @{ $me->hide }, $htag->hidden( { name => q(nRows), value => $r_no } );
+   push @{ $self->hide }, $htag->hidden( { name  => q(nRows),
+                                           value => $r_no } );
 
    return $htag->table( $rows );
 }

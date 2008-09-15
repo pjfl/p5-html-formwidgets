@@ -18,8 +18,9 @@ my $requires = { 'perl'                    => q(5.008),
                  'Text::ParseWords'        => q(3.22),
                  'Text::Tabs'              => q(98.112801) };
 my $build = Module::Build->new
-   ( build_requires     => { 'Test::More' => q(0.74) },
-     configure_requires => { 'version' => q(0.74) },
+   ( build_requires     => { 'Test::More'          => q(0.74) },
+     configure_requires => { 'ExtUtils::MakeMaker' => q(6.42),
+                             'version'             => q(0.74) },
      create_makefile_pl => q(traditional),
      create_readme      => 1,
      create_packlist    => 0,

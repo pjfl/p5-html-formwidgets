@@ -9,14 +9,14 @@ use base qw(HTML::FormWidgets);
 use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
 
 sub _render {
-   my ($me, $ref)  = @_;
+   my ($self, $ref)  = @_;
 
    delete $ref->{name};
-   $ref->{class  } = $me->class || q(linkFade);
-   $ref->{href   } = $me->href  || q();
-   $ref->{onclick} = $me->onclick if ($me->onclick);
+   $ref->{class  } = $self->class || q(linkFade);
+   $ref->{href   } = $self->href  || q();
+   $ref->{onclick} = $self->onclick if ($self->onclick);
 
-   return $me->elem->a( $ref, $me->text || q(link) );
+   return $self->elem->a( $ref, $self->text || q(link) );
 }
 
 1;

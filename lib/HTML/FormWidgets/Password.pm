@@ -9,16 +9,16 @@ use base qw(HTML::FormWidgets);
 use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
 
 sub _render {
-   my ($me, $ref) = @_; my $text;
+   my ($self, $ref) = @_; my $text;
 
-   $ref->{size} = $me->width || 20;
-   $text        = $me->elem->password_field( $ref );
+   $ref->{size} = $self->width || 20;
+   $text        = $self->elem->password_field( $ref );
 
-   return $text unless ($me->subtype && $me->subtype eq q(verify));
+   return $text unless ($self->subtype && $self->subtype eq q(verify));
 
-   $text .= $me->msg( q(vPasswordPrompt) );
+   $text .= $self->msg( q(vPasswordPrompt) );
    $ref->{name} =~ s{ 1 }{2}mx; $ref->{id} =~ s{ 1 }{2}mx;
-   $text .= $me->elem->password_field( $ref );
+   $text .= $self->elem->password_field( $ref );
    return $text;
 }
 

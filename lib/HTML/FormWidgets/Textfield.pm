@@ -9,11 +9,11 @@ use base qw(HTML::FormWidgets);
 use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
 
 sub _render {
-   my ($me, $ref) = @_;
+   my ($self, $ref) = @_;
 
-   $ref->{size} = $me->width || 40;
+   $ref->{size} = $self->width || 40;
 
-   return $me->elem->textfield( $ref );
+   return $self->elem->textfield( $ref );
 }
 
 1;

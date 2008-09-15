@@ -9,13 +9,13 @@ use base qw(HTML::FormWidgets);
 use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
 
 sub _render {
-   my ($me, $ref) = @_;
+   my ($self, $ref) = @_;
    my ($anchor, $attrs, $class, $class_pref, $hacc, $href, $html);
    my ($id_pref, $item, $onclick, $style, $text);
 
-   $hacc = $me->elem;
+   $hacc = $self->elem;
 
-   for $item (@{ $me->data }) {
+   for $item (@{ $self->data }) {
       $ref        = $item->{value};
       $class_pref = $ref->{class_pref};
       $id_pref    = $ref->{id_pref   };

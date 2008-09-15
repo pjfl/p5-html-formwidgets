@@ -12,9 +12,9 @@ use IO::File;
 use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
 
 sub _render {
-   my ($me, $ref) = @_; my ($content, $path, $rdr);
+   my ($self, $ref) = @_; my ($content, $path, $rdr);
 
-   $path = catfile( $me->templatedir, $me->id.'.tt' );
+   $path = catfile( $self->templatedir, $self->id.'.tt' );
 
    return 'Not found '.$path   unless (-f $path);
    return 'Cannot read '.$path unless ($rdr = IO::File->new( $path, q(r) ));

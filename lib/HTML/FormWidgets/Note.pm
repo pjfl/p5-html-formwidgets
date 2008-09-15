@@ -9,15 +9,16 @@ use base qw(HTML::FormWidgets);
 use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
 
 sub _render {
-   my ($me, $ref) = @_; my $text;
+   my ($self, $ref) = @_; my $text;
 
    $ref           = { class => q(note) };
-   $ref->{style} .= 'text-align: '.$me->align.q(;) if ($me->align);
-   $ref->{style} .= ' width: '.$me->width.q(;)     if ($me->width);
+   $ref->{style} .= 'text-align: '.$self->align.q(;) if ($self->align);
+   $ref->{style} .= ' width: '.$self->width.q(;)     if ($self->width);
 
-   ($text = $me->msg( $me->name ) || $me->text || q()) =~ s{ \A \n }{}msx;
+   ($text = $self->msg( $self->name ) || $self->text || q())
+      =~ s{ \A \n }{}msx;
 
-   return $me->elem->div( $ref, $text );
+   return $self->elem->div( $ref, $text );
 }
 
 1;

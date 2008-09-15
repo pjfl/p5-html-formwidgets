@@ -71,7 +71,7 @@ __PACKAGE__->mk_classaccessors( keys %ATTRS );
 # Class methods
 
 sub build {
-   my ($me, $config, $form) = @_; my ($item, $list, $ref, @tmp, $widget);
+   my ($self, $config, $form) = @_; my ($item, $list, $ref, @tmp, $widget);
 
    for $list (@{ $form }) {
       next unless ($list && ref $list eq q(HASH));
@@ -81,10 +81,10 @@ sub build {
       for $item (@{ $list->{items} }) {
          if (ref $item->{content} eq q(HASH)) {
             if ($item->{content}->{group}) {
-               $ref = { content => $me->_group_fields( $item, \@tmp ) };
+               $ref = { content => $self->_group_fields( $item, \@tmp ) };
             }
             elsif ($item->{content}->{widget}) {
-               $widget = $me->new( $me->_merge_config( $config, $item ) );
+               $widget = $self->new( $self->_merge_config( $config, $item ) );
                $ref    = { content => $widget->render };
                $ref->{class} = $widget->class if ($widget->class);
             }
@@ -103,9 +103,8 @@ sub build {
 }
 
 sub new {
-   my ($me, @rest) = @_;
-   my $args        = $me->_arg_list( @rest );
-   my ($class, $method, $msg_id, $ref, $self, $suffix, $text, @tmp, $val);
+   my ($proto, @rest) = @_; my $args = $proto->_arg_list( @rest );
+   my ($class, $msg_id, $ref, $self, $suffix, $text, @tmp, $val);
 
    # Start with some hard coded defaults;
    $self = { %ATTRS };
@@ -185,8 +184,7 @@ sub new {
 
    if ($self->ajaxid) {
       $msg_id = $self->fields
-              ? $self->fields->{ $self->ajaxid }->{validate}
-              : $NUL;
+              ? $self->fields->{ $self->ajaxid }->{validate} : $NUL;
       $msg_id = $msg_id->[0] if (ref $msg_id eq q(ARRAY));
       $text   = $self->msg( $msg_id ) || 'Invalid field value';
       $self->ajaxtext( $text );
@@ -229,13 +227,13 @@ sub new {
 
 sub msg {
    # Return the language dependant text of the requested message
-   my ($me, $name, $args) = @_; my ($key, $msgs, $pat, $text, $val);
+   my ($self, $name, $args) = @_; my ($key, $msgs, $pat, $text, $val);
 
-   return q() unless ($name && ($msgs = $me->messages));
+   return q() unless ($name && ($msgs = $self->messages));
 
    if (exists $msgs->{ $name } && ($text = $msgs->{ $name }->{text})) {
       if ($msgs->{ $name }->{markdown}) {
-         $text = $me->text_obj->markdown( $text );
+         $text = $self->text_obj->markdown( $text );
       }
 
       if ($args) {
@@ -253,63 +251,65 @@ sub msg {
 }
 
 sub render {
-   my $me = shift; my ($field, $htag, $html, $method, $ref, $tip);
+   my $self = shift; my ($field, $htag, $html, $ref, $tip);
 
-   return $me->text || $NUL unless ($me->type);
+   return $self->text || $NUL unless ($self->type);
 
-   $htag  = $me->elem;
-   $html  = $me->clear eq q(left) ? $htag->br() : "\n";
+   $htag = $self->elem;
+   $html = $self->clear eq q(left) ? $htag->br() : "\n";
 
-   if ($me->stepno) {
-      $html .= $htag->span( { class => q(lineNumber) }, $me->stepno );
+   if ($self->stepno) {
+      $html .= $htag->span( { class => q(lineNumber) }, $self->stepno );
    }
 
-   if ($me->prompt) {
+   if ($self->prompt) {
       $ref           = { class => q(prompt) };
-      $ref->{for  }  = $me->id                         if ($me->id);
-      $ref->{style} .= 'text-align: '.$me->palign.'; ' if ($me->palign);
-      $ref->{style} .= 'white-space: nowrap; '         if ($me->nowrap);
-      $ref->{style} .= 'width: '.$me->pwidth.q(;)      if ($me->pwidth);
-      $html         .= $htag->label( $ref, $me->prompt );
+      $ref->{for  }  = $self->id                         if ($self->id);
+      $ref->{style} .= 'text-align: '.$self->palign.'; ' if ($self->palign);
+      $ref->{style} .= 'white-space: nowrap; '           if ($self->nowrap);
+      $ref->{style} .= 'width: '.$self->pwidth.q(;)      if ($self->pwidth);
+      $html         .= $htag->label( $ref, $self->prompt );
    }
 
-   if ($me->type eq q(groupMembership)) {
+   if ($self->type eq q(groupMembership)) {
       $ref           = { class => q(instructions) };
-      $ref->{style} .= 'text-align: '.$me->palign.'; ' if ($me->palign);
-      $ref->{style} .= 'width: '.$me->pwidth.q(;)      if ($me->pwidth);
-      $html         .= $htag->div( $ref, $me->fhelp );
+      $ref->{style} .= 'text-align: '.$self->palign.'; ' if ($self->palign);
+      $ref->{style} .= 'width: '.$self->pwidth.q(;)      if ($self->pwidth);
+      $html         .= $htag->div( $ref, $self->fhelp );
    }
 
-   $html .= $htag->div( { class => q(separator) }, $me->sep ) if ($me->sep);
+   if ($self->sep) {
+      $html .= $htag->div( { class => q(separator) }, $self->sep );
+   }
 
    $ref               = {};
-   $ref->{class     } = q(required)     if ($me->required);
-   $ref->{default   } = $me->default    if ($me->default);
-   $ref->{id        } = $me->id         if ($me->id);
-   $ref->{name      } = $me->name       if ($me->name);
-   $ref->{onblur    } = $me->onblur     if ($me->onblur);
-   $ref->{onkeypress} = $me->onkeypress if ($me->onkeypress);
+   $ref->{class     } = q(required)       if ($self->required);
+   $ref->{default   } = $self->default    if ($self->default);
+   $ref->{id        } = $self->id         if ($self->id);
+   $ref->{name      } = $self->name       if ($self->name);
+   $ref->{onblur    } = $self->onblur     if ($self->onblur);
+   $ref->{onkeypress} = $self->onkeypress if ($self->onkeypress);
 
-   return $html unless ($field = $me->_render( $ref ));
+   return $html unless ($field = $self->_render( $ref ));
 
-   if ($tip = $me->tip) {
+   if ($tip = $self->tip) {
       $tip =~ s{ \n }{ }gmx;
-      $tip = $me->hint_title.$TTS.$tip if ($tip !~ m{ $TTS }mx);
+      $tip = $self->hint_title.$TTS.$tip if ($tip !~ m{ $TTS }mx);
       $tip =~ s{ \s+ }{ }gmx;
       $ref = { class => q(help tips), title => $tip };
 
-      if ($me->tiptype ne q(dagger)) { $field = $htag->span( $ref, $field ) }
-      else { $field .= $htag->span( $ref, $me->nb_symbol ) }
+      if ($self->tiptype ne q(dagger)) { $field = $htag->span( $ref, $field ) }
+      else { $field .= $htag->span( $ref, $self->nb_symbol ) }
    }
 
-   if ($me->container) {
-      $ref   = { class => q(container ).$me->align };
+   if ($self->container) {
+      $ref   = { class => q(container ).$self->align };
       $field = $htag->div( $ref, $field );
    }
 
-   if ($me->ajaxid) {
-      $ref    = { class => q(hidden), id => $me->ajaxid.q(_checkField) };
-      $field .= $htag->div( $ref, $htag->br().$me->ajaxtext );
+   if ($self->ajaxid) {
+      $ref    = { class => q(hidden), id => $self->ajaxid.q(_checkField) };
+      $field .= $htag->div( $ref, $htag->br().$self->ajaxtext );
       $ref    = { class => q(container) };
       $field  = $htag->div( $ref, $field );
    }
@@ -320,7 +320,7 @@ sub render {
 # Private methods
 
 sub _arg_list {
-   my ($me, @rest) = @_;
+   my ($self, @rest) = @_;
 
    return {} unless ($rest[0]);
 
@@ -328,7 +328,7 @@ sub _arg_list {
 }
 
 sub _group_fields {
-   my ($me, $item, $list) = @_; my $html = $NUL; my $ref;
+   my ($self, $item, $list) = @_; my $html = $NUL; my $ref;
 
    for (1 .. $item->{content}->{nitems}) {
       $ref  = pop @{ $list }; chomp $ref->{content};
@@ -341,15 +341,15 @@ sub _group_fields {
 }
 
 sub _merge_config {
-   my ($me, $config, $item) = @_;
+   my ($self, $config, $item) = @_;
 
    return { %{ $config }, %{ $item->{content} } };
 }
 
 sub _render {
-   my ($me, $ref) = @_;
+   my ($self, $ref) = @_;
 
-   return $me->text if ($me->text);
+   return $self->text if ($self->text);
 
    return 'No _render method for field '.($ref->{id} || '*unknown id*');
 }
@@ -376,10 +376,10 @@ HTML::FormWidgets - Create HTML form markup
    use HTML::FormWidgets;
 
    sub build_form {
-      my ($me, $c) = @_;
-      my $s        = $c->stash;
-      my $form     = [ $s->{iFrame} ];
-      my $config   = {};
+      my ($self, $c) = @_;
+      my $s          = $c->stash;
+      my $form       = [ $s->{iFrame} ];
+      my $config     = {};
 
       $config->{root        } = $c->config->{root};
       $config->{base        } = $c->req->base;

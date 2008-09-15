@@ -9,12 +9,12 @@ use base qw(HTML::FormWidgets);
 use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
 
 sub _render {
-   my ($me, $ref)  = @_;
+   my ($self, $ref)  = @_;
 
-   $ref->{cols} = $me->width || 60;
-   $ref->{rows} = $me->height;
+   $ref->{cols} = $self->width || 60;
+   $ref->{rows} = $self->height;
 
-   return $me->elem->textarea( $ref );
+   return $self->elem->textarea( $ref );
 }
 
 1;

@@ -9,7 +9,7 @@ use FindBin    qw($Bin);
 use lib        qq($Bin/../lib);
 use Test::More tests => 15;
 
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 9 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev: 9 $ =~ /\d+/gmx );
 
 BEGIN { use_ok q(HTML::FormWidgets) }
 

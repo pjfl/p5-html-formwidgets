@@ -6,16 +6,30 @@ use strict;
 use warnings;
 use base qw(HTML::FormWidgets);
 
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev$ =~ /\d+/gmx );
+
+__PACKAGE__->mk_accessors( qw(height labels values) );
+
+sub init {
+   my ($self, $args) = @_;
+
+   $self->height( 10 );
+   $self->labels( undef );
+   $self->values( [] );
+
+   $self->NEXT::init( $args );
+   return;
+}
 
 sub _render {
-   my ($self, $ref)   = @_;
+   my ($self, $args) = @_;
 
-   $ref->{labels}   = $self->labels   if ($self->labels);
-   $ref->{onchange} = $self->onchange if ($self->onchange);
-   $ref->{size}     = $self->height;
-   $ref->{values}   = $self->values;
-   return $self->elem->scrolling_list( $ref );
+   $args->{labels}   = $self->labels   if ($self->labels);
+   $args->{onchange} = $self->onchange if ($self->onchange);
+   $args->{size}     = $self->height;
+   $args->{values}   = $self->values;
+
+   return $self->elem->scrolling_list( $args );
 }
 
 1;

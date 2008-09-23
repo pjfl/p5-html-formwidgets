@@ -6,7 +6,24 @@ use strict;
 use warnings;
 use base qw(HTML::FormWidgets);
 
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev$ =~ /\d+/gmx );
+
+__PACKAGE__->mk_accessors( qw(button field height href key width) );
+
+sub init {
+   my ($self, $args) = @_;
+
+   $self->button(    q() );
+   $self->container( 0 );
+   $self->field(     q() );
+   $self->height(    400 );
+   $self->href(      undef );
+   $self->key(       q() );
+   $self->width(     200 );
+
+   $self->NEXT::init( $args );
+   return;
+}
 
 sub _render {
    my ($self, $ref) = @_; my $onclick;
@@ -20,7 +37,7 @@ sub _render {
    $onclick .= 'height='.$self->height.', screenY=0, ';
    $onclick .= 'dependent=yes, titlebar=no, scrollbars=yes\')';
    $ref->{onclick} = $onclick;
-   $ref->{value}   = $self->button;
+   $ref->{value  } = $self->button;
 
    return $self->elem->submit( $ref );
 }

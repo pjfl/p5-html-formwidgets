@@ -8,9 +8,31 @@ use base qw(HTML::FormWidgets);
 use English qw(-no_match_vars);
 use Readonly;
 
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev$ =~ /\d+/gmx );
 
 Readonly my $NUL => q();
+
+__PACKAGE__->mk_accessors( qw(base behaviour data node_count id2key
+                              key2id key2url node select target url) );
+
+sub init {
+   my ($self, $args) = @_;
+
+   $self->base(       $NUL );
+   $self->behaviour(  q(classic) );
+   $self->data(       {} );
+   $self->node_count( 0 );
+   $self->id2key(     {} );
+   $self->key2id(     {} );
+   $self->key2url(    {} );
+   $self->node(       undef );
+   $self->select(     undef );
+   $self->target(     q() );
+   $self->url(        undef );
+
+   $self->NEXT::init( $args );
+   return;
+}
 
 sub _render {
    my ($self, $ref)  = @_; my ($jscript, $name, @root);
@@ -24,14 +46,14 @@ sub _render {
 
    $ref = { data => $self->data, parent => $NUL, prevKey => $NUL, root => 1 };
    $jscript = $self->elem->script( { language => q(JavaScript) },
-                                   $self->scanHash( $ref ) );
+                                   $self->scan_hash( $ref ) );
 
    return $self->elem->div( { class => q(tree) }, $jscript );
 }
 
-sub nodeId { return shift->{nodeId}++ }
+sub node_id { return shift->{node_count}++ }
 
-sub scanHash {
+sub scan_hash {
    my ($self, $ref) = @_;
    my ($data, $jscript, $key, @keys, $newKey, $node, $openIcon, $ref1);
    my ($shutIcon, $text, $tip, $url);
@@ -42,14 +64,14 @@ sub scanHash {
    for $key (sort { lc $a cmp lc $b } @keys) {
       $newKey   = $ref->{prevKey} ? $ref->{prevKey}.$SUBSEP.$key : $key;
       $data     = $ref->{data}->{ $key };
-      $node     = $self->nodeId;
+      $node     = $self->node_id;
       $openIcon = $NUL;
       $shutIcon = $NUL;
       $tip      = $NUL;
       $url      = $self->url;
 
       if (ref $data eq q(HASH)) {
-         $node     = $data->{_node_id } || $self->nodeId;
+         $node     = $data->{_node_id } || $node;
          $openIcon = $data->{_openIcon} || $NUL;
          $shutIcon = $data->{_shutIcon} || $NUL;
          $tip      = $data->{_tip     } || $NUL;
@@ -91,7 +113,7 @@ sub scanHash {
                    parent  => $node,
                    prevKey => $self->id2key->{ $node },
                    root    => 0 };
-         $jscript .= $self->scanHash( $ref1 ); # Recurse
+         $jscript .= $self->scan_hash( $ref1 ); # Recurse
       }
    }
 

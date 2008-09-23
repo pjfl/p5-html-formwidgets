@@ -6,11 +6,12 @@ use strict;
 use warnings;
 use Module::Build;
 
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev$ =~ /\d+/gmx );
 
 my $requires = { 'perl'                    => q(5.008),
                  'version'                 => q(0.74),
-                 'Class::Data::Accessor'   => q(0.04001),
+                 'Class::Accessor::Fast'   => q(0.31),
+                 'Class::Inspector'        => q(1.18),
                  'HTML::Accessors'         => q(0.1.22),
                  'Readonly'                => q(1.03),
                  'Syntax::Highlight::Perl' => q(1.00),

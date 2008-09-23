@@ -7,16 +7,29 @@ use warnings;
 use base qw(HTML::FormWidgets);
 use Readonly;
 
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev$ =~ /\d+/gmx );
 
 Readonly my $TTS => q( ~ );
 
+__PACKAGE__->mk_accessors( qw(assets form format width) );
+
+sub init {
+   my ($self, $args) = @_;
+
+   $self->assets( q() );
+   $self->form(   {} );
+   $self->format( q(dd/MM/yyyy) );
+   $self->width(  10 );
+
+   $self->NEXT::init( $args );
+   return;
+}
+
 sub _render {
-   my ($self, $ref) = @_; my ($format, $htag, $html, $text);
+   my ($self, $ref) = @_; my ($htag, $html, $text);
 
    $htag            = $self->elem;
-   $ref->{size   }  = $self->width || 10;
-   $format          = $self->format || q(dd/MM/yyyy);
+   $ref->{size   }  = $self->width;
    $text            = $htag->textfield( $ref );
    $html            = $htag->div( { class => q(container) }, $text );
    $html           .= $htag->div( { class => q(separator) }, q(&nbsp;) );
@@ -38,7 +51,7 @@ sub _render {
    $ref->{id     }  = $self->name.'_anchor';
    $ref->{onclick}  = $self->name.'_cal.select( document.forms[0].';
    $ref->{onclick} .= $self->name.", '".$self->name."_anchor', '";
-   $ref->{onclick} .= $format."' ); ";
+   $ref->{onclick} .= $self->format."' ); ";
    $ref->{onclick} .= 'return false;';
    $ref->{title  }  = $self->hint_title.$TTS.$self->msg( q(dateWidgetTip) );
    $text            = $htag->a( $ref, $text );

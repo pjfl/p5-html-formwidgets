@@ -9,7 +9,18 @@ use English qw(-no_match_vars);
 use File::Spec::Functions;
 use IO::File;
 
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev$ =~ /\d+/gmx );
+
+__PACKAGE__->mk_accessors( qw(templatedir) );
+
+sub init {
+   my ($self, $args) = @_;
+
+   $self->templatedir( undef );
+
+   $self->NEXT::init( $args );
+   return;
+}
 
 sub _render {
    my ($self, $ref) = @_; my ($content, $path, $rdr);

@@ -6,7 +6,20 @@ use strict;
 use warnings;
 use base qw(HTML::FormWidgets);
 
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev$ =~ /\d+/gmx );
+
+__PACKAGE__->mk_accessors( qw(checked labels value) );
+
+sub init {
+   my ($self, $args) = @_;
+
+   $self->checked( 0 );
+   $self->labels(  undef );
+   $self->value(   1 );
+
+   $self->NEXT::init( $args );
+   return;
+}
 
 sub _render {
    my ($self, $ref)  = @_;

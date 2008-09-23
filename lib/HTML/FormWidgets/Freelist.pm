@@ -6,63 +6,80 @@ use strict;
 use warnings;
 use base qw(HTML::FormWidgets);
 
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev$ =~ /\d+/gmx );
+
+__PACKAGE__->mk_accessors( qw(assets height js_obj labels values width) );
+
+sub init {
+   my ($self, $args) = @_;
+
+   $self->assets( q() );
+   $self->height( 5 );
+   $self->js_obj( q(freeListObj) );
+   $self->labels( undef );
+   $self->values( [] );
+   $self->width(  20 );
+
+   $self->NEXT::init( $args );
+   return;
+}
 
 sub _render {
-   my ($self, $ref) = @_; my ($htag, $html, $rno, $text, $text1, $tip, $val);
+   my ($self, $args) = @_; my ($htag, $html, $rno, $text, $text1, $tip, $val);
 
-   $htag            = $self->elem;
-   $ref->{name    } = $self->name.q(_new);
-   $ref->{size    } = $self->width || 20;
-   $html            = $htag->div( { class => q(container) },
-                                  $htag->textfield( $ref ) );
-   $html           .= $htag->div( { class => q(separator) }, $self->space );
+   $htag              = $self->elem;
+   $args->{name    }  = $self->name.q(_new);
+   $args->{size    }  = $self->width;
+   $html              = $htag->div( { class => q(container) },
+                                    $htag->textfield( $args ) );
+   $html             .= $htag->div( { class => q(separator) }, $self->space );
 
-   $ref             = {};
-   $ref->{class   } = $ref->{name} = q(button);
-   $ref->{onclick } = "return freeListObj.addItem('".$self->name."')";
-   $ref->{src     } = $self->assets.'AddItem.png';
-   $ref->{value   } = q(add).(ucfirst $self->name);
-   $text            = $htag->image_button( $ref );
-   $tip             = 'Enter a new item into the adjacent text field ';
-   $tip            .= 'and then click this button to add it to the list';
-   $ref             = { class => q(help tips), title => $tip };
-   $text1           = $htag->span( $ref, $text ).$htag->br().$htag->br();
+   $args              = {};
+   $args->{class   }  = $args->{name} = q(button);
+   $args->{onclick }  = 'return '.$self->js_obj.".addItem('".$self->name."')";
+   $args->{src     }  = $self->assets.'AddItem.png';
+   $args->{value   }  = q(add).(ucfirst $self->name);
+   $text              = $htag->image_button( $args );
+   $tip               = 'Enter a new item into the adjacent text field ';
+   $tip              .= 'and then click this button to add it to the list';
+   $args              = { class => q(help tips), title => $tip };
+   $text1             = $htag->span( $args, $text ).$htag->br().$htag->br();
 
-   $ref             = {};
-   $ref->{class   } = $ref->{name} = q(button);
-   $ref->{onclick } = "return freeListObj.removeItem('".$self->name."')";
-   $ref->{src     } = $self->assets.'RemoveItem.png';
-   $ref->{value   } = q(remove).(ucfirst $self->name);
-   $text            = $htag->image_button( $ref );
-   $tip             = 'Select one or more items from the adjacent list ';
-   $tip            .= 'and then click this button to remove them';
-   $ref             = { class => q(help tips), title => $tip };
-   $text1          .= $htag->span( $ref, $text );
-   $html           .= $htag->div( { class => q(container) }, $text1 );
+   $args              = {};
+   $args->{class   }  = $args->{name} = q(button);
+   $args->{onclick }  = 'return '.$self->js_obj;
+   $args->{onclick } .= ".removeItem('".$self->name."')";
+   $args->{src     }  = $self->assets.'RemoveItem.png';
+   $args->{value   }  = q(remove).(ucfirst $self->name);
+   $text              = $htag->image_button( $args );
+   $tip               = 'Select one or more items from the adjacent list ';
+   $tip              .= 'and then click this button to remove them';
+   $args              = { class => q(help tips), title => $tip };
+   $text1            .= $htag->span( $args, $text );
+   $html             .= $htag->div( { class => q(container) }, $text1 );
 
-   $html           .= $htag->div( { class => q(separator) }, $self->space );
-   $ref             = {};
-   $ref->{labels  } = $self->labels if ($self->labels);
-   $ref->{multiple} = q(true);
-   $ref->{name    } = $self->name.q(_current);
-   $ref->{size    } = $self->height;
-   $ref->{values  } = $self->values;
-   $html           .= $htag->scrolling_list( $ref );
-   $rno             = 0;
+   $html             .= $htag->div( { class => q(separator) }, $self->space );
+   $args              = {};
+   $args->{labels  }  = $self->labels if ($self->labels);
+   $args->{multiple}  = q(true);
+   $args->{name    }  = $self->name.q(_current);
+   $args->{size    }  = $self->height;
+   $args->{values  }  = $self->values;
+   $html             .= $htag->scrolling_list( $args );
+   $rno               = 0;
 
-   for $val (@{ $ref->{values} }) {
-      $ref          = {};
-      $ref->{id   } = $self->name.$rno++;
-      $ref->{name } = $self->name;
-      $ref->{value} = $val;
-      $html        .= $htag->hidden( $ref );
+   for $val (@{ $args->{values} }) {
+      $args           = {};
+      $args->{id   }  = $self->name.$rno++;
+      $args->{name }  = $self->name;
+      $args->{value}  = $val;
+      $html          .= $htag->hidden( $args );
    }
 
-   $ref             = {};
-   $ref->{name    } = $self->name.q(_n_rows);
-   $ref->{value   } = $rno;
-   $html           .= $htag->hidden( $ref );
+   $args              = {};
+   $args->{name    }  = $self->name.q(_n_rows);
+   $args->{value   }  = $rno;
+   $html             .= $htag->hidden( $args );
    return $html;
 }
 

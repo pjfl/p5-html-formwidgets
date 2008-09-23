@@ -6,7 +6,19 @@ use strict;
 use warnings;
 use base qw(HTML::FormWidgets);
 
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev$ =~ /\d+/gmx );
+
+__PACKAGE__->mk_accessors( qw(dropcap) );
+
+sub init {
+   my ($self, $args) = @_;
+
+   $self->container( 0 );
+   $self->dropcap(   0 );
+
+   $self->NEXT::init( $args );
+   return;
+}
 
 sub _render {
    my ($self, $ref) = @_; my ($markup, $text);
@@ -20,12 +32,12 @@ sub _render {
       if ($text =~ m{ \A (\<[A-Za-z0-9]+\>) }mx) {
          $markup  = $1;
          $markup .= $self->elem->span( { class => q(dropcap) },
-                                     substr $text, length $1, 1 );
+                                       substr $text, length $1, 1 );
          $markup .= substr $text, (length $1) + 1;
       }
       else {
          $markup  = $self->elem->span( { class => q(dropcap) },
-                                     substr $text, 0, 1 );
+                                       substr $text, 0, 1 );
          $markup .= substr $text, 1;
       }
 

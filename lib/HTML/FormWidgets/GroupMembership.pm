@@ -6,7 +6,25 @@ use strict;
 use warnings;
 use base qw(HTML::FormWidgets);
 
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev$ =~ /\d+/gmx );
+
+__PACKAGE__->mk_accessors( qw(all assets atitle ctitle current height
+                              labels) );
+
+sub init {
+   my ($self, $args) = @_;
+
+   $self->all(     [] );
+   $self->assets(  q() );
+   $self->atitle(  q(All) );
+   $self->ctitle(  q(Current) );
+   $self->current( [] );
+   $self->height(  10 );
+   $self->labels(  undef );
+
+   $self->NEXT::init( $args );
+   return;
+}
 
 sub _render {
    my ($self, $ref) = @_; my ($htag, $html, $ref1, $text, $text1, $tip, $val);

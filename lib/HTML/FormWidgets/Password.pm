@@ -6,12 +6,25 @@ use strict;
 use warnings;
 use base qw(HTML::FormWidgets);
 
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev$ =~ /\d+/gmx );
+
+__PACKAGE__->mk_accessors( qw(subtype width) );
+
+sub init {
+   my ($self, $args) = @_;
+
+   $self->subtype( undef );
+   $self->width(   20 );
+
+   $self->NEXT::init( $args );
+   return;
+}
+
 
 sub _render {
    my ($self, $ref) = @_; my $text;
 
-   $ref->{size} = $self->width || 20;
+   $ref->{size} = $self->width;
    $text        = $self->elem->password_field( $ref );
 
    return $text unless ($self->subtype && $self->subtype eq q(verify));

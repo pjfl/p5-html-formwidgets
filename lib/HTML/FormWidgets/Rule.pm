@@ -6,7 +6,20 @@ use strict;
 use warnings;
 use base qw(HTML::FormWidgets);
 
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev$ =~ /\d+/gmx );
+
+__PACKAGE__->mk_accessors( qw(alt href imgclass) );
+
+sub init {
+   my ($self, $args) = @_;
+
+   $self->alt(      [] );
+   $self->href(     undef );
+   $self->imgclass( undef );
+
+   $self->NEXT::init( $args );
+   return;
+}
 
 sub _render {
    my ($self, $ref) = @_; my ($cells, $html); my $htag = $self->elem;

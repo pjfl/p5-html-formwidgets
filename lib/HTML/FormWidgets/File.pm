@@ -12,7 +12,10 @@ use Syntax::Highlight::Perl;
 use Text::ParseWords;
 use Text::Tabs;
 
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev$ =~ /\d+/gmx );
+
+__PACKAGE__->mk_accessors( qw(base header hide path root select style
+                              subtype) );
 
 Readonly my %SCHEME =>
    ( Variable_Scalar   => [ '<font color="#CC6600">', '</font>' ],
@@ -38,15 +41,28 @@ Readonly my %SCHEME =>
      Label             => [ '<font color="#000000">', '</font>' ],
      Line              => [ '<font color="#000000">', '</font>' ], );
 
+sub init {
+   my ($self, $args) = @_;
+
+   $self->base(      q() );
+   $self->container( 0 );
+   $self->header(    [] );
+   $self->hide(      [] );
+   $self->path(      undef );
+   $self->root(      undef );
+   $self->select(    -1 );
+   $self->style(     q() );
+   $self->subtype(   q(file) );
+
+   $self->NEXT::init( $args );
+   return;
+}
+
 sub _render {
    # Subtypes: file, csv, html, source, and logfile
    my ($self, $ref) = @_;
    my ($attr, $box, $cells, $c_no, $fld, $fmt, $htag, $key, $line);
    my ($pat, $path, $r_no, $rdr, $rows, $span, $text);
-
-   $self->header( [] )       unless (defined $self->header);
-   $self->select( -1 )       unless (defined $self->select);
-   $self->subtype( q(file) ) unless (defined $self->subtype);
 
    $htag = $self->elem; $path = $self->path;
 
@@ -96,8 +112,7 @@ sub _render {
          $r_no++;
       }
 
-      $text = $htag->hidden( { name => q(nRows), value => $r_no } );
-      push @{ $self->hide }, $text;
+      push @{ $self->hide }, { name => q(nRows), value => $r_no };
 
       return $htag->table( { cellpadding => 0, cellspacing => 0 }, $rows );
    }
@@ -176,8 +191,7 @@ sub _render {
 
    $rows  = $htag->tr( $cells ).$rows;
 
-   push @{ $self->hide }, $htag->hidden( { name  => q(nRows),
-                                           value => $r_no } );
+   push @{ $self->hide }, { name  => q(nRows), value => $r_no };
 
    return $htag->table( $rows );
 }

@@ -1,3 +1,10 @@
+2008-09-23
+
+	* All:
+
+	Refactored the attribute list in the base class. Now distributed
+   amongst the subclasses. Bumping version to 0.2
+
 2008-09-06
 
 	* lib/HTML/FormWidgets.pm:

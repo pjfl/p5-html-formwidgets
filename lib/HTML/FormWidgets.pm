@@ -4,69 +4,36 @@ package HTML::FormWidgets;
 
 use strict;
 use warnings;
-use base    qw(Class::Data::Accessor);
-use English qw(-no_match_vars);
-use File::Spec::Functions;
+use base qw(Class::Accessor::Fast);
+use Class::Inspector;
 use HTML::Accessors;
 use Readonly;
 use Text::Markdown qw(markdown);
 
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev$ =~ /\d+/gmx );
 
 Readonly my $NUL   => q();
 Readonly my $TTS   => q( ~ );
 Readonly my %ATTRS =>
-   ( ajaxid       => undef,         ajaxtext     => undef,
-     align        => q(left),       all          => [],
-     alt          => undef,
-     assets       => $NUL,          atitle       => 'All',
-     base         => $NUL,          behaviour    => q(classic),
-     button       => $NUL,          checked      => 0,
-     class        => $NUL,          clear        => $NUL,
-     columns      => undef,         container    => undef,
-     content_type => q(application/xhtml+xml),
-     ctitle       => 'Current',     current      => [],
-     data         => {},            default      => undef,
-     dropcap      => 0,             edit         => 0,
-     elem         => undef,         evnt_hndlr   => 'serverObj.checkField',
-     field        => $NUL,          fields       => {},
-     form         => {},            'format'     => undef,
-     fhelp        => $NUL,          header       => undef,
-     height       => undef,         hide         => [],
-     hint_title   => 'Handy Hint',  href         => undef,
-     id           => undef,         id2key       => {},
-     imgclass     => undef,
-     key          => $NUL,          key2id       => {},
-     key2url      => {},            labels       => undef,
-     max_length   => undef,         messages     => undef,
-     name         => $NUL,          nb_symbol    => q(&nbsp;&dagger;),
-     node         => undef,         nowrap       => 0,
-     onblur       => undef,         onchange     => undef,
-     onclick      => undef,         onkeypress   => undef,
-     palign       => undef,         path         => undef,
-     prompt       => $NUL,          fields       => {},
-     pwidth       => 40,            required     => 0,
-     root         => undef,         select       => undef,
-     sep          => q(&nbsp;:&nbsp;),
-     space        => q(&nbsp;) x 3, stepno       => undef,
-     style        => $NUL,          subtype      => undef,
-     swidth       => 1000,          tabstop      => 3,
-     target       => $NUL,          templatedir  => undef,
-     text         => $NUL,
-     text_obj     => undef,         tip          => $NUL,
-     tiptype      => q(dagger),     title        => $NUL,
-     type         => undef,         url          => undef,
-     value        => 1,             values       => [],
-     width        => undef, );
+   ( ajaxid       => undef,            ajaxtext     => undef,
+     align        => q(left),          class        => $NUL,
+     clear        => $NUL,             container    => 1,
+     content_type => q(text/html),     default      => undef,
+     elem         => undef,            evnt_hndlr   => q(serverObj.checkField),
+     fhelp        => $NUL,             hint_title   => 'Handy Hint',
+     id           => undef,            messages     => undef,
+     name         => undef,            nb_symbol    => q(&nbsp;&dagger;),
+     nowrap       => 0,                onblur       => undef,
+     onchange     => undef,            onkeypress   => undef,
+     palign       => undef,            prompt       => $NUL,
+     pwidth       => 40,               required     => 0,
+     sep          => q(&nbsp;:&nbsp;), space        => q(&nbsp;) x 3,
+     stepno       => undef,            swidth       => 1000,
+     tabstop      => 3,                text         => $NUL,
+     text_obj     => undef,            tip          => $NUL,
+     tiptype      => q(dagger),        type         => undef, );
 
-Readonly my @STATIC => (
-   qw(atitle align behaviour checked class clear container ctitle edit
-      fhelp format height hint_title max_length max_value min_length
-      min_value nowrap onchange onkeypress palign prompt pwidth
-      required select sep stepno subtype tabstop text tip tiptype
-      width) );
-
-__PACKAGE__->mk_classaccessors( keys %ATTRS );
+__PACKAGE__->mk_accessors( keys %ATTRS );
 
 # Class methods
 
@@ -107,109 +74,52 @@ sub new {
    my ($class, $msg_id, $ref, $self, $suffix, $text, @tmp, $val);
 
    # Start with some hard coded defaults;
-   $self = { %ATTRS };
+   $self = bless { %ATTRS }, ref $proto || $proto;
 
-   # Now we can create HTML elements like we could with CGI.pm
-   $ref = { content_type => $args->{content_type} } if ($args->{content_type});
-   $self->{elem} = HTML::Accessors->new( $ref );
-
-   $suffix = $args->{content_type} && $args->{content_type} eq q(text/html)
-           ? q(>) : q( />);
-
-   # Bare minimum is fields + id to get a useful widget
-   for (qw(ajaxid fields id name)) {
-      $self->{ $_ } = $args->{ $_ } if (exists $args->{ $_ });
-   }
-
-   # Defaults id from name (least significant) from id from ajaxid (most sig.)
-   $self->{id} = $self->{ajaxid} if (!$self->{id} && $self->{ajaxid});
-
-   if (!$self->{name} && $self->{id}) {
-      if ($self->{id} =~ m{ \. }mx) {
-         (undef, $self->{name}) = split m{ \. }mx, $self->{id};
-      }
-      else { ($self->{name}) = reverse split m{ _ }mx, $self->{id} }
-   }
-
-   $self->{id} = $self->{name} if (!$self->{id} && $self->{name});
-
-   # Get static attributes for this id from the fields passed in $args
-   if ($self->{id}
-       && $self->{fields}
-       && defined $self->{fields}->{ $self->{id} }) {
-      for (@STATIC) {
-         if (defined( $val = $self->{fields}->{ $self->{id} }->{ $_ } )) {
-            $self->{ $_ } = $val;
-         }
-      }
-   }
-
-   # Passed args override XML config
-   for (grep { exists $self->{ lc $_ } } keys %{ $args }) {
-      $self->{ lc $_ } = $args->{ $_ };
-   }
-
-   # We can get the widget type from the fields in level.xml
-   if ( ! $self->{type}
-       && $self->{id}
-       && $self->{fields}
-       && $self->{fields}->{ $self->{id} }
-       && $self->{fields}->{ $self->{id} }->{type}) {
-      $self->{type} = $self->{fields}->{ $self->{id} }->{type};
-   }
-
-   $self->{type} = q(textfield) unless ($self->{type});
+   $self->_set_name_id_and_type( $args );
 
    # Your basic factory method trick
    $class = __PACKAGE__.q(::).(ucfirst $self->{type});
-   ## no critic
-   eval "require $class;";
-   ## critic
+   $self->_ensure_class_loaded( $class );
 
-   if ($EVAL_ERROR) {
-      $self->{text} = $EVAL_ERROR; $self->{type} = undef;
-   }
+   # Allow the subclass to set it's own defaults
+   $self->init( $args );
 
-   bless $self, $class;
+   # Now we can create HTML elements like we could with CGI.pm
+   $ref = { content_type => $self->content_type };
+   $self->elem( HTML::Accessors->new( $ref ) );
 
-   $self->{nodeId} = q(node_0); # Define accessor by hand to auto increment
-
+   # Create a Text::Markdown object for use by the msgs method
+   $suffix = $self->content_type eq q(text/html) ? q(>) : q( />);
    $self->text_obj( Text::Markdown->new
                     ( empty_element_suffix => $suffix,
                       tab_width            => $self->tabstop ) );
 
-   # Pander to lazy filling out of static definitions
-   $self->container( $self->type =~ m{ chooser|file|label|note }mx ? 0 : 1 )
-      unless (defined $self->container);
-
    if ($self->ajaxid) {
-      $msg_id = $self->fields
-              ? $self->fields->{ $self->ajaxid }->{validate} : $NUL;
+      # Set the ajax field validation message
+      $msg_id = exists $args->{fields}->{ $self->ajaxid }
+              ? $args->{fields}->{ $self->ajaxid }->{validate} : $NUL;
       $msg_id = $msg_id->[0] if (ref $msg_id eq q(ARRAY));
-      $text   = $self->msg( $msg_id ) || 'Invalid field value';
+      $text   = $self->ajaxtext
+             || $self->msg( $msg_id ) || 'Invalid field value';
       $self->ajaxtext( $text );
 
       # Install default JavaScript event handler
       unless ($self->onblur || $self->onchange || $self->onkeypress) {
-         $text = $self->evnt_hndlr.'(\''.$self->ajaxid.'\', this.value)';
+         $text = $self->evnt_hndlr."('".$self->ajaxid."', this.value)";
          $self->onblur( $text );
       }
    }
 
    $self->hint_title( $text ) if ($text = $self->msg( q(handy_hint_title) ));
 
-   unless (defined $self->height) {
-      $self->height( $self->type eq q(groupMembership) ||
-                     $self->type eq q(scrollingList) ? 10 : 5 );
-   }
-
+   # Calculate the prompt width
    if ($self->pwidth && ($self->pwidth =~ m{ \A \d+ \z }mx)) {
       $self->pwidth( (int $self->pwidth * $self->swidth / 100).q(px) );
    }
 
-   $self->sep( $NUL ) if ($self->type eq q(note));
-   $self->sep( $NUL ) if (!$self->prompt && !$self->fhelp);
-   $self->sep( $NUL ) if ($self->sep =~ m{ \A \d+ \z }mx && $self->sep == 0);
+   $self->sep( $NUL )         if (!$self->prompt && !$self->fhelp);
+   $self->sep( $NUL )         if ($self->sep && $self->sep =~ m{ \A 0 \z }mx);
    $self->sep( $self->space ) if ($self->sep && $self->sep eq q(space));
 
    if (defined $self->stepno && $self->stepno == 0) {
@@ -224,6 +134,28 @@ sub new {
 }
 
 # Object methods
+
+sub init {
+   my ($self, $args) = @_; my ($fields, $val);
+
+   if ($self->id && $args->{fields} && exists $args->{fields}->{ $self->id }) {
+      $fields = $args->{fields}->{ $self->id };
+
+      for (grep { !m{ \A (ajaxid|id|name|type) \z }mx } keys %{ $fields }) {
+         if (exists $self->{ $_ } && defined ($val = $fields->{ $_ })) {
+            $self->$_( $val );
+         }
+      }
+   }
+
+   for (grep { !m{ \A (ajaxid|id|name|type) \z }mx } keys %{ $args }) {
+      if (exists $self->{ $_ } && defined ($val = $args->{ $_ })) {
+         $self->$_( $val );
+      }
+   }
+
+   return;
+}
 
 sub msg {
    # Return the language dependant text of the requested message
@@ -327,6 +259,31 @@ sub _arg_list {
    return ref $rest[0] eq q(HASH) ? $rest[0] : { @rest };
 }
 
+sub _ensure_class_loaded {
+   my ($self, $class) = @_; my $error;
+
+   {
+## no critic
+      local $@;
+      eval "require $class;";
+      $error = $@;
+## critic
+   }
+
+   if ($error) {
+      $self->_set_error( $error );
+      return;
+   }
+
+   unless (Class::Inspector->loaded( $class )) {
+      $self->_set_error( "Failed to load class $class" );
+      return;
+   }
+
+   bless $self, $class;
+   return;
+}
+
 sub _group_fields {
    my ($self, $item, $list) = @_; my $html = $NUL; my $ref;
 
@@ -351,7 +308,50 @@ sub _render {
 
    return $self->text if ($self->text);
 
-   return 'No _render method for field '.($ref->{id} || '*unknown id*');
+   my $id = $ref->{id} || '*unknown id*';
+   $self->_set_error( "No _render method for field $id" );
+   return;
+}
+
+sub _set_error {
+   my ($self, $error) = @_;
+
+   $self->{text} = $error;
+   return;
+}
+
+sub _set_name_id_and_type {
+   my ($self, $args) = @_;
+
+   # Bare minimum is fields + id to get a useful widget
+   for (qw(ajaxid id name type)) {
+      $self->{ $_ } = $args->{ $_ } if (exists $args->{ $_ });
+   }
+
+   # Defaults id from name (least significant) from id from ajaxid (most sig.)
+   $self->{id} = $self->{ajaxid} if (!$self->{id} && $self->{ajaxid});
+
+   if (!$self->{name} && $self->{id}) {
+      if ($self->{id} =~ m{ \. }mx) {
+         $self->{name} = (split m{ \. }mx, $self->{id})[1];
+      }
+      else { $self->{name} = (reverse split m{ _ }mx, $self->{id})[0] }
+   }
+
+   $self->{id} = $self->{name} if (!$self->{id} && $self->{name});
+
+   # We can get the widget type from the config file
+   if ( ! $self->{type}
+       && $self->{id}
+       && exists $args->{fields}
+       && exists $args->{fields}->{ $self->{id} }
+       && exists $args->{fields}->{ $self->{id} }->{type}) {
+      $self->{type} = $args->{fields}->{ $self->{id} }->{type};
+   }
+
+   $self->{type} = q(textfield) unless ($self->{type});
+
+   return;
 }
 
 1;
@@ -425,14 +425,26 @@ data structure
 
 =head2 new
 
-Construct a widget. Mostly this is called by the C<build> method. It
+   $self = $class->new( [{] key1 => value1, ... [}] );
+
+Construct a widget. Mostly this is called by the L</build> method. It
 requires the factory subclass for the widget type.
 
 This method takes a large number of options with each widget using
 only few of them. Each option is described in the factory subclasses
 which use that option
 
+=head2 init
+
+   $self->init( $args );
+
+Initialises this object with data from the passed arguments. This is
+usually overriden in the factory subclass which sets the default for
+it's own attributes and then calls this method in the base class
+
 =head2 msg
+
+   $message_text = $self->msg( $message_id );
 
 Use the supplied key to return a value from the B<messages>
 hash. This hash was passed to the constructor and should contain any
@@ -499,6 +511,11 @@ server side validation
 Accepts either a single argument of a hash ref or a list of key/value
 pairs. Returns a hash ref in either case.
 
+=head2 _ensure_class_loaded
+
+Once the factory subclass is known this method ensures that it is loaded
+and then reblesses the self referential object into the correct class
+
 =head2 _group_fields
 
 Wraps the top B<nitems> widgets on the build stack in a fieldset
@@ -514,6 +531,16 @@ arguments. The second argument takes precedence over the first
 This should have been overridden in the factory subclass. If it gets
 called its probably an error so return the value of our C<text>
 attribute if set or an error message otherwise
+
+=head2 _set_error
+
+Stores the passed error message in the C<text> attribute so that it
+gets rendered in place of the widget
+
+=head2 _set_id_name_and_type
+
+Determine the C<id>, C<name> and C<type> of the widget from the supplied
+arguments
 
 =head1 Configuration and Environment
 
@@ -761,7 +788,9 @@ None
 
 =over 3
 
-=item L<Class::Data::Accessor>
+=item L<Class::Accessor::Fast>
+
+=item L<Class::Inspector>
 
 =item L<HTML::Accessors>
 
@@ -858,4 +887,3 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE
 # mode: perl
 # tab-width: 3
 # End:
-

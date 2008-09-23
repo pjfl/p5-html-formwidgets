@@ -21,12 +21,12 @@ sub init {
 }
 
 sub _render {
-   my ($self, $ref)  = @_;
+   my ($self, $args)  = @_;
 
-   $ref->{cols} = $self->width;
-   $ref->{rows} = $self->height;
+   $args->{cols} = $self->width;
+   $args->{rows} = $self->height;
 
-   return $self->elem->textarea( $ref );
+   return $self->elem->textarea( $args );
 }
 
 1;

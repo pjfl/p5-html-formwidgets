@@ -8,21 +8,22 @@ use base qw(HTML::FormWidgets);
 
 use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev$ =~ /\d+/gmx );
 
-__PACKAGE__->mk_accessors( qw(data) );
+__PACKAGE__->mk_accessors( qw(data js_obj) );
 
 sub init {
    my ($self, $args) = @_;
 
-   $self->data( {} );
+   $self->data(   {} );
+   $self->js_obj( q(tableObj.liveGrid) );
 
    $self->NEXT::init( $args );
    return;
 }
 
 sub _render {
-   my ($self, $ref) = @_;
+   my ($self, $args) = @_;
    my ($anchor, $attrs, $class, $class_pref, $hacc, $href, $html);
-   my ($id_pref, $item, $onclick, $style, $text);
+   my ($id_pref, $item, $onclick, $ref, $style, $text);
 
    $hacc = $self->elem;
 
@@ -41,8 +42,8 @@ sub _render {
 
       if (!$href && !$onclick ) {
          $href     = 'javascript:Expand_Collapse()';
-         $onclick  = "tableObj.liveGrid('$id_pref', '".$ref->{name};
-         $onclick .= "', 'a~b', $ref->{table_len}, 1)";
+         $onclick  = $self->js_obj."('$id_pref', '".$ref->{name};
+         $onclick .= "', 'a~b', ".$ref->{table_len}.', 1)';
       }
 
       $attrs->{href   } = $href    if ($href);

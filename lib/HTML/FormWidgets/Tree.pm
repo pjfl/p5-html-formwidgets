@@ -54,70 +54,86 @@ sub _render {
 sub node_id { return shift->{node_count}++ }
 
 sub scan_hash {
-   my ($self, $ref) = @_;
-   my ($data, $jscript, $key, @keys, $newKey, $node, $openIcon, $ref1);
-   my ($shutIcon, $text, $tip, $url);
+   my ($self, $args) = @_;
+   my ($data, $jscript, $key, @keys, $new_key, $node, $open_icon);
+   my ($shut_icon, $text, $tip, $url);
 
    $jscript = $NUL;
-   @keys    = grep { ! m{ \A _ }mx} keys %{ $ref->{data} };
+   @keys    = grep { !m{ \A _ }mx } keys %{ $args->{data} };
 
    for $key (sort { lc $a cmp lc $b } @keys) {
-      $newKey   = $ref->{prevKey} ? $ref->{prevKey}.$SUBSEP.$key : $key;
-      $data     = $ref->{data}->{ $key };
-      $node     = $self->node_id;
-      $openIcon = $NUL;
-      $shutIcon = $NUL;
-      $tip      = $NUL;
-      $url      = $self->url;
+      $new_key   = $args->{prevKey} ? $args->{prevKey}.$SUBSEP.$key : $key;
+      $data      = $args->{data}->{ $key };
+      $node      = $self->node_id;
+      $open_icon = $NUL;
+      $shut_icon = $NUL;
+      $tip       = $NUL;
+      $url       = $self->url;
 
       if (ref $data eq q(HASH)) {
-         $node     = $data->{_node_id } || $node;
-         $openIcon = $data->{_openIcon} || $NUL;
-         $shutIcon = $data->{_shutIcon} || $NUL;
-         $tip      = $data->{_tip     } || $NUL;
-         $url      = $data->{_url     } || $self->url;
+         $node      = $data->{_node_id } || $node;
+         $open_icon = $data->{_openIcon} || $NUL;
+         $shut_icon = $data->{_shutIcon} || $NUL;
+         $tip       = $data->{_tip     } || $NUL;
+         $url       = $data->{_url     } || $self->url;
       }
 
       if ($self->node && ($self->node eq $node) && $self->select) {
-         $shutIcon = $openIcon = $self->select;
+         $shut_icon = $open_icon = $self->select;
       }
 
       $url  = $self->base.$url if ($url !~ m{ \A http: }mx);
       $url .= '?node='.$node;
-      $self->id2key->{ $node }    = $newKey;
-      $self->key2id->{ $newKey }  = $node;
-      $self->key2url->{ $newKey } = $url;
+      $self->id2key->{  $node    } = $new_key;
+      $self->key2id->{  $new_key } = $node;
+      $self->key2url->{ $new_key } = $url;
 
-      if ($ref->{root}) {
+      if ($args->{root}) {
          $jscript  = 'if (document.getElementById) {'."\n";
          $jscript .= 'var '.$node.' = new WebFXTree("'.$key.'", "';
          $jscript .= $url.'", "'.$tip.'");'."\n";
          $jscript .= $node.'.setBehavior("'.$self->behaviour.'");'."\n";
-         $jscript .= $node.'.target = "'.$self->target.'"; '."\n"
-            if ($self->target);
-         $jscript .= $node.'.icon = "'.$shutIcon.'"; '."\n"     if ($shutIcon);
-         $jscript .= $node.'.openIcon = "'.$openIcon.'"; '."\n" if ($openIcon);
+
+         if ($self->target) {
+            $jscript .= $node.'.target = "'.$self->target.'"; '."\n";
+         }
+
+         if ($shut_icon) {
+            $jscript .= $node.'.icon = "'.$shut_icon.'"; '."\n";
+         }
+
+         if ($open_icon) {
+            $jscript .= $node.'.openIcon = "'.$open_icon.'"; '."\n";
+         }
       }
       else {
          $jscript .= 'var '.$node.' = new WebFXTreeItem("'.$key.'", "';
          $jscript .= $url.'", "'.$tip.'");'."\n";
-         $jscript .= $node.'.target = "'.$self->target.'"; '."\n"
-            if ($self->target);
-         $jscript .= $node.'.icon = "'.$shutIcon.'"; '."\n"     if ($shutIcon);
-         $jscript .= $node.'.openIcon = "'.$openIcon.'"; '."\n" if ($openIcon);
-         $jscript .= $ref->{parent}.'.add('.$node.'); '."\n";
+
+         if ($self->target) {
+            $jscript .= $node.'.target = "'.$self->target.'"; '."\n";
+         }
+
+         if ($shut_icon) {
+            $jscript .= $node.'.icon = "'.$shut_icon.'"; '."\n";
+         }
+
+         if ($open_icon) {
+            $jscript .= $node.'.openIcon = "'.$open_icon.'"; '."\n";
+         }
+
+         $jscript .= $args->{parent}.'.add('.$node.'); '."\n";
       }
 
-      if (ref $data eq 'HASH') {
-         $ref1 = { data    => $data,
-                   parent  => $node,
-                   prevKey => $self->id2key->{ $node },
-                   root    => 0 };
-         $jscript .= $self->scan_hash( $ref1 ); # Recurse
+      if (ref $data eq q(HASH)) {
+         $jscript .= $self->scan_hash( { data    => $data,
+                                         parent  => $node,
+                                         prevKey => $self->id2key->{ $node },
+                                         root    => 0 } ); # Recurse
       }
    }
 
-   if ($ref->{root}) {
+   if ($args->{root}) {
       $jscript .= 'document.write('.$node.');'."\n".'}'."\n";
       $jscript .= $self->node.'.focus();'."\n" if ($self->node);
    }

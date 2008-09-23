@@ -16,20 +16,21 @@ sub init {
    $self->class(   $self->class || q(linkFade) );
    $self->href(    q() );
    $self->onclick( undef );
+   $self->text(    q(link) );
 
    $self->NEXT::init( $args );
    return;
 }
 
 sub _render {
-   my ($self, $ref)  = @_;
+   my ($self, $args) = @_;
 
-   delete $ref->{name};
-   $ref->{class  } = $self->class;
-   $ref->{href   } = $self->href;
-   $ref->{onclick} = $self->onclick if ($self->onclick);
+   delete $args->{name};
+   $args->{class  } = $self->class;
+   $args->{href   } = $self->href;
+   $args->{onclick} = $self->onclick if ($self->onclick);
 
-   return $self->elem->a( $ref, $self->text || q(link) );
+   return $self->elem->a( $args, $self->text );
 }
 
 1;

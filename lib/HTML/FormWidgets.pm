@@ -161,7 +161,7 @@ sub msg {
    # Return the language dependant text of the requested message
    my ($self, $name, $args) = @_; my ($key, $msgs, $pat, $text, $val);
 
-   return q() unless ($name && ($msgs = $self->messages));
+   return $NUL unless ($name && ($msgs = $self->messages));
 
    if (exists $msgs->{ $name } && ($text = $msgs->{ $name }->{text})) {
       if ($msgs->{ $name }->{markdown}) {
@@ -172,12 +172,12 @@ sub msg {
          # Inflate arg values enclosed in [%%]
          for $key (keys %{ $args }) {
             $pat  = q(\[% \s+ ).$key.q( \s+ %\]);
-            $val  = $args->{ $key } || q();
+            $val  = $args->{ $key } || $NUL;
             $text =~ s{ $pat }{$val}gmx;
          }
       }
    }
-   else { $text = q() }
+   else { $text = $NUL }
 
    return $text;
 }
@@ -351,6 +351,7 @@ sub _set_name_id_and_type {
 
    $self->{type} = q(textfield) unless ($self->{type});
 
+   $self->{name} = $self->{type} unless ($self->{name});
    return;
 }
 

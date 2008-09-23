@@ -22,13 +22,14 @@ sub init {
 }
 
 sub _render {
-   my ($self, $ref)   = @_;
+   my ($self, $args)   = @_;
 
-   $ref->{columns}  = $self->columns  if ($self->columns);
-   $ref->{labels}   = $self->labels   if ($self->labels);
-   $ref->{onchange} = $self->onchange if ($self->onchange);
-   $ref->{values}   = $self->values;
-   return $self->elem->radio_group( $ref );
+   $args->{columns}  = $self->columns  if ($self->columns);
+   $args->{labels}   = $self->labels   if ($self->labels);
+   $args->{onchange} = $self->onchange if ($self->onchange);
+   $args->{values}   = $self->values;
+
+   return $self->elem->radio_group( $args );
 }
 
 1;

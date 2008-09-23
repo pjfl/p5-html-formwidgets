@@ -14,8 +14,8 @@ use Text::Tabs;
 
 use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev$ =~ /\d+/gmx );
 
-__PACKAGE__->mk_accessors( qw(base header hide path root select style
-                              subtype) );
+__PACKAGE__->mk_accessors( qw(base header hide path root scheme select
+                              style subtype) );
 
 Readonly my %SCHEME =>
    ( Variable_Scalar   => [ '<font color="#CC6600">', '</font>' ],
@@ -50,6 +50,7 @@ sub init {
    $self->hide(      [] );
    $self->path(      undef );
    $self->root(      undef );
+   $self->scheme(    \%SCHEME );
    $self->select(    -1 );
    $self->style(     q() );
    $self->subtype(   q(file) );
@@ -60,14 +61,14 @@ sub init {
 
 sub _render {
    # Subtypes: file, csv, html, source, and logfile
-   my ($self, $ref) = @_;
+   my ($self, $args) = @_;
    my ($attr, $box, $cells, $c_no, $fld, $fmt, $htag, $key, $line);
    my ($pat, $path, $r_no, $rdr, $rows, $span, $text);
 
    $htag = $self->elem; $path = $self->path;
 
    if ($self->subtype eq q(html)) {
-      $pat   = $self->root;
+      $pat = $self->root;
 
       if ($path =~ m{ \A $pat }msx) {
          $path = $self->base.($path =~ s{ \A $pat }{/}msx);
@@ -89,13 +90,12 @@ sub _render {
 
    if ($self->subtype eq q(source)) {
       $fmt = Syntax::Highlight::Perl->new();
-      $fmt->set_format( \%SCHEME );
+      $fmt->set_format( $self->scheme );
       $fmt->define_substitution( q(<) => q(&lt;),
                                  q(>) => q(&gt;),
                                  q(&) => q(&amp;) );
       $tabstop = $self->tabstop;
-      $text    = expand( $text );
-      $text    = $fmt->format_string( $text );
+      $text    = $fmt->format_string( expand( $text ) );
 
       return $htag->pre( { class => $self->subtype }, $text );
    }

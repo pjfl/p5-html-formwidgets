@@ -23,9 +23,9 @@ sub init {
 }
 
 sub _render {
-   my ($self, $ref) = @_; my ($content, $path, $rdr);
+   my ($self, $args) = @_; my ($content, $path, $rdr);
 
-   $path = catfile( $self->templatedir, $self->id.'.tt' );
+   $path = catfile( $self->templatedir, $self->id.q(.tt) );
 
    return 'Not found '.$path   unless (-f $path);
    return 'Cannot read '.$path unless ($rdr = IO::File->new( $path, q(r) ));

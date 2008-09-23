@@ -14,23 +14,24 @@ sub init {
    my ($self, $args) = @_;
 
    $self->assets( q() );
+
    $self->NEXT::init( $args );
    return;
 }
 
 sub _render {
-   my ($self, $ref) = @_; my $text;
+   my ($self, $args) = @_; my $text;
 
-   $ref            = {};
-   $ref->{class  } = q(button);
-   $ref->{name   } = q(_verb);
-   $ref->{onclick} = 'submit()';
-   $ref->{src    } = $self->assets.$self->name.'.png';
-   $ref->{value  } = ucfirst $self->name;
-   $text           = $self->elem->image_button( $ref );
-   $ref            = { class => q(help tips), title => $self->tip };
+   $args            = {};
+   $args->{class  } = q(button);
+   $args->{name   } = q(_verb);
+   $args->{onclick} = 'submit()';
+   $args->{src    } = $self->assets.$self->name.'.png';
+   $args->{value  } = ucfirst $self->name;
+   $text            = $self->elem->image_button( $args );
+   $args            = { class => q(help tips), title => $self->tip };
    $self->tip( undef );
-   return $self->elem->span( $ref, $text );
+   return $self->elem->span( $args, $text );
 }
 
 1;

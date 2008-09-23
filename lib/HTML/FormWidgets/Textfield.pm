@@ -20,11 +20,11 @@ sub init {
 }
 
 sub _render {
-   my ($self, $ref) = @_;
+   my ($self, $args) = @_;
 
-   $ref->{size} = $self->width;
+   $args->{size} = $self->width;
 
-   return $self->elem->textfield( $ref );
+   return $self->elem->textfield( $args );
 }
 
 1;

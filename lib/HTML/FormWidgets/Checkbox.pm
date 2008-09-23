@@ -8,30 +8,35 @@ use base qw(HTML::FormWidgets);
 
 use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev$ =~ /\d+/gmx );
 
-__PACKAGE__->mk_accessors( qw(checked labels value) );
+__PACKAGE__->mk_accessors( qw(checked label_class labels value) );
 
 sub init {
    my ($self, $args) = @_;
 
-   $self->checked( 0 );
-   $self->labels(  undef );
-   $self->value(   1 );
+   $self->checked(     0 );
+   $self->label_class( q(note) );
+   $self->labels(      {} );
+   $self->value(       1 );
 
    $self->NEXT::init( $args );
    return;
 }
 
 sub _render {
-   my ($self, $ref)  = @_;
+   my ($self, $args)  = @_;
 
-   $ref->{checked} = q(checked) if ($self->checked);
-   $ref->{value  } = $self->value;
-   my $htag        = $self->elem;
-   my $html        = $htag->checkbox( $ref );
-   my $label       = $self->labels && $self->labels->{ $self->value }
-                   ? $self->labels->{ $self->value }
-                   : undef;
-   return $html.$htag->span( { class => q(note) }, $label )
+   $args->{checked} = q(checked) if ($self->checked);
+   $args->{value  } = $self->value;
+
+   my $html  = $self->elem->checkbox( $args );
+   my $label = exists $self->labels->{ $self->value }
+                    ? $self->labels->{ $self->value } : undef;
+
+   if ($label) {
+      $html .= $self->elem->span( { class => $self->label_class }, $label );
+   }
+
+   return $html;
 }
 
 1;

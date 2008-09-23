@@ -15,20 +15,20 @@ sub init {
 
    $self->container( 0 );
    $self->dropcap(   0 );
+   $self->text(      q() );
 
    $self->NEXT::init( $args );
    return;
 }
 
 sub _render {
-   my ($self, $ref) = @_; my ($markup, $text);
+   my ($self, $args) = @_; my ($markup, $text);
 
-   $ref->{class} = q(label) unless ($self->class);
+   ($text = $self->msg( $self->name ) || $self->text) =~ s{ \A \n }{}msx;
 
-   ($text = $self->msg( $self->name ) || $self->text || q())
-      =~ s{ \A \n }{}msx;
+   return unless ($text);
 
-   if ($text && $self->dropcap) {
+   if ($self->dropcap) {
       if ($text =~ m{ \A (\<[A-Za-z0-9]+\>) }mx) {
          $markup  = $1;
          $markup .= $self->elem->span( { class => q(dropcap) },
@@ -42,6 +42,11 @@ sub _render {
       }
 
       $text = $markup;
+   }
+   else {
+      delete $args->{name};
+      $args->{class} = q(label) unless ($args->{class});
+      $text = $self->elem->span( $args, $text );
    }
 
    return $text;

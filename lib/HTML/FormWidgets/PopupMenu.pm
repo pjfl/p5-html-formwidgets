@@ -21,12 +21,13 @@ sub init {
 }
 
 sub _render {
-   my ($self, $ref)   = @_;
+   my ($self, $args)   = @_;
 
-   $ref->{labels}   = $self->labels   if ($self->labels);
-   $ref->{onchange} = $self->onchange if ($self->onchange);
-   $ref->{values}   = $self->values;
-   return $self->elem->popup_menu( $ref );
+   $args->{labels}   = $self->labels   if ($self->labels);
+   $args->{onchange} = $self->onchange if ($self->onchange);
+   $args->{values}   = $self->values;
+
+   return $self->elem->popup_menu( $args );
 }
 
 1;

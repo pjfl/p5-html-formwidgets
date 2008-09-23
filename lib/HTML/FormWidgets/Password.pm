@@ -22,17 +22,17 @@ sub init {
 
 
 sub _render {
-   my ($self, $ref) = @_; my $text;
+   my ($self, $args) = @_; my $html;
 
-   $ref->{size} = $self->width;
-   $text        = $self->elem->password_field( $ref );
+   $args->{size} = $self->width;
+   $html         = $self->elem->password_field( $args );
 
-   return $text unless ($self->subtype && $self->subtype eq q(verify));
+   return $html unless ($self->subtype && $self->subtype eq q(verify));
 
-   $text .= $self->msg( q(vPasswordPrompt) );
-   $ref->{name} =~ s{ 1 }{2}mx; $ref->{id} =~ s{ 1 }{2}mx;
-   $text .= $self->elem->password_field( $ref );
-   return $text;
+   $html .= $self->msg( q(vPasswordPrompt) );
+   $args->{name} =~ s{ 1 }{2}mx; $args->{id} =~ s{ 1 }{2}mx;
+   $html .= $self->elem->password_field( $args );
+   return $html;
 }
 
 1;

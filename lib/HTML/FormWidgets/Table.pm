@@ -156,7 +156,7 @@ sub _render {
       $args->{class  }  = $args->{name} = q(button);
       $args->{onclick}  = 'return '.$self->js_obj.".addTableRow('";
       $args->{onclick} .= $self->name."', 1)";
-      $args->{src    }  = $self->assets.'AddItem.png';
+      $args->{src    }  = $self->assets.'add_item.png';
       $args->{value  }  = $self->name.q(_add);
       $text             = $hacc->image_button( $args );
       $args             = { class => q(help tips), title => $self->add_tip };
@@ -167,7 +167,7 @@ sub _render {
          $args->{class  }  = $args->{name} = q(button);
          $args->{onclick}  = 'return '.$self->js_obj;
          $args->{onclick} .= ".removeTableRow('".$self->name."')";
-         $args->{src    }  = $self->assets.'RemoveItem.png';
+         $args->{src    }  = $self->assets.'remove_item.png';
          $args->{value  }  = $self->name.q(_remove);
          $text1            = $hacc->image_button( $args );
          $args             = { class => q(help tips),

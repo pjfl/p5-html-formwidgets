@@ -30,7 +30,7 @@ sub _render {
 
    ($text = $self->msg( $self->name ) || $self->text) =~ s{ \A \n }{}msx;
 
-   return $self->elem->div( $args, $text );
+   return $self->hacc->div( $args, $text );
 }
 
 1;

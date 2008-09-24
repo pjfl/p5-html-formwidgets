@@ -62,10 +62,10 @@ sub init {
 sub _render {
    # Subtypes: file, csv, html, source, and logfile
    my ($self, $args) = @_;
-   my ($attr, $box, $cells, $c_no, $fld, $fmt, $htag, $key, $line);
+   my ($attr, $box, $cells, $c_no, $fld, $fmt, $hacc, $key, $line);
    my ($pat, $path, $r_no, $rdr, $rows, $span, $text);
 
-   $htag = $self->elem; $path = $self->path;
+   $hacc = $self->hacc; $path = $self->path;
 
    if ($self->subtype eq q(html)) {
       $pat = $self->root;
@@ -78,7 +78,7 @@ sub _render {
       $text  = 'border: 0px; bottom: 0px; position: absolute; ';
       $text .= 'top: 0px; width: 100%; height: 100%; '.$self->style;
 
-      return $htag->iframe( { src       => $path,
+      return $hacc->iframe( { src       => $path,
                               scrolling => q(auto),
                               style     => $text }, q(&nbsp;) );
    }
@@ -97,7 +97,7 @@ sub _render {
       $tabstop = $self->tabstop;
       $text    = $fmt->format_string( expand( $text ) );
 
-      return $htag->pre( { class => $self->subtype }, $text );
+      return $hacc->pre( { class => $self->subtype }, $text );
    }
 
    $r_no = 0; $rows = q(); $span = 1;
@@ -105,20 +105,20 @@ sub _render {
    if ($self->subtype eq q(logfile)) {
       # TODO: Add Prev and next links to append div
       for $line (split m { \n }mx, $text) {
-         $line   = $htag->escape_html( $line, 0 );
-         $line   = $htag->pre( { class => $self->subtype }, $line );
-         $cells  = $htag->td(  { class => $self->subtype }, $line );
-         $rows  .= $htag->tr(  { class => $self->subtype }, $cells )."\n";
+         $line   = $hacc->escape_html( $line, 0 );
+         $line   = $hacc->pre( { class => $self->subtype }, $line );
+         $cells  = $hacc->td(  { class => $self->subtype }, $line );
+         $rows  .= $hacc->tr(  { class => $self->subtype }, $cells )."\n";
          $r_no++;
       }
 
       push @{ $self->hide }, { name => q(nRows), value => $r_no };
 
-      return $htag->table( { cellpadding => 0, cellspacing => 0 }, $rows );
+      return $hacc->table( { cellpadding => 0, cellspacing => 0 }, $rows );
    }
 
    for $line (split m { \n }mx, $text) {
-      $line  = $htag->escape_html( $line, 0 );
+      $line  = $hacc->escape_html( $line, 0 );
       $cells = q(); $c_no = 0;
 
       if ($self->subtype eq q(csv)) {
@@ -133,7 +133,7 @@ sub _render {
             else {
                $attr   = { class => $self->subtype.q( ).($c_no % 2 == 0 ?
                                                          q(even) : q(odd)) };
-               $cells .= $htag->td( $attr, $fld );
+               $cells .= $hacc->td( $attr, $fld );
             }
 
             $key = $fld if ($c_no == $self->select);
@@ -143,57 +143,57 @@ sub _render {
          next if ($r_no == 0 && $line =~ m{ \A \# }msx);
       }
       else {
-         $cells .= $htag->td( { class => $self->subtype }, $line );
+         $cells .= $hacc->td( { class => $self->subtype }, $line );
          $c_no++;
       }
 
       if ($self->select >= 0) {
-         $box   = $htag->checkbox( { label => q(),
+         $box   = $hacc->checkbox( { label => q(),
                                      name  => q(select).$r_no,
                                      value => $key } );
-         $cells = $htag->td( { class => q(odd) }, $box ).$cells;
+         $cells = $hacc->td( { class => q(odd) }, $box ).$cells;
          $attr  = { class => q(lineNumber even) };
          $c_no++;
       }
       else { $attr = { class => q(lineNumber odd) } }
 
-      $cells = $htag->td( $attr, $r_no+1 ).$cells;
+      $cells = $hacc->td( $attr, $r_no+1 ).$cells;
       $c_no++;
 
       $span  = $c_no if ($c_no > $span);
-      $rows .= $htag->tr( { class => $self->subtype }, $cells );
+      $rows .= $hacc->tr( { class => $self->subtype }, $cells );
       $r_no++;
    }
 
-   $cells = $htag->th( { class => q(small table minimal) }, chr 35 );
+   $cells = $hacc->th( { class => q(small table minimal) }, chr 35 );
    $c_no  = 1;
 
    if ($self->select >= 0) {
-      $cells .= $htag->th( { class => q(small table minimal) }, q(M) );
+      $cells .= $hacc->th( { class => q(small table minimal) }, q(M) );
       $c_no++;
    }
 
    if ($self->subtype eq q(csv)) {
       if ($self->header->[0]) {
          for $text (@{ $self->header }) {
-            $cells .= $htag->th( { class => q(small table) }, $text );
+            $cells .= $hacc->th( { class => q(small table) }, $text );
             last if (++$c_no >= $span);
          }
       }
       else {
          for $text ('A' .. 'Z') {
-            $cells .= $htag->th( { class => q(small table) }, $text );
+            $cells .= $hacc->th( { class => q(small table) }, $text );
             last if (++$c_no >= $span);
          }
       }
    }
-   else { $cells .= $htag->th( { class => q(small table) }, 'Lines' ) }
+   else { $cells .= $hacc->th( { class => q(small table) }, 'Lines' ) }
 
-   $rows  = $htag->tr( $cells ).$rows;
+   $rows  = $hacc->tr( $cells ).$rows;
 
    push @{ $self->hide }, { name  => q(nRows), value => $r_no };
 
-   return $htag->table( $rows );
+   return $hacc->table( $rows );
 }
 
 1;

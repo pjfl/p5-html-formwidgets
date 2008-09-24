@@ -30,7 +30,7 @@ sub _render {
    $args->{href   } = $self->href;
    $args->{onclick} = $self->onclick if ($self->onclick);
 
-   return $self->elem->a( $args, $self->text );
+   return $self->hacc->a( $args, $self->text );
 }
 
 1;

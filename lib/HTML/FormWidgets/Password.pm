@@ -25,13 +25,13 @@ sub _render {
    my ($self, $args) = @_; my $html;
 
    $args->{size} = $self->width;
-   $html         = $self->elem->password_field( $args );
+   $html         = $self->hacc->password_field( $args );
 
    return $html unless ($self->subtype && $self->subtype eq q(verify));
 
    $html .= $self->msg( q(vPasswordPrompt) );
    $args->{name} =~ s{ 1 }{2}mx; $args->{id} =~ s{ 1 }{2}mx;
-   $html .= $self->elem->password_field( $args );
+   $html .= $self->hacc->password_field( $args );
    return $html;
 }
 

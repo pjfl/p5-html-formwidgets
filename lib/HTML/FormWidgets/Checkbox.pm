@@ -28,12 +28,12 @@ sub _render {
    $args->{checked} = q(checked) if ($self->checked);
    $args->{value  } = $self->value;
 
-   my $html  = $self->elem->checkbox( $args );
+   my $html  = $self->hacc->checkbox( $args );
    my $label = exists $self->labels->{ $self->value }
                     ? $self->labels->{ $self->value } : undef;
 
    if ($label) {
-      $html .= $self->elem->span( { class => $self->label_class }, $label );
+      $html .= $self->hacc->span( { class => $self->label_class }, $label );
    }
 
    return $html;

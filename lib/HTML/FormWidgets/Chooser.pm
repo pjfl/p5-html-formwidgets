@@ -41,7 +41,7 @@ sub _render {
    $args->{onclick} = $onclick;
    $args->{value  } = $self->button;
 
-   return $self->elem->submit( $args );
+   return $self->hacc->submit( $args );
 }
 
 1;

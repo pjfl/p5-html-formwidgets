@@ -29,7 +29,7 @@ sub _render {
    $args->{size}     = $self->height;
    $args->{values}   = $self->values;
 
-   return $self->elem->scrolling_list( $args );
+   return $self->hacc->scrolling_list( $args );
 }
 
 1;

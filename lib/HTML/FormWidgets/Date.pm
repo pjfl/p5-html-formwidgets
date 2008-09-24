@@ -26,13 +26,13 @@ sub init {
 }
 
 sub _render {
-   my ($self, $args) = @_; my ($htag, $html, $text);
+   my ($self, $args) = @_; my ($hacc, $html, $text);
 
-   $htag             = $self->elem;
+   $hacc             = $self->hacc;
    $args->{size   }  = $self->width;
-   $text             = $htag->textfield( $args );
-   $html             = $htag->div( { class => q(container) }, $text );
-   $html            .= $htag->div( { class => q(separator) }, q(&nbsp;) );
+   $text             = $hacc->textfield( $args );
+   $html             = $hacc->div( { class => q(container) }, $text );
+   $html            .= $hacc->div( { class => q(separator) }, q(&nbsp;) );
    $text             = 'function getAnchorPosition(anchorname) {';
    $text            .= 'var coordinates = new Object();';
 	$text            .= 'coordinates.x = 0; coordinates.y = 0;';
@@ -41,10 +41,10 @@ sub _render {
    $text            .= $self->name."_calendar'); ";
    $text            .= $self->name."_cal.offsetX = 0; ";
    $text            .= $self->name."_cal.offsetY = 0; ";
-   $html            .= $htag->script( { type => q(text/javascript) }, $text );
+   $html            .= $hacc->script( { type => q(text/javascript) }, $text );
    $args             = { alt => q(Calendar), class => q(icon) };
    $args->{src    }  = $self->assets.'calendar.png';
-   $text             = $htag->img( $args );
+   $text             = $hacc->img( $args );
    $args             = {};
    $args->{class  }  = q(tips);
    $args->{href   }  = q();
@@ -54,10 +54,10 @@ sub _render {
    $args->{onclick} .= $self->format."' ); ";
    $args->{onclick} .= 'return false;';
    $args->{title  }  = $self->hint_title.$TTS.$self->msg( q(dateWidgetTip) );
-   $text             = $htag->a( $args, $text );
-   $text            .= $htag->div( { class => q(calendar hidden),
+   $text             = $hacc->a( $args, $text );
+   $text            .= $hacc->div( { class => q(calendar hidden),
                                      id    => $self->name.'_calendar' } );
-   $html            .= $htag->div( { class => q(container) }, $text );
+   $html            .= $hacc->div( { class => q(container) }, $text );
    return $html;
 }
 

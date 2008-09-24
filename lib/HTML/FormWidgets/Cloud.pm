@@ -25,7 +25,7 @@ sub _render {
    my ($anchor, $attrs, $class, $class_pref, $hacc, $href, $html);
    my ($id_pref, $item, $onclick, $ref, $style, $text);
 
-   $hacc = $self->elem;
+   $hacc = $self->hacc;
 
    for $item (@{ $self->data }) {
       $ref        = $item->{value};

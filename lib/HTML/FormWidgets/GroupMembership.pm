@@ -35,11 +35,11 @@ sub init {
 }
 
 sub _render {
-   my ($self, $args) = @_; my ($htag, $html, $ref, $text, $text1, $tip, $val);
+   my ($self, $args) = @_; my ($hacc, $html, $ref, $text, $text1, $tip, $val);
 
-   $htag              = $self->elem;
-   $text              = $htag->span( { class => q(title) }, $self->atitle );
-   $text             .= $htag->br();
+   $hacc              = $self->hacc;
+   $text              = $hacc->span( { class => q(title) }, $self->atitle );
+   $text             .= $hacc->br();
    $args->{class   } .= q( group);
    $args->{id      }  = $self->id     if ($self->id);
    $args->{labels  }  = $self->labels if ($self->labels);
@@ -47,19 +47,19 @@ sub _render {
    $args->{size    }  = $self->height;
    $args->{name    }  = $self->name.q(_all);
    $args->{values  }  = $self->all;
-   $text             .= $htag->scrolling_list( $args );
-   $html              = $htag->div( { class => q(container) }, $text );
-   $html             .= $htag->div( { class => q(separator) }, $self->space );
+   $text             .= $hacc->scrolling_list( $args );
+   $html              = $hacc->div( { class => q(container) }, $text );
+   $html             .= $hacc->div( { class => q(separator) }, $self->space );
 
-   $text1             = $htag->br().$htag->br().$htag->br();
+   $text1             = $hacc->br().$hacc->br().$hacc->br();
    $ref               = {};
    $ref->{class  }    = $ref->{name} = q(button);
    $ref->{onclick}    = 'return '.$self->js_obj.".addItem('".$self->name."')";
    $ref->{src    }    = $self->assets.'AddItem.png';
    $ref->{value  }    = q(add).(ucfirst $self->name);
-   $text              = $htag->image_button( $ref );
+   $text              = $hacc->image_button( $ref );
    $ref               = { class => q(help tips), title => $self->add_tip };
-   $text1            .= $htag->span( $ref, $text ).$htag->br().$htag->br();
+   $text1            .= $hacc->span( $ref, $text ).$hacc->br().$hacc->br();
 
    $ref               = {};
    $ref->{class  }    = $ref->{name} = q(button);
@@ -67,26 +67,26 @@ sub _render {
    $ref->{onclick}   .= $self->name."')";
    $ref->{src    }    = $self->assets.'RemoveItem.png';
    $ref->{value  }    = q(remove).(ucfirst $self->name);
-   $text              = $htag->image_button( $ref );
+   $text              = $hacc->image_button( $ref );
    $ref               = { class => q(help tips), title => $self->remove_tip };
-   $text1            .= $htag->span( $ref, $text );
-   $html             .= $htag->div( { class => q(container) }, $text1 );
+   $text1            .= $hacc->span( $ref, $text );
+   $html             .= $hacc->div( { class => q(container) }, $text1 );
 
    delete $args->{id};
-   $html             .= $htag->div(  { class => q(separator) }, $self->space );
-   $text              = $htag->span( { class => q(title) }, $self->ctitle );
-   $text             .= $htag->br();
+   $html             .= $hacc->div(  { class => q(separator) }, $self->space );
+   $text              = $hacc->span( { class => q(title) }, $self->ctitle );
+   $text             .= $hacc->br();
    $args->{name  }    = $self->name.q(_current);
    $args->{values}    = $self->current;
-   $text             .= $htag->scrolling_list( $args );
-   $html             .= $htag->div( { class => q(container) }, $text );
+   $text             .= $hacc->scrolling_list( $args );
+   $html             .= $hacc->div( { class => q(container) }, $text );
 
    $args              = {};
    $args->{name  }    = $self->name.q(_n_added);
    $args->{value }    = 0;
-   $html             .= $htag->hidden( $args );
+   $html             .= $hacc->hidden( $args );
    $args->{name  }    = $self->name.q(_n_deleted);
-   $html             .= $htag->hidden( $args );
+   $html             .= $hacc->hidden( $args );
    return $html;
 }
 

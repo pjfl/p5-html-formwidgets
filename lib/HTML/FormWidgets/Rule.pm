@@ -23,28 +23,28 @@ sub init {
 }
 
 sub _render {
-   my ($self, $args) = @_; my ($cells, $html); my $htag = $self->elem;
+   my ($self, $args) = @_; my ($cells, $html); my $hacc = $self->hacc;
 
    if ($self->imgclass) {
-      $html  = $htag->hr(  { class => $self->class } );
-      $cells = $htag->td(  { class => q(minimal) }, $html );
-      $html  = $htag->img( { alt   => $self->alt,
+      $html  = $hacc->hr(  { class => $self->class } );
+      $cells = $hacc->td(  { class => q(minimal) }, $html );
+      $html  = $hacc->img( { alt   => $self->alt,
                              class => $self->imgclass,
                              src   => $self->text } );
    }
    else { $html = $self->text }
 
-   $html = $htag->a( { href => $self->href }, $html ) if ($self->href);
+   $html = $hacc->a( { href => $self->href }, $html ) if ($self->href);
 
    if ($self->tip) {
-      $html = $htag->span( { class => q(tips), title => $self->tip }, $html );
+      $html = $hacc->span( { class => q(tips), title => $self->tip }, $html );
       $self->tip( undef );
    }
 
-   $cells .= $htag->td( { class => q(minimal) }, $html ) if ($html);
-   $cells .= $htag->td( $htag->hr( { class => $self->class } ) );
+   $cells .= $hacc->td( { class => q(minimal) }, $html ) if ($html);
+   $cells .= $hacc->td( $hacc->hr( { class => $self->class } ) );
 
-   return $htag->table( { class => q(rule) }, $htag->tr( $cells ) );
+   return $hacc->table( { class => q(rule) }, $hacc->tr( $cells ) );
 }
 
 1;

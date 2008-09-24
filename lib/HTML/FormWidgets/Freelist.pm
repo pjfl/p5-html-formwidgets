@@ -25,25 +25,25 @@ sub init {
 }
 
 sub _render {
-   my ($self, $args) = @_; my ($htag, $html, $rno, $text, $text1, $tip, $val);
+   my ($self, $args) = @_; my ($hacc, $html, $rno, $text, $text1, $tip, $val);
 
-   $htag              = $self->elem;
+   $hacc              = $self->hacc;
    $args->{name    }  = $self->name.q(_new);
    $args->{size    }  = $self->width;
-   $html              = $htag->div( { class => q(container) },
-                                    $htag->textfield( $args ) );
-   $html             .= $htag->div( { class => q(separator) }, $self->space );
+   $html              = $hacc->div( { class => q(container) },
+                                    $hacc->textfield( $args ) );
+   $html             .= $hacc->div( { class => q(separator) }, $self->space );
 
    $args              = {};
    $args->{class   }  = $args->{name} = q(button);
    $args->{onclick }  = 'return '.$self->js_obj.".addItem('".$self->name."')";
    $args->{src     }  = $self->assets.'AddItem.png';
    $args->{value   }  = q(add).(ucfirst $self->name);
-   $text              = $htag->image_button( $args );
+   $text              = $hacc->image_button( $args );
    $tip               = 'Enter a new item into the adjacent text field ';
    $tip              .= 'and then click this button to add it to the list';
    $args              = { class => q(help tips), title => $tip };
-   $text1             = $htag->span( $args, $text ).$htag->br().$htag->br();
+   $text1             = $hacc->span( $args, $text ).$hacc->br().$hacc->br();
 
    $args              = {};
    $args->{class   }  = $args->{name} = q(button);
@@ -51,21 +51,21 @@ sub _render {
    $args->{onclick } .= ".removeItem('".$self->name."')";
    $args->{src     }  = $self->assets.'RemoveItem.png';
    $args->{value   }  = q(remove).(ucfirst $self->name);
-   $text              = $htag->image_button( $args );
+   $text              = $hacc->image_button( $args );
    $tip               = 'Select one or more items from the adjacent list ';
    $tip              .= 'and then click this button to remove them';
    $args              = { class => q(help tips), title => $tip };
-   $text1            .= $htag->span( $args, $text );
-   $html             .= $htag->div( { class => q(container) }, $text1 );
+   $text1            .= $hacc->span( $args, $text );
+   $html             .= $hacc->div( { class => q(container) }, $text1 );
 
-   $html             .= $htag->div( { class => q(separator) }, $self->space );
+   $html             .= $hacc->div( { class => q(separator) }, $self->space );
    $args              = {};
    $args->{labels  }  = $self->labels if ($self->labels);
    $args->{multiple}  = q(true);
    $args->{name    }  = $self->name.q(_current);
    $args->{size    }  = $self->height;
    $args->{values  }  = $self->values;
-   $html             .= $htag->scrolling_list( $args );
+   $html             .= $hacc->scrolling_list( $args );
    $rno               = 0;
 
    for $val (@{ $args->{values} }) {
@@ -73,13 +73,13 @@ sub _render {
       $args->{id   }  = $self->name.$rno++;
       $args->{name }  = $self->name;
       $args->{value}  = $val;
-      $html          .= $htag->hidden( $args );
+      $html          .= $hacc->hidden( $args );
    }
 
    $args              = {};
    $args->{name    }  = $self->name.q(_n_rows);
    $args->{value   }  = $rno;
-   $html             .= $htag->hidden( $args );
+   $html             .= $hacc->hidden( $args );
    return $html;
 }
 

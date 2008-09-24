@@ -28,10 +28,10 @@ sub _render {
    $args->{onclick} = 'submit()';
    $args->{src    } = $self->assets.$self->name.'.png';
    $args->{value  } = ucfirst $self->name;
-   $text            = $self->elem->image_button( $args );
+   $text            = $self->hacc->image_button( $args );
    $args            = { class => q(help tips), title => $self->tip };
    $self->tip( undef );
-   return $self->elem->span( $args, $text );
+   return $self->hacc->span( $args, $text );
 }
 
 1;

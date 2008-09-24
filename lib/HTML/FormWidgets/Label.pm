@@ -31,12 +31,12 @@ sub _render {
    if ($self->dropcap) {
       if ($text =~ m{ \A (\<[A-Za-z0-9]+\>) }mx) {
          $markup  = $1;
-         $markup .= $self->elem->span( { class => q(dropcap) },
+         $markup .= $self->hacc->span( { class => q(dropcap) },
                                        substr $text, length $1, 1 );
          $markup .= substr $text, (length $1) + 1;
       }
       else {
-         $markup  = $self->elem->span( { class => q(dropcap) },
+         $markup  = $self->hacc->span( { class => q(dropcap) },
                                        substr $text, 0, 1 );
          $markup .= substr $text, 1;
       }
@@ -46,7 +46,7 @@ sub _render {
    else {
       delete $args->{name};
       $args->{class} = q(label) unless ($args->{class});
-      $text = $self->elem->span( $args, $text );
+      $text = $self->hacc->span( $args, $text );
    }
 
    return $text;

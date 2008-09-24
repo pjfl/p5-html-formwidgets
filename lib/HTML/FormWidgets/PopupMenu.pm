@@ -27,7 +27,7 @@ sub _render {
    $args->{onchange} = $self->onchange if ($self->onchange);
    $args->{values}   = $self->values;
 
-   return $self->elem->popup_menu( $args );
+   return $self->hacc->popup_menu( $args );
 }
 
 1;

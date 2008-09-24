@@ -24,7 +24,7 @@ sub _render {
 
    $args->{size} = $self->width;
 
-   return $self->elem->textfield( $args );
+   return $self->hacc->textfield( $args );
 }
 
 1;

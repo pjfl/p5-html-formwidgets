@@ -29,7 +29,7 @@ sub _render {
    $args->{onchange} = $self->onchange if ($self->onchange);
    $args->{values}   = $self->values;
 
-   return $self->elem->radio_group( $args );
+   return $self->hacc->radio_group( $args );
 }
 
 1;

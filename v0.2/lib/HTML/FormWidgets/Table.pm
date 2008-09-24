@@ -190,10 +190,10 @@ sub _check_box {
 
    $args = { name => $self->name.q(_select).$r_no };
    $args->{value} = $val->{id} if ($val->{id});
-   $text = $self->elem->checkbox( $args );
+   $text = $self->hacc->checkbox( $args );
    $args = { align => q(center), class => $c_no % 2 == 0 ? q(even) : q(odd) };
 
-   return $self->elem->td( $args, $text );
+   return $self->hacc->td( $args, $text );
 }
 
 1;

@@ -40,15 +40,15 @@ sub _render {
    @root = grep { ! m{ \A _ }mx } keys %{ $self->data };
 
    if (defined $root[1]) {
-      return $self->elem->span( { class => q(error) },
+      return $self->hacc->span( { class => q(error) },
                                 'Your tree has more than one root' );
    }
 
    $ref = { data => $self->data, parent => $NUL, prevKey => $NUL, root => 1 };
-   $jscript = $self->elem->script( { language => q(JavaScript) },
+   $jscript = $self->hacc->script( { language => q(JavaScript) },
                                    $self->scan_hash( $ref ) );
 
-   return $self->elem->div( { class => q(tree) }, $jscript );
+   return $self->hacc->div( { class => q(tree) }, $jscript );
 }
 
 sub node_id { return shift->{node_count}++ }

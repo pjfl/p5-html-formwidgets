@@ -41,12 +41,12 @@ sub _render {
    my $c_no  = 0;
    my $cells = q();
    my $data  = $self->data;
-   my $htag  = $self->elem;
+   my $hacc  = $self->hacc;
 
    if ($self->select eq q(left)) {
       $args           = { class => $self->class };
       $args->{class} .= $self->edit ? q( select) : q( minimal);
-      $cells         .= $htag->th( $args, 'Select' );
+      $cells         .= $hacc->th( $args, 'Select' );
    }
 
    for $fld (@{ $data->{flds} }) {
@@ -59,17 +59,17 @@ sub _render {
       }
 
       $args->{class} .= q( nowrap) unless (exists $data->{wrap}->{ $fld });
-      $cells         .= $htag->th( $args, $data->{labels}->{ $fld } );
+      $cells         .= $hacc->th( $args, $data->{labels}->{ $fld } );
       $c_no++;
    }
 
    if ($self->select eq q(right)) {
       $args           = { class => $self->class };
       $args->{class} .= $self->edit ? q( select) : q( minimal);
-      $cells         .= $htag->th( $args, 'Select' );
+      $cells         .= $hacc->th( $args, 'Select' );
    }
 
-   $rows = $htag->tr( $cells ); $r_no = 0;
+   $rows = $hacc->tr( $cells ); $r_no = 0;
 
    for $val (@{ $data->{values} }) {
       $cells = q(); $c_no = 0;
@@ -90,14 +90,14 @@ sub _render {
             $args->{name} = $self->name.q(_).$fld.q(_).$r_no;
             $args->{size} = exists $data->{sizes}->{ $fld }
                           ? $data->{sizes}->{ $fld } : 10;
-            $text         = $htag->textfield( $args );
+            $text         = $hacc->textfield( $args );
             $args         = { class => q(dataValue) };
 
             unless (exists $data->{wrap}->{ $fld }) {
                $args->{class} .= q( nowrap);
             }
 
-            $cells .= $htag->td( $args, $text );
+            $cells .= $hacc->td( $args, $text );
          }
          else {
             next if ($data->{hclass}->{ $fld }
@@ -118,7 +118,7 @@ sub _render {
                $args->{class} .= q( nowrap);
             }
 
-            $cells .= $htag->td( $args, $val->{ $fld } || q(&nbsp;) )."\n";
+            $cells .= $hacc->td( $args, $val->{ $fld } || q(&nbsp;) )."\n";
          }
 
          $c_no++;
@@ -129,7 +129,7 @@ sub _render {
       }
 
       $args  = { id => $self->name.q(_row).$r_no };
-      $rows .= $htag->tr( $args, $cells ); $r_no++;
+      $rows .= $hacc->tr( $args, $cells ); $r_no++;
    }
 
    push @{ $self->hide }, { name => $self->name.q(_nrows), value => $r_no };
@@ -148,8 +148,8 @@ sub _render {
          $args->{name}  = $self->name.q(_).$fld;
          $args->{size}  = exists $data->{sizes}->{ $fld }
                         ? $data->{sizes}->{ $fld } : 10;
-         $text          = $htag->textfield( $args );
-         $cells        .= $htag->td( $text );
+         $text          = $hacc->textfield( $args );
+         $cells        .= $hacc->td( $text );
       }
 
       $args             = {};
@@ -158,9 +158,9 @@ sub _render {
       $args->{onclick} .= $self->name."', 1)";
       $args->{src    }  = $self->assets.'AddItem.png';
       $args->{value  }  = $self->name.q(_add);
-      $text             = $htag->image_button( $args );
+      $text             = $hacc->image_button( $args );
       $args             = { class => q(help tips), title => $self->add_tip };
-      $text             = $htag->span( $args, $text );
+      $text             = $hacc->span( $args, $text );
 
       if ($self->select) {
          $args             = {};
@@ -169,17 +169,17 @@ sub _render {
          $args->{onclick} .= ".removeTableRow('".$self->name."')";
          $args->{src    }  = $self->assets.'RemoveItem.png';
          $args->{value  }  = $self->name.q(_remove);
-         $text1            = $htag->image_button( $args );
+         $text1            = $hacc->image_button( $args );
          $args             = { class => q(help tips),
                                title => $self->remove_tip };
-         $text            .= $htag->span( $args, $text1 );
+         $text            .= $hacc->span( $args, $text1 );
       }
 
-      $cells .= $htag->td( $text );
-      $rows  .= $htag->tr( { id => $self->name.q(_add) }, $cells );
+      $cells .= $hacc->td( $text );
+      $rows  .= $hacc->tr( { id => $self->name.q(_add) }, $cells );
    }
 
-   return $htag->table( { class => ($self->prompt ? q(form) : q(std)) },
+   return $hacc->table( { class => ($self->prompt ? q(form) : q(std)) },
                         $rows );
 }
 

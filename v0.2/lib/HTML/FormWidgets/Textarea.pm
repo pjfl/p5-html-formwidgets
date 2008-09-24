@@ -26,7 +26,7 @@ sub _render {
    $args->{cols} = $self->width;
    $args->{rows} = $self->height;
 
-   return $self->elem->textarea( $args );
+   return $self->hacc->textarea( $args );
 }
 
 1;

@@ -15,23 +15,24 @@ use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev$ =~ /\d+/gmx );
 Readonly my $NUL   => q();
 Readonly my $TTS   => q( ~ );
 Readonly my %ATTRS =>
-   ( ajaxid       => undef,            ajaxtext     => undef,
-     align        => q(left),          class        => $NUL,
-     clear        => $NUL,             container    => 1,
-     content_type => q(text/html),     default      => undef,
-     elem         => undef,            evnt_hndlr   => q(serverObj.checkField),
-     fhelp        => $NUL,             hint_title   => 'Handy Hint',
-     id           => undef,            messages     => undef,
-     name         => undef,            nb_symbol    => q(&nbsp;&dagger;),
-     nowrap       => 0,                onblur       => undef,
-     onchange     => undef,            onkeypress   => undef,
-     palign       => undef,            prompt       => $NUL,
-     pwidth       => 40,               required     => 0,
-     sep          => q(&nbsp;:&nbsp;), space        => q(&nbsp;) x 3,
-     stepno       => undef,            swidth       => 1000,
-     tabstop      => 3,                text         => $NUL,
-     text_obj     => undef,            tip          => $NUL,
-     tiptype      => q(dagger),        type         => undef, );
+   ( ajaxid       => undef,             ajaxtext     => undef,
+     align        => q(left),           class        => $NUL,
+     clear        => $NUL,              container    => 1,
+     content_type => q(text/html),      default      => undef,
+     evnt_hndlr   => q(serverObj.checkField),
+     fhelp        => $NUL,              hacc         => undef,
+     hint_title   => 'Handy Hint',      id           => undef,
+     messages     => undef,             name         => undef,
+     nb_symbol    => q(&nbsp;&dagger;), nowrap       => 0,
+     onblur       => undef,             onchange     => undef,
+     onkeypress   => undef,             palign       => undef,
+     prompt       => $NUL,              pwidth       => 40,
+     required     => 0,                 sep          => q(&nbsp;:&nbsp;),
+     space        => q(&nbsp;) x 3,     stepno       => undef,
+     swidth       => 1000,              tabstop      => 3,
+     text         => $NUL,              text_obj     => undef,
+     tip          => $NUL,              tiptype      => q(dagger),
+     type         => undef, );
 
 __PACKAGE__->mk_accessors( keys %ATTRS );
 
@@ -87,7 +88,7 @@ sub new {
 
    # Now we can create HTML elements like we could with CGI.pm
    $ref = { content_type => $self->content_type };
-   $self->elem( HTML::Accessors->new( $ref ) );
+   $self->hacc( HTML::Accessors->new( $ref ) );
 
    # Create a Text::Markdown object for use by the msgs method
    $suffix = $self->content_type eq q(text/html) ? q(>) : q( />);
@@ -183,15 +184,15 @@ sub msg {
 }
 
 sub render {
-   my $self = shift; my ($field, $htag, $html, $ref, $tip);
+   my $self = shift; my ($field, $hacc, $html, $ref, $tip);
 
    return $self->text || $NUL unless ($self->type);
 
-   $htag = $self->elem;
-   $html = $self->clear eq q(left) ? $htag->br() : "\n";
+   $hacc = $self->hacc;
+   $html = $self->clear eq q(left) ? $hacc->br() : "\n";
 
    if ($self->stepno) {
-      $html .= $htag->span( { class => q(lineNumber) }, $self->stepno );
+      $html .= $hacc->span( { class => q(lineNumber) }, $self->stepno );
    }
 
    if ($self->prompt) {
@@ -200,18 +201,18 @@ sub render {
       $ref->{style} .= 'text-align: '.$self->palign.'; ' if ($self->palign);
       $ref->{style} .= 'white-space: nowrap; '           if ($self->nowrap);
       $ref->{style} .= 'width: '.$self->pwidth.q(;)      if ($self->pwidth);
-      $html         .= $htag->label( $ref, $self->prompt );
+      $html         .= $hacc->label( $ref, $self->prompt );
    }
 
    if ($self->type eq q(groupMembership)) {
       $ref           = { class => q(instructions) };
       $ref->{style} .= 'text-align: '.$self->palign.'; ' if ($self->palign);
       $ref->{style} .= 'width: '.$self->pwidth.q(;)      if ($self->pwidth);
-      $html         .= $htag->div( $ref, $self->fhelp );
+      $html         .= $hacc->div( $ref, $self->fhelp );
    }
 
    if ($self->sep) {
-      $html .= $htag->div( { class => q(separator) }, $self->sep );
+      $html .= $hacc->div( { class => q(separator) }, $self->sep );
    }
 
    $ref               = {};
@@ -230,20 +231,20 @@ sub render {
       $tip =~ s{ \s+ }{ }gmx;
       $ref = { class => q(help tips), title => $tip };
 
-      if ($self->tiptype ne q(dagger)) { $field = $htag->span( $ref, $field ) }
-      else { $field .= $htag->span( $ref, $self->nb_symbol ) }
+      if ($self->tiptype ne q(dagger)) { $field = $hacc->span( $ref, $field ) }
+      else { $field .= $hacc->span( $ref, $self->nb_symbol ) }
    }
 
    if ($self->container) {
       $ref   = { class => q(container ).$self->align };
-      $field = $htag->div( $ref, $field );
+      $field = $hacc->div( $ref, $field );
    }
 
    if ($self->ajaxid) {
       $ref    = { class => q(hidden), id => $self->ajaxid.q(_checkField) };
-      $field .= $htag->div( $ref, $htag->br().$self->ajaxtext );
+      $field .= $hacc->div( $ref, $hacc->br().$self->ajaxtext );
       $ref    = { class => q(container) };
-      $field  = $htag->div( $ref, $field );
+      $field  = $hacc->div( $ref, $field );
    }
 
    return $html.$field;
@@ -292,9 +293,9 @@ sub _group_fields {
       $html = $ref->{content}.$html;
    }
 
-   my $htag   = HTML::Accessors->new();
-   my $legend = $htag->legend( $item->{content}->{text} );
-   return "\n".$htag->fieldset( "\n".$legend.$html );
+   my $hacc   = HTML::Accessors->new();
+   my $legend = $hacc->legend( $item->{content}->{text} );
+   return "\n".$hacc->fieldset( "\n".$legend.$html );
 }
 
 sub _merge_config {

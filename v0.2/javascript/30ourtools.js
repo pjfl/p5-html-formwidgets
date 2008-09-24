@@ -1,4 +1,4 @@
-// @(#)$Id: 30ourtools.js 473 2008-08-31 20:45:33Z pjf $
+// @(#)$Id: 30ourtools.js 496 2008-09-19 15:23:15Z pjf $
 
 /* Property: setHTML
       Sets the innerHTML of the Element. Should work for application/xhtml+xml
@@ -219,6 +219,8 @@ var Accordion = Fx.Elements.extend({
       index = ($type(index) == 'element')
             ? this.elements.indexOf(index) : index;
 
+      if (index >= this.elements.length) index = 0;
+
       if ((this.timer && this.options.wait)
           || (index === this.previous
               && !this.options.alwaysHide)) return this;
@@ -242,13 +244,14 @@ var Accordion = Fx.Elements.extend({
    redisplay: function() {
       var index = this.previous;
       this.previous = -1;
-      this.display( index );
+      return this.display( index );
    },
 
-   reload: function() {
-      if (!($defined( this.togglers[ 0 ] )
-            && $defined( this.togglers[ 0 ].onclick ))) return;
-      this.togglers[ 0 ].onclick();
+   reload: function( index ) {
+      if (!index || index >= this.togglers.length) index = 0;
+      if (!($defined( this.togglers[ index ] )
+            && $defined( this.togglers[ index ].onclick ))) return;
+      this.togglers[ index ].onclick();
    },
 
    resize: function( height, width ) {
@@ -256,7 +259,7 @@ var Accordion = Fx.Elements.extend({
          if (height) el.fullHeight = this.options.fixedHeight = height;
          if (width)  el.fullWidth  = this.options.fixedWidth  = width;
       }, this );
-      this.redisplay();
+      return this.redisplay();
    }
 });
 
@@ -615,7 +618,10 @@ var LinkFader = new Class({
    startFade: function( id ) {
       if (this.timer) {
          clearInterval( this.timer ); this.timer = null;
-         this.links[ this.linkNo ].style.color = this.colour.hexToRgb();
+
+         if (this.colour) {
+            this.links[ this.linkNo ].style.color = this.colour.hexToRgb();
+         }
       }
 
       for (var i = 0; i < this.links.length; i++) {

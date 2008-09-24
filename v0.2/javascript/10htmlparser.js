@@ -264,8 +264,11 @@
 				var elem = doc.createElement( tagName );
 
 				for ( var attr in attrs ) {
-               if (attrs[ attr ].name.length > 0)
+               // Fuck knows where the forEach attrs are comming from
+               if (attrs[ attr ].name.length > 0
+                   && attrs[ attr ].name != "forEach") {
                   elem.setAttribute( attrs[ attr ].name, attrs[ attr ].value );
+               }
             }
 
 				if ( structure[ tagName ]

@@ -31,8 +31,7 @@ ok( $widget->render
 
 $widget = HTML::FormWidgets->new( id => q(test), type => q(date) );
 
-ok( $widget->render =~ m{ href="" \s class="tips" \s id="test_anchor" }mx,
-    q(Date) );
+ok( $widget->render =~ m{ class="icon" \s+ id="test_trigger" }mx, q(Date) );
 
 $widget = HTML::FormWidgets->new( hide => [],
                                   name => q(file),

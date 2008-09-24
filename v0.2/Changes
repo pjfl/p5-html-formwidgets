@@ -4,6 +4,7 @@
 
 	Refactored the attribute list in the base class. Now distributed
    amongst the subclasses. Bumping version to 0.2
+   Now uses jscalendar for the Date subclass
 
 2008-09-06
 

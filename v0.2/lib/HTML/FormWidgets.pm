@@ -546,7 +546,7 @@ arguments
 
 =head1 Configuration and Environment
 
-The following are passed to C<build> in the B<config> hash (they
+The following are passed to C<build> in the I<config> hash (they
 reflect this modules primary use within a L<Catalyst> application):
 
 =over 3
@@ -579,7 +579,7 @@ Used by the C<::Chooser> subclass
 =item hide
 
 So that the C<::File> and C<::Table> subclasses can store the number
-of rows added as the hidden form variable B<nRows>
+of rows added as the hidden form variable I<nRows>
 
 =item messages
 
@@ -610,7 +610,7 @@ Sensible defaults are provided by C<new> if any of the above are undefined
 
 =head1 Factory Subclasses
 
-These are the possible values for the B<type> attribute which defaults
+These are the possible values for the I<type> attribute which defaults
 to I<textfield>. Each subclass implements the C<_render> method, it
 receives a hash ref of options an returns a scalar containing some
 XHTML.
@@ -619,22 +619,22 @@ The distribution ships with the following factory subclasses:
 
 =head2 Anchor
 
-Returns an B<anchor> element of class option B<class> (which defaults
-to I<linkFade>) with it's B<href> attribute set to the B<href>
-option. The anchor body is set to the B<text> option
+Returns an I<anchor> element of class option I<class> (which defaults
+to I<linkFade>) with it's I<href> attribute set to the I<href>
+option. The anchor body is set to the I<text> option
 
 =head2 Checkbox
 
-Return a B<checkbox> element of value B<value>. Use the
-element's value as key to the B<labels> hash. The hash value
+Return a I<checkbox> element of value I<value>. Use the
+element's value as key to the I<labels> hash. The hash value
 (which defaults null) is used as the displayed label. The
-B<checked> option determines the checkbox's initial
+I<checked> option determines the checkbox's initial
 setting
 
 =head2 Chooser
 
 Creates a popup window which allows one item to be selected from a
-B<long> list of items
+I<long> list of items
 
 =head2 Cloud
 
@@ -644,13 +644,15 @@ Creates list of links from the data set supplied in the I<data> option
 
 Return another text field, this time with a calendar icon which when
 clicked pops up a Javascript date picker. Requires the appropriate JS
-library to have been loaded by the page. Attribute B<width>
+library to have been loaded by the page. Attribute I<width>
 controls the size of the textfield (default 10 characters) and
-B<format> defaults to I<dd/mm/yyyy>
+I<format> defaults to I<dd/mm/yyyy>. Setting the I<readonly> attribute
+to true (which is the default) causes the input textfield to become
+readonly
 
 =head2 File
 
-Display the contents of a file pointed to by B<path>. Supports the
+Display the contents of a file pointed to by I<path>. Supports the
 following subtypes:
 
 =over 3
@@ -658,90 +660,90 @@ following subtypes:
 =item csv
 
 Return a table containing the CSV formatted file. This and the I<file>
-subtype are selectable if B<select> >= 0 and represents the
+subtype are selectable if I<select> >= 0 and represents the
 column number of the key field
 
 =item file
 
-Default subtype. Like the logfile subtype but without the B<pre> tags
+Default subtype. Like the logfile subtype but without the I<pre> tags
 
 =item html
 
-The C<_render> method returns an B<iframe> tag whose B<src> attribute
-is set to B<path>. Paths that begin with B<root>
-will have that replaced with B<base>. Paths that do not begin
-with "http:" will have B<base> prepended to them
+The C<_render> method returns an I<iframe> tag whose I<src> attribute
+is set to I<path>. Paths that begin with I<root>
+will have that replaced with I<base>. Paths that do not begin
+with "http:" will have I<base> prepended to them
 
 =item logfile
 
 The C<_render> method returns a table where each line of the logfile
 appears as a separate row containing one cell. The logfile lines are
-each wrapped in B<pre> tags
+each wrapped in I<pre> tags
 
 =item source
 
 The module C<Syntax::Highlight::Perl> is used to provide colour
 highlights for the Perl source code. Tabs are expanded to
-B<tabstop> spaces and the result is returned wrapped in
-B<pre> tags
+I<tabstop> spaces and the result is returned wrapped in
+I<pre> tags
 
 =back
 
 =head2 Freelist
 
 New values entered into a text field can be added to the
-list. Existing list values (passed in B<values>) can be
-removed. The height of the list is set by B<height>.
+list. Existing list values (passed in I<values>) can be
+removed. The height of the list is set by I<height>.
 
 =head2 GroupMembership
 
 Displays two lists which allow for membership of a group. The first
-scrolling list contains "all" values (B<all>), the second
-contains those values currently selected (B<current>). The
-height of the scrolling lists is set by B<height>
+scrolling list contains "all" values (I<all>), the second
+contains those values currently selected (I<current>). The
+height of the scrolling lists is set by I<height>
 
 =head2 ImageButton
 
-Generates an image button where B<name> identifies the image
-file in B<assets> and is also used as the return value. The
+Generates an image button where I<name> identifies the image
+file in I<assets> and is also used as the return value. The
 button name is set to I<_verb>
 
 =head2 Label
 
-Calls B<msg> with B<name> as the message key. If the
-text does not exist B<text> is used. If B<dropcap>
-is true the first character of the text is wrapped in a B<span> of
+Calls I<msg> with I<name> as the message key. If the
+text does not exist I<text> is used. If I<dropcap>
+is true the first character of the text is wrapped in a I<span> of
 class I<dropcap>
 
 =head2 Note
 
-Calls B<msg> with B<name> as the message key. If the
-text does not exist B<text> is used. The text is wrapped in a
-B<div> of class I<note> with B<align> setting the style text
-alignment and B<width> setting the style width
+Calls I<msg> with I<name> as the message key. If the
+text does not exist I<text> is used. The text is wrapped in a
+I<div> of class I<note> with I<align> setting the style text
+alignment and I<width> setting the style width
 
 =head2 Password
 
-Returns a password field of width B<width> which defaults to
-twenty characters. If B<subtype> equals I<verify> then the
+Returns a password field of width I<width> which defaults to
+twenty characters. If I<subtype> equals I<verify> then the
 message I<vPasswordPrompt> and another password field are
-appended. The fields B<id> and B<name> are expected
+appended. The fields I<id> and I<name> are expected
 to contain the digit 1 which will be substituted for the digit 2 in
 the attributes of the second field
 
 =head2 PopupMenu
 
-Returns a list of B<option> elements wrapped in a B<select>
-element. The list of options is passed in B<values> with the
-display labels in B<labels>. The onchange event handler will
-be set to B<onchange>
+Returns a list of I<option> elements wrapped in a I<select>
+element. The list of options is passed in I<values> with the
+display labels in I<labels>. The onchange event handler will
+be set to I<onchange>
 
 =head2 RadioGroup
 
-The attribute B<columns> sets the number of columns for the
+The attribute I<columns> sets the number of columns for the
 returned table of radio buttons. The list of button values is passed in
-B<values> with the display labels in B<labels>. The
-onchange event handler will be set to B<onchange>
+I<values> with the display labels in I<labels>. The
+onchange event handler will be set to I<onchange>
 
 =head2 Rule
 
@@ -749,33 +751,33 @@ Generates a horizontal rule with optional clickable action
 
 =head2 ScrollingList
 
-The B<height> attribute controls the height of the scrolling
-list.  The list of options is passed in B<values> with the
-display labels in B<labels>. The onchange event handler will
-be set to B<onchange>
+The I<height> attribute controls the height of the scrolling
+list.  The list of options is passed in I<values> with the
+display labels in I<labels>. The onchange event handler will
+be set to I<onchange>
 
 =head2 Table
 
-The input data is in B<data-E<gt>{values}> which is an array
+The input data is in I<< $data->{values} >> which is an array
 ref for which each element is an array ref containing the list of
 field values.
 
 =head2 Template
 
-Look in B<templatedir> for a L<Template::Toolkit> template
-called B<id> with a I<.tt> extension. Slurp it in and return
+Look in I<templatedir> for a L<Template::Toolkit> template
+called I<id> with a I<.tt> extension. Slurp it in and return
 it as the content for this widget. This provides for a "user defined"
 widget type
 
 =head2 Textarea
 
-A text area. It defaults to five lines high (B<height>) and
-sixty characters wide (B<width>)
+A text area. It defaults to five lines high (I<height>) and
+sixty characters wide (I<width>)
 
 =head2 Textfield
 
 This is the default widget type. Your basic text field which defaults
-to sixty characters wide (B<width>)
+to sixty characters wide (I<width>)
 
 =head2 Tree
 
@@ -835,12 +837,11 @@ widget
 
 =head2 40calendar.js
 
-   Author: Matt Kruse <matt@mattkruse.com>
-   WWW: http://www.mattkruse.com/
+   Copyright Mihai Bazon, 2002-2005  |  www.bazon.net/mishoo
+   The DHTML Calendar, version 1.0   |  www.dynarch.com/projects/calendar
+   License: GNU Lesser General Public License
 
-which has a license restriction that prevents inclusion in
-other distributions so I'll drop this at the next release. Only used by
-C<::Date> subclass
+Implements the calendar popup used by the I<::Date> subclass
 
 =head2 behaviour.js
 
@@ -856,10 +857,8 @@ There are no known incompatibilities in this module.
 
 =head1 Bugs and Limitations
 
-The Javascript for the B<tree> widget is not included due to copyright
-issues, so that widget doesn't work. Same for the B<date> widget except
-that there is a link in L<Dependencies> to a web site where the
-Javascript might be available
+The Javascript for the C<::Tree> widget is not included due to copyright
+issues, so that widget doesn't work
 
 The installation script does nothing with the Javascript or PNG files
 which are included in the distribution for completeness

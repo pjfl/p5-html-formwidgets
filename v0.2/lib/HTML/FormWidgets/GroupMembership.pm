@@ -55,7 +55,7 @@ sub _render {
    $ref               = {};
    $ref->{class  }    = $ref->{name} = q(button);
    $ref->{onclick}    = 'return '.$self->js_obj.".addItem('".$self->name."')";
-   $ref->{src    }    = $self->assets.'AddItem.png';
+   $ref->{src    }    = $self->assets.'add_item.png';
    $ref->{value  }    = q(add).(ucfirst $self->name);
    $text              = $hacc->image_button( $ref );
    $ref               = { class => q(help tips), title => $self->add_tip };
@@ -65,7 +65,7 @@ sub _render {
    $ref->{class  }    = $ref->{name} = q(button);
    $ref->{onclick}    = 'return '.$self->js_obj.".removeItem('";
    $ref->{onclick}   .= $self->name."')";
-   $ref->{src    }    = $self->assets.'RemoveItem.png';
+   $ref->{src    }    = $self->assets.'remove_item.png';
    $ref->{value  }    = q(remove).(ucfirst $self->name);
    $text              = $hacc->image_button( $ref );
    $ref               = { class => q(help tips), title => $self->remove_tip };

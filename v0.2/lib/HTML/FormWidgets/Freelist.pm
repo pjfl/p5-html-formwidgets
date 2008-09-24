@@ -37,7 +37,7 @@ sub _render {
    $args              = {};
    $args->{class   }  = $args->{name} = q(button);
    $args->{onclick }  = 'return '.$self->js_obj.".addItem('".$self->name."')";
-   $args->{src     }  = $self->assets.'AddItem.png';
+   $args->{src     }  = $self->assets.'add_item.png';
    $args->{value   }  = q(add).(ucfirst $self->name);
    $text              = $hacc->image_button( $args );
    $tip               = 'Enter a new item into the adjacent text field ';
@@ -49,7 +49,7 @@ sub _render {
    $args->{class   }  = $args->{name} = q(button);
    $args->{onclick }  = 'return '.$self->js_obj;
    $args->{onclick } .= ".removeItem('".$self->name."')";
-   $args->{src     }  = $self->assets.'RemoveItem.png';
+   $args->{src     }  = $self->assets.'remove_item.png';
    $args->{value   }  = q(remove).(ucfirst $self->name);
    $text              = $hacc->image_button( $args );
    $tip               = 'Select one or more items from the adjacent list ';

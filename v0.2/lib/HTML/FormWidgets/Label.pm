@@ -43,11 +43,6 @@ sub _render {
 
       $text = $markup;
    }
-   else {
-      delete $args->{name};
-      $args->{class} = q(label) unless ($args->{class});
-      $text = $self->hacc->span( $args, $text );
-   }
 
    return $text;
 }

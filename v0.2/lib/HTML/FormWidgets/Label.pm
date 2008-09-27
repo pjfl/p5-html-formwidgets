@@ -24,7 +24,7 @@ sub init {
 sub _render {
    my ($self, $args) = @_; my ($markup, $text);
 
-   ($text = $self->msg( $self->name ) || $self->text) =~ s{ \A \n }{}msx;
+   ($text = $self->text || $self->msg( $self->name )) =~ s{ \A \n }{}msx;
 
    return unless ($text);
 

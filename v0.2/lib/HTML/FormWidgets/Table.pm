@@ -87,7 +87,7 @@ sub _render {
                $args->{maxlength} = $data->{maxlengths}->{ $fld };
             }
 
-            $args->{name} = $self->name.q(_).$fld.q(_).$r_no;
+            $args->{name} = $self->name.q(_).$fld.$r_no;
             $args->{size} = exists $data->{sizes}->{ $fld }
                           ? $data->{sizes}->{ $fld } : 10;
             $text         = $hacc->textfield( $args );

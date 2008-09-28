@@ -5,13 +5,12 @@ package HTML::FormWidgets::Date;
 use strict;
 use warnings;
 use base qw(HTML::FormWidgets);
-use Readonly;
 
 use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev$ =~ /\d+/gmx );
 
-Readonly my $TTS => q( ~ );
-
 __PACKAGE__->mk_accessors( qw(assets format readonly width) );
+
+my $TTS = q( ~ );
 
 sub init {
    my ($self, $args) = @_;

@@ -7,14 +7,13 @@ use warnings;
 use base qw(Class::Accessor::Fast);
 use Class::Inspector;
 use HTML::Accessors;
-use Readonly;
 use Text::Markdown qw(markdown);
 
 use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev$ =~ /\d+/gmx );
 
-Readonly my $NUL   => q();
-Readonly my $TTS   => q( ~ );
-Readonly my %ATTRS =>
+my $NUL   = q();
+my $TTS   = q( ~ );
+my %ATTRS =
    ( ajaxid       => undef,             ajaxtext     => undef,
      align        => q(left),           class        => $NUL,
      clear        => $NUL,              container    => 1,
@@ -142,16 +141,16 @@ sub init {
    if ($self->id && $args->{fields} && exists $args->{fields}->{ $self->id }) {
       $fields = $args->{fields}->{ $self->id };
 
-      for (grep { !m{ \A (ajaxid|id|name|type) \z }mx } keys %{ $fields }) {
+      for (keys %{ $fields }) {
          if (exists $self->{ $_ } && defined ($val = $fields->{ $_ })) {
-            $self->$_( $val );
+            $self->$_( $val ) if ($_ !~ m{ \A (ajaxid|id|name|type) \z }mx);
          }
       }
    }
 
-   for (grep { !m{ \A (ajaxid|id|name|type) \z }mx } keys %{ $args }) {
+   for (keys %{ $args }) {
       if (exists $self->{ $_ } && defined ($val = $args->{ $_ })) {
-         $self->$_( $val );
+         $self->$_( $val ) if ($_ !~ m{ \A (ajaxid|id|name|type) \z }mx);
       }
    }
 
@@ -797,8 +796,6 @@ None
 =item L<Class::Inspector>
 
 =item L<HTML::Accessors>
-
-=item L<Readonly>
 
 =item L<Syntax::Highlight::Perl>
 

@@ -1,53 +1,34 @@
-2008-09-23
+Revision history for HTML::FormWidgets
 
-	* All:
+0.2.95   28/09/2008
+         - Removed dependancy on Readonly
 
-	Refactored the attribute list in the base class. Now distributed
-   amongst the subclasses. Bumping version to 0.2
-   Now uses jscalendar for the Date subclass
+         2008-09-23
+         - Refactored the attribute list in the base class. Now distributed
+           amongst the subclasses. Bumping version to 0.2
+           Now uses jscalendar for the Date subclass
 
-2008-09-06
+         2008-09-06
+         - Tweaked POD. Bumping release to fix broken CPAN Testers database.
 
-	* lib/HTML/FormWidgets.pm:
+         2008-08-31
+         - Removed hidden field _verb as unecessary
 
-	Tweaked POD. Bumping release to fix broken CPAN Testers database.
+         2008-08-15
+         - Removed second SIGNATURE entry
 
-2008-08-31
+         2008-07-21
+         - Added support for markdown
 
-	* lib/HTML/FormWidgets/Chooser.pm:
+         2008-06-02
+         - Made version a build requirement
 
-	Removed hidden field _verb as unecessary
+         2008-05-25
+         - Fixed invalid output from anchor and chooser widgets
+           Added POD test
 
-2008-08-15
-
-   * MANIFEST
-
-   Removed second SIGNATURE entry
-
-2008-07-21
-
-	* lib/HTML/FormWidgets.pm:
-
-   Added support for markdown
-
-2008-06-02
-
-	* Build.PL:
-
-	Made version a build requirement
-
-2008-05-25
-
-	* lib/HTML/FormWidgets.pm:
-
-	Fixed invalid output from anchor and chooser widgets
-	Added POD test
-
-2008-05-19
-
-	* lib/HTML/FormWidgets.pm (_render):
-
-	Added support form HTML 4.01.
-	Added Cloud subclass
+         2008-05-19
+         - Added support form HTML 4.01.
+           Added Cloud subclass
 
 

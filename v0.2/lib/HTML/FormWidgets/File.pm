@@ -7,7 +7,6 @@ use warnings;
 use base qw(HTML::FormWidgets);
 use English qw(-no_match_vars);
 use IO::File;
-use Readonly;
 use Syntax::Highlight::Perl;
 use Text::ParseWords;
 use Text::Tabs;
@@ -17,7 +16,7 @@ use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev$ =~ /\d+/gmx );
 __PACKAGE__->mk_accessors( qw(base header hide path root scheme select
                               style subtype) );
 
-Readonly my %SCHEME =>
+my %SCHEME =
    ( Variable_Scalar   => [ '<font color="#CC6600">', '</font>' ],
      Variable_Array    => [ '<font color="#FFCC00">', '</font>' ],
      Variable_Hash     => [ '<font color="#990099">', '</font>' ],

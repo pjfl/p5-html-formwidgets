@@ -6,14 +6,13 @@ use strict;
 use warnings;
 use base qw(HTML::FormWidgets);
 use English qw(-no_match_vars);
-use Readonly;
 
 use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev$ =~ /\d+/gmx );
 
-Readonly my $NUL => q();
-
 __PACKAGE__->mk_accessors( qw(base behaviour data node_count id2key
                               key2id key2url node select target url) );
+
+my $NUL = q();
 
 sub init {
    my ($self, $args) = @_;

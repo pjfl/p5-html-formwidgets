@@ -118,9 +118,9 @@ sub new {
       $self->pwidth( (int $self->pwidth * $self->swidth / 100).q(px) );
    }
 
+   $self->sep( $NUL )         if (!$self->sep);
    $self->sep( $NUL )         if (!$self->prompt && !$self->fhelp);
-   $self->sep( $NUL )         if ($self->sep && $self->sep =~ m{ \A 0 \z }mx);
-   $self->sep( $self->space ) if ($self->sep && $self->sep eq q(space));
+   $self->sep( $self->space ) if ($self->sep eq q(space));
 
    if (defined $self->stepno && $self->stepno == 0) {
       $self->stepno( $self->space );
@@ -136,21 +136,27 @@ sub new {
 # Object methods
 
 sub init {
-   my ($self, $args) = @_; my ($fields, $val);
+   my ($self, $args) = @_; my ($fields, %skip, $val);
+
+   %skip = ( qw(ajaxid 1 id 1 name 1 type 1) );
 
    if ($self->id && $args->{fields} && exists $args->{fields}->{ $self->id }) {
       $fields = $args->{fields}->{ $self->id };
 
       for (keys %{ $fields }) {
-         if (exists $self->{ $_ } && defined ($val = $fields->{ $_ })) {
-            $self->$_( $val ) if ($_ !~ m{ \A (ajaxid|id|name|type) \z }mx);
+         if ( ! $skip{ $_ }
+             && exists $self->{ $_ }
+             && defined ($val = $fields->{ $_ })) {
+            $self->$_( $val );
          }
       }
    }
 
    for (keys %{ $args }) {
-      if (exists $self->{ $_ } && defined ($val = $args->{ $_ })) {
-         $self->$_( $val ) if ($_ !~ m{ \A (ajaxid|id|name|type) \z }mx);
+      if ( ! $skip{ $_ }
+          && exists $self->{ $_ }
+          && defined ($val = $args->{ $_ })) {
+         $self->$_( $val );
       }
    }
 
@@ -440,7 +446,7 @@ which use that option
    $self->init( $args );
 
 Initialises this object with data from the passed arguments. This is
-usually overriden in the factory subclass which sets the default for
+usually overridden in the factory subclass which sets the default for
 it's own attributes and then calls this method in the base class
 
 =head2 msg
@@ -515,7 +521,7 @@ pairs. Returns a hash ref in either case.
 =head2 _ensure_class_loaded
 
 Once the factory subclass is known this method ensures that it is loaded
-and then reblesses the self referential object into the correct class
+and then re-blesses the self referential object into the correct class
 
 =head2 _group_fields
 

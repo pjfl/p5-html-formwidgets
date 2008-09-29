@@ -1,8 +1,9 @@
 Revision history for HTML::FormWidgets
 
-0.2.96   28/09/2008
+0.2.97   28/09/2008
          - Removed dependancy on Readonly
          - Tweaked for perlcritic
+         - Extra whitespace before widgets
 
          2008-09-23
          - Refactored the attribute list in the base class. Now distributed

@@ -194,7 +194,7 @@ sub render {
    return $self->text || $NUL unless ($self->type);
 
    $hacc = $self->hacc;
-   $html = $self->clear eq q(left) ? $hacc->br() : "\n";
+   $html = "\n".($self->clear eq q(left) ? $hacc->br() : $NUL);
 
    if ($self->stepno) {
       $html .= $hacc->span( { class => q(lineNumber) }, $self->stepno );

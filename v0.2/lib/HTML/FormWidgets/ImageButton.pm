@@ -25,7 +25,7 @@ sub _render {
    $args            = {};
    $args->{class  } = q(button);
    $args->{name   } = q(_verb);
-   $args->{onclick} = 'submit()';
+   $args->{onclick} = 'window.submit';
    $args->{src    } = $self->assets.$self->name.'.png';
    $args->{value  } = ucfirst $self->name;
    $text            = $self->hacc->image_button( $args );

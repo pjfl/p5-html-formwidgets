@@ -1,4 +1,4 @@
-// @(#)$Id: 30ourtools.js 496 2008-09-19 15:23:15Z pjf $
+// @(#)$Id: 30ourtools.js 514 2008-10-02 20:25:45Z pjf $
 
 /* Property: setHTML
       Sets the innerHTML of the Element. Should work for application/xhtml+xml
@@ -508,6 +508,7 @@ var LoadMore = new Class({
       var rows = xml.documentElement.getElementsByTagName( 'row' );
       $each( rows, function( row ) { html += row.childNodes[ 0 ].nodeValue } );
       $( id ).setHTML( html.unescapeHTML() );
+      //      $$( '.tips' ).each( stateObj.tips.build, stateObj.tips );
    }
 });
 

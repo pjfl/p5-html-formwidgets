@@ -373,7 +373,7 @@ HTML::FormWidgets - Create HTML form markup
 
 =head1 Version
 
-0.1.$Rev$
+0.2.$Rev$
 
 =head1 Synopsis
 

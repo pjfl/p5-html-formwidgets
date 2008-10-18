@@ -17,7 +17,6 @@ my $requires = { 'perl'                    => q(5.008),
                  'Text::Markdown'          => q(1.0.20),
                  'Text::ParseWords'        => q(3.22),
                  'Text::Tabs'              => q(98.112801) };
-my $cond  = q($ENV{AUTOMATED_TESTING} || $ENV{COMSPEC} || $ENV{PATH} =~ m{ srezic }mx);
 my $build = Module::Build->new
    ( build_requires     => { 'Test::More'          => q(0.74) },
      configure_requires => { 'ExtUtils::MakeMaker' => q(6.42),
@@ -29,7 +28,7 @@ my $build = Module::Build->new
      license            => q(perl),
      module_name        => q(HTML::FormWidgets),
      notes              => { cpan_testers_version => 1,
-                             cpan_testers_cond    => $cond },
+                             cpan_testers_off     => 1 },
      requires           => $requires,
      sign               => 1 );
 

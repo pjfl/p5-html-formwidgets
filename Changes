@@ -1,5 +1,9 @@
 Revision history for HTML::FormWidgets
 
+0.2.106  23/10/2008
+         - Added an addition test to prevent Andreas Koenig from
+         testing
+
 0.2.102  16/10/2008
          - Disabled automated testing
 

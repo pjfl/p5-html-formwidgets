@@ -4,14 +4,23 @@
 
 use strict;
 use warnings;
-use English    qw(-no_match_vars);
-use FindBin    qw($Bin);
-use lib        qq($Bin/../lib);
-use Test::More tests => 15;
+use English qw(-no_match_vars);
+use FindBin qw($Bin);
+use lib     qq($Bin/../lib);
+use Test::More;
 
 use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev: 9 $ =~ /\d+/gmx );
 
-BEGIN { use_ok q(HTML::FormWidgets) }
+BEGIN {
+   if ($ENV{AUTOMATED_TESTING}
+       || ($ENV{PERL5OPT} || q()) =~ m{ CPAN-Reporter }mx) {
+      plan skip_all => q(CPAN Testing stopped);
+   }
+
+   plan tests => 15;
+}
+
+use_ok q(HTML::FormWidgets);
 
 my $widget = HTML::FormWidgets->new( id => q(test) );
 

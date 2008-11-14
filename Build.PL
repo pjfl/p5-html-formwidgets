@@ -18,7 +18,9 @@ my $requires = { 'perl'                    => q(5.008),
                  'Text::ParseWords'        => q(3.22),
                  'Text::Tabs'              => q(98.112801) };
 my $build = Module::Build->new
-   ( build_requires     => { 'Test::More'          => q(0.74) },
+   ( build_requires     => { 'Test::Harness'       => q(2.64),
+                             'Test::More'          => q(0.74),
+                             'Test::Pod'           => q(1.14) },
      configure_requires => { 'ExtUtils::MakeMaker' => q(6.42),
                              'version'             => q(0.74) },
      create_makefile_pl => q(traditional),
@@ -27,8 +29,7 @@ my $build = Module::Build->new
      dist_version_from  => q(lib/HTML/FormWidgets.pm),
      license            => q(perl),
      module_name        => q(HTML::FormWidgets),
-     notes              => { cpan_testers_version => 1,
-                             cpan_testers_off     => 1 },
+     notes              => { cpan_testers_version => 1 },
      requires           => $requires,
      sign               => 1 );
 

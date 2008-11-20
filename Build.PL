@@ -18,7 +18,9 @@ my $requires = { 'perl'                    => q(5.008),
                  'Text::ParseWords'        => q(3.22),
                  'Text::Tabs'              => q(98.112801) };
 my $build = Module::Build->new
-   ( build_requires     => { 'Test::Harness'       => q(2.64),
+   ( add_to_cleanup     => [ 'HTML-FormWidgets-*',
+                             map { ( '*/' x $_ ) . '*~' } 0..5 ],
+     build_requires     => { 'Test::Harness'       => q(2.64),
                              'Test::More'          => q(0.74),
                              'Test::Pod'           => q(1.14) },
      configure_requires => { 'ExtUtils::MakeMaker' => q(6.42),

@@ -1,5 +1,9 @@
 Revision history for HTML::FormWidgets
 
+0.2.110  01/12/2008
+         - Image button defines button_name which defaults to _method
+         not _verb
+
 0.2.108  14/11/2008
          - New approach to CPAN testers
 

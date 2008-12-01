@@ -79,7 +79,7 @@ sub new {
    $self->_set_name_id_and_type( $args );
 
    # Your basic factory method trick
-   $class = __PACKAGE__.q(::).(ucfirst $self->{type});
+   $class = __PACKAGE__.q(::).(ucfirst $self->type);
    $self->_ensure_class_loaded( $class );
 
    # Allow the subclass to set it's own defaults

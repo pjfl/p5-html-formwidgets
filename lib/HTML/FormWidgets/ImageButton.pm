@@ -8,12 +8,13 @@ use base qw(HTML::FormWidgets);
 
 use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev$ =~ /\d+/gmx );
 
-__PACKAGE__->mk_accessors( qw(assets) );
+__PACKAGE__->mk_accessors( qw(assets button_name) );
 
 sub init {
    my ($self, $args) = @_;
 
-   $self->assets( q() );
+   $self->assets(      q() );
+   $self->button_name( q(_method) );
 
    $self->NEXT::init( $args );
    return;
@@ -24,7 +25,7 @@ sub _render {
 
    $args            = {};
    $args->{class  } = q(button);
-   $args->{name   } = q(_verb);
+   $args->{name   } = $self->button_name;
    $args->{onclick} = 'window.submit';
    $args->{src    } = $self->assets.$self->name.'.png';
    $args->{value  } = ucfirst $self->name;

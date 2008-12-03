@@ -1,5 +1,11 @@
 Revision history for HTML::FormWidgets
 
+0.2.112  03/12/2008
+         - Added the hidden widget type
+         - Made the build method smarter and less gross
+         - Setting skip_groups to true in the build config skips the
+         call to _group_fields
+
 0.2.110  01/12/2008
          - Image button defines button_name which defaults to _method
          not _verb

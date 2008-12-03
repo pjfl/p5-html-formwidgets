@@ -38,43 +38,47 @@ __PACKAGE__->mk_accessors( keys %ATTRS );
 # Class methods
 
 sub build {
-   my ($self, $config, $form) = @_; my ($item, $list, $ref, @tmp, $widget);
+   my ($class, $config, $data) = @_; my ($item, $list, @tmp, $widget);
 
-   for $list (@{ $form }) {
+   my $key  = $config->{list_key    } || q(items);
+   my $type = $config->{content_type} || $ATTRS{content_type};
+   my $hacc = HTML::Accessors->new( content_type => $type );
+
+   for $list (@{ $data }) {
       next unless ($list && ref $list eq q(HASH));
 
       @tmp = ();
 
-      for $item (@{ $list->{items} }) {
+      for $item (@{ $list->{ $key } }) {
          if (ref $item->{content} eq q(HASH)) {
             if ($item->{content}->{group}) {
-               $ref = { content => $self->_group_fields( $item, \@tmp ) };
+               next if ($config->{skip_groups});
+
+               $item->{content} = _group_fields( $hacc, $item, \@tmp );
             }
             elsif ($item->{content}->{widget}) {
-               $widget = $self->new( $self->_merge_config( $config, $item ) );
-               $ref    = { content => $widget->render };
-               $ref->{class} = $widget->class if ($widget->class);
+               $widget = $class->new( _merge_config( $config, $item ) );
+               $item->{content} = $widget->render;
+               $item->{class  } = $widget->class if ($widget->class);
             }
-            else { $ref = $item->{content} }
          }
-         else { $ref = { content => $item->{content} } }
 
-         $ref->{rownum} = $item->{rownum} if (defined $item->{rownum});
-         push @tmp, $ref;
+         push @tmp, $item;
       }
 
-      @{ $list->{items} } = @tmp;
+      @{ $list->{ $key } } = @tmp;
    }
 
    return;
 }
 
 sub new {
-   my ($proto, @rest) = @_; my $args = $proto->_arg_list( @rest );
-   my ($class, $msg_id, $ref, $self, $suffix, $text, @tmp, $val);
+   my ($class, @rest) = @_; my ($msg_id, $ref, $suffix, $text, @tmp, $val);
+
+   my $args = _arg_list( @rest );
 
    # Start with some hard coded defaults;
-   $self = bless { %ATTRS }, ref $proto || $proto;
+   my $self = bless { %ATTRS }, $class;
 
    $self->_set_name_id_and_type( $args );
 
@@ -255,15 +259,7 @@ sub render {
    return $html.$field;
 }
 
-# Private methods
-
-sub _arg_list {
-   my ($self, @rest) = @_;
-
-   return {} unless ($rest[0]);
-
-   return ref $rest[0] eq q(HASH) ? $rest[0] : { @rest };
-}
+# Private object methods
 
 sub _ensure_class_loaded {
    my ($self, $class) = @_; my $error;
@@ -290,25 +286,6 @@ sub _ensure_class_loaded {
    return;
 }
 
-sub _group_fields {
-   my ($self, $item, $list) = @_; my $html = $NUL; my $ref;
-
-   for (1 .. $item->{content}->{nitems}) {
-      $ref  = pop @{ $list }; chomp $ref->{content};
-      $html = $ref->{content}.$html;
-   }
-
-   my $hacc   = HTML::Accessors->new();
-   my $legend = $hacc->legend( $item->{content}->{text} );
-   return "\n".$hacc->fieldset( "\n".$legend.$html );
-}
-
-sub _merge_config {
-   my ($self, $config, $item) = @_;
-
-   return { %{ $config }, %{ $item->{content} } };
-}
-
 sub _render {
    my ($self, $ref) = @_;
 
@@ -320,10 +297,7 @@ sub _render {
 }
 
 sub _set_error {
-   my ($self, $error) = @_;
-
-   $self->{text} = $error;
-   return;
+   my ($self, $error) = @_; $self->{text} = $error; return;
 }
 
 sub _set_name_id_and_type {
@@ -361,6 +335,33 @@ sub _set_name_id_and_type {
    return;
 }
 
+# Private subroutines
+
+sub _arg_list {
+   my (@rest) = @_;
+
+   return {} unless ($rest[0]);
+
+   return ref $rest[0] eq q(HASH) ? $rest[0] : { @rest };
+}
+
+sub _group_fields {
+   my ($hacc, $item, $list) = @_; my $html = $NUL; my $ref;
+
+   for (1 .. $item->{content}->{nitems}) {
+      $ref  = pop @{ $list }; chomp $ref->{content};
+      $html = $ref->{content}.$html;
+   }
+
+   my $legend = $hacc->legend( $item->{content}->{text} );
+
+   return "\n".$hacc->fieldset( "\n".$legend.$html );
+}
+
+sub _merge_config {
+   my ($config, $item) = @_; return { %{ $config }, %{ $item->{content} } };
+}
+
 1;
 
 __END__
@@ -382,26 +383,24 @@ HTML::FormWidgets - Create HTML form markup
    use base qw(CatalystX::Usul::View::HTML);
    use HTML::FormWidgets;
 
-   sub build_form {
-      my ($self, $c) = @_;
-      my $s          = $c->stash;
-      my $form       = [ $s->{iFrame} ];
-      my $config     = {};
+   sub build_widgets {
+      my ($self, $c, $data, $config) = @_; my $s = $c->stash; $config ||= {};
 
-      $config->{root        } = $c->config->{root};
-      $config->{base        } = $c->req->base;
-      $config->{content_type} = $c->config->{content_type};
-      $config->{url         } = $c->req->path;
       $config->{assets      } = $s->{assets};
+      $config->{base        } = $c->req->base;
+      $config->{content_type} = $s->{content_type};
       $config->{fields      } = $s->{fields} || {};
       $config->{form        } = $s->{form};
-      $config->{hide        } = $s->{iFrame}->{hidden};
+      $config->{hide        } = $s->{sdata}->{hidden};
       $config->{messages    } = $s->{messages};
+      $config->{pwidth      } = $s->{pwidth};
+      $config->{root        } = $c->config->{root};
       $config->{swidth      } = $s->{width} if ($s->{width});
-      $config->{templatedir } = $c->config->{dynamic_templates};
+      $config->{templatedir } = $self->dynamic_templates;
+      $config->{url         } = $c->req->path;
 
-      HTML::FormWidgets->build( $config, $form );
-      return;
+      HTML::FormWidgets->build( $config, $data );
+      return $data;
    }
 
 =head1 Description
@@ -513,25 +512,10 @@ server side validation
 
 =back
 
-=head2 _arg_list
-
-Accepts either a single argument of a hash ref or a list of key/value
-pairs. Returns a hash ref in either case.
-
 =head2 _ensure_class_loaded
 
 Once the factory subclass is known this method ensures that it is loaded
 and then re-blesses the self referential object into the correct class
-
-=head2 _group_fields
-
-Wraps the top B<nitems> widgets on the build stack in a fieldset
-element with a legend
-
-=head2 _merge_config
-
-Does a simple merging of the two hash refs that are passed as
-arguments. The second argument takes precedence over the first
 
 =head2 _render
 
@@ -548,6 +532,21 @@ gets rendered in place of the widget
 
 Determine the C<id>, C<name> and C<type> of the widget from the supplied
 arguments
+
+=head2 _arg_list
+
+Accepts either a single argument of a hash ref or a list of key/value
+pairs. Returns a hash ref in either case.
+
+=head2 _group_fields
+
+Wraps the top B<nitems> widgets on the build stack in a fieldset
+element with a legend
+
+=head2 _merge_config
+
+Does a simple merging of the two hash refs that are passed as
+arguments. The second argument takes precedence over the first
 
 =head1 Configuration and Environment
 
@@ -706,6 +705,10 @@ Displays two lists which allow for membership of a group. The first
 scrolling list contains "all" values (I<all>), the second
 contains those values currently selected (I<current>). The
 height of the scrolling lists is set by I<height>
+
+=head2 Hidden
+
+Generates a hidden input field. Uses the I<default> attribute as the value
 
 =head2 ImageButton
 

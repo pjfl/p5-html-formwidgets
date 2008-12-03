@@ -8,6 +8,15 @@ use base qw(HTML::FormWidgets);
 
 use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev$ =~ /\d+/gmx );
 
+sub init {
+   my ($self, $args) = @_;
+
+   $self->container(  0 );
+
+   $self->NEXT::init( $args );
+   return;
+}
+
 sub _render {
    my ($self, $args) = @_;
 

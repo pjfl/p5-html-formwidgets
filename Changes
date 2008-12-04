@@ -1,6 +1,6 @@
 Revision history for HTML::FormWidgets
 
-0.3.119  04/12/2008
+0.3.120  04/12/2008
          - Renamed ImageButton to Button. Now generates both kinds
 
 0.2.112  03/12/2008

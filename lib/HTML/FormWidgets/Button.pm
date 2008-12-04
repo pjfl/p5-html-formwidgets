@@ -1,4 +1,4 @@
-package HTML::FormWidgets::ImageButton;
+package HTML::FormWidgets::Button;
 
 # @(#)$Id$
 

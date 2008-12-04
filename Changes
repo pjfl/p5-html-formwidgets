@@ -1,5 +1,8 @@
 Revision history for HTML::FormWidgets
 
+0.3      04/12/2008
+         - Renamed ImageButton to Button. Now generates both kinds
+
 0.2.112  03/12/2008
          - Added the hidden widget type
          - Made the build method smarter and less gross

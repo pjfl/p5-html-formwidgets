@@ -7,7 +7,7 @@ use warnings;
 use base qw(HTML::FormWidgets);
 use English qw(-no_match_vars);
 
-use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.3.%d', q$Rev$ =~ /\d+/gmx );
 
 __PACKAGE__->mk_accessors( qw(base behaviour data node_count id2key
                               key2id key2url node select target url) );

@@ -1,4 +1,4 @@
-// @(#)$Id: 30ourtools.js 514 2008-10-02 20:25:45Z pjf $
+// @(#)$Id: 30ourtools.js 556 2008-12-03 01:47:27Z pjf $
 
 /* Property: setHTML
       Sets the innerHTML of the Element. Should work for application/xhtml+xml
@@ -486,34 +486,6 @@ var GroupMember = new Class({
    }
 });
 
-var LoadMore = new Class({
-   options: {
-      url: null,
-   },
-
-   initialize: function( options ) {
-      this.setOptions( options );
-   },
-
-   request: function( method, id, val ) {
-      new Ajax( this.options.url + method,
-         { method    : 'get',
-           data      : 'id=' + id + '&val=' + val,
-           onComplete: this.updateContent } ).request();
-   },
-
-   updateContent: function( text, xml ) {
-      var html = '';
-      var id   = xml.documentElement.getAttribute( 'id' );
-      var rows = xml.documentElement.getElementsByTagName( 'row' );
-      $each( rows, function( row ) { html += row.childNodes[ 0 ].nodeValue } );
-      $( id ).setHTML( html.unescapeHTML() );
-      //      $$( '.tips' ).each( stateObj.tips.build, stateObj.tips );
-   }
-});
-
-LoadMore.implement( new Options );
-
 var LinkFader = new Class({
    options: {
       cn   : 'Fade',             // Class name matching links to fade
@@ -789,8 +761,8 @@ var LiveGridBuffer = new Class({
 
    update: function(text, xml) {
       this.start = parseInt( xml.documentElement.getAttribute( 'offset' ) );
-      this.size  = parseInt( xml.documentElement.getAttribute( 'rowcount' ) );
-      var rows   = xml.documentElement.getElementsByTagName( 'row' );
+      this.size  = parseInt( xml.documentElement.getAttribute( 'count' ) );
+      var rows   = xml.documentElement.getElementsByTagName( 'items' );
 
       for (var i = 0; i < this.size; i++) {
          this.rows[this.start + i]
@@ -896,8 +868,8 @@ var LiveGrid = new Class({
 
       if (page < 0) page = 0;
 
-      var callParms = 'id=' + this.tableId + '&page=' + page
-                    + '&page_size=' + page_size;
+      var callParms = 'content-type=text/xml&id=' + this.tableId
+                    + '&page=' + page + '&page_size=' + page_size;
 
       if (this.additionalParms.length) {
          callParms = callParms + '&' + this.additionalParms;
@@ -936,7 +908,7 @@ var LiveGrid = new Class({
       clearTimeout( this.timeoutHandler );
 
       try {
-         var totalrows =  xml.documentElement.getAttribute( 'totalrows' );
+         var totalrows =  xml.documentElement.getAttribute( 'totalcount' );
          if (totalrows) this.setTotalRows( totalrows );
       }
       catch (err) {}
@@ -979,6 +951,34 @@ var LiveGrid = new Class({
    }
 });
 
+var LoadMore = new Class({
+   options: {
+      url: null,
+   },
+
+   initialize: function( options ) {
+      this.setOptions( options );
+   },
+
+   request: function( action, id, val ) {
+      new Ajax( this.options.url + action,
+         { method    : 'get',
+           data      : 'content-type=text/xml&id=' + id + '&val=' + val,
+           onComplete: this.updateContent } ).request();
+   },
+
+   updateContent: function( text, xml ) {
+      var html = '';
+      var id   = xml.documentElement.getAttribute( 'id' );
+      var rows = xml.documentElement.getElementsByTagName( 'items' );
+      $each( rows, function( row ) { html += row.childNodes[ 0 ].nodeValue } );
+      $( id ).setHTML( html.unescapeHTML() );
+      //      $$( '.tips' ).each( stateObj.tips.build, stateObj.tips );
+   }
+});
+
+LoadMore.implement( new Options );
+
 var ServerMethods = new Class({
    options: {
       url: null,
@@ -989,9 +989,9 @@ var ServerMethods = new Class({
    },
 
    checkField : function( id, val ) {
-      new Ajax( this.options.url + 'ajax_check_field',
+      new Ajax( this.options.url + 'check_field',
          { method    : 'get',
-           data      : 'id=' + id + '&val=' + val,
+           data      : 'content-type=text/xml&id=' + id + '&val=' + val,
            onComplete: this.updateClass } ).request();
    },
 
@@ -1128,7 +1128,7 @@ var TableUtils = new Class({
 
    createGrid: function( text, xml ) {
       var keyid  = this.gridKey + this.gridId;
-      var count  = parseInt( xml.documentElement.getAttribute( 'totalrows' ) );
+      var count  = parseInt( xml.documentElement.getAttribute( 'totalcount' ));
       var html   = '';
       var opts   = {
          bufferSize    : 7,
@@ -1138,7 +1138,7 @@ var TableUtils = new Class({
          onFirstContent: this.updateHeader.bind( this, 0 ),
          totalRows     : count
       };
-      var rows   = xml.documentElement.getElementsByTagName( 'row' );
+      var rows   = xml.documentElement.getElementsByTagName( 'items' );
       var urlkey = this.options.url + this.gridKey + '_grid_rows';
 
       $each( rows, function( row ) { html += row.childNodes[ 0 ].nodeValue } );
@@ -1214,7 +1214,8 @@ var TableUtils = new Class({
                this.pageSz  = (pageSz ? pageSz : 10);
                new Ajax( this.options.url + key +  '_grid_table',
                   { method    : 'get',
-                    data      : 'id=' + id + '&val=' + pageSz,
+                    data      : 'content-type=text/xml&id='
+                                + id + '&val=' + pageSz,
                     onComplete: this.createGrid.bind( this ) } ).request();
             }
          }

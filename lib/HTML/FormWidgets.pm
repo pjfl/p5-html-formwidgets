@@ -9,7 +9,7 @@ use Class::Inspector;
 use HTML::Accessors;
 use Text::Markdown qw(markdown);
 
-use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.3.%d', q$Rev$ =~ /\d+/gmx );
 
 my $NUL   = q();
 my $TTS   = q( ~ );

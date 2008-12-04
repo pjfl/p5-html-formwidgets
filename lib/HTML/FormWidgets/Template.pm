@@ -9,7 +9,7 @@ use English qw(-no_match_vars);
 use File::Spec::Functions;
 use IO::File;
 
-use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.3.%d', q$Rev$ =~ /\d+/gmx );
 
 __PACKAGE__->mk_accessors( qw(templatedir) );
 

@@ -58,6 +58,8 @@ var State = new Class( {
       content.setStyle( 'marginBottom', height + 'px' );
 
       if (elem = $( 'sideBarDisp' )) {
+         if (this.cookies.get( 'sideBar' )) elem.setStyle( 'display', '' );
+
          elem.setStyle( 'marginBottom', height + 'px' );
 
          // Calculate and set vertical offset for side bar grippy

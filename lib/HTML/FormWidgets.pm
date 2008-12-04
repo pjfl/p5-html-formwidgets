@@ -391,7 +391,7 @@ HTML::FormWidgets - Create HTML form markup
       $config->{content_type} = $s->{content_type};
       $config->{fields      } = $s->{fields} || {};
       $config->{form        } = $s->{form};
-      $config->{hide        } = $s->{sdata}->{hidden};
+      $config->{hide        } = $s->{hidden}->{items};
       $config->{messages    } = $s->{messages};
       $config->{pwidth      } = $s->{pwidth};
       $config->{root        } = $c->config->{root};

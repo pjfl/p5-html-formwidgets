@@ -4,12 +4,12 @@ package HTML::FormWidgets::GroupMembership;
 
 use strict;
 use warnings;
-use base qw(HTML::FormWidgets);
+use parent qw(HTML::FormWidgets);
 
 use version; our $VERSION = qv( sprintf '0.3.%d', q$Rev$ =~ /\d+/gmx );
 
 __PACKAGE__->mk_accessors( qw(add_tip all assets atitle ctitle current
-                              height js_obj remove_tip labels) );
+                              fhelp height js_obj remove_tip labels) );
 
 sub init {
    my ($self, $args) = @_; my $text;
@@ -23,6 +23,7 @@ sub init {
    $self->atitle(     q(All) );
    $self->ctitle(     q(Current) );
    $self->current(    [] );
+   $self->fhelp(      q() );
    $self->height(     10 );
    $self->js_obj(     q(groupMemberObj) );
    $text  = 'Select one or more entries from the list on the ';
@@ -35,9 +36,14 @@ sub init {
 }
 
 sub _render {
-   my ($self, $args) = @_; my ($hacc, $html, $ref, $text, $text1, $tip, $val);
+   my ($self, $args) = @_;
+   my ($fargs, $hacc, $html, $ref, $text, $text1, $tip, $val);
 
    $hacc              = $self->hacc;
+   $fargs             = { class => q(instructions) };
+   $fargs->{style}   .= 'text-align: '.$self->palign.'; ' if ($self->palign);
+   $fargs->{style}   .= 'width: '.$self->pwidth.q(;)      if ($self->pwidth);
+   $html              = $self->sep ? q() : $hacc->div( $fargs, $self->fhelp );
    $text              = $hacc->span( { class => q(title) }, $self->atitle );
    $text             .= $hacc->br();
    $args->{class   } .= q( group);
@@ -48,7 +54,7 @@ sub _render {
    $args->{name    }  = $self->name.q(_all);
    $args->{values  }  = $self->all;
    $text             .= $hacc->scrolling_list( $args );
-   $html              = $hacc->div( { class => q(container) }, $text );
+   $html             .= $hacc->div( { class => q(container) }, $text );
    $html             .= $hacc->div( { class => q(separator) }, $self->space );
 
    $text1             = $hacc->br().$hacc->br().$hacc->br();

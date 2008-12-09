@@ -4,7 +4,7 @@ package HTML::FormWidgets::Template;
 
 use strict;
 use warnings;
-use base qw(HTML::FormWidgets);
+use parent qw(HTML::FormWidgets);
 use English qw(-no_match_vars);
 use File::Spec::Functions;
 use IO::File;

@@ -4,7 +4,7 @@ package HTML::FormWidgets::Table;
 
 use strict;
 use warnings;
-use base qw(HTML::FormWidgets);
+use parent qw(HTML::FormWidgets);
 
 use version; our $VERSION = qv( sprintf '0.3.%d', q$Rev$ =~ /\d+/gmx );
 
@@ -36,7 +36,8 @@ sub init {
 }
 
 sub _render {
-   my ($self, $args) = @_; my ($fld, $r_no, $rows, $text, $text1, $val);
+   my ($self, $args) = @_;
+   my ($class, $fld, $fld_val, $r_no, $rows, $text, $text1, $val);
 
    my $c_no  = 0;
    my $cells = q();
@@ -75,13 +76,13 @@ sub _render {
       $cells = q(); $c_no = 0;
 
       if ($self->select eq q(left) and $data->{values}->[0]) {
-         $cells .= $self->_check_box( $r_no, $c_no, $val );
+         $cells .= $self->_check_box( $r_no, $c_no, $val->{id} );
       }
 
       for $fld (@{ $data->{flds} }) {
          if ($self->edit) {
             $args            = {};
-            $args->{default} = $val->{ $fld };
+            $args->{default} = $self->_inflate( $val->{ $fld } );
 
             if (exists $data->{maxlengths}->{ $fld }) {
                $args->{maxlength} = $data->{maxlengths}->{ $fld };
@@ -106,26 +107,28 @@ sub _render {
             $args          = {};
             $args->{align} = exists $data->{align}->{ $fld }
                            ? $data->{align}->{ $fld } : q(left);
+            $class         = $data->{class} || q(dataValue);
 
-            if ($val->{class} and exists $val->{class}->{ $fld }) {
-               $args->{class}  = $val->{class}->{ $fld };
-            } else {
-               $args->{class}  = $c_no % 2 == 0 ? q(even) : q(odd);
-               $args->{class} .= q( ).($data->{class} || q(dataValue));
+            if (ref $class and exists $class->{ $fld }) {
+               $args->{class} = $class->{ $fld };
             }
+            else { $args->{class} = $class }
+
+            $args->{class} .= $c_no % 2 == 0 ? q( even) : q( odd);
 
             unless (exists $data->{wrap}->{ $fld }) {
                $args->{class} .= q( nowrap);
             }
 
-            $cells .= $hacc->td( $args, $val->{ $fld } || q(&nbsp;) )."\n";
+            $fld_val = $self->_inflate( $val->{ $fld } ) || q(&nbsp;);
+            $cells  .= $hacc->td( $args, $fld_val )."\n";
          }
 
          $c_no++;
       }
 
       if ($self->select eq q(right) and $data->{values}->[0]) {
-         $cells .= $self->_check_box( $r_no, $c_no, $val );
+         $cells .= $self->_check_box( $r_no, $c_no, $val->{id} );
       }
 
       $args  = { id => $self->name.q(_row).$r_no };
@@ -186,12 +189,12 @@ sub _render {
 # Private methods
 
 sub _check_box {
-   my ($self, $r_no, $c_no, $val) = @_; my ($text, $args);
+   my ($self, $r_no, $c_no, $id) = @_; my ($text, $args);
 
    $args = { name => $self->name.q(_select).$r_no };
-   $args->{value} = $val->{id} if ($val->{id});
+   $args->{value} = $id if ($id);
    $text = $self->hacc->checkbox( $args );
-   $args = { align => q(center), class => $c_no % 2 == 0 ? q(even) : q(odd) };
+   $args = { align => q(center), class => $c_no % 2 == 0 ? q(odd) : q(even) };
 
    return $self->hacc->td( $args, $text );
 }

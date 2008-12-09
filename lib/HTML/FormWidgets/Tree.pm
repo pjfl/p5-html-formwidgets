@@ -4,7 +4,7 @@ package HTML::FormWidgets::Tree;
 
 use strict;
 use warnings;
-use base qw(HTML::FormWidgets);
+use parent qw(HTML::FormWidgets);
 use English qw(-no_match_vars);
 
 use version; our $VERSION = qv( sprintf '0.3.%d', q$Rev$ =~ /\d+/gmx );
@@ -20,11 +20,11 @@ sub init {
    $self->base(       $NUL );
    $self->behaviour(  q(classic) );
    $self->data(       {} );
-   $self->node_count( 0 );
    $self->id2key(     {} );
    $self->key2id(     {} );
    $self->key2url(    {} );
    $self->node(       undef );
+   $self->node_count( 0 );
    $self->select(     undef );
    $self->target(     q() );
    $self->url(        undef );
@@ -88,8 +88,7 @@ sub scan_hash {
       $self->key2url->{ $new_key } = $url;
 
       if ($args->{root}) {
-         $jscript  = 'if (document.getElementById) {'."\n";
-         $jscript .= 'var '.$node.' = new WebFXTree("'.$key.'", "';
+         $jscript  = 'var '.$node.' = new Tree.Trunk("'.$key.'", "';
          $jscript .= $url.'", "'.$tip.'");'."\n";
          $jscript .= $node.'.setBehavior("'.$self->behaviour.'");'."\n";
 
@@ -106,7 +105,7 @@ sub scan_hash {
          }
       }
       else {
-         $jscript .= 'var '.$node.' = new WebFXTreeItem("'.$key.'", "';
+         $jscript .= 'var '.$node.' = new Tree.Item("'.$key.'", "';
          $jscript .= $url.'", "'.$tip.'");'."\n";
 
          if ($self->target) {
@@ -133,7 +132,7 @@ sub scan_hash {
    }
 
    if ($args->{root}) {
-      $jscript .= 'document.write('.$node.');'."\n".'}'."\n";
+      $jscript .= 'document.write('.$node.');'."\n";
       $jscript .= $self->node.'.focus();'."\n" if ($self->node);
    }
 

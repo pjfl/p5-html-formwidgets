@@ -4,7 +4,7 @@ package HTML::FormWidgets::File;
 
 use strict;
 use warnings;
-use base qw(HTML::FormWidgets);
+use parent qw(HTML::FormWidgets);
 use English qw(-no_match_vars);
 use IO::File;
 use Syntax::Highlight::Perl;
@@ -65,6 +65,8 @@ sub _render {
    my ($pat, $path, $r_no, $rdr, $rows, $span, $text);
 
    $hacc = $self->hacc; $path = $self->path;
+
+   return 'No file' unless ($path);
 
    if ($self->subtype eq q(html)) {
       $pat = $self->root;

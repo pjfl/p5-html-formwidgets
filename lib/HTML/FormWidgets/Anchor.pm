@@ -4,19 +4,22 @@ package HTML::FormWidgets::Anchor;
 
 use strict;
 use warnings;
-use base qw(HTML::FormWidgets);
+use parent qw(HTML::FormWidgets);
 
 use version; our $VERSION = qv( sprintf '0.3.%d', q$Rev$ =~ /\d+/gmx );
 
-__PACKAGE__->mk_accessors( qw(href onclick) );
+__PACKAGE__->mk_accessors( qw(fhelp href imgclass onclick) );
 
 sub init {
    my ($self, $args) = @_;
 
-   $self->class(   $self->class || q(linkFade) );
-   $self->href(    q() );
-   $self->onclick( undef );
-   $self->text(    q(link) );
+   $self->class(    q(linkFade) );
+   $self->fhelp(    q() );
+   $self->href(     undef );
+   $self->imgclass( undef );
+   $self->onclick(  undef );
+   $self->text(     q(link) );
+   $self->tiptype(  q(normal) );
 
    $self->NEXT::init( $args );
    return;
@@ -25,12 +28,22 @@ sub init {
 sub _render {
    my ($self, $args) = @_;
 
-   delete $args->{name};
-   $args->{class  } = $self->class;
-   $args->{href   } = $self->href;
-   $args->{onclick} = $self->onclick if ($self->onclick);
+   if ($self->imgclass) {
+      $self->text( $self->hacc->img( { alt   => $self->fhelp,
+                                       class => $self->imgclass,
+                                       src   => $self->text } ) );
+   }
 
-   return $self->hacc->a( $args, $self->text );
+   if ($self->href) {
+      delete $args->{name};
+      $args->{href   } = $self->href;
+      $args->{class  } = $self->class;
+      $args->{onclick} = $self->onclick if ($self->onclick);
+
+      return $self->hacc->a( $args, $self->text );
+   }
+
+   return $self->text;
 }
 
 1;

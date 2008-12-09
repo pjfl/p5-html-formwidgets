@@ -4,7 +4,7 @@ package HTML::FormWidgets::PopupMenu;
 
 use strict;
 use warnings;
-use base q(HTML::FormWidgets);
+use parent q(HTML::FormWidgets);
 
 use version; our $VERSION = qv( sprintf '0.3.%d', q$Rev$ =~ /\d+/gmx );
 

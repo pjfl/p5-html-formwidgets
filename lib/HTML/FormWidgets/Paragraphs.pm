@@ -23,7 +23,7 @@ sub init {
 
 sub _render {
    my ($self, $args) = @_;
-   my ($class, $html, $para, $quotient, $size, $text, $val);
+   my ($class, $html, $para, $quotient, $size, $text, $width, $val);
 
    my $data = $self->data; my $hacc = $self->hacc;
 
@@ -34,6 +34,7 @@ sub _render {
       }
 
       $quotient = int $size / $self->columns;
+      $width    = int 90 / $self->columns;
    }
 
    $size = 0;
@@ -57,10 +58,19 @@ sub _render {
 
       if ($quotient and $size >= $quotient) {
          $args  = $self->column_class ? { class => $self->column_class } : {};
+         $args->{style} = 'width: '.$width.'%;';
          $html .= "\n".$hacc->div( $args, $para );
          $size  = 0; $para = q();
       }
-      else { $html .= $para; $para = q() }
+   }
+
+   if ($para) {
+      unless ($quotient) { $html .= $para }
+      else {
+         $args  = $self->column_class ? { class => $self->column_class } : {};
+         $args->{style} = 'width: '.$width.'%;';
+         $html .= "\n".$hacc->div( $args, $para );
+      }
    }
 
    return $html;

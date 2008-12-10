@@ -1,6 +1,7 @@
 Revision history for HTML::FormWidgets
 
 0.4.     
+         - Added Image subclass
          - Added Paragraphs subclass
          - Switched from base to parent
 

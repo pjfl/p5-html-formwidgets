@@ -11,13 +11,16 @@ use version; our $VERSION = qv( sprintf '0.3.%d', q$Rev$ =~ /\d+/gmx );
 __PACKAGE__->mk_accessors( qw(add_tip all assets atitle ctitle current
                               fhelp height js_obj remove_tip labels) );
 
+my $TTS = q( ~ );
+
 sub init {
    my ($self, $args) = @_; my $text;
 
    $text  = 'Select one or more entries from the list on the ';
    $text .= 'left and then click this button to add them to the ';
    $text .= 'list on the right';
-   $self->add_tip(    $self->msg( q(groupMembershipAddTip) ) || $text );
+   $text  = $self->msg( q(groupMembershipAddTip) ) || $text;
+   $self->add_tip(    $self->hint_title.$TTS.$text );
    $self->all(        [] );
    $self->assets(     q() );
    $self->atitle(     q(All) );
@@ -26,11 +29,12 @@ sub init {
    $self->fhelp(      q() );
    $self->height(     10 );
    $self->js_obj(     q(groupMemberObj) );
+   $self->labels(     undef );
    $text  = 'Select one or more entries from the list on the ';
    $text .= 'right and then click this button to remove them';
-   $self->remove_tip( $self->msg( q(groupMembershipRemoveTip) ) || $text );
-   $self->labels(     undef );
-
+   $text  = $self->msg( q(groupMembershipRemoveTip) ) || $text;
+   $self->remove_tip( $self->hint_title.$TTS.$text );
+   $self->sep(        $self->space ) unless ($args->{prompt});
    $self->NEXT::init( $args );
    return;
 }
@@ -43,7 +47,7 @@ sub _render {
    $fargs             = { class => q(instructions) };
    $fargs->{style}   .= 'text-align: '.$self->palign.'; ' if ($self->palign);
    $fargs->{style}   .= 'width: '.$self->pwidth.q(;)      if ($self->pwidth);
-   $html              = $self->sep ? q() : $hacc->div( $fargs, $self->fhelp );
+   $html              = $hacc->div( $fargs, $self->fhelp );
    $text              = $hacc->span( { class => q(title) }, $self->atitle );
    $text             .= $hacc->br();
    $args->{class   } .= q( group);

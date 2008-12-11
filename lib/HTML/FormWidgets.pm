@@ -20,14 +20,14 @@ my %ATTRS =
      container_class => undef,             container_id    => undef,
      content_type    => q(text/html),      default         => undef,
      evnt_hndlr      => q(serverObj.checkField),
-     hacc            => undef,             hint_title      => q(),
+     hacc            => undef,             hint_title      => q(Hint),
      id              => undef,             messages        => undef,
      name            => undef,
      nb_symbol       => q(&nbsp;&dagger;), nowrap          => 0,
      onblur          => undef,             onchange        => undef,
      onkeypress      => undef,             palign          => undef,
      prompt          => $NUL,              pwidth          => 40,
-     required        => 0,                 sep             => q(&nbsp;:&nbsp;),
+     required        => 0,                 sep             => undef,
      space           => q(&nbsp;) x 3,     stepno          => undef,
      swidth          => 1000,              tabstop         => 3,
      text            => $NUL,              text_obj        => undef,
@@ -127,8 +127,9 @@ sub new {
       $self->pwidth( (int $self->pwidth * $self->swidth / 100).q(px) );
    }
 
-   $self->sep( $NUL )         if (!$self->sep || !$self->prompt);
-   $self->sep( $self->space ) if ( $self->sep eq q(space));
+   $self->sep( q(&nbsp;:&nbsp;) ) if (!defined $self->sep && $self->prompt);
+   $self->sep( $self->space     ) if ( defined $self->sep
+                                       && $self->sep eq q(space));
 
    if (defined $self->stepno && $self->stepno == 0) {
       $self->stepno( $self->space );

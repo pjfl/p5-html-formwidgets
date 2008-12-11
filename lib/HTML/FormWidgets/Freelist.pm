@@ -10,6 +10,8 @@ use version; our $VERSION = qv( sprintf '0.3.%d', q$Rev$ =~ /\d+/gmx );
 
 __PACKAGE__->mk_accessors( qw(assets height js_obj labels values width) );
 
+my $TTS = q( ~ );
+
 sub init {
    my ($self, $args) = @_;
 
@@ -42,6 +44,7 @@ sub _render {
    $text              = $hacc->image_button( $args );
    $tip               = 'Enter a new item into the adjacent text field ';
    $tip              .= 'and then click this button to add it to the list';
+   $tip               = $self->hint_title.$TTS.$tip;
    $args              = { class => q(help tips), title => $tip };
    $text1             = $hacc->span( $args, $text ).$hacc->br().$hacc->br();
 
@@ -54,6 +57,7 @@ sub _render {
    $text              = $hacc->image_button( $args );
    $tip               = 'Select one or more items from the adjacent list ';
    $tip              .= 'and then click this button to remove them';
+   $tip               = $self->hint_title.$TTS.$tip;
    $args              = { class => q(help tips), title => $tip };
    $text1            .= $hacc->span( $args, $text );
    $html             .= $hacc->div( { class => q(container) }, $text1 );

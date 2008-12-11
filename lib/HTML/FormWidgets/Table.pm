@@ -11,27 +11,30 @@ use version; our $VERSION = qv( sprintf '0.3.%d', q$Rev$ =~ /\d+/gmx );
 __PACKAGE__->mk_accessors( qw(add_tip assets data edit hide js_obj
                               remove_tip select) );
 
+my $TTS = q( ~ );
+
 sub init {
    my ($self, $args) = @_; my $text;
 
    $text  = 'Enter a new item into the adjacent text ';
    $text .= 'fields and then click this button to add ';
    $text .= 'it to the list';
-   $self->add_tip(    $self->msg( q(tableAddTip) ) || $text );
-   $self->assets(     q() );
-   $self->class(      q(small table) );
-   $self->container(  0 );
-   $self->data(       { flds => [], values => [] } );
-   $self->edit(       0 );
-   $self->hide(       [] );
-   $self->js_obj(     q(tableObj) );
+   $text  = $self->msg( q(tableAddTip) ) || $text;
+   $self->add_tip(      $self->hint_title.$TTS.$text );
+   $self->assets(       q() );
+   $self->class(        q(small table) );
+   $self->container(    0 );
+   $self->data(         { flds => [], values => [] } );
+   $self->edit(         0 );
+   $self->hide(         [] );
+   $self->js_obj(       q(tableObj) );
    $text  = 'Select one or more items from the ';
    $text .= 'above list and then click this button ';
    $text .= 'to remove them';
-   $self->remove_tip( $self->msg( q(tableRemoveTip) ) || $text );
-   $self->select(     q() );
-
-   $self->NEXT::init( $args );
+   $text  = $self->msg( q(tableRemoveTip) ) || $text;
+   $self->remove_tip(   $self->hint_title.$TTS.$text );
+   $self->select(       q() );
+   $self->NEXT::init(   $args );
    return;
 }
 

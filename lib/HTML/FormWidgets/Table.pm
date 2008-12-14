@@ -40,7 +40,7 @@ sub init {
 
 sub _render {
    my ($self, $args) = @_;
-   my ($class, $fld, $fld_val, $r_no, $rows, $text, $text1, $val);
+   my ($class, $fld, $fld_val, $r_no, $rows, $text, $text1, $type, $val);
 
    my $c_no  = 0;
    my $cells = q();
@@ -85,23 +85,9 @@ sub _render {
       for $fld (@{ $data->{flds} }) {
          if ($self->edit) {
             $args            = {};
-            $args->{default} = $self->_inflate( $val->{ $fld } );
-
-            if (exists $data->{maxlengths}->{ $fld }) {
-               $args->{maxlength} = $data->{maxlengths}->{ $fld };
-            }
-
-            $args->{name} = $self->name.q(_).$fld.$r_no;
-            $args->{size} = exists $data->{sizes}->{ $fld }
-                          ? $data->{sizes}->{ $fld } : 10;
-            $text         = $hacc->textfield( $args );
-            $args         = { class => q(dataValue) };
-
-            unless (exists $data->{wrap}->{ $fld }) {
-               $args->{class} .= q( nowrap);
-            }
-
-            $cells .= $hacc->td( $args, $text );
+            $args->{default} = $val->{ $fld };
+            $args->{name}    = $self->name.q(_).$fld.$r_no;
+            $cells          .= $self->_editable_cell( $data, $fld, $args );
          }
          else {
             next if ($data->{hclass}->{ $fld }
@@ -134,28 +120,25 @@ sub _render {
          $cells .= $self->_check_box( $r_no, $c_no, $val->{id} );
       }
 
-      $args  = { id => $self->name.q(_row).$r_no };
+      $class = $data->{class} || q(dataValue);
+      $args  = { class => $class, id => $self->name.q(_row).$r_no };
       $rows .= $hacc->tr( $args, $cells ); $r_no++;
    }
 
-   push @{ $self->hide }, { name => $self->name.q(_nrows), value => $r_no };
+   my $content = $self->_inflate( { name    => $self->name.q(_nrows),
+                                    default => $r_no,
+                                    type    => q(hidden),
+                                    widget  => 1 } );
+   push @{ $self->hide }, { content => $content };
 
    if ($self->edit) {
       $cells = q();
 
       for $c_no (0 .. $#{ $data->{flds} }) {
-         $fld  = $data->{flds}->[ $c_no ];
-         $args = { id => $self->name.q(_add).$c_no };
-
-         if (exists $data->{maxlengths}->{ $fld }) {
-            $args->{maxlength} = $data->{maxlengths}->{ $fld };
-         }
-
-         $args->{name}  = $self->name.q(_).$fld;
-         $args->{size}  = exists $data->{sizes}->{ $fld }
-                        ? $data->{sizes}->{ $fld } : 10;
-         $text          = $hacc->textfield( $args );
-         $cells        .= $hacc->td( $text );
+         $fld          = $data->{flds}->[ $c_no ];
+         $args         = { id => $self->name.q(_add).$c_no };
+         $args->{name} = $self->name.q(_).$fld;
+         $cells       .= $self->_editable_cell( $data, $fld, $args );
       }
 
       $args             = {};
@@ -181,8 +164,10 @@ sub _render {
          $text            .= $hacc->span( $args, $text1 );
       }
 
+      $class  = $data->{class} || q(dataValue);
       $cells .= $hacc->td( $text );
-      $rows  .= $hacc->tr( { id => $self->name.q(_add) }, $cells );
+      $rows  .= $hacc->tr( { class => $class,
+                             id    => $self->name.q(_add) }, $cells );
    }
 
    return $hacc->table( { class => ($self->prompt ? q(form) : q(std)) },
@@ -190,6 +175,31 @@ sub _render {
 }
 
 # Private methods
+
+sub _editable_cell {
+   my ($self, $data, $fld, $args) = @_;
+
+   if (exists $data->{maxlengths}->{ $fld }) {
+      $args->{maxlength} = $data->{maxlengths}->{ $fld };
+   }
+
+   my $type = $data->{typelist}->{ $fld } || q(textfield);
+
+   if ($type eq q(textarea)) {
+      $args->{rows} = exists $data->{rows}->{ $fld }
+                    ? $data->{rows}->{ $fld } : 5;
+      $args->{cols} = exists $data->{cols}->{ $fld }
+                    ? $data->{cols}->{ $fld } : 60;
+   }
+   elsif ($type eq q(textfield)) {
+      $args->{size} = exists $data->{sizes}->{ $fld }
+                    ? $data->{sizes}->{ $fld } : 10;
+   }
+
+   my $text = $self->hacc->$type( $args );
+
+   return $self->hacc->td( { class => q(dataValue) }, $text );
+}
 
 sub _check_box {
    my ($self, $r_no, $c_no, $id) = @_; my ($text, $args);

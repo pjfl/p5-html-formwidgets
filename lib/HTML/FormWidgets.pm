@@ -298,7 +298,7 @@ sub _inflate {
 
    return unless ($args);
 
-   return $self->hacc->escape_html( $args, 0 ) unless (ref $args);
+   return $args unless (ref $args);
 
    $args->{fields}   = $self->_fields;
    $args->{messages} = $self->_messages;

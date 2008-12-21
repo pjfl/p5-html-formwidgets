@@ -105,7 +105,7 @@ $widget = HTML::FormWidgets->new( data   => {
                                   name   => q(table),
                                   type   => q(table) );
 
-ok( $widget->render =~ m{ tr \s id="table_row1" }mx, q(Table) );
+ok( $widget->render =~ m{ tr \s class=".*" \s id="table_row0" }mx, q(Table) );
 
 $widget = HTML::FormWidgets->new( name => q(textarea),
                                   type => q(textarea) );

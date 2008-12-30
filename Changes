@@ -1,5 +1,7 @@
 Revision history for HTML::FormWidgets
 
+         - Fixed tree widget
+
 0.3.126  14/12/2008
          - Editable tables can now use textareas
          - Added Image subclass

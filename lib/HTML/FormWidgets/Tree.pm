@@ -43,8 +43,8 @@ sub _render {
                                 'Your tree has more than one root' );
    }
 
-   $ref = { data => $self->data, parent => $NUL, prevKey => $NUL, root => 1 };
-   $jscript = $self->hacc->script( { language => q(JavaScript) },
+   $ref = { data => $self->data, parent => $NUL, prev_key => $NUL };
+   $jscript = $self->hacc->script( { type => 'text/javascript' },
                                    $self->scan_hash( $ref ) );
 
    return $self->hacc->div( { class => q(tree) }, $jscript );
@@ -61,7 +61,7 @@ sub scan_hash {
    @keys    = grep { !m{ \A _ }mx } keys %{ $args->{data} };
 
    for $key (sort { lc $a cmp lc $b } @keys) {
-      $new_key   = $args->{prevKey} ? $args->{prevKey}.$SUBSEP.$key : $key;
+      $new_key   = $args->{prev_key} ? $args->{prev_key}.$SUBSEP.$key : $key;
       $data      = $args->{data}->{ $key };
       $node      = $self->node_id;
       $open_icon = $NUL;
@@ -74,38 +74,21 @@ sub scan_hash {
          $open_icon = $data->{_openIcon} || $NUL;
          $shut_icon = $data->{_shutIcon} || $NUL;
          $tip       = $data->{_tip     } || $NUL;
-         $url       = $data->{_url     } || $self->url;
+         $url       = $data->{_url     } || $url;
       }
 
       if ($self->node && ($self->node eq $node) && $self->select) {
          $shut_icon = $open_icon = $self->select;
       }
 
-      $url  = $self->base.$url if ($url !~ m{ \A http: }mx);
+      $url  = $self->base.$url unless ($url =~ m{ \A http: }mx);
       $url .= '?node='.$node;
       $self->id2key->{  $node    } = $new_key;
       $self->key2id->{  $new_key } = $node;
       $self->key2url->{ $new_key } = $url;
 
-      if ($args->{root}) {
-         $jscript  = 'var '.$node.' = new Tree.Trunk("'.$key.'", "';
-         $jscript .= $url.'", "'.$tip.'");'."\n";
-         $jscript .= $node.'.setBehavior("'.$self->behaviour.'");'."\n";
-
-         if ($self->target) {
-            $jscript .= $node.'.target = "'.$self->target.'"; '."\n";
-         }
-
-         if ($shut_icon) {
-            $jscript .= $node.'.icon = "'.$shut_icon.'"; '."\n";
-         }
-
-         if ($open_icon) {
-            $jscript .= $node.'.openIcon = "'.$open_icon.'"; '."\n";
-         }
-      }
-      else {
-         $jscript .= 'var '.$node.' = new Tree.Item("'.$key.'", "';
+      if ($args->{parent}) {
+         $jscript .= 'var '.$node.' = new Tree.Branch("'.$key.'", "';
          $jscript .= $url.'", "'.$tip.'");'."\n";
 
          if ($self->target) {
@@ -122,16 +105,32 @@ sub scan_hash {
 
          $jscript .= $args->{parent}.'.add('.$node.'); '."\n";
       }
+      else {
+         $jscript  = "\n".'var '.$node.' = new Tree.Trunk("'.$key.'", "';
+         $jscript .= $url.'", "'.$tip.'");'."\n";
+         $jscript .= $node.'.setBehavior("'.$self->behaviour.'");'."\n";
+
+         if ($self->target) {
+            $jscript .= $node.'.target = "'.$self->target.'"; '."\n";
+         }
+
+         if ($shut_icon) {
+            $jscript .= $node.'.icon = "'.$shut_icon.'"; '."\n";
+         }
+
+         if ($open_icon) {
+            $jscript .= $node.'.openIcon = "'.$open_icon.'"; '."\n";
+         }
+      }
 
       if (ref $data eq q(HASH)) {
-         $jscript .= $self->scan_hash( { data    => $data,
-                                         parent  => $node,
-                                         prevKey => $self->id2key->{ $node },
-                                         root    => 0 } ); # Recurse
+         $jscript .= $self->scan_hash
+            ( { data     => $data, parent => $node,
+                prev_key => $self->id2key->{ $node } } ); # Recurse
       }
    }
 
-   if ($args->{root}) {
+   unless ($args->{parent}) {
       $jscript .= 'document.write('.$node.');'."\n";
       $jscript .= $self->node.'.focus();'."\n" if ($self->node);
    }

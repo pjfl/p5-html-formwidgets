@@ -40,7 +40,7 @@ sub _render {
    $args              = {};
    $args->{class   }  = q(tips);
    $args->{href    }  = q();
-   $args->{title   }  = $self->hint_title.$TTS.$self->msg( q(dateWidgetTip) );
+   $args->{title   }  = $self->hint_title.$TTS.$self->loc( q(dateWidgetTip) );
    $text              = $hacc->a( $args, $text );
    $html             .= $hacc->div( { class => q(container) }, $text );
    $text              = 'Calendar.setup( {';

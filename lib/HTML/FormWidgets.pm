@@ -12,6 +12,7 @@ use Text::Markdown qw(markdown);
 use version; our $VERSION = qv( sprintf '0.3.%d', q$Rev$ =~ /\d+/gmx );
 
 my $NUL   = q();
+my $SPC   = q( );
 my $TTS   = q( ~ );
 my %ATTRS =
    ( ajaxid          => undef,             ajaxtext        => undef,
@@ -110,7 +111,7 @@ sub new {
               ? $args->{fields}->{ $self->ajaxid }->{validate} : $NUL;
       $msg_id = $msg_id->[0] if (ref $msg_id eq q(ARRAY));
       $text   = $self->ajaxtext
-             || $self->msg( $msg_id ) || 'Invalid field value';
+             || $self->loc( $msg_id ) || 'Invalid field value';
       $self->ajaxtext( $text );
 
       # Install default JavaScript event handler
@@ -120,7 +121,7 @@ sub new {
       }
    }
 
-   $self->hint_title( $text ) if ($text = $self->msg( q(handy_hint_title) ));
+   $self->hint_title( $text ) if ($text = $self->loc( q(handy_hint_title) ));
 
    # Calculate the prompt width
    if ($self->pwidth && ($self->pwidth =~ m{ \A \d+ \z }mx)) {
@@ -172,27 +173,28 @@ sub init {
    return;
 }
 
-sub msg {
-   # Return the language dependant text of the requested message
-   my ($self, $name, $args) = @_; my ($key, $msgs, $pat, $text, $val);
+*loc = \&localize;
 
-   return $NUL unless ($name && ($msgs = $self->messages));
+sub localize {
+   my ($self, $msg, @args) = @_; my $msgs = $self->messages || {}; my $text;
 
-   if (exists $msgs->{ $name } && ($text = $msgs->{ $name }->{text})) {
-      if ($msgs->{ $name }->{markdown}) {
+   return unless ($msg);
+
+   $msg  = $NUL.$msg if ($msg); # I hate Return::Value
+
+   if (exists $msgs->{ $msg } and $text = $msgs->{ $msg }->{text}) {
+      if ($msgs->{ $msg }->{markdown}) {
          $text = $self->text_obj->markdown( $text );
       }
-
-      if ($args) {
-         # Inflate arg values enclosed in [%%]
-         for $key (keys %{ $args }) {
-            $pat  = q(\[% \s+ ).$key.q( \s+ %\]);
-            $val  = $args->{ $key } || $NUL;
-            $text =~ s{ $pat }{$val}gmx;
-         }
-      }
    }
-   else { $text = $NUL }
+   else { $text = $msg }
+
+   @args = () unless ($args[ 0 ]);
+
+   @args = @{ $args[ 0 ] } if ($args[ 0 ] && ref $args[ 0 ] eq q(ARRAY));
+
+   unless ($text =~ m{ \[ _ \d+ \] }mx) { $text .= $SPC.(join $SPC, @args) }
+   else { $text =~ s{ \[ _ (\d+) \] }{$args[ $1 - 1 ]}gmx }
 
    return $text;
 }
@@ -469,9 +471,9 @@ Initialises this object with data from the passed arguments. This is
 usually overridden in the factory subclass which sets the default for
 it's own attributes and then calls this method in the base class
 
-=head2 msg
+=head2 localize
 
-   $message_text = $self->msg( $message_id );
+   $message_text = $self->localize( $message_id );
 
 Use the supplied key to return a value from the B<messages>
 hash. This hash was passed to the constructor and should contain any

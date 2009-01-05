@@ -26,7 +26,7 @@ sub _render {
 
    $text    = $self->text;
    $text    = $self->text_obj->markdown( $text ) if ($self->markdown);
-   ($text ||= $self->msg( $self->name )) =~ s{ \A \n }{}msx;
+   ($text ||= $self->loc( $self->name )) =~ s{ \A \n }{}msx;
 
    return unless ($text);
 

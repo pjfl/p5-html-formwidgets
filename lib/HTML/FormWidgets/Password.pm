@@ -29,7 +29,7 @@ sub _render {
 
    return $html unless ($self->subtype && $self->subtype eq q(verify));
 
-   $html .= $self->msg( q(vPasswordPrompt) );
+   $html .= $self->loc( q(vPasswordPrompt) );
    $args->{name} =~ s{ 1 }{2}mx; $args->{id} =~ s{ 1 }{2}mx;
    $html .= $self->hacc->password_field( $args );
    return $html;

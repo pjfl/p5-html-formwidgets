@@ -19,7 +19,7 @@ sub init {
    $text  = 'Select one or more entries from the list on the ';
    $text .= 'left and then click this button to add them to the ';
    $text .= 'list on the right';
-   $text  = $self->msg( q(groupMembershipAddTip) ) || $text;
+   $text  = $self->loc( q(groupMembershipAddTip) ) || $text;
    $self->add_tip(    $self->hint_title.$TTS.$text );
    $self->all(        [] );
    $self->assets(     q() );
@@ -32,7 +32,7 @@ sub init {
    $self->labels(     undef );
    $text  = 'Select one or more entries from the list on the ';
    $text .= 'right and then click this button to remove them';
-   $text  = $self->msg( q(groupMembershipRemoveTip) ) || $text;
+   $text  = $self->loc( q(groupMembershipRemoveTip) ) || $text;
    $self->remove_tip( $self->hint_title.$TTS.$text );
    $self->sep(        $self->space ) unless ($args->{prompt});
    $self->NEXT::init( $args );

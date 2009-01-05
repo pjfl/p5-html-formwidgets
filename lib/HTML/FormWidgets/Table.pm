@@ -19,7 +19,7 @@ sub init {
    $text  = 'Enter a new item into the adjacent text ';
    $text .= 'fields and then click this button to add ';
    $text .= 'it to the list';
-   $text  = $self->msg( q(tableAddTip) ) || $text;
+   $text  = $self->loc( q(tableAddTip) ) || $text;
    $self->add_tip(      $self->hint_title.$TTS.$text );
    $self->assets(       q() );
    $self->class(        q(small table) );
@@ -31,7 +31,7 @@ sub init {
    $text  = 'Select one or more items from the ';
    $text .= 'above list and then click this button ';
    $text .= 'to remove them';
-   $text  = $self->msg( q(tableRemoveTip) ) || $text;
+   $text  = $self->loc( q(tableRemoveTip) ) || $text;
    $self->remove_tip(   $self->hint_title.$TTS.$text );
    $self->select(       q() );
    $self->NEXT::init(   $args );

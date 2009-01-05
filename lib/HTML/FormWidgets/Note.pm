@@ -28,7 +28,7 @@ sub _render {
    $args->{style} .= 'text-align: '.$self->align.q(;) if ($self->align);
    $args->{style} .= ' width: '.$self->width.q(;)     if ($self->width);
 
-   ($text = $self->msg( $self->name ) || $self->text) =~ s{ \A \n }{}msx;
+   ($text = $self->text || $self->loc( $self->name )) =~ s{ \A \n }{}msx;
 
    return $self->hacc->div( $args, $text );
 }

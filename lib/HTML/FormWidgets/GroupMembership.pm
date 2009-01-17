@@ -28,7 +28,7 @@ sub init {
    $self->current(    [] );
    $self->fhelp(      q() );
    $self->height(     10 );
-   $self->js_obj(     q(groupMemberObj) );
+   $self->js_obj(     q(behaviour.groupMember) );
    $self->labels(     undef );
    $text  = 'Select one or more entries from the list on the ';
    $text .= 'right and then click this button to remove them';

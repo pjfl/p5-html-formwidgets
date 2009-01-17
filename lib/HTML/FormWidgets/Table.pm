@@ -27,7 +27,7 @@ sub init {
    $self->data(         { flds => [], values => [] } );
    $self->edit(         0 );
    $self->hide(         [] );
-   $self->js_obj(       q(tableObj) );
+   $self->js_obj(       q(behaviour.table) );
    $text  = 'Select one or more items from the ';
    $text .= 'above list and then click this button ';
    $text .= 'to remove them';

@@ -20,7 +20,7 @@ my %ATTRS =
      clear           => $NUL,              container       => 1,
      container_class => undef,             container_id    => undef,
      content_type    => q(text/html),      default         => undef,
-     evnt_hndlr      => q(serverObj.checkField),
+     evnt_hndlr      => q(behaviour.server.checkField),
      hacc            => undef,             hint_title      => q(Hint),
      id              => undef,             messages        => undef,
      name            => undef,

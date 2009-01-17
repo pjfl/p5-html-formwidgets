@@ -14,7 +14,7 @@ sub init {
    my ($self, $args) = @_;
 
    $self->data(   {} );
-   $self->js_obj( q(tableObj.liveGrid) );
+   $self->js_obj( q(behaviour.table.liveGrid) );
 
    $self->NEXT::init( $args );
    return;

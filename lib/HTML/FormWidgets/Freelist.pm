@@ -17,7 +17,7 @@ sub init {
 
    $self->assets( q() );
    $self->height( 5 );
-   $self->js_obj( q(freeListObj) );
+   $self->js_obj( q(behaviour.freeList) );
    $self->labels( undef );
    $self->values( [] );
    $self->width(  20 );

@@ -8,7 +8,7 @@ use parent qw(HTML::FormWidgets);
 
 use version; our $VERSION = qv( sprintf '0.3.%d', q$Rev$ =~ /\d+/gmx );
 
-__PACKAGE__->mk_accessors( qw(alt href imgclass) );
+__PACKAGE__->mk_accessors( qw(alt href imgclass onclick) );
 
 sub init {
    my ($self, $args) = @_;
@@ -17,6 +17,7 @@ sub init {
    $self->container( 0 );
    $self->href(      undef );
    $self->imgclass(  undef );
+   $self->onclick(   undef );
 
    $self->NEXT::init( $args );
    return;
@@ -34,7 +35,11 @@ sub _render {
    }
    else { $html = $self->text }
 
-   $html = $hacc->a( { href => $self->href }, $html ) if ($self->href);
+   if ($self->href) {
+      my $ref = { href => $self->href };
+      $ref->{onclick} = $self->onclick if ($self->onclick);
+      $html = $hacc->a( $ref, $html );
+   }
 
    if ($self->tip) {
       $html = $hacc->span( { class => q(tips), title => $self->tip }, $html );

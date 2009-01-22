@@ -1,5 +1,8 @@
 Revision history for HTML::FormWidgets
 
+         - Fixed bug in event handling in Rule
+         - Improved quality of embeded Javascript
+
 0.3.130  30/12/2008
          - Fixed tree widget
 

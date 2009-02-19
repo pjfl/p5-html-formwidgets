@@ -40,7 +40,7 @@ my %SCHEME =
      Label             => [ '<font color="#000000">', '</font>' ],
      Line              => [ '<font color="#000000">', '</font>' ], );
 
-sub init {
+sub _init {
    my ($self, $args) = @_;
 
    $self->base(      q() );
@@ -53,8 +53,6 @@ sub init {
    $self->select(    -1 );
    $self->style(     q() );
    $self->subtype(   q(file) );
-
-   $self->NEXT::init( $args );
    return;
 }
 

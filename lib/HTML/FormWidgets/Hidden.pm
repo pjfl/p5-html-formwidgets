@@ -8,12 +8,10 @@ use parent qw(HTML::FormWidgets);
 
 use version; our $VERSION = qv( sprintf '0.3.%d', q$Rev$ =~ /\d+/gmx );
 
-sub init {
+sub _init {
    my ($self, $args) = @_;
 
-   $self->container(  0 );
-
-   $self->NEXT::init( $args );
+   $self->container( 0 );
    return;
 }
 

@@ -10,14 +10,13 @@ use version; our $VERSION = qv( sprintf '0.3.%d', q$Rev$ =~ /\d+/gmx );
 
 __PACKAGE__->mk_accessors( qw(column_class columns data hclass) );
 
-sub init {
+sub _init {
    my ($self, $args) = @_;
 
    $self->column_class( q() );
    $self->columns(      1 );
    $self->data(         { values => [] } );
    $self->hclass(       q() );
-   $self->NEXT::init(   $args );
    return;
 }
 

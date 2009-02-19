@@ -10,13 +10,11 @@ use version; our $VERSION = qv( sprintf '0.3.%d', q$Rev$ =~ /\d+/gmx );
 
 __PACKAGE__->mk_accessors( qw(fhelp) );
 
-sub init {
+sub _init {
    my ($self, $args) = @_;
 
    $self->fhelp(   q() );
    $self->tiptype( q(normal) );
-
-   $self->NEXT::init( $args );
    return;
 }
 

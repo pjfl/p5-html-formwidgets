@@ -11,7 +11,7 @@ use version; our $VERSION = qv( sprintf '0.3.%d', q$Rev$ =~ /\d+/gmx );
 __PACKAGE__->mk_accessors( qw(button field height href js_obj key
                               screen_x screen_y width) );
 
-sub init {
+sub _init {
    my ($self, $args) = @_;
 
    $self->button(     q() );
@@ -24,7 +24,6 @@ sub init {
    $self->screen_x(   10 );
    $self->screen_y(   10 );
    $self->width(      200 );
-   $self->NEXT::init( $args );
    return;
 }
 

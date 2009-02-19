@@ -13,7 +13,7 @@ __PACKAGE__->mk_accessors( qw(add_tip assets data edit hide js_obj
 
 my $TTS = q( ~ );
 
-sub init {
+sub _init {
    my ($self, $args) = @_; my $text;
 
    $text  = 'Enter a new item into the adjacent text ';
@@ -34,7 +34,6 @@ sub init {
    $text  = $self->loc( q(tableRemoveTip) ) || $text;
    $self->remove_tip(   $self->hint_title.$TTS.$text );
    $self->select(       q() );
-   $self->NEXT::init(   $args );
    return;
 }
 

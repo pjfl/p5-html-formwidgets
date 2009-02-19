@@ -10,13 +10,11 @@ use version; our $VERSION = qv( sprintf '0.3.%d', q$Rev$ =~ /\d+/gmx );
 
 __PACKAGE__->mk_accessors( qw(labels values) );
 
-sub init {
+sub _init {
    my ($self, $args) = @_;
 
    $self->labels( undef );
    $self->values( [] );
-
-   $self->NEXT::init( $args );
    return;
 }
 

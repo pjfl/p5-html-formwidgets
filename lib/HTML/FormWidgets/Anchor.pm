@@ -10,18 +10,16 @@ use version; our $VERSION = qv( sprintf '0.3.%d', q$Rev$ =~ /\d+/gmx );
 
 __PACKAGE__->mk_accessors( qw(fhelp href imgclass onclick) );
 
-sub init {
+sub _init {
    my ($self, $args) = @_;
 
    $self->class(    q(linkFade) );
-   $self->fhelp(    q() );
-   $self->href(     undef );
-   $self->imgclass( undef );
-   $self->onclick(  undef );
-   $self->text(     q(link) );
-   $self->tiptype(  q(normal) );
-
-   $self->NEXT::init( $args );
+   $self->fhelp(    q()         );
+   $self->href(     undef       );
+   $self->imgclass( undef       );
+   $self->onclick(  undef       );
+   $self->text(     q(link)     );
+   $self->tiptype(  q(normal)   );
    return;
 }
 

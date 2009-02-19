@@ -6,6 +6,7 @@ use strict;
 use warnings;
 use parent qw(Class::Accessor::Fast);
 use Class::Inspector;
+use English qw(-no_match_vars);
 use HTML::Accessors;
 use Text::Markdown qw(markdown);
 
@@ -21,9 +22,9 @@ my %ATTRS =
      container_class => undef,             container_id    => undef,
      content_type    => q(text/html),      default         => undef,
      evnt_hndlr      => q(behaviour.server.checkField),
-     hacc            => undef,             hint_title      => q(Hint),
-     id              => undef,             messages        => undef,
-     name            => undef,
+     hacc            => undef,             hint_title      => $NUL,
+     id              => undef,             is_xml          => 0,
+     messages        => {},                name            => undef,
      nb_symbol       => q(&nbsp;&dagger;), nowrap          => 0,
      onblur          => undef,             onchange        => undef,
      onkeypress      => undef,             palign          => undef,
@@ -54,17 +55,17 @@ sub build {
       @tmp = ();
 
       for $item (@{ $list->{ $key } }) {
-         if (ref $item->{content} eq q(HASH)) {
-            if ($item->{content}->{group}) {
-               next if ($config->{skip_groups});
+         next unless (ref $item->{content} eq q(HASH));
 
-               $item->{content} = _group_fields( $hacc, $item, \@tmp );
-            }
-            elsif ($item->{content}->{widget}) {
-               $widget = $class->new( _merge_config( $config, $item ) );
-               $item->{content} = $widget->render;
-               $item->{class  } = $widget->class if ($widget->class);
-            }
+         if ($item->{content}->{group}) {
+            next if ($config->{skip_groups});
+
+            $item->{content} = __group_fields( $hacc, $item, \@tmp );
+         }
+         elsif ($item->{content}->{widget}) {
+            $widget = $class->new( __merge_config( $config, $item ) );
+            $item->{content} = $widget->render;
+            $item->{class  } = $widget->class if ($widget->class);
          }
 
          push @tmp, $item;
@@ -77,32 +78,66 @@ sub build {
 }
 
 sub new {
-   my ($class, @rest) = @_; my ($msg_id, $ref, $suffix, $text, @tmp, $val);
+   my ($class, @rest) = @_;
 
    # Coerce a hash ref of the passed args
-   my $args = _arg_list( @rest );
+   my $args = __arg_list( @rest );
 
    # Start with some hard coded defaults;
    my $self = bless { %ATTRS }, $class;
 
    # Set minimum requirements from the supplied args and the defaults
-   $self->_init( $args );
+   $self->_bootstrap( $args );
 
    # Your basic factory method trick
    $class = __PACKAGE__.q(::).(ucfirst $self->type);
    $self->_ensure_class_loaded( $class );
+   bless $self, $class;
 
-   # Allow the subclass to set it's own defaults
+   # Complete the initialization
    $self->init( $args );
 
+   return $self;
+}
+
+# Object methods
+
+sub init {
+   my ($self, $args) = @_; my ($msg_id, $text, $val);
+
+   # Allow the factory subclass to set it's own defaults
+   $self->_init( $args );
+
+   my %skip   = ( qw(ajaxid 1 id 1 name 1 type 1) );
+   my $fields = $args->{fields};
+   my $id     = $self->id;
+
+   if ($id && $fields && exists $fields->{ $id }) {
+      my $field = $fields->{ $id };
+
+      for (grep { not $skip{ $_ } } keys %{ $field }) {
+         if (exists $self->{ $_ } and defined ($val = $field->{ $_ })) {
+            $self->{ $_ } = $val;
+         }
+      }
+   }
+
+   for (grep { not $skip{ $_ } } keys %{ $args }) {
+      if (exists $self->{ $_ } and defined ($val = $args->{ $_ })) {
+         $self->{ $_ } = $val;
+      }
+   }
+
+   my $content_type = $self->content_type;
+
+   $self->is_xml( $content_type eq q(text/html) ? 0 : 1 );
+
    # Now we can create HTML elements like we could with CGI.pm
-   $ref = { content_type => $self->content_type };
-   $self->hacc( HTML::Accessors->new( $ref ) );
+   $self->hacc( HTML::Accessors->new( { content_type => $content_type } ) );
 
    # Create a Text::Markdown object for use by the msg method
-   $suffix = $self->content_type eq q(text/html) ? q(>) : q( />);
    $self->text_obj( Text::Markdown->new
-                    ( empty_element_suffix => $suffix,
+                    ( empty_element_suffix => $self->is_xml ? q( />) : q(>),
                       tab_width            => $self->tabstop ) );
 
    if ($self->ajaxid) {
@@ -121,80 +156,54 @@ sub new {
       }
    }
 
-   $self->hint_title( $text ) if ($text = $self->loc( q(handy_hint_title) ));
-
    # Calculate the prompt width
-   if ($self->pwidth && ($self->pwidth =~ m{ \A \d+ \z }mx)) {
-      $self->pwidth( (int $self->pwidth * $self->swidth / 100).q(px) );
+   my $pwidth = $self->pwidth;
+
+   if ($pwidth and $pwidth =~ m{ \A \d+ \z }mx) {
+      $self->pwidth( (int $pwidth * $self->swidth / 100).q(px) );
    }
 
-   $self->sep( q(&nbsp;:&nbsp;) ) if (!defined $self->sep && $self->prompt);
-   $self->sep( $self->space     ) if ( defined $self->sep
-                                       && $self->sep eq q(space));
+   my $sep = $self->sep;
 
-   if (defined $self->stepno && $self->stepno == 0) {
-      $self->stepno( $self->space );
-   }
+   $sep = q(&nbsp;:&nbsp;) if (not defined $sep and $self->prompt);
+   $sep = $self->space     if (    defined $sep and $sep eq q(space));
 
-   if ($self->stepno && $self->stepno ne $self->space) {
-      $self->stepno( $self->stepno.q(.) );
-   }
+   $self->sep( $sep );
 
-   return $self;
-}
+   my $stepno = $self->stepno;
 
-# Object methods
+   $stepno = $self->space if (defined $stepno and $stepno == 0);
+   $stepno = $stepno.q(.) if ($stepno and $stepno ne $self->space);
 
-sub init {
-   my ($self, $args) = @_; my ($fields, %skip, $val);
-
-   %skip = ( qw(ajaxid 1 id 1 name 1 type 1) );
-
-   if ($self->id && $args->{fields} && exists $args->{fields}->{ $self->id }) {
-      $fields = $args->{fields}->{ $self->id };
-
-      for (keys %{ $fields }) {
-         if ( ! $skip{ $_ }
-             && exists $self->{ $_ }
-             && defined ($val = $fields->{ $_ })) {
-            $self->$_( $val );
-         }
-      }
-   }
-
-   for (keys %{ $args }) {
-      if ( ! $skip{ $_ }
-          && exists $self->{ $_ }
-          && defined ($val = $args->{ $_ })) {
-         $self->$_( $val );
-      }
-   }
-
+   $self->stepno( $stepno );
    return;
 }
 
 *loc = \&localize;
 
 sub localize {
-   my ($self, $msg, @args) = @_; my $msgs = $self->messages || {}; my $text;
+   my ($self, $key, @args) = @_; my $text;
 
-   return unless ($msg);
+   return unless $key;
 
-   $msg  = $NUL.$msg if ($msg); # I hate Return::Value
+   $key = $NUL.$key if ($key); # I hate Return::Value
 
-   if (exists $msgs->{ $msg } and $text = $msgs->{ $msg }->{text}) {
-      if ($msgs->{ $msg }->{markdown}) {
-         $text = $self->text_obj->markdown( $text );
-      }
+   my $message = $self->messages->{ $key };
+
+   if ($message and $text = $message->{text}) {
+      $text = $self->text_obj->markdown( $text ) if ($message->{markdown});
    }
-   else { $text = $msg }
+   else { $text = $key if ($key =~ m{ \s+ }mx) }
 
-   @args = () unless ($args[ 0 ]);
+   return $NUL unless ($text);
 
    @args = @{ $args[ 0 ] } if ($args[ 0 ] && ref $args[ 0 ] eq q(ARRAY));
 
-   unless ($text =~ m{ \[ _ \d+ \] }mx) { $text .= $SPC.(join $SPC, @args) }
-   else { $text =~ s{ \[ _ (\d+) \] }{$args[ $1 - 1 ]}gmx }
+   if ((index $text, "\[") >= 0 and $text =~ m{ \[ _ \d+ \] }mx) {
+      push @args, ( q() x 10 );
+      $text =~ s{ \[ _ (\d+) \] }{$args[ $1 - 1 ]}gmx;
+   }
+   else { $text .= $SPC.(join $SPC, @args) }
 
    return $text;
 }
@@ -237,8 +246,12 @@ sub render {
    if ($tip = $self->tip) {
       $tip  =~ s{ \n }{ }gmx;
 
-      if ($self->hint_title and $tip !~ m{ $TTS }mx) {
-         $tip  = $self->hint_title.$TTS.$tip;
+      if ($tip !~ m{ $TTS }mx) {
+         unless ($self->hint_title) {
+            $self->hint_title( $self->loc( q(handy_hint_title) ) );
+         }
+
+         $tip = $self->hint_title.$TTS.$tip;
       }
 
       $tip  =~ s{ \s+ }{ }gmx;
@@ -270,16 +283,50 @@ sub render {
 
 # Private object methods
 
+sub _bootstrap {
+   my ($self, $args) = @_;
+
+   # Bare minimum is fields + id to get a useful widget
+   for (qw(ajaxid id name type)) {
+      $self->{ $_ } = $args->{ $_ } if (exists $args->{ $_ });
+   }
+
+   # Defaults id from name (least significant) from id from ajaxid (most sig.)
+   my $id = $self->id;
+
+   $id = $self->ajaxid if (not $id and $self->ajaxid);
+
+   if ($id and not $self->name) {
+      if ($id =~ m{ \. }mx) { $self->name( (split m{ \. }mx, $id)[1] ) }
+      else { $self->name( (reverse split m{ _ }mx, $id)[0] ) }
+   }
+
+   $id = $self->name if (not $id and $self->name);
+
+   $self->id( $id );
+
+   # We can get the widget type from the config file
+   if (not $self->type
+       and $id
+       and exists $args->{fields}
+       and exists $args->{fields}->{ $id }
+       and exists $args->{fields}->{ $id }->{type}) {
+      $self->type( $args->{fields}->{ $id }->{type} );
+   }
+
+   $self->type(      q(textfield)      ) unless ($self->type);
+   $self->name(      $self->type       ) unless ($self->name);
+   $self->_fields(   $args->{fields  } );
+   $self->_messages( $args->{messages} );
+   return;
+}
+
 sub _ensure_class_loaded {
    my ($self, $class) = @_; my $error;
 
-   {
-## no critic
-      local $@;
-      eval "require $class;";
-      $error = $@;
-## critic
-   }
+   ## no critic
+   {  local $EVAL_ERROR; eval "require $class;"; $error = $EVAL_ERROR; }
+   ## critic
 
    if ($error) {
       $self->_set_error( $error );
@@ -291,7 +338,6 @@ sub _ensure_class_loaded {
       return;
    }
 
-   bless $self, $class;
    return;
 }
 
@@ -309,39 +355,7 @@ sub _inflate {
 }
 
 sub _init {
-   my ($self, $args) = @_;
-
-   # Bare minimum is fields + id to get a useful widget
-   for (qw(ajaxid id name type)) {
-      $self->$_( $args->{ $_ } ) if (exists $args->{ $_ });
-   }
-
-   # Defaults id from name (least significant) from id from ajaxid (most sig.)
-   $self->id( $self->ajaxid ) if (!$self->id && $self->ajaxid);
-
-   if (!$self->name && $self->id) {
-      if ($self->id =~ m{ \. }mx) {
-         $self->name( (split m{ \. }mx, $self->id)[1] );
-      }
-      else { $self->name( (reverse split m{ _ }mx, $self->id)[0] ) }
-   }
-
-   $self->id( $self->name ) if (!$self->id && $self->name);
-
-   # We can get the widget type from the config file
-   if ( ! $self->type
-       && $self->id
-       && exists $args->{fields}
-       && exists $args->{fields}->{ $self->id }
-       && exists $args->{fields}->{ $self->id }->{type}) {
-      $self->type( $args->{fields}->{ $self->id }->{type} );
-   }
-
-   $self->type(      q(textfield)      ) unless ($self->type);
-   $self->name(      $self->type       ) unless ($self->name);
-   $self->_fields(   $args->{fields  } );
-   $self->_messages( $args->{messages} );
-   return;
+   # Can be overridden in factory subclass
 }
 
 sub _render {
@@ -360,7 +374,7 @@ sub _set_error {
 
 # Private subroutines
 
-sub _arg_list {
+sub __arg_list {
    my (@rest) = @_;
 
    return {} unless ($rest[0]);
@@ -368,11 +382,12 @@ sub _arg_list {
    return ref $rest[0] eq q(HASH) ? $rest[0] : { @rest };
 }
 
-sub _group_fields {
+sub __group_fields {
    my ($hacc, $item, $list) = @_; my $html = $NUL; my $args;
 
    for (1 .. $item->{content}->{nitems}) {
-      $args = pop @{ $list }; chomp $args->{content};
+      $args = pop @{ $list };
+      $args->{content} ||= $NUL; chomp $args->{content};
       $html = $args->{content}.$html;
    }
 
@@ -381,7 +396,7 @@ sub _group_fields {
    return "\n".$hacc->fieldset( "\n".$legend.$html );
 }
 
-sub _merge_config {
+sub __merge_config {
    my ($config, $item) = @_; return { %{ $config }, %{ $item->{content} } };
 }
 
@@ -535,6 +550,11 @@ server side validation
 
 =back
 
+=head2 _bootstrap
+
+Determine the C<id>, C<name> and C<type> of the widget from the supplied
+arguments
+
 =head2 _ensure_class_loaded
 
 Once the factory subclass is known this method ensures that it is loaded
@@ -545,11 +565,6 @@ and then re-blesses the self referential object into the correct class
 Creates new C<HTML::FormWidgets> objects and returns their rendered output.
 Called by the L</_render> methods in the factory subclasses to inflate
 embeded widget definitions
-
-=head2 _init
-
-Determine the C<id>, C<name> and C<type> of the widget from the supplied
-arguments
 
 =head2 _render
 
@@ -562,17 +577,17 @@ attribute if set or an error message otherwise
 Stores the passed error message in the C<text> attribute so that it
 gets rendered in place of the widget
 
-=head2 _arg_list
+=head2 __arg_list
 
 Accepts either a single argument of a hash ref or a list of key/value
 pairs. Returns a hash ref in either case.
 
-=head2 _group_fields
+=head2 __group_fields
 
 Wraps the top B<nitems> widgets on the build stack in a fieldset
 element with a legend
 
-=head2 _merge_config
+=head2 __merge_config
 
 Does a simple merging of the two hash refs that are passed as
 arguments. The second argument takes precedence over the first
@@ -595,8 +610,8 @@ This is the prefix for our URI
 
 =item content_type
 
-Either I<application/xhtml+xml> which generates XHTML 1.1 and is the
-default or I<text/html> which generates HTML 4.01
+Either I<application/xhtml+xml> which generates XHTML 1.1 or
+I<text/html> which generates HTML 4.01 and is the default
 
 =item fields
 

@@ -10,13 +10,11 @@ use version; our $VERSION = qv( sprintf '0.3.%d', q$Rev$ =~ /\d+/gmx );
 
 __PACKAGE__->mk_accessors( qw(data js_obj) );
 
-sub init {
+sub _init {
    my ($self, $args) = @_;
 
    $self->data(   {} );
    $self->js_obj( q(behaviour.table.liveGrid) );
-
-   $self->NEXT::init( $args );
    return;
 }
 

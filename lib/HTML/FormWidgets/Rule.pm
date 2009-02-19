@@ -10,7 +10,7 @@ use version; our $VERSION = qv( sprintf '0.3.%d', q$Rev$ =~ /\d+/gmx );
 
 __PACKAGE__->mk_accessors( qw(alt href imgclass onclick) );
 
-sub init {
+sub _init {
    my ($self, $args) = @_;
 
    $self->alt(       undef );
@@ -18,8 +18,6 @@ sub init {
    $self->href(      undef );
    $self->imgclass(  undef );
    $self->onclick(   undef );
-
-   $self->NEXT::init( $args );
    return;
 }
 

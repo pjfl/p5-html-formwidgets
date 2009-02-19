@@ -12,15 +12,13 @@ __PACKAGE__->mk_accessors( qw(assets format readonly width) );
 
 my $TTS = q( ~ );
 
-sub init {
+sub _init {
    my ($self, $args) = @_;
 
    $self->assets(   q() );
    $self->format(   q(%d/%m/%Y) );
    $self->readonly( 1 );
    $self->width(    10 );
-
-   $self->NEXT::init( $args );
    return;
 }
 

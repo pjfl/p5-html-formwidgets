@@ -13,7 +13,7 @@ __PACKAGE__->mk_accessors( qw(assets button_name onclick src) );
 my $SEP = q(/);
 my $TTS = q( ~ );
 
-sub init {
+sub _init {
    my ($self, $args) = @_;
 
    $self->assets(      q() );
@@ -23,8 +23,6 @@ sub init {
    $self->onclick(     q(window.submit) );
    $self->src(         q() );
    $self->tiptype(     q(normal) );
-
-   $self->NEXT::init( $args );
    return;
 }
 

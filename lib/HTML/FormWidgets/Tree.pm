@@ -14,17 +14,15 @@ __PACKAGE__->mk_accessors( qw(base behaviour data node_count
 
 my $NUL = q();
 
-sub init {
+sub _init {
    my ($self, $args) = @_;
 
-   $self->base(       $NUL );
-   $self->behaviour(  q(classic) );
-   $self->data(       {} );
-   $self->selected(   undef );
-   $self->target(     q() );
-   $self->url(        undef );
-   $self->NEXT::init( $args );
-
+   $self->base(      $NUL );
+   $self->behaviour( q(classic) );
+   $self->data(      {} );
+   $self->selected(  undef );
+   $self->target(    q() );
+   $self->url(       undef );
    return;
 }
 

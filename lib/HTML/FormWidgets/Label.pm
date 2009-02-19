@@ -10,14 +10,13 @@ use version; our $VERSION = qv( sprintf '0.3.%d', q$Rev$ =~ /\d+/gmx );
 
 __PACKAGE__->mk_accessors( qw(dropcap markdown) );
 
-sub init {
+sub _init {
    my ($self, $args) = @_;
 
-   $self->container(  0 );
-   $self->dropcap(    0 );
-   $self->markdown(   0 );
-   $self->text(       q() );
-   $self->NEXT::init( $args );
+   $self->container( 0 );
+   $self->dropcap(   0 );
+   $self->markdown(  0 );
+   $self->text(      q() );
    return;
 }
 
@@ -25,8 +24,8 @@ sub _render {
    my ($self, $args) = @_; my ($markup, $text);
 
    $text    = $self->text;
-   $text    = $self->text_obj->markdown( $text ) if ($self->markdown);
-   ($text ||= $self->loc( $self->name )) =~ s{ \A \n }{}msx;
+   $text    = $self->text_obj->markdown( $text ) if ($text && $self->markdown);
+   ($text ||= $self->loc( $self->name ) || q()) =~ s{ \A \n }{}msx;
 
    return unless ($text);
 

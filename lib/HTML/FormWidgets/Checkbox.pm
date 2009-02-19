@@ -10,22 +10,20 @@ use version; our $VERSION = qv( sprintf '0.3.%d', q$Rev$ =~ /\d+/gmx );
 
 __PACKAGE__->mk_accessors( qw(checked label_class labels value) );
 
-sub init {
+sub _init {
    my ($self, $args) = @_;
 
    $self->checked(     0 );
    $self->label_class( q(note) );
    $self->labels(      {} );
    $self->value(       1 );
-
-   $self->NEXT::init( $args );
    return;
 }
 
 sub _render {
    my ($self, $args)  = @_;
 
-   $args->{checked} = q(checked) if ($self->checked);
+   $args->{checked} = $self->is_xml ? q(checked) : undef if ($self->checked);
    $args->{value  } = $self->value;
 
    my $html  = $self->hacc->checkbox( $args );

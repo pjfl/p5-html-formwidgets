@@ -10,14 +10,12 @@ use version; our $VERSION = qv( sprintf '0.3.%d', q$Rev$ =~ /\d+/gmx );
 
 __PACKAGE__->mk_accessors( qw(width) );
 
-sub init {
+sub _init {
    my ($self, $args) = @_;
 
    $self->container( 0 );
    $self->sep(       q() );
    $self->width(     undef );
-
-   $self->NEXT::init( $args );
    return;
 }
 

@@ -10,14 +10,12 @@ use version; our $VERSION = qv( sprintf '0.3.%d', q$Rev$ =~ /\d+/gmx );
 
 __PACKAGE__->mk_accessors( qw(height labels values) );
 
-sub init {
+sub _init {
    my ($self, $args) = @_;
 
    $self->height( 10 );
    $self->labels( undef );
    $self->values( [] );
-
-   $self->NEXT::init( $args );
    return;
 }
 

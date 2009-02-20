@@ -8,15 +8,16 @@ use parent qw(HTML::FormWidgets);
 
 use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/g );
 
-__PACKAGE__->mk_accessors( qw(mode offset range snap steps wheel) );
+__PACKAGE__->mk_accessors( qw(hide mode offset range snap steps wheel) );
 
 sub _init {
    my ($self, $args) = @_;
-
-   $self->mode (  q(horizontal) );
-   $self->offset( 0 )
+   warn ''.(ref $self || $self)."\n";
+#   $self->hide(   [] );
+   $self->mode(   q(horizontal) );
+   $self->offset( 0 );
    $self->range(  0 );
-   $self->snap(   1 )
+   $self->snap(   1 );
    $self->steps(  100 );
    $self->wheel(  1 );
    return;
@@ -31,15 +32,29 @@ sub _render {
 #			font.setStyle('font-size', value);
 #		}
 #	}).set(font.getStyle('font-size').toInt());
+
+   $text = $self->_inflate( { name    => $self->name,
+                              default => $self->offset,
+                              type    => q(hidden),
+                              widget  => 1 } );
+#   push @{ $self->hide }, { content => $text };
+
+   $id    = $args->{name}.'_slider';
+   $html  = $hacc->div( { class => 'knob' } );
+   $html  = $hacc->div( { class => 'slider', id => $id }, $html );
    $hacc  = $self->hacc;
-   $text  = 'var el = $( "'.$args->{name}.'")';
-   $text .= 'new Slider( el, el.getElement( ".knob" ), {';
-   $text .= '   mode   : "'.$self->mode.'", ';
-   $text .= '   offset : "'.$self->offset.'", ';
-   $text .= '   range  : "'.$self->range.'", ';
-   $text .= '   snap   : '.($self->snap ? 'true' : 'false' ).', ';
-   $text .= '   steps  : "'.$self->steps.'", ';
-   $text .= '   wheel  : '.($self->wheel ? 'true' : 'false' ).' } );';
+   $text  = "\n".'var behaviour.slider = $( "'.$id.'" );';
+   $text .= "\n".'new Slider( behaviour.sliderel, ';
+   $text .= 'behaviour.slider.getElement( ".knob" ), {';
+   $text .= "\n".'   mode     : "'.$self->mode.'", ';
+   $text .= "\n".'   offset   : '.$self->offset.', ';
+   $text .= "\n".'   onchange : function( value ) {';
+   $text .= "\n".'      $( "'.$self->name.'" ).value = value;';
+   $text .= "\n".'   }';
+   $text .= "\n".'   range    : '.$self->range.', ';
+   $text .= "\n".'   snap     : '.($self->snap ? 'true' : 'false' ).', ';
+   $text .= "\n".'   steps    : '.$self->steps.', ';
+   $text .= "\n".'   wheel    : '.($self->wheel ? 'true' : 'false' ).' } );';
    $html .= $hacc->script( { type => q(text/javascript) }, $text );
    return $html;
 }

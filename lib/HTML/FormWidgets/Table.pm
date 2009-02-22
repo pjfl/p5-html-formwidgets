@@ -108,7 +108,7 @@ sub _render {
                $args->{class} .= q( nowrap);
             }
 
-            $fld_val = $self->_inflate( $val->{ $fld } ) || q(&nbsp;);
+            $fld_val = $self->inflate( $val->{ $fld } ) || q(&nbsp;);
             $cells  .= $hacc->td( $args, $fld_val )."\n";
          }
 
@@ -124,10 +124,10 @@ sub _render {
       $rows .= $hacc->tr( $args, $cells ); $r_no++;
    }
 
-   my $content = $self->_inflate( { name    => $self->name.q(_nrows),
-                                    default => $r_no,
-                                    type    => q(hidden),
-                                    widget  => 1 } );
+   my $content = $self->inflate( { name    => $self->name.q(_nrows),
+                                   default => $r_no,
+                                   type    => q(hidden),
+                                   widget  => 1 } );
    push @{ $self->hide }, { content => $content };
 
    if ($self->edit) {

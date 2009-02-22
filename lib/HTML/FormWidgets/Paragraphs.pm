@@ -43,14 +43,14 @@ sub _render {
          $size += length $text;
          $class = defined $val->{hclass} ? $val->{hclass} : $self->hclass;
          $args  = $class ? { class => $class } : {};
-         $para .= "\n".$hacc->span( $args, $self->_inflate( $text ) );
+         $para .= "\n".$hacc->span( $args, $self->inflate( $text ) );
       }
 
       if ($text = $val->{text}) {
          $size += length $text;
          $class = defined $val->{class} ? $val->{class} : $self->class;
          $args  = $class ? { class => $class } : {};
-         $para .= $hacc->p( $args, $self->_inflate( $text ) );
+         $para .= $hacc->p( $args, $self->inflate( $text ) );
       }
 
       next unless ($para);

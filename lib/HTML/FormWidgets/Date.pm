@@ -41,12 +41,13 @@ sub _render {
    $args->{title   }  = $self->hint_title.$TTS.$self->loc( q(dateWidgetTip) );
    $text              = $hacc->a( $args, $text );
    $html             .= $hacc->div( { class => q(container) }, $text );
-   $text              = 'Calendar.setup( {';
-   $text             .= 'inputField : "'.$self->id.'", ';
-   $text             .= 'ifFormat   : "'.$self->format.'", ';
-   $text             .= 'button     : "'.$self->id.'_trigger", ';
-   $text             .= 'align      : "bR", ';
-   $text             .= 'singleClick: true } );';
+   $text              = "\n";
+   $text             .= 'Calendar.setup( {'."\n";
+   $text             .= '   inputField : "'.$self->id.'", '."\n";
+   $text             .= '   ifFormat   : "'.$self->format.'", '."\n";
+   $text             .= '   button     : "'.$self->id.'_trigger", '."\n";
+   $text             .= '   align      : "bR", '."\n";
+   $text             .= '   singleClick: true } );';
    $html             .= $hacc->script( { type => q(text/javascript) }, $text );
    return $html;
 }

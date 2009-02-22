@@ -111,10 +111,10 @@ sub _render {
          $r_no++;
       }
 
-      my $content = $self->_inflate(  { name    => q(_nrows),
-                                        default => $r_no,
-                                        type    => q(hidden),
-                                        widget  => 1 } );
+      my $content = $self->inflate( { name    => q(_nrows),
+                                      default => $r_no,
+                                      type    => q(hidden),
+                                      widget  => 1 } );
       push @{ $self->hide }, { content => $content };
 
       return $hacc->table( { cellpadding => 0, cellspacing => 0 }, $rows );
@@ -194,10 +194,10 @@ sub _render {
 
    $rows  = $hacc->tr( $cells ).$rows;
 
-   my $content = $self->_inflate(  { name    => q(_nrows),
-                                     default => $r_no,
-                                     type    => q(hidden),
-                                     widget  => 1 } );
+   my $content = $self->inflate( { name    => q(_nrows),
+                                   default => $r_no,
+                                   type    => q(hidden),
+                                   widget  => 1 } );
    push @{ $self->hide }, { content => $content };
 
    return $hacc->table( $rows );

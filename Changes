@@ -1,5 +1,7 @@
 Revision history for HTML::FormWidgets
 
+0.3.137  22/02/2009
+         - Dropped use of NEXT
          - Fixed bug in event handling in Rule
          - Improved quality of embeded Javascript
 

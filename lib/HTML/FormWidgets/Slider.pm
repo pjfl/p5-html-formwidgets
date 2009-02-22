@@ -53,6 +53,13 @@ sub _render {
 
    $text  = $hacc->div( { class => q(knob) } );
    $html .= $hacc->div( { class => q(slider), id => $id }, $text );
+
+   for (0 .. 10) {
+      my $style = q(left: ).(45 + $_ * 20).q(px;);
+
+      $html .= $hacc->div( { class => q(tick), style => $style } );
+   }
+
    $text  = "\n";
    $text .= $elem.' = $( "'.$id.'" );'."\n";
    $text .= 'new Slider( '.$elem.', '.$elem.'.getElement( ".knob" ), {'."\n";

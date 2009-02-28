@@ -48,13 +48,14 @@ sub build {
 
    my $key  = $config->{list_key    } || q(items);
    my $type = $config->{content_type} || $ATTRS->{content_type};
-   my $hacc = HTML::Accessors->new( content_type => $type );
+
+   $config->{hacc} = HTML::Accessors->new( content_type => $type );
 
    for my $list (grep { $_ and ref $_ eq q(HASH) } @{ $data }) {
       my @tmp = ();
 
       for my $item (@{ $list->{ $key } }) {
-         my $built = __build_widget( $class, $config, $hacc, $item, \@tmp );
+         my $built = __build_widget( $class, $config, $item, \@tmp );
 
          push @tmp, $built if ($built);
       }
@@ -112,14 +113,16 @@ sub init {
    my $fields = $args->{fields};
 
    $self->_init_fields( $skip, $fields );
-   $self->_init_args(  $skip, $args );
+   $self->_init_args (  $skip, $args );
 
    my $content_type = $self->content_type;
 
    $self->is_xml( $content_type eq q(text/html) ? 0 : 1 );
 
    # Now we can create HTML elements like we could with CGI.pm
-   $self->hacc( HTML::Accessors->new( { content_type => $content_type } ) );
+   unless ($self->hacc) {
+      $self->hacc( HTML::Accessors->new( { content_type => $content_type } ) );
+   }
 
    # Create a Text::Markdown object for use by the msg method
    $self->text_obj( Text::Markdown->new
@@ -214,36 +217,38 @@ sub _bootstrap {
    my ($self, $args) = @_;
 
    # Bare minimum is fields + id to get a useful widget
-   for (qw(ajaxid id name type)) {
-      $self->{ $_ } = $args->{ $_ } if (exists $args->{ $_ });
+   for (grep { exists $args->{ $_ } } qw(ajaxid id name type)) {
+      $self->{ $_ } = $args->{ $_ };
    }
 
    # Defaults id from name (least significant) from id from ajaxid (most sig.)
-   my $id = $self->id;
+   my $id = $self->id; my $name = $self->name; my $type = $self->type;
 
-   $id = $self->ajaxid if (not $id and $self->ajaxid);
+   $id = $self->id( $self->ajaxid ) if (not $id and $self->ajaxid);
 
-   if ($id and not $self->name) {
-      if ($id =~ m{ \. }mx) { $self->name( (split m{ \. }mx, $id)[1] ) }
-      else { $self->name( (reverse split m{ _ }mx, $id)[0] ) }
+   if ($id and not $name) {
+      if ($id =~ m{ \. }mx) {
+         $name = $self->name( (split m{ \. }mx, $id)[1] );
+      }
+      else { $name = $self->name( (reverse split m{ _ }mx, $id)[0] ) }
    }
 
-   $id = $self->name if (not $id and $self->name);
-
-   $self->id( $id );
+   $id = $self->id( $name ) if (not $id and $name);
 
    # We can get the widget type from the config file
-   if (not $self->type
-       and $id
-       and exists $args->{fields}
-       and exists $args->{fields}->{ $id }
-       and exists $args->{fields}->{ $id }->{type}) {
-      $self->type( $args->{fields}->{ $id }->{type} );
+   if (not $type and $id and exists $args->{fields}) {
+      my $fields = $args->{fields};
+
+      if (exists $fields->{ $id } and exists $fields->{ $id }->{type}) {
+         $type = $self->type( $fields->{ $id }->{type} );
+      }
    }
 
-   $self->type(      q(textfield)      ) unless ($self->type);
-   $self->name(      $self->type       ) unless ($self->name);
-   $self->_fields(   $args->{fields  } );
+   # This is the default widget type if not overidden in the config
+   $type = $self->type( q(textfield) ) unless ($type);
+
+   $self->name     ( $type             ) unless ($name);
+   $self->_fields  ( $args->{fields  } );
    $self->_messages( $args->{messages} );
    return;
 }
@@ -351,12 +356,12 @@ sub _render_container {
 }
 
 sub _render_field {
-   my $self = shift; my $args = {};
+   my $self = shift; my $args = {}; my $id = $self->id; my $name = $self->name;
 
    $args->{class     } = q(required)       if ($self->required);
    $args->{default   } = $self->default    if ($self->default);
-   $args->{id        } = $self->id         if ($self->id);
-   $args->{name      } = $self->name       if ($self->name);
+   $args->{id        } = $id               if ($id);
+   $args->{name      } = $name             if ($name);
    $args->{onblur    } = $self->onblur     if ($self->onblur);
    $args->{onkeypress} = $self->onkeypress if ($self->onkeypress);
 
@@ -410,7 +415,7 @@ sub __arg_list {
 }
 
 sub __build_widget {
-   my ($class, $config, $hacc, $item, $stack) = @_;
+   my ($class, $config, $item, $stack) = @_;
 
    return unless ($item);
 
@@ -419,7 +424,7 @@ sub __build_widget {
    if ($item->{content}->{group}) {
       return if ($config->{skip_groups});
 
-      $item->{content} = __group_fields( $hacc, $item, $stack );
+      $item->{content} = __group_fields( $config->{hacc}, $item, $stack );
    }
    elsif ($item->{content}->{widget}) {
       my $widget = $class->new( __merge_config( $config, $item ) );

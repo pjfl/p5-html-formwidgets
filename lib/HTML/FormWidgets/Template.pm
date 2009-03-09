@@ -6,7 +6,7 @@ use strict;
 use warnings;
 use parent qw(HTML::FormWidgets);
 use English qw(-no_match_vars);
-use File::Spec::Functions;
+use File::Spec;
 use IO::File;
 
 use version; our $VERSION = qv( sprintf '0.3.%d', q$Rev$ =~ /\d+/gmx );
@@ -23,7 +23,7 @@ sub _init {
 sub _render {
    my ($self, $args) = @_; my ($content, $path, $rdr);
 
-   $path = catfile( $self->templatedir, $self->id.q(.tt) );
+   $path = File::Spec->catfile( $self->templatedir, $self->id.q(.tt) );
 
    return 'Not found '.$path   unless (-f $path);
    return 'Cannot read '.$path unless ($rdr = IO::File->new( $path, q(r) ));

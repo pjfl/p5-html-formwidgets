@@ -1,5 +1,8 @@
 Revision history for HTML::FormWidgets
 
+0.1.141  11/03/2009
+         - Added menu widget
+
 0.3.137  22/02/2009
          - Dropped use of NEXT
          - Fixed bug in event handling in Rule

@@ -48,14 +48,20 @@ sub _render {
             ? $self->_top_filler( $hacc )
             : $hacc->b( { class => q(pad) }, $NBSP );
 
-      my $flag = 0;
+      my $count = 0;
 
       for my $item (@{ $data->[ $index ]->{items} }) {
-         if ($flag < 1) { $text .= $item->{content}.$hacc->dt(); $flag = 1 }
-         else { $text .= $hacc->dd( $item->{content} ); $flag = 2 }
+         if ($count < 1) {
+            $text .= $self->inflate( $item->{content} ).$hacc->dt();
+         }
+         else {
+            $text .= $hacc->dd( $self->inflate( $item->{content} ) );
+         }
+
+         $count++;
       }
 
-      $text .= $self->_bottom_filler( $hacc ) if ($flag > 1);
+      $text .= $self->_bottom_filler( $hacc ) if ($count > 1);
 
       $html .= $hacc->li( $hacc->dl( $text ) );
    }

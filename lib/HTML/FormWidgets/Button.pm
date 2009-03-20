@@ -10,7 +10,6 @@ use version; our $VERSION = qv( sprintf '0.3.%d', q$Rev$ =~ /\d+/gmx );
 
 __PACKAGE__->mk_accessors( qw(assets button_name onclick src) );
 
-my $SEP = q(/);
 my $TTS = q( ~ );
 
 sub _init {
@@ -38,7 +37,7 @@ sub _render {
    return $self->hacc->submit( $args ) unless ($self->src);
 
    $args->{alt} = ucfirst $self->name;
-   $args->{src} = $SEP eq (substr $self->src, 0, 1)
+   $args->{src} = q(http:) eq (substr $self->src, 0, 5)
                 ? $self->src : $self->assets.$self->src;
    return $self->hacc->image_button( $args );
 }

@@ -47,10 +47,12 @@ sub _render {
       }
 
       if ($text = $val->{text}) {
-         $size += length $text;
          $class = defined $val->{class} ? $val->{class} : $self->class;
          $args  = $class ? { class => $class } : {};
-         $para .= $hacc->p( $args, $self->inflate( $text ) );
+         $size += length $text->{text};
+
+         if ($text->{markdown}) { $para .= $self->inflate( $text ) }
+         else { $para .= $hacc->p( $args, $self->inflate( $text ) ) }
       }
 
       next unless ($para);

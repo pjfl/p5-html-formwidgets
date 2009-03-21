@@ -22,59 +22,73 @@ sub _init {
 
 sub _render {
    my ($self, $args) = @_;
-   my ($class, $html, $para, $quotient, $size, $text, $width, $val);
 
-   my $data = $self->data; my $hacc = $self->hacc;
+   my $data  = $self->data; my $hacc = $self->hacc;
 
-   if ($self->columns > 1) {
-      for $val (@{ $data->{values} }) {
-         $size += length $val->{heading} if ($val->{heading});
-         $size += length $val->{text}    if ($val->{text});
-      }
+   my $plist = []; my $tsize = 0; my $nparas = 0;
 
-      $quotient = int $size / $self->columns;
-      $width    = int 90 / $self->columns;
-   }
+   for my $val (@{ $data->{values} }) {
+      my $psize = 0; my $para = q(); my ($class, $text);
 
-   $size = 0;
-
-   for $val (@{ $data->{values} }) {
       if ($text = $val->{heading}) {
-         $size += length $text;
-         $class = defined $val->{hclass} ? $val->{hclass} : $self->hclass;
-         $args  = $class ? { class => $class } : {};
-         $para .= "\n".$hacc->span( $args, $self->inflate( $text ) );
+         $psize += length $text;
+         $class  = defined $val->{hclass} ? $val->{hclass} : $self->hclass;
+         $args   = $class ? { class => $class } : {};
+         $para  .= "\n".$hacc->span( $args, $self->inflate( $text ) );
       }
 
       if ($text = $val->{text}) {
-         $class = defined $val->{class} ? $val->{class} : $self->class;
-         $args  = $class ? { class => $class } : {};
-         $size += length $text->{text};
+         $psize += length (ref $text ? $text->{text} : $text);
 
-         if ($text->{markdown}) { $para .= $self->inflate( $text ) }
-         else { $para .= $hacc->p( $args, $self->inflate( $text ) ) }
+         unless (ref $text and $text->{markdown}) {
+            $class = defined $val->{class} ? $val->{class} : $self->class;
+            $args  = $class ? { class => $class } : {};
+            $para .= $hacc->p( $args, $self->inflate( $text ) );
+         }
+         else { $para .= $self->inflate( $text ) }
       }
 
-      next unless ($para);
-
-      if ($quotient and $size >= $quotient) {
-         $args  = $self->column_class ? { class => $self->column_class } : {};
-         $args->{style} = 'width: '.$width.'%;';
-         $html .= "\n".$hacc->div( $args, $para );
-         $size  = 0; $para = q();
-      }
+      push @{ $plist }, { para => $para, size => $psize };
+      $tsize += $psize;
+      $nparas++;
    }
 
-   if ($para) {
-      unless ($quotient) { $html .= $para }
-      else {
-         $args  = $self->column_class ? { class => $self->column_class } : {};
-         $args->{style} = 'width: '.$width.'%;';
-         $html .= "\n".$hacc->div( $args, $para );
+   my $quotient = int $tsize / $self->columns;
+   my $width    = int 90 / $self->columns;
+   my $html     = q();
+   my $paras    = q();
+   my $size     = 0;
+   my $pno      = 0;
+   my $col      = 1;
+
+   while ($pno < $nparas) {
+      my $para    = $plist->[ $pno ]->{para};
+      my $psize   = $plist->[ $pno ]->{size};
+      my $is_over = $size + $psize >= $quotient ? 1 : 0;
+
+      if ($paras and $is_over and $col < $self->columns) {
+         $html .= $self->_add_column( $hacc, $width, $paras );
+         $paras = $para; $size = $psize;
+         $col++;
       }
+      else { $paras .= $para; $size += $psize }
+
+      $pno++;
    }
+
+   $html .= $self->_add_column( $hacc, $width, $paras ) if ($paras);
 
    return $html;
+}
+
+sub _add_column {
+   my ($self, $hacc, $width, $paras) = @_;
+
+   my $args = $self->column_class ? { class => $self->column_class } : {};
+
+   $args->{style} = 'width: '.$width.'%;';
+
+   return "\n".$hacc->div( $args, $paras );
 }
 
 1;

@@ -86,7 +86,7 @@ sub _add_column {
 
    my $args = $self->column_class ? { class => $self->column_class } : {};
 
-   $args->{style} = 'width: '.$width.'%;';
+   $args->{style} = 'width: '.$width.'%;' if ($self->columns > 1);
 
    return "\n".$hacc->div( $args, $paras );
 }

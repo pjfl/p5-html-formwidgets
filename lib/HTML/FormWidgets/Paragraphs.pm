@@ -8,15 +8,16 @@ use parent qw(HTML::FormWidgets);
 
 use version; our $VERSION = qv( sprintf '0.3.%d', q$Rev$ =~ /\d+/gmx );
 
-__PACKAGE__->mk_accessors( qw(column_class columns data hclass) );
+__PACKAGE__->mk_accessors( qw(column_class columns data hclass max_width) );
 
 sub _init {
    my ($self, $args) = @_;
 
-   $self->column_class( q() );
-   $self->columns(      1 );
-   $self->data(         { values => [] } );
-   $self->hclass(       q() );
+   $self->column_class( q()              );
+   $self->columns     ( 1                );
+   $self->data        ( { values => [] } );
+   $self->hclass      ( q()              );
+   $self->max_width   ( 95               );
    return;
 }
 
@@ -53,8 +54,8 @@ sub _render {
       $nparas++;
    }
 
+   my $width    = int $self->max_width / $self->columns;
    my $quotient = int $tsize / $self->columns;
-   my $width    = int 90 / $self->columns;
    my $html     = q();
    my $paras    = q();
    my $size     = 0;

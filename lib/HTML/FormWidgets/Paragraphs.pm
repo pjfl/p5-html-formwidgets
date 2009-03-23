@@ -17,7 +17,7 @@ sub _init {
    $self->columns     ( 1                );
    $self->data        ( { values => [] } );
    $self->hclass      ( q()              );
-   $self->max_width   ( 95               );
+   $self->max_width   ( 90               );
    return;
 }
 

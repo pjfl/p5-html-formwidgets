@@ -1,25 +1,15 @@
 /* $Id$ */
 
 var State = new Class( {
-   options: {
-      assets    : null,
-      accordion : null,
-      cookies   : null,
-      linkFade  : null,
-      scroller  : false,
-      slider    : null,
-      tips      : null
-   },
-
    initialize: function( options ) {
-      this.setOptions( options );
+      this.popup   = options.popup;
       this.assets  = options.assets;
       this.cookies = new Cookies( { path  : options.path,
                                     prefix: options.prefix } );
    },
 
    getAccordionHeight: function( elem ) {
-      var togglers_len = $$( 'div.sideBarHeader' ).length;
+      var togglers_len = $$( 'div.sidebarHeader' ).length;
       var height       = elem.getSize().size.y - ( 25 * togglers_len ) - 15;
       return Math.max( 1, height );
    },
@@ -29,7 +19,7 @@ var State = new Class( {
       var elemHeight, elemWidth, grippy_height, offset, sb_height;
       var height = 5, h = window.getHeight(), w = window.getWidth();
 
-      if (!isPopup) {
+      if (!this.popup) {
          this.cookies.set( 'width',  w );
          this.cookies.set( 'height', h );
       }
@@ -57,30 +47,30 @@ var State = new Class( {
 
       content.setStyle( 'marginBottom', height + 'px' );
 
-      if (elem = $( 'sideBarDisp' )) {
-         if (this.cookies.get( 'sideBar' )) elem.setStyle( 'display', '' );
+      if (elem = $( 'sidebarDisp' )) {
+         if (this.cookies.get( 'sidebar' )) elem.setStyle( 'display', '' );
 
          elem.setStyle( 'marginBottom', height + 'px' );
 
          // Calculate and set vertical offset for side bar grippy
          sb_height = elem.getSize().size.y;
-         grippy_height = $( 'sideBarGrippy' ).getSize().size.y;
+         grippy_height = $( 'sidebarGrippy' ).getSize().size.y;
          offset = Math.max( 1, Math.round( sb_height / 2 )
                             - Math.round( grippy_height / 2 ) );
-         $( 'sideBarGrippy' ).setStyle( 'marginTop', offset + 'px' );
+         $( 'sidebarGrippy' ).setStyle( 'marginTop', offset + 'px' );
 
          if (this.accordion) {
             this.accordion.resize( this.getAccordionHeight( elem ), null );
          }
 
-         if (this.cookies.get( 'sideBar' )) {
+         if (this.cookies.get( 'sidebar' )) {
             if (changed) {
                elemWidth = elem.getStyle( 'width' ).toInt();
-               this.cookies.set( 'sideBarWidth',  elemWidth );
+               this.cookies.set( 'sidebarWidth',  elemWidth );
                this.slider.wrapper.setStyle( 'width', elemWidth + 'px' );
             }
             else {
-               elemWidth = this.cookies.get( 'sideBarWidth' );
+               elemWidth = this.cookies.get( 'sidebarWidth' );
             }
          }
          else { elemWidth = 0 }
@@ -131,32 +121,32 @@ var State = new Class( {
                if (elem = $( p0 + 'Img' )) { if (p1) elem.src = p1; }
 
                /* Recover the width and panel number of the sidebar */
-               if (p0 == 'sideBar') sb_state = true;
-               if (p0 == 'sideBarWidth') sb_width = p1;
-               if (p0 == 'sideBarPanel') sb_panel = p1;
+               if (p0 == 'sidebar') sb_state = true;
+               if (p0 == 'sidebarWidth') sb_width = p1;
+               if (p0 == 'sidebarPanel') sb_panel = p1;
             }
          }
       }
 
       /* If this page has a side bar */
-      if (elem = $( 'sideBarDisp' )) {
-         if (!this.cookies.get( 'sideBarWidth' )) {
-            this.cookies.set( 'sideBarWidth', '150' );
+      if (elem = $( 'sidebarDisp' )) {
+         if (!this.cookies.get( 'sidebarWidth' )) {
+            this.cookies.set( 'sidebarWidth', '150' );
          }
 
          height = this.getAccordionHeight( elem );
 
          /* Setup the slide in/out effect */
-         this.slider = new Fx.Slide( 'sideBarContainer', {
+         this.slider = new Fx.Slide( 'sidebarContainer', {
             mode: 'horizontal',
             onComplete: function() {
-               var sb_image = $( 'sideBarImg' );
+               var sb_image = $( 'sidebarImg' );
 
                /* When the effect is complete toggle the state */
-               if (this.cookies.get( 'sideBar' )) {
+               if (this.cookies.get( 'sidebar' )) {
                   if (sb_image) sb_image.src = this.assets + 'pushedpin.gif';
 
-                  panel = this.cookies.get( 'sideBarPanel' );
+                  panel = this.cookies.get( 'sidebarPanel' );
                   this.accordion.reload( panel );
                   this.accordion.display( panel );
                }
@@ -169,16 +159,16 @@ var State = new Class( {
          } );
 
          /* Setup the event handler to turn the side bar on/off */
-         $( 'sideBar' ).addEvent( 'click', function( e ) {
-            if (!this.cookies.get( 'sideBar' )) {
-               this.cookies.set( 'sideBar', this.assets + 'pushedpin.gif' );
+         $( 'sidebar' ).addEvent( 'click', function( e ) {
+            if (!this.cookies.get( 'sidebar' )) {
+               this.cookies.set( 'sidebar', this.assets + 'pushedpin.gif' );
                this.resize();
                e = Event( e );
                this.slider.slideIn();
                e.stop();
             }
             else {
-               this.cookies.delete( 'sideBar' );
+               this.cookies.delete( 'sidebar' );
                e = Event( e );
                this.slider.slideOut();
                e.stop();
@@ -186,8 +176,8 @@ var State = new Class( {
          }.bind( this ) );
 
          /* Setup the horizontal resize grippy for the side bar */
-         $( 'sideBarGrippy' ).addEvent( 'mousedown', function( sideBar ) {
-            sideBar.makeResizable( {
+         $( 'sidebarGrippy' ).addEvent( 'mousedown', function( sidebar ) {
+            sidebar.makeResizable( {
                modifiers:             { x: 'width', y: false },
                limit:                 { x: [ 150, 450 ] },
                onComplete: function() { this.detach() },
@@ -197,14 +187,14 @@ var State = new Class( {
 
          /* Create an Accordion widget in the side bar */
          this.accordion
-            = new Accordion( 'div.sideBarHeader', 'div.sideBarPanel', {
+            = new Accordion( 'div.sidebarHeader', 'div.sidebarPanel', {
                fixedHeight : height,
                opacity     : false,
                onActive    : function( toggler, element ) {
                   toggler.setStyle( 'background-color', '#663' );
                   toggler.setStyle( 'color', '#FFC' );
-                  stateObj.cookies.set( 'sideBarPanel',
-                                        this.togglers.indexOf( toggler ) );
+                  behaviour.state.cookies.set
+                     ( 'sidebarPanel', this.togglers.indexOf( toggler ) );
                },
                onBackground: function( toggler, element ) {
                   toggler.setStyle( 'background-color', '#CC9' );
@@ -333,23 +323,24 @@ var State = new Class( {
    }
 } );
 
-State.implement( new Options );
+behaviour.freeList    = new FreeList(    { form  : behaviour.formName } );
+behaviour.groupMember = new GroupMember( { form  : behaviour.formName } );
+behaviour.loadMore    = new LoadMore(    { url   : behaviour.url } );
+behaviour.server      = new ServerUtils( { url   : behaviour.url } );
+behaviour.state       = new State(       { assets: behaviour.assetsPath,
+                                           path  : behaviour.sessionPath,
+                                           popup : behaviour.isPopup,
+                                           prefix: behaviour.sessionPrefix } );
+behaviour.submit      = new SubmitUtils( { form  : behaviour.formName,
+                                           path  : behaviour.sessionPath,
+                                           prefix: behaviour.sessionPrefix } );
+behaviour.table       = new TableUtils(  { form  : behaviour.formName,
+                                           url   : behaviour.url } );
+behaviour.window      = new WindowUtils( { path  : behaviour.sessionPath,
+                                           prefix: behaviour.sessionPrefix } );
 
 function Expand_Collapse() {}
 
-var freeListObj    = new FreeList();
-var groupMemberObj = new GroupMember();
-var loadMoreObj    = new LoadMore(      { url   : url } );
-var serverObj      = new ServerMethods( { url   : url } );
-var stateObj       = new State(         { assets: assetsPath,
-                                          path  : sessionPath,
-                                          prefix: sessionPrefix } );
-var submitObj      = new SubmitUtils(   { path  : sessionPath,
-                                          prefix: sessionPrefix } );
-var tableObj       = new TableUtils(    { url   : url } );
-var windowObj      = new WindowUtils(   { path  : sessionPath,
-                                          prefix: sessionPrefix } );
+if (behaviour.target == 'top') behaviour.window.placeOnTop();
 
-if (target && target == 'top') windowObj.placeOnTop();
-
-onresize = stateObj.resize( true );
+onresize = behaviour.state.resize( true );

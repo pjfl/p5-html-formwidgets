@@ -6352,105 +6352,80 @@ Scroller.implement(new Events, new Options);
 
 /*
 Script: Slider.js
-	Contains <Slider>
+	Class for creating horizontal and vertical slider controls.
 
 License:
 	MIT-style license.
 */
 
-/*
-Class: Slider
-	Creates a slider with two elements: a knob and a container. Returns the values.
-	
-Note:
-	The Slider requires an XHTML doctype.
-
-Arguments:
-	element - the knob container
-	knob - the handle
-	options - see Options below
-
-Options:
-	steps - the number of steps for your slider.
-	mode - either 'horizontal' or 'vertical'. defaults to horizontal.
-	offset - relative offset for knob position. default to 0.
-	
-Events:
-	onChange - a function to fire when the value changes.
-	onComplete - a function to fire when you're done dragging.
-	onTick - optionally, you can alter the onTick behavior, for example displaying an effect of the knob moving to the desired position.
-		Passes as parameter the new position.
-*/
-
 var Slider = new Class({
-
-	options: {
-		onChange: Class.empty,
-		onComplete: Class.empty,
-		onTick: function(pos){
-			this.knob.setStyle(this.p, pos);
+	options: {/*
+		onChange: $empty,
+		onComplete: $empty,*/
+		onTick: function(position){
+			if(this.options.snap) position = this.toPosition(this.step);
+			this.knob.setStyle(this.property, position);
 		},
-		mode: 'horizontal',
+		snap: false,
+		offset: 0,
+		range: false,
+		wheel: false,
 		steps: 100,
-		offset: 0
+		mode: 'horizontal'
 	},
 
-	initialize: function(el, knob, options){
-		this.element = $(el);
-		this.knob = $(knob);
+	initialize: function(element, knob, options){
 		this.setOptions(options);
-		this.previousChange = -1;
-		this.previousEnd = -1;
-		this.step = -1;
-		this.element.addEvent('mousedown', this.clickedElement.bindWithEvent(this));
-		var mod, offset;
-		switch(this.options.mode){
-			case 'horizontal':
-				this.z = 'x';
-				this.p = 'left';
-				mod = {'x': 'left', 'y': false};
-				offset = 'offsetWidth';
-				break;
+		this.element = $(element);
+		this.knob = $(knob);
+		this.previousChange = this.previousEnd = this.step = -1;
+		this.element.addEvent('mousedown', this.clickedElement.bind(this));
+		if (this.options.wheel) this.element.addEvent('mousewheel', this.scrolledElement.bindWithEvent(this));
+		var offset, limit = {}, modifiers = {'x': false, 'y': false};
+		switch (this.options.mode){
 			case 'vertical':
-				this.z = 'y';
-				this.p = 'top';
-				mod = {'x': false, 'y': 'top'};
+				this.axis = 'y';
+				this.property = 'top';
 				offset = 'offsetHeight';
+				break;
+			case 'horizontal':
+				this.axis = 'x';
+				this.property = 'left';
+				offset = 'offsetWidth';
 		}
-		this.max = this.element[offset] - this.knob[offset] + (this.options.offset * 2);
-		this.half = this.knob[offset]/2;
-		this.getPos = this.element['get' + this.p.capitalize()].bind(this.element);
-		this.knob.setStyle('position', 'relative').setStyle(this.p, - this.options.offset);
-		var lim = {};
-		lim[this.z] = [- this.options.offset, this.max - this.options.offset];
+		this.half = this.knob[offset] / 2;
+		this.full = this.element[offset] - this.knob[offset] + (this.options.offset * 2);
+		this.min = $chk(this.options.range[0]) ? this.options.range[0] : 0;
+		this.max = $chk(this.options.range[1]) ? this.options.range[1] : this.options.steps;
+		this.range = this.max - this.min;
+		this.steps = this.options.steps || this.full;
+		this.stepSize = Math.abs(this.range) / this.steps;
+		this.stepWidth = this.stepSize * this.full / Math.abs(this.range) ;
+		this.knob.setStyle('position', 'relative').setStyle(this.property, - this.options.offset);
+		modifiers[this.axis] = this.property;
+		limit[this.axis] = [- this.options.offset, this.full - this.options.offset];
 		this.drag = new Drag.Base(this.knob, {
-			limit: lim,
-			modifiers: mod,
 			snap: 0,
-			onStart: function(){
-				this.draggedKnob();
-			}.bind(this),
-			onDrag: function(){
-				this.draggedKnob();
-			}.bind(this),
+			limit: limit,
+			modifiers: modifiers,
+			onDrag: this.draggedKnob.bind(this),
+			onStart: this.draggedKnob.bind(this),
 			onComplete: function(){
 				this.draggedKnob();
 				this.end();
 			}.bind(this)
 		});
-		if (this.options.initialize) this.options.initialize.call(this);
+		if (this.options.snap) {
+			this.drag.options.grid = Math.ceil(this.stepWidth);
+			this.drag.options.limit[this.axis][1] = this.full;
+		}
 	},
 
-	/*
-	Property: set
-		The slider will get the step you pass.
-
-	Arguments:
-		step - one integer
-	*/
-
 	set: function(step){
-		this.step = step.limit(0, this.options.steps);
+		if (!((this.range > 0) ^ (step < this.min))) step = this.min;
+		if (!((this.range > 0) ^ (step > this.max))) step = this.max;
+
+		this.step = Math.round(step);
 		this.checkStep();
 		this.end();
 		this.fireEvent('onTick', this.toPosition(this.step));
@@ -6458,16 +6433,26 @@ var Slider = new Class({
 	},
 
 	clickedElement: function(event){
-		var position = event.page[this.z] - this.getPos() - this.half;
-		position = position.limit(-this.options.offset, this.max -this.options.offset);
-		this.step = this.toStep(position);
+		var dir = this.range < 0 ? -1 : 1;
+		var position = event.page[this.axis] - this.element.getPosition()[this.axis] - this.half;
+		position = position.limit(-this.options.offset, this.full -this.options.offset);
+		this.step = Math.round(this.min + dir * this.toStep(position));
 		this.checkStep();
 		this.end();
 		this.fireEvent('onTick', position);
 	},
 
+	scrolledElement: function(event){
+		var mode = (this.options.mode == 'horizontal') ? (event.wheel < 0) : (event.wheel > 0);
+		this.set(mode ? this.step - this.stepSize : this.step + this.stepSize);
+		event.stop();
+	},
+
 	draggedKnob: function(){
-		this.step = this.toStep(this.drag.value.now[this.z]);
+		var dir = this.range < 0 ? -1 : 1;
+		var position = this.drag.value.now[this.axis];
+		position = position.limit(-this.options.offset, this.full -this.options.offset);
+		this.step = Math.round(this.min + dir * this.toStep(position));
 		this.checkStep();
 	},
 
@@ -6486,17 +6471,17 @@ var Slider = new Class({
 	},
 
 	toStep: function(position){
-		return Math.round((position + this.options.offset) / this.max * this.options.steps);
+		var step = (position + this.options.offset) * this.stepSize / this.full * this.steps;
+		return this.options.steps ? Math.round(step -= step % this.stepSize) : step;
 	},
 
 	toPosition: function(step){
-		return this.max * step / this.options.steps;
+		return (this.full * Math.abs(this.min - step)) / (this.steps * this.stepSize) - this.options.offset;
 	}
 
 });
 
-Slider.implement(new Events);
-Slider.implement(new Options);
+Slider.implement(new Events, new Options);
 
 /*
 Script: SmoothScroll.js

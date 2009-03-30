@@ -7,8 +7,6 @@
 var Tree = {};
 
 Tree.Config = new Abstract({
-   session_path    : sessionPath,
-   session_prefix  : sessionPrefix,
 	rootIcon        : '/static/images/foldericon.png',
 	openRootIcon    : '/static/images/openfoldericon.png',
 	folderIcon      : '/static/images/foldericon.png',
@@ -22,6 +20,7 @@ Tree.Config = new Abstract({
 	tMinusIcon      : '/static/images/Tminus.png',
 	tPlusIcon       : '/static/images/Tplus.png',
 	blankIcon       : '/static/images/blank.png',
+   selectedIcon    : '/static/images/current.png',
 	defaultText     : 'Tree Leaf',
 	defaultAction   : 'javascript:void(0);',
 	defaultBehavior : 'classic',
@@ -30,7 +29,7 @@ Tree.Config = new Abstract({
 
 Tree.Handler = new Abstract({
 	idCounter : 0,
-	idPrefix  : 'tree-object-',
+	idPrefix  : 'tree_node_',
 	all       : {},
 	behavior  : null,
 	selected  : null,
@@ -78,8 +77,9 @@ Tree.AbstractNode = new Class({
       this.childNodes = [];
       this.config     = Tree.Config;
       this.handler    = Tree.Handler;
-      this.cookies    = new Cookies( { path  : this.config.session_path,
-                                       prefix: this.config.session_prefix } );
+      this.cookies    = new Cookies( { path  : behaviour.sessionPath,
+                                       prefix: behaviour.sessionPrefix } );
+      this.selected   = false;
 
       this.action     = action || this.config.defaultAction;
       this.text       = text   || this.config.defaultText;
@@ -161,7 +161,8 @@ Tree.AbstractNode = new Class({
       this.handler.selected = this;
 
       if (this.openIcon && (this.handler.behavior != 'classic')) {
-         $( this.id + '-icon' ).src = this.openIcon;
+         $( this.id + '-icon' ).src = this.selected
+                                    ? this.config.selectedIcon : this.openIcon;
       }
 
       $( this.id + '-anchor' ).className = 'treeFade selected';
@@ -172,7 +173,8 @@ Tree.AbstractNode = new Class({
 
    blur: function() {
       if (this.openIcon && (this.handler.behavior != 'classic')) {
-         $( this.id + '-icon' ).src = this.icon;
+         $( this.id + '-icon' ).src = this.selected
+                                    ? this.config.selectedIcon : this.icon;
       }
 
       $( this.id + '-anchor' ).className = 'treeFade selected-inactive';
@@ -180,7 +182,8 @@ Tree.AbstractNode = new Class({
 
    doExpand: function() {
       if (this.handler.behavior == 'classic') {
-         $( this.id + '-icon' ).src = this.openIcon;
+         $( this.id + '-icon' ).src = this.selected
+                                    ? this.config.selectedIcon : this.openIcon;
       }
 
       if (this.childNodes.length) {
@@ -194,7 +197,8 @@ Tree.AbstractNode = new Class({
 
    doCollapse: function() {
       if (this.handler.behavior == 'classic') {
-         $( this.id + '-icon' ).src = this.icon;
+         $( this.id + '-icon' ).src = this.selected
+                                    ? this.config.selectedIcon : this.icon;
       }
 
       if (this.childNodes.length) {
@@ -345,10 +349,12 @@ Tree.Trunk = Tree.AbstractNode.extend({
       str += 'ondblclick="Tree.Handler.toggle(this);" ';
       str += 'class="treeBranch" ';
       str += 'onkeydown="return Tree.Handler.keydown(this, event)">';
-      str += '<img id="' + this.id + '-icon" class="treeIcon" ';
-      str += 'src="' + ((this.handler.behavior == 'classic' && this.open) ?
-                        this.openIcon : this.icon) + '" ';
-      str += 'onclick="Tree.Handler.select(this);">';
+      str += '<img id="' + this.id + '-icon" class="treeIcon" src="';
+      str += this.selected
+             ? this.config.selectedIcon
+             : this.handler.behavior == 'classic' && this.open
+               ? this.openIcon : this.icon;
+      str += '" onclick="Tree.Handler.select(this);">';
 
       if (this.tip) {
          str += '<span class="help tips" title="' + this.tip + '">';
@@ -357,7 +363,7 @@ Tree.Trunk = Tree.AbstractNode.extend({
       str += '<a class="treeFade" href="' + this.action + '" id="' + this.id;
       str += '-anchor" onfocus="Tree.Handler.focus(this);" ';
       str += 'onblur="Tree.Handler.blur(this);"';
-      str += (this.target ? ' target="' + this.target + '"' : '');
+      str += this.target ? ' target="' + this.target + '"' : '';
       str += '>' + this.text + '</a>';
 
       if (this.tip) str += '</span>';
@@ -384,9 +390,10 @@ Tree.Branch = Tree.AbstractNode.extend({
       }
       else { this.open = false; }
 
-      if (icon)     this.icon = icon;
-      if (openIcon) this.openIcon = openIcon;
-      if (parent)   parent.add( this );
+      this.icon     = icon     || this.config.rootIcon;
+      this.openIcon = openIcon || this.config.openRootIcon;
+
+      if (parent) parent.add( this );
    },
 
    remove: function() {
@@ -560,30 +567,33 @@ Tree.Branch = Tree.AbstractNode.extend({
       else this.open = false;
 
       if (this.folder || (this.handler.behavior != 'classic')) {
-         if (!this.icon) this.icon = this.config.folderIcon;
-
-         if (!this.openIcon) this.openIcon = this.config.openFolderIcon;
+         this.icon     = this.icon     || this.config.folderIcon;
+         this.openIcon = this.openIcon || this.config.openFolderIcon;
       }
-      else if (!this.icon) { this.icon = this.config.fileIcon; }
+      else { this.icon = this.icon || this.config.fileIcon; }
 
       label = this.text.replace( /</g, '&lt;' ).replace( />/g, '&gt;' );
-      str  = '<div id="'+this.id+'" ondblclick="Tree.Handler.toggle(this);" ';
-      str += 'class="treeBranch" ';
+      str  = '<div id="' + this.id;
+      str += '" ondblclick="Tree.Handler.toggle(this);" class="treeBranch" ';
       str += 'onkeydown="return Tree.Handler.keydown(this, event)">' + indent;
       str += '<img class="treeIcon" id="' + this.id + '-plus" src="';
-      str += (this.folder ?
-              (this.open ?
-               (this.parentNode._last ? this.config.lMinusIcon :
-                this.config.tMinusIcon) :
-               (this.parentNode._last ? this.config.lPlusIcon :
-                this.config.tPlusIcon)) :
-              (this.parentNode._last ? this.config.lIcon :
-               this.config.tIcon));
+      str += this.folder ? (this.open
+                            ? (this.parentNode._last
+                               ? this.config.lMinusIcon
+                               : this.config.tMinusIcon)
+                            : (this.parentNode._last
+                               ? this.config.lPlusIcon
+                               : this.config.tPlusIcon))
+                         : (this.parentNode._last
+                            ? this.config.lIcon
+                            : this.config.tIcon);
       str += '" onclick="Tree.Handler.toggle(this);">';
-      str += '<img id="' + this.id + '-icon" class="treeIcon" ';
-      str += 'src="' + (this.handler.behavior == 'classic' && this.open ?
-                        this.openIcon : this.icon) + '" ';
-      str += 'onclick="Tree.Handler.select(this);">';
+      str += '<img id="' + this.id + '-icon" class="treeIcon" src="';
+      str += this.selected
+             ? this.config.selectedIcon
+             : this.open && this.handler.behavior == 'classic'
+               ? this.openIcon : this.icon;
+      str += '" onclick="Tree.Handler.select(this);">';
 
       if (this.tip) {
          str += '<span class="help tips" title="' + this.tip + '">';
@@ -602,13 +612,13 @@ Tree.Branch = Tree.AbstractNode.extend({
       str += (this.open ? 'block' :'none') + ';">';
 
       for (i = 0; i < this.childNodes.length; i++) {
-         sb[i] = this.childNodes[i].toString(i, this.childNodes.length);
+         sb[ i ] = this.childNodes[ i ].toString( i, this.childNodes.length );
       }
 
-      this.plusIcon = (this.parentNode._last ? this.config.lPlusIcon :
-                       this.config.tPlusIcon);
-      this.minusIcon = (this.parentNode._last ? this.config.lMinusIcon :
-                        this.config.tMinusIcon);
+      this.plusIcon  = (this.parentNode._last
+                        ? this.config.lPlusIcon  : this.config.tPlusIcon);
+      this.minusIcon = (this.parentNode._last
+                        ? this.config.lMinusIcon : this.config.tMinusIcon);
       return str + sb.join( '' ) + '</div>';
    },
 });

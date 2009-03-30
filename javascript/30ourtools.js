@@ -1,4 +1,4 @@
-// @(#)$Id: 30ourtools.js 556 2008-12-03 01:47:27Z pjf $
+// @(#)$Id: 30ourtools.js 621 2009-03-30 22:45:41Z pjf $
 
 /* Property: setHTML
       Sets the innerHTML of the Element. Should work for application/xhtml+xml
@@ -108,53 +108,62 @@ var Accordion = Fx.Elements.extend({
       alwaysHide: false
    },
 
-   initialize: function(){
+   initialize: function() {
       var options, togglers, elements, container;
-      $each(arguments, function(argument, i){
-         switch($type(argument)){
-            case 'object': options = argument; break;
-            case 'element': container = $(argument); break;
-            default:
-               var temp = $$(argument);
-               if (!togglers) togglers = temp;
-               else elements = temp;
+
+      $each( arguments, function( argument, i ) {
+         switch( $type( argument ) ) {
+            case 'object' : options   = argument;      break;
+            case 'element': container = $( argument ); break;
+            default       : var temp = $$( argument );
+                            if (!togglers) togglers = temp;
+                            else elements = temp;
          }
-      });
-      this.togglers = togglers || [];
-      this.elements = elements || [];
-      this.container = $(container);
-      this.setOptions(options);
-      this.previous = -1;
+      } );
+
+      this.previous  = -1;
+      this.togglers  = togglers || [];
+      this.elements  = elements || [];
+      this.container = $( container );
+      this.setOptions( options );
+
       if (this.options.alwaysHide) this.options.wait = true;
-      if ($chk(this.options.show)){
-         this.options.display = false;
-         this.previous = this.options.show;
+
+      if ($chk( this.options.show )){
+         this.options.display = false; this.previous = this.options.show;
       }
+
       if (this.options.start){
-         this.options.display = false;
-         this.options.show = false;
+         this.options.display = false; this.options.show = false;
       }
+
       this.effects = {};
-      if (this.options.opacity)
-         this.effects.opacity = 'fullOpacity';
+
+      if (this.options.opacity) this.effects.opacity = 'fullOpacity';
+
       if (this.options.width)
          this.effects.width = this.options.fixedWidth
                             ? 'fullWidth' : 'offsetWidth';
+
       if (this.options.height)
          this.effects.height = this.options.fixedHeight
                              ? 'fullHeight' : 'scrollHeight';
+
       for (var i = 0, l = this.togglers.length; i < l; i++)
-         this.addSection(this.togglers[i], this.elements[i]);
-      this.elements.each(function(el, i){
+         this.addSection( this.togglers[ i ], this.elements[ i ] );
+
+      this.elements.each( function( el, i ) {
          if (this.options.show === i){
-            this.fireEvent('onActive', [this.togglers[i], el]);
+            this.fireEvent( 'onActive', [ this.togglers[ i ], el ] );
          }
          else {
-            for (var fx in this.effects) el.setStyle(fx, 0);
+            for (var fx in this.effects) el.setStyle( fx, 0 );
          }
-      }, this);
-      this.parent(this.elements);
-      if ($chk(this.options.display)) this.display(this.options.display);
+      }, this );
+
+      this.parent( this.elements );
+
+      if ($chk( this.options.display )) this.display( this.options.display );
    },
 
    /*
@@ -355,12 +364,16 @@ var Cookies = new Class({
    }
 });
 
-Cookies.implement( new Options() );
+Cookies.implement( new Options );
 
 var FreeList = new Class({
+   initialize: function( options ) {
+      this.form = options.form;
+   },
+
    addItem: function( name ) {
-      var form     = document.forms[0];
-      var new_elem = form.elements[ name + '_new'];
+      var form     = document.forms[ this.form ];
+      var new_elem = form.elements[ name + '_new' ];
       var cur_elem = form.elements[ name + '_current' ];
 
       cur_elem.options[ cur_elem.length ] = new Option( new_elem.value );
@@ -399,7 +412,7 @@ var FreeList = new Class({
    },
 
    removeItem: function(name) {
-      var form     = document.forms[0];
+      var form     = document.forms[ this.form ];
       var cur_elem = form.elements[ name + '_current' ];
 
       for (var i = cur_elem.length - 1; i >= 0; i--) {
@@ -414,15 +427,19 @@ var FreeList = new Class({
 });
 
 var GroupMember = new Class({
+   initialize: function( options ) {
+      this.form = options.form;
+   },
+
    addItem: function( name ) {
-      var form     = document.forms[0];
+      var form     = document.forms[ this.form ];
       var all_elem = form.elements[ name + '_all' ];
       var cur_elem = form.elements[ name + '_current' ];
 
       for (var i = all_elem.length - 1; i >= 0; i--) {
          if (all_elem.options[ i ].selected == true) {
             var val = all_elem.options[ i ].value;
-            cur_elem.options[ cur_elem.length ] = new Option( val );
+            cur_elem.options[ cur_elem.length ] = all_elem.options[ i ];
 
             if(!this.deleteHidden( form, name, 'deleted', val )) {
                this.createHidden( form, name, 'added', val );
@@ -465,14 +482,14 @@ var GroupMember = new Class({
    },
 
    removeItem: function( name ) {
-      var form     = document.forms[0];
+      var form     = document.forms[ this.form ];
       var all_elem = form.elements[ name + '_all' ];
       var cur_elem = form.elements[ name + '_current' ];
 
       for (var i = cur_elem.length - 1; i >= 0; i--) {
          if (cur_elem.options[ i ].selected == true) {
             var val = cur_elem.options[ i ].value;
-            all_elem.options[ all_elem.length ] = new Option( val );
+            all_elem.options[ all_elem.length ] = cur_elem.options[ i ];
 
             if (!this.deleteHidden( form, name, 'added', val )) {
                this.createHidden( form, name, 'deleted', val );
@@ -550,7 +567,7 @@ var LinkFader = new Class({
       var cc = new Array(), tc = new Array();
 
       if (d == 1) tc = this.options.fc.hexToRgb( true );
-      else tc = this.colour.hexToRgb( true );
+      else tc = this.colour ? this.colour.hexToRgb( true ) : [ 0, 0, 0 ];
 
       cc = this.currentColour( this.linkNo ).hexToRgb( true );
 
@@ -581,7 +598,8 @@ var LinkFader = new Class({
          if (cc[ i ] < tc[ i ])   { nc     = cc[ i ] + change }
          if (nc    < 0)           { nc     = 0 }
          if (nc    > 255)         { nc     = 255 }
-         colour +=  nc;
+
+         colour += nc;
       }
 
       colour += ')';
@@ -952,16 +970,12 @@ var LiveGrid = new Class({
 });
 
 var LoadMore = new Class({
-   options: {
-      url: null,
-   },
-
    initialize: function( options ) {
-      this.setOptions( options );
+      this.url = options.url;
    },
 
    request: function( action, id, val ) {
-      new Ajax( this.options.url + action,
+      new Ajax( this.url + action,
          { method    : 'get',
            data      : 'content-type=text/xml&id=' + id + '&val=' + val,
            onComplete: this.updateContent } ).request();
@@ -973,26 +987,23 @@ var LoadMore = new Class({
       var rows = xml.documentElement.getElementsByTagName( 'items' );
       $each( rows, function( row ) { html += row.childNodes[ 0 ].nodeValue } );
       $( id ).setHTML( html.unescapeHTML() );
-      //      $$( '.tips' ).each( stateObj.tips.build, stateObj.tips );
    }
 });
 
-LoadMore.implement( new Options );
-
-var ServerMethods = new Class({
-   options: {
-      url: null,
-   },
-
+var ServerUtils = new Class({
    initialize: function( options ) {
-      this.setOptions( options );
+      this.url = options.url;
    },
 
-   checkField : function( id, val ) {
-      new Ajax( this.options.url + 'check_field',
+   checkField: function( id, val ) {
+      new Ajax( this.url + 'check_field',
          { method    : 'get',
            data      : 'content-type=text/xml&id=' + id + '&val=' + val,
            onComplete: this.updateClass } ).request();
+   },
+
+   postData: function( url, data ) {
+      new Ajax( url, { method: 'post', data: data } ).request();
    },
 
    updateClass: function( text, xml ) {
@@ -1001,32 +1012,36 @@ var ServerMethods = new Class({
    }
 });
 
-ServerMethods.implement( new Options() );
+ServerUtils.implement( new Options() );
 
 var SubmitUtils = new Class({
    initialize: function( options ) {
+      this.form    = options.form;
       this.cookies = new Cookies( { path:   options.path,
                                     prefix: options.prefix } );
    },
 
-   chooser: function(value, formObj, button, url, winPrefs) {
+   chooser: function( field, button, url, winPrefs ) {
+      var form  = document.forms[ this.form ];
+      var value = form.elements[ field ].value;
+
       if (value && value.indexOf( '%' ) < 0) {
-         if (formObj && button) {
-            formObj._verb.value = button; formObj.submit();
+         if (button) {
+            form.elements[ '_method' ].value = button; form.submit();
          }
 
          return false;
       }
 
-      top.chooser = window.open( url+'?value='+value, 'chooser', winPrefs );
+      top.chooser = window.open( url + '?form=' + this.form + '&value=' +value,
+                                 'chooser', winPrefs );
       top.chooser.opener = top;
       return false;
    },
 
    confirmSubmit: function( key, text ) {
       if (text.length < 1 || window.confirm( text )) {
-         document.forms[0]._verb.value = key;
-         document.forms[0].submit();
+         this.submitForm( key );
          return true;
       }
 
@@ -1034,10 +1049,12 @@ var SubmitUtils = new Class({
    },
 
    refresh: function( name, value ) {
-      this.cookies.set( name, value ); document.forms[0].submit();
+      this.cookies.set( name, value ); document.forms[ this.form ].submit();
    },
 
-   returnValue: function( win, form, key, field, value ) {
+   returnValue: function( form, name, value ) {
+      var field = opener.document.forms[ form ].elements[ name ];
+
       if (field) {
          field.value = value;
 
@@ -1048,19 +1065,23 @@ var SubmitUtils = new Class({
       return false;
    },
 
+   setField: function( name, value ) {
+      var form = document.forms[ this.form ];
+      form.elements[ name ].value = value;
+   },
+
    submitForm: function( key ) {
-      document.forms[0]._verb.value = key; document.forms[0].submit();
+      var form = document.forms[ this.form ];
+      form.elements[ '_method' ].value = key;
+      form.submit();
    },
 
    submitOnReturn: function( evt, key ) {
       var code = evt.which;
 
       if (code == 13) {
-         if (document.forms) {
-            document.forms[0]._verb.value = key;
-            document.forms[0].submit();
-         }
-         else { window.alert( 'Document contains no forms' ) }
+         if (document.forms) this.submitForm( key );
+         else window.alert( 'Document contains no forms' );
       }
 
       return false;
@@ -1068,19 +1089,17 @@ var SubmitUtils = new Class({
 });
 
 var TableUtils = new Class({
-   options: {
-      url: null,
-   },
-
    initialize: function( options ) {
-      this.setOptions( options );
+      this.form = options.form;
+      this.url  = options.url;
    },
 
    addTableRow: function( name, edit ) {
       var aelem, cell, cNo = 0, elem, fld, nelem, nrows, row;
+      var form = document.forms[ this.form ];
 
-      if (nelem = document.forms[0].elements[ name + '_nrows' ]) {
-         nrows = parseInt( nelem.value, 10 );
+      if (nelem = form.elements[ name + '_nrows' ]) {
+         nrows = nelem.value ? parseInt( nelem.value, 10 ) : 0;
 
          if (elem = $( name + '_add' )) {
             row = document.createElement( 'tr' );
@@ -1139,7 +1158,7 @@ var TableUtils = new Class({
          totalRows     : count
       };
       var rows   = xml.documentElement.getElementsByTagName( 'items' );
-      var urlkey = this.options.url + this.gridKey + '_grid_rows';
+      var urlkey = this.url + this.gridKey + '_grid_rows';
 
       $each( rows, function( row ) { html += row.childNodes[ 0 ].nodeValue } );
       $( keyid + 'Disp' ).setHTML( html.unescapeHTML() );
@@ -1147,7 +1166,8 @@ var TableUtils = new Class({
    },
 
    removeTableRow: function( name ) {
-      var count, elem, hidden, i, nelem, nrows; var form = document.forms[0];
+      var count, elem, hidden, i, nelem, nrows;
+      var form = document.forms[ this.form ];
 
       if (nelem = form.elements[ name + '_nrows' ]) {
          nrows = parseInt( nelem.value, 10 ); count = 0;
@@ -1212,7 +1232,7 @@ var TableUtils = new Class({
                this.gridKey = key;
                this.gridId  = id;
                this.pageSz  = (pageSz ? pageSz : 10);
-               new Ajax( this.options.url + key +  '_grid_table',
+               new Ajax( this.url + key +  '_grid_table',
                   { method    : 'get',
                     data      : 'content-type=text/xml&id='
                                 + id + '&val=' + pageSz,
@@ -1237,11 +1257,9 @@ var TableUtils = new Class({
       }
       else sortInfo = '';
 
-      urlkey = this.options.url + this.gridKey + '_gridPage';
+      urlkey = this.url + this.gridKey + '_gridPage';
       text   = urlkey + '?data_grid_index=' + offset + sortInfo;
       $( id ).href = text;
-
-      $$( '.tips' ).each( stateObj.tips.build, stateObj.tips );
    }
 });
 
@@ -1447,20 +1465,22 @@ var Tips = new Class({
                ? el.$tmp.myTitle.length : el.$tmp.myText.length;
          w     = 10 * len;
 
-         if (w < 100) w = 100;
-
+         if (w < 100)       w = 100;
          if (w > width / 4) w = width / 4;
       }
 
       this.titleCell.setStyle( 'width', parseInt( w ) + 'px' );
+
       if ($defined( this.title.lastChild ))
          this.title.removeChild( this.title.lastChild );
+
       this.title.appendText( el.$tmp.myTitle || this.options.spacer );
       this.textCell.setStyle( 'width', parseInt( w ) + 'px' );
+
       if ($defined( this.text.lastChild ))
          this.text.removeChild( this.text.lastChild );
-      this.text.appendText( el.$tmp.myText || this.options.spacer );
 
+      this.text.appendText( el.$tmp.myText || this.options.spacer );
       $clear( this.timer );
       this.timer = this.show.delay( this.options.showDelay, this );
    }

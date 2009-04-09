@@ -6,7 +6,7 @@ use strict;
 use warnings;
 use parent qw(HTML::FormWidgets);
 
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev$ =~ /\d+/g );
+use version; our $VERSION = qv( sprintf '0.4.%d', q$Rev$ =~ /\d+/g );
 
 __PACKAGE__->mk_accessors( qw(display element hide js_obj mode offset range
                               snap steps wheel) );

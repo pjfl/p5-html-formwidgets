@@ -10,7 +10,7 @@ use English qw(-no_match_vars);
 use HTML::Accessors;
 use Text::Markdown qw(markdown);
 
-use version; our $VERSION = qv( '0.3' );
+use version; our $VERSION = qv( '0.4' );
 
 my $NB    = q(&nbsp;&dagger;);
 my $NUL   = q();

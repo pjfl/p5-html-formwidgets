@@ -8,7 +8,7 @@ use parent qw(HTML::FormWidgets);
 
 use version; our $VERSION = qv( sprintf '0.3.%d', q$Rev$ =~ /\d+/gmx );
 
-__PACKAGE__->mk_accessors( qw(data select) );
+__PACKAGE__->mk_accessors( qw(data select spacer) );
 
 my $NBSP = q(&nbsp;);
 
@@ -33,37 +33,33 @@ sub _render {
       return $html;
    }
 
-   my $selecting = $self->select;
-   my $selected  = $data->[ 0 ]->{selected} if ($selecting);
+   my $selected = $data->[ 0 ]->{selected} || -1;
 
    for my $index (0 .. $#{ $data }) {
-      if ($self->sep and $index > 0) {
+      if ($self->spacer and $index > 0) {
          $text  = $hacc->b   ( { class => q(pad) }, $NBSP );
          $text .= $hacc->span( { class => q(navigationFiller) },
-                               q([% sep %]) );
+                               $self->spacer );
          $html .= $hacc->li  ( $text );
       }
 
-      $text = $selecting and $index == $selected
-            ? $self->_top_filler( $hacc )
-            : $hacc->b( { class => q(pad) }, $NBSP );
+      $text  = $self->select && $index == $selected
+             ? $self->_top_filler( $hacc )
+             : $hacc->b( { class => q(pad) }, $NBSP );
+      $text .= $self->inflate( $data->[ $index ]->{items}->[ 0 ]->{content} );
 
-      my $count = 0;
+      my $count = 0; my $dlist = q();
 
       for my $item (@{ $data->[ $index ]->{items} }) {
-         if ($count < 1) {
-            $text .= $self->inflate( $item->{content} ).$hacc->dt();
-         }
-         else {
-            $text .= $hacc->dd( $self->inflate( $item->{content} ) );
-         }
-
+         $dlist .= $count < 1
+                 ? $hacc->dt()
+                 : $hacc->dd( $self->inflate( $item->{content} ) );
          $count++;
       }
 
-      $text .= $self->_bottom_filler( $hacc ) if ($count > 1);
+      $dlist .= $self->_bottom_filler( $hacc ) if ($count > 1);
 
-      $html .= $hacc->li( $hacc->dl( $text ) );
+      $html  .= $hacc->li( $text.$hacc->dl( $dlist ) );
    }
 
    return $hacc->ul( { id => $args->{id} }, $html );

@@ -10,7 +10,7 @@ use English qw(-no_match_vars);
 use HTML::Accessors;
 use Text::Markdown qw(markdown);
 
-use version; our $VERSION = qv( sprintf '0.3.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( '0.3' );
 
 my $NB    = q(&nbsp;&dagger;);
 my $NUL   = q();
@@ -466,7 +466,7 @@ HTML::FormWidgets - Create HTML form markup
 
 =head1 Version
 
-0.2.$Rev$
+$Rev$
 
 =head1 Synopsis
 
@@ -818,8 +818,13 @@ button name is set to I<_verb>
 
 Calls I<msg> with I<name> as the message key. If the
 text does not exist I<text> is used. If I<dropcap>
-is true the first character of the text is wrapped in a I<span> of
+is true the first character of the text is wrapped in a C<span> of
 class I<dropcap>
+
+=head2 Menu
+
+Generates an unordered list of links. Used with some applied CSS to
+implement a navigation menu
 
 =head2 Note
 

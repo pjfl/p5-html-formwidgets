@@ -1,6 +1,9 @@
 Revision history for HTML::FormWidgets
 
-0.1.141  11/03/2009
+0.3.143  09/03/2009
+         - Debugged menu widget
+
+0.3.141  11/03/2009
          - Added menu widget
 
 0.3.137  22/02/2009

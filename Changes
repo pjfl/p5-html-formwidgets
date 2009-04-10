@@ -1,5 +1,7 @@
 Revision history for HTML::FormWidgets
 
+         - Fixed JS bug in group membership
+
 0.4.156  09/03/2009
          - Debugged menu widget
 

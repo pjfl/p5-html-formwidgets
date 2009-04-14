@@ -8,7 +8,8 @@ use parent qw(HTML::FormWidgets);
 
 use version; our $VERSION = qv( sprintf '0.4.%d', q$Rev$ =~ /\d+/gmx );
 
-__PACKAGE__->mk_accessors( qw(column_class columns data hclass max_width) );
+__PACKAGE__->mk_accessors( qw(column_class columns data hclass
+                              max_width para_lead) );
 
 sub _init {
    my ($self, $args) = @_;
@@ -18,6 +19,7 @@ sub _init {
    $self->data        ( { values => [] } );
    $self->hclass      ( q()              );
    $self->max_width   ( 90               );
+   $self->para_lead   ( 30               );
    return;
 }
 
@@ -29,27 +31,28 @@ sub _render {
    my $plist = []; my $tsize = 0; my $nparas = 0;
 
    for my $val (@{ $data->{values} }) {
-      my $psize = 0; my $para = q(); my ($class, $text);
+      my $psize = 0; my $para = {}; my ($class, $text);
 
       if ($text = $val->{heading}) {
          $psize += length $text;
          $class  = defined $val->{hclass} ? $val->{hclass} : $self->hclass;
-         $args   = $class ? { class => $class } : {};
-         $para  .= "\n".$hacc->span( $args, $self->inflate( $text ) );
+         $para->{header}->{args} = $class ? { class => $class } : {};
+         $para->{header}->{text} = $text;
       }
 
       if ($text = $val->{text}) {
          $psize += length (ref $text ? $text->{text} : $text);
 
-         unless (ref $text and $text->{markdown}) {
+         if (ref $text) { $para->{body}->{widget} = $text }
+         else {
             $class = defined $val->{class} ? $val->{class} : $self->class;
-            $args  = $class ? { class => $class } : {};
-            $para .= $hacc->p( $args, $self->inflate( $text ) );
+            $para->{body}->{args}->{class} = $class if ($class);
+            $para->{body}->{widget} = { text => $text };
          }
-         else { $para .= $self->inflate( $text ) }
       }
 
-      push @{ $plist }, { para => $para, size => $psize };
+      $para->{size} = $psize;
+      push @{ $plist }, $para;
       $tsize += $psize;
       $nparas++;
    }
@@ -63,26 +66,45 @@ sub _render {
    my $col      = 1;
 
    while ($pno < $nparas) {
-      my $para    = $plist->[ $pno ]->{para};
       my $psize   = $plist->[ $pno ]->{size};
       my $is_over = $size + $psize >= $quotient ? 1 : 0;
 
       if ($paras and $is_over and $col < $self->columns) {
-         $html .= $self->_add_column( $hacc, $width, $paras );
-         $paras = $para; $size = $psize;
+         my $widget      = $plist->[ $pno ]->{body}->{widget};
+         my $text        = $widget->{text};
+         my ($car, $cdr) = $self->_split( $text, $quotient - $size );
+
+         if ($car) {
+            $widget->{text} = $car;
+            $paras .= $self->_render_para( $hacc, $plist->[ $pno ] );
+            delete $plist->[ $pno ]->{header};
+         }
+
+         $html .= $self->_render_column( $hacc, $width, $paras );
+
+         if ($cdr) {
+            $widget->{text} = $cdr;
+            $paras = $self->_render_para( $hacc, $plist->[ $pno ] );
+            $size  = $self->para_lead + length $cdr;
+         }
+         else { $paras = q(); $size = 0 }
+
          $col++;
       }
-      else { $paras .= $para; $size += $psize }
+      else {
+         $paras .= $self->_render_para( $hacc, $plist->[ $pno ] );
+         $size  += $self->para_lead + $psize;
+      }
 
       $pno++;
    }
 
-   $html .= $self->_add_column( $hacc, $width, $paras ) if ($paras);
+   $html .= $self->_render_column( $hacc, $width, $paras ) if ($paras);
 
    return $html;
 }
 
-sub _add_column {
+sub _render_column {
    my ($self, $hacc, $width, $paras) = @_;
 
    my $args = $self->column_class ? { class => $self->column_class } : {};
@@ -90,6 +112,41 @@ sub _add_column {
    $args->{style} = 'width: '.$width.'%;' if ($self->columns > 1);
 
    return "\n".$hacc->div( $args, $paras );
+}
+
+sub _render_para {
+   my ($self, $hacc, $para) = @_; my $text = q();
+
+   if (my $header = $para->{header}) {
+      $text .= "\n".$hacc->span( $header->{args},
+                                 $self->inflate( $header->{text} ) );
+   }
+
+   my $body = $para->{body};
+
+   if (my $args = $body->{args}) {
+      $text .= $hacc->p( $args, $self->inflate( $body->{widget} ) );
+   }
+   else { $text .= $hacc->p( $self->inflate( $body->{widget} ) ) }
+
+   return $text;
+}
+
+sub _split {
+   my ($self, $text, $split) = @_;
+
+   my $car   = substr $text, 0, $split;
+   my $cdr   = substr $text, $split;
+   my ($end) = $car =~ m{ \s+ (\S+) \z }mx;
+
+   if ($end) { $car =~ s{ $end \z }{}mx; $cdr = $end.$cdr }
+
+   # Widows and orphans
+   if (2 * $self->para_lead > length $car) {
+      $car = q(); $cdr = $text;
+   }
+
+   return ($car, $cdr);
 }
 
 1;

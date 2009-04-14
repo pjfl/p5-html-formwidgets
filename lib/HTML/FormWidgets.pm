@@ -12,6 +12,7 @@ use Text::Markdown qw(markdown);
 
 use version; our $VERSION = qv( sprintf '0.4.%d', q$Rev$ =~ /\d+/gmx );
 
+my $LSB   = q([);
 my $NB    = q(&nbsp;&dagger;);
 my $NUL   = q();
 my $SPC   = q( );
@@ -88,7 +89,57 @@ sub new {
    return $self;
 }
 
-# Object methods
+# Private subroutines (not methods)
+
+sub __arg_list {
+   my (@rest) = @_;
+
+   return {} unless ($rest[0]);
+
+   return ref $rest[0] eq q(HASH) ? $rest[0] : { @rest };
+}
+
+sub __build_widget {
+   my ($class, $config, $item, $stack) = @_;
+
+   return unless ($item);
+
+   return $item unless (ref $item and ref $item->{content} eq q(HASH));
+
+   if ($item->{content}->{group}) {
+      return if ($config->{skip_groups});
+
+      $item->{content} = __group_fields( $config->{hacc}, $item, $stack );
+   }
+   elsif ($item->{content}->{widget}) {
+      my $widget = $class->new( __merge_config( $config, $item ) );
+
+      $item->{content} = $widget->render;
+      $item->{class  } = $widget->class if ($widget->class);
+   }
+
+   return $item;
+}
+
+sub __group_fields {
+   my ($hacc, $item, $list) = @_; my $html = $NUL; my $args;
+
+   for (1 .. $item->{content}->{nitems}) {
+      $args = pop @{ $list };
+      $args->{content} ||= $NUL; chomp $args->{content};
+      $html = $args->{content}.$html;
+   }
+
+   my $legend = $hacc->legend( $item->{content}->{text} );
+
+   return "\n".$hacc->fieldset( "\n".$legend.$html );
+}
+
+sub __merge_config {
+   my ($config, $item) = @_; return { %{ $config }, %{ $item->{content} } };
+}
+
+# Public object methods
 
 sub inflate {
    my ($self, $args) = @_;
@@ -175,8 +226,8 @@ sub localize {
 
    @args = @{ $args[ 0 ] } if ($args[ 0 ] && ref $args[ 0 ] eq q(ARRAY));
 
-   if ((index $text, "\[") >= 0 and $text =~ m{ \[ _ \d+ \] }mx) {
-      push @args, ( q() x 10 );
+   if ((index $text, $LSB) >= 0) {
+      push @args, map { $NUL } 0 .. 10;
       $text =~ s{ \[ _ (\d+) \] }{$args[ $1 - 1 ]}gmx;
    }
    else { $text .= $SPC.(join $SPC, @args) }
@@ -402,56 +453,6 @@ sub _render_tip {
 
 sub _set_error {
    my ($self, $error) = @_; $self->{text} = $error; return;
-}
-
-# Private subroutines (not methods)
-
-sub __arg_list {
-   my (@rest) = @_;
-
-   return {} unless ($rest[0]);
-
-   return ref $rest[0] eq q(HASH) ? $rest[0] : { @rest };
-}
-
-sub __build_widget {
-   my ($class, $config, $item, $stack) = @_;
-
-   return unless ($item);
-
-   return $item unless (ref $item and ref $item->{content} eq q(HASH));
-
-   if ($item->{content}->{group}) {
-      return if ($config->{skip_groups});
-
-      $item->{content} = __group_fields( $config->{hacc}, $item, $stack );
-   }
-   elsif ($item->{content}->{widget}) {
-      my $widget = $class->new( __merge_config( $config, $item ) );
-
-      $item->{content} = $widget->render;
-      $item->{class  } = $widget->class if ($widget->class);
-   }
-
-   return $item;
-}
-
-sub __group_fields {
-   my ($hacc, $item, $list) = @_; my $html = $NUL; my $args;
-
-   for (1 .. $item->{content}->{nitems}) {
-      $args = pop @{ $list };
-      $args->{content} ||= $NUL; chomp $args->{content};
-      $html = $args->{content}.$html;
-   }
-
-   my $legend = $hacc->legend( $item->{content}->{text} );
-
-   return "\n".$hacc->fieldset( "\n".$legend.$html );
-}
-
-sub __merge_config {
-   my ($config, $item) = @_; return { %{ $config }, %{ $item->{content} } };
 }
 
 1;

@@ -15,9 +15,10 @@ my $NBSP = q(&nbsp;);
 sub _init {
    my ($self, $args) = @_;
 
-   $self->container( 0  );
-   $self->data     ( [] );
-   $self->select   ( 0  );
+   $self->container( 0   );
+   $self->data     ( []  );
+   $self->select   ( 0   );
+   $self->spacer   ( q() );
    return;
 }
 

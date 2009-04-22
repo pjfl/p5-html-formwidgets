@@ -1,5 +1,6 @@
 Revision history for HTML::FormWidgets
 
+         - Improved testing idioms
          - Fixed missing seperator in Menu subclass
          - Added paragraph splitting to Paragraphs subclass
          - Fixed bug in arg expansion in localize

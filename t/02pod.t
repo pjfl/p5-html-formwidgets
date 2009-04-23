@@ -1,4 +1,4 @@
-# @(#)$Id: 02pod.t 447 2009-04-12 14:24:08Z pjf $
+# @(#)$Id$
 
 use strict;
 use warnings;
@@ -8,7 +8,7 @@ use FindBin  qw( $Bin );
 use lib (catdir( $Bin, updir, q(lib) ));
 use Test::More;
 
-use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev: 108 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev$ =~ /\d+/gmx );
 
 BEGIN {
    if (!-e catfile( $Bin, updir, q(MANIFEST.SKIP) )) {

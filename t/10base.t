@@ -1,5 +1,3 @@
-#!/usr/bin/perl
-
 # @(#)$Id: 10base.t 9 2008-02-10 22:40:42Z pjf $
 
 use strict;

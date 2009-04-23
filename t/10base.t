@@ -4,10 +4,10 @@
 
 use strict;
 use warnings;
-use English qw(-no_match_vars);
 use File::Spec::Functions;
-use FindBin ();
-use lib catfile( $FindBin::Bin, updir, q(lib) );
+use English  qw( -no_match_vars );
+use FindBin  qw( $Bin );
+use lib (catdir( $Bin, updir, q(lib) ));
 use Test::More;
 
 use version; our $VERSION = qv( sprintf '0.4.%d', q$Rev: 9 $ =~ /\d+/gmx );

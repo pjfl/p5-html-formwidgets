@@ -1,4 +1,4 @@
-# @(#)$Id: 10base.t 9 2008-02-10 22:40:42Z pjf $
+# @(#)$Id$
 
 use strict;
 use warnings;
@@ -8,7 +8,7 @@ use FindBin  qw( $Bin );
 use lib (catdir( $Bin, updir, q(lib) ));
 use Test::More;
 
-use version; our $VERSION = qv( sprintf '0.4.%d', q$Rev: 9 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.4.%d', q$Rev$ =~ /\d+/gmx );
 
 BEGIN {
    if ($ENV{AUTOMATED_TESTING} || $ENV{PERL_CR_SMOKER_CURRENT}

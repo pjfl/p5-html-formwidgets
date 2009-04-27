@@ -1,5 +1,7 @@
 Revision history for HTML::FormWidgets
 
+0.4.171  27/04/2009
+         - Fixed paragraph rendering bug
          - Improved testing idioms
          - Fixed missing seperator in Menu subclass
          - Added paragraph splitting to Paragraphs subclass

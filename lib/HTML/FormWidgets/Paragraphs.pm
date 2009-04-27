@@ -122,12 +122,13 @@ sub _render_para {
                                  $self->inflate( $header->{text} ) );
    }
 
-   my $body = $para->{body};
+   my $body    = $para->{body};
+   my $args    = $body->{args};
+   my $widget  = $body->{widget};
+   my $content = $widget->{type} ? $self->inflate( $widget ) : $widget->{text};
 
-   if (my $args = $body->{args}) {
-      $text .= $hacc->p( $args, $self->inflate( $body->{widget} ) );
-   }
-   else { $text .= $hacc->p( $self->inflate( $body->{widget} ) ) }
+   if ($args) { $text .= $hacc->p( $args, $content ) }
+   else { $text .= $hacc->p( $content ) }
 
    return $text;
 }

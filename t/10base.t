@@ -117,3 +117,8 @@ $widget = HTML::FormWidgets->new( default => q(test),
                                   type    => q(textfield) );
 
 ok( $widget->render =~ m{ input \s value="test" \s name="textfield" \s type="text" \s id="textfield" \s size="40" }mx, q(Textfield) );
+
+# Local Variables:
+# mode: perl
+# tab-width: 3
+# End:

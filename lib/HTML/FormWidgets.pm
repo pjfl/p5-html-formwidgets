@@ -1,16 +1,16 @@
-package HTML::FormWidgets;
-
 # @(#)$Id$
+
+package HTML::FormWidgets;
 
 use strict;
 use warnings;
+use version; our $VERSION = qv( sprintf '0.4.%d', q$Rev$ =~ /\d+/gmx );
 use parent qw(Class::Accessor::Fast);
+
 use Class::Inspector;
 use English qw(-no_match_vars);
 use HTML::Accessors;
 use Text::Markdown qw(markdown);
-
-use version; our $VERSION = qv( sprintf '0.4.%d', q$Rev$ =~ /\d+/gmx );
 
 my $LSB   = q([);
 my $NB    = q(&nbsp;&dagger;);
@@ -148,7 +148,7 @@ sub inflate {
 
    return $args unless (ref $args);
 
-   $args->{fields}   = $self->_fields;
+   $args->{fields  } = $self->_fields;
    $args->{messages} = $self->_messages;
 
    return __PACKAGE__->new( $args )->render;
@@ -164,7 +164,7 @@ sub init {
    my $fields = $args->{fields};
 
    $self->_init_fields( $skip, $fields );
-   $self->_init_args (  $skip, $args );
+   $self->_init_args  ( $skip, $args   );
 
    my $content_type = $self->content_type;
 
@@ -255,8 +255,8 @@ sub render {
 
    return $html unless ($field = $self->_render_field);
 
-   $field = $self->_render_tip(         $hacc, $field ) if ($self->tip);
-   $field = $self->_render_container(   $hacc, $field ) if ($self->container);
+   $field = $self->_render_tip        ( $hacc, $field ) if ($self->tip);
+   $field = $self->_render_container  ( $hacc, $field ) if ($self->container);
    $field = $self->_render_check_field( $hacc, $field ) if ($self->ajaxid);
 
    return $html.$field;
@@ -379,6 +379,7 @@ sub _render {
    return $self->text if ($self->text);
 
    my $id = $args->{id} || '*unknown id*';
+
    $self->_set_error( "No _render method for field $id" );
    return;
 }
@@ -452,7 +453,7 @@ sub _render_tip {
 }
 
 sub _set_error {
-   my ($self, $error) = @_; $self->{text} = $error; return;
+   my ($self, $error) = @_; $self->text( $error ); return;
 }
 
 1;
@@ -518,9 +519,9 @@ main use is a form generator within a L<Catalyst> application
 =head2 build
 
 The C<build> method iterates over a data structure that represents the
-form. One or more lists of widgets are processed in turn. New widgets
-are created and their rendered output replaces their definitions in the
-data structure
+form. One or more lists of widget definitions are processed in
+turn. New widgets are created and their rendered output replaces their
+definitions in the data structure
 
 =head2 new
 
@@ -726,6 +727,13 @@ Returns an I<anchor> element of class option I<class> (which defaults
 to I<linkFade>) with it's I<href> attribute set to the I<href>
 option. The anchor body is set to the I<text> option
 
+=head2 Button
+
+Generates an image button where I<name> identifies the image
+file in I<assets> and is also used as the return value. The
+button name is set to I<_verb>. If the image file does not
+exist a regular input button is rendered instead
+
 =head2 Checkbox
 
 Return a I<checkbox> element of value I<value>. Use the
@@ -809,11 +817,11 @@ height of the scrolling lists is set by I<height>
 
 Generates a hidden input field. Uses the I<default> attribute as the value
 
-=head2 ImageButton
+=head2 Image
 
-Generates an image button where I<name> identifies the image
-file in I<assets> and is also used as the return value. The
-button name is set to I<_verb>
+Generates an image tag. The I<text> attribute contains the source URI. The
+I<fhelp> attribute contains the alt text and the I<tiptype> attribute is
+defaulted to 'normal' (wraps the image in a span with a JS tooltip)
 
 =head2 Label
 
@@ -833,6 +841,11 @@ Calls I<msg> with I<name> as the message key. If the
 text does not exist I<text> is used. The text is wrapped in a
 I<div> of class I<note> with I<align> setting the style text
 alignment and I<width> setting the style width
+
+=head2 Paragraphs
+
+Newspaper like paragraphs rendered in a given number of columns, each
+approximately the same length. 
 
 =head2 Password
 
@@ -868,6 +881,10 @@ list.  The list of options is passed in I<values> with the
 display labels in I<labels>. The onchange event handler will
 be set to I<onchange>
 
+=head2 Slider
+
+
+
 =head2 Table
 
 The input data is in I<< $data->{values} >> which is an array
@@ -893,8 +910,7 @@ to sixty characters wide (I<width>)
 
 =head2 Tree
 
-Implements an expanding tree of selectable objects. See L<Bugs and
-Limitations>
+Implements an expanding tree of selectable objects
 
 =head1 Diagnostics
 
@@ -953,6 +969,14 @@ widget
 
 Implements the calendar popup used by the I<::Date> subclass
 
+=head2 60tree.js
+
+   Originally Cross Browser Tree Widget 1.17
+   Created by Emil A Eklund (http://webfx.eae.net/contact.html#emil)
+   Copyright (c) 1999 - 2002 Emil A Eklund
+
+Implements the tree widget used by the I<::Tree> subclass
+
 =head2 behaviour.js
 
 Is included from the L<App::Munchies> default skin. It uses the
@@ -966,9 +990,6 @@ example PNG files used by some of the widgets.
 There are no known incompatibilities in this module.
 
 =head1 Bugs and Limitations
-
-The Javascript for the C<::Tree> widget is not included due to copyright
-issues, so that widget doesn't work
 
 The installation script does nothing with the Javascript or PNG files
 which are included in the distribution for completeness

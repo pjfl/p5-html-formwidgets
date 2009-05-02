@@ -1,12 +1,11 @@
-package HTML::FormWidgets::Paragraphs;
-
 # @(#)$Id$
+
+package HTML::FormWidgets::Paragraphs;
 
 use strict;
 use warnings;
-use parent qw(HTML::FormWidgets);
-
 use version; our $VERSION = qv( sprintf '0.4.%d', q$Rev$ =~ /\d+/gmx );
+use parent qw(HTML::FormWidgets);
 
 __PACKAGE__->mk_accessors( qw(column_class columns data hclass
                               max_width para_lead) );
@@ -80,7 +79,7 @@ sub _render {
             delete $plist->[ $pno ]->{header};
          }
 
-         $html .= $self->_render_column( $hacc, $width, $paras );
+         $html .= $self->_render_column( $hacc, $width, $paras ); $col++;
 
          if ($cdr) {
             $widget->{text} = $cdr;
@@ -88,8 +87,6 @@ sub _render {
             $size  = $self->para_lead + length $cdr;
          }
          else { $paras = q(); $size = 0 }
-
-         $col++;
       }
       else {
          $paras .= $self->_render_para( $hacc, $plist->[ $pno ] );
@@ -124,7 +121,7 @@ sub _render_para {
 
    my $body    = $para->{body};
    my $args    = $body->{args};
-   my $widget  = $body->{widget};
+   my $widget  = $body->{widget} || { text => $self->loc( 'Text missing' ) };
    my $content = $widget->{type} ? $self->inflate( $widget ) : $widget->{text};
 
    if ($args) { $text .= $hacc->p( $args, $content ) }
@@ -143,9 +140,7 @@ sub _split {
    if ($end) { $car =~ s{ $end \z }{}mx; $cdr = $end.$cdr }
 
    # Widows and orphans
-   if (2 * $self->para_lead > length $car) {
-      $car = q(); $cdr = $text;
-   }
+   if (2 * $self->para_lead > length $car) { $car = q(); $cdr = $text }
 
    return ($car, $cdr);
 }

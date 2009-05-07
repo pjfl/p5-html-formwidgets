@@ -845,7 +845,44 @@ alignment and I<width> setting the style width
 =head2 Paragraphs
 
 Newspaper like paragraphs rendered in a given number of columns, each
-approximately the same length. 
+approximately the same length. Defines these attributes;
+
+=over 3
+
+=item column_class
+
+CSS class name of the C<div> wrapped around each column. Defaults
+to null
+
+=item columns
+
+Number of columns to render the paragraphs in. Defaults to 1
+
+=item data
+
+Paragraphs of text. A hash ref whoose I<values> attribute is an array
+ref. The values of that array are the hash refs that define each
+paragraph. The keys of the paragraph hash ref are I<class>, I<heading>, and
+I<text>.
+
+=item hclass
+
+Each paragraph can have a heading. This is the class of then C<span> that
+wraps the heading text. Defaults to null
+
+=item max_width
+
+Maximum width of all paragraphs expressed as a percentage. Defaults
+to 90
+
+=item para_lead
+
+Paragraph leading. This value is in characters. It is added to the size of
+each paragraph to account for the leading applied by the CSS to each
+paragraph. If a paragraph is split, then the first part must by greater
+than twice this value or the widows and orphans trap will reap it
+
+=back
 
 =head2 Password
 
@@ -883,7 +920,59 @@ be set to I<onchange>
 
 =head2 Slider
 
+Implements a dragable slider which returns an integer value
 
+=over 3
+
+=item display
+
+Boolean which if true causes the widget to display a readonly text
+field containing the sliders current value. If false a C<hidden> element is
+generated instead. Defaults to 1
+
+=item element
+
+Name of the Javascript instance variable. This will need setting to a
+unique value for each slider on the same form. Defaults to
+I<behaviour.sliderElement>
+
+=item hide
+
+If the I<display> attribute is false the current value is pushed onto
+this array. Defaults to I<[]>
+
+=item js_obj
+
+This is the callback method for the sliders I<onchange> event
+handler. It is passed the slider I<name> and current
+I<value>. Defaults to I<behaviour.submit.setField>
+
+=item mode
+
+Which orientation to render in. Defaults to I<horizontal>
+
+=item offset
+
+Sets the minimum value for the slider. Defaults to I<0>
+
+=item range
+
+The range is either the offset plus the number of steps or the two
+values of this arrary if it is set. Defaults to I<false>
+
+=item snap
+
+Snap to the nearest step value? Defaults to I<1>
+
+=item steps
+
+Sets the number of steps. Defaults to I<100>
+
+=item wheel
+
+Use the mouse wheel? Defaults to I<1>
+
+=back
 
 =head2 Table
 

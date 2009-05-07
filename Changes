@@ -1,5 +1,8 @@
 Revision history for HTML::FormWidgets
 
+0.1.74   07/05/2009
+         - Added docs for paragraphs and slider
+
 0.4.171  27/04/2009
          - Fixed paragraph rendering bug
          - Improved testing idioms

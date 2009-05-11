@@ -112,7 +112,7 @@ sub __build_widget {
       $item->{content} = __group_fields( $config->{hacc}, $item, $stack );
    }
    elsif ($item->{content}->{widget}) {
-      my $widget = $class->new( __merge_config( $config, $item ) );
+      my $widget = $class->new( __merge_hashes( $config, $item ) );
 
       $item->{content} = $widget->render;
       $item->{class  } = $widget->class if ($widget->class);
@@ -135,7 +135,7 @@ sub __group_fields {
    return "\n".$hacc->fieldset( "\n".$legend.$html );
 }
 
-sub __merge_config {
+sub __merge_hashes {
    my ($config, $item) = @_; return { %{ $config }, %{ $item->{content} } };
 }
 
@@ -472,13 +472,22 @@ $Rev$
 
 =head1 Synopsis
 
-   package MyApp::View::HTML;
+   package CatalystX::Usul::View;
 
-   use base qw(CatalystX::Usul::View::HTML);
+   use parent qw(Catalyst::View CatalystX::Usul);
    use HTML::FormWidgets;
 
    sub build_widgets {
-      my ($self, $c, $data, $config) = @_; my $s = $c->stash; $config ||= {};
+      my ($self, $c, $sources, $config) = @_; my $s = $c->stash; my $data = [];
+
+      $sources ||= []; $config ||= {};
+
+      for my $part (map { $s->{ $_ } } grep { $s->{ $_ } } @{ $sources }) {
+         if (ref $part eq q(ARRAY) and $part->[ 0 ]) {
+            push @{ $data }, $_ for (@{ $part });
+         }
+         else { push @{ $data }, $part }
+      }
 
       $config->{assets      } = $s->{assets};
       $config->{base        } = $c->req->base;
@@ -489,6 +498,7 @@ $Rev$
       $config->{messages    } = $s->{messages};
       $config->{pwidth      } = $s->{pwidth};
       $config->{root        } = $c->config->{root};
+      $config->{static      } = $s->{static};
       $config->{swidth      } = $s->{width} if ($s->{width});
       $config->{templatedir } = $self->dynamic_templates;
       $config->{url         } = $c->req->path;
@@ -504,28 +514,30 @@ into HTML or XHTML. Each widget is comprised of these optional
 components: a line or question number, a prompt string, a separator,
 an input field, additional field help, and Ajax field error string.
 
-Input fields are selected by the widget C<type> attribute. A factory
+Input fields are selected by the widget I<type> attribute. A factory
 subclass implements the method that generates the HTML or XHTML for
 that input field type. Adding more widget types is straightforward
 
-This module is using the MooTools Javascript library
-L<http://mootools.net/> to modify default browser behaviour
+This module is using the L<MooTools|http://mootools.net/> Javascript
+library to modify default browser behaviour
 
-This module is used by L<CatalystX::Usul::View::HTML> and as such its
-main use is a form generator within a L<Catalyst> application
+This module is used by L<CatalystX::Usul::View> and as such its
+main use is as a form generator within a L<Catalyst> application
 
 =head1 Subroutines/Methods
 
 =head2 build
 
-The C<build> method iterates over a data structure that represents the
+      $class->build( $config, $data );
+
+The L</build> method iterates over a data structure that represents the
 form. One or more lists of widget definitions are processed in
 turn. New widgets are created and their rendered output replaces their
 definitions in the data structure
 
 =head2 new
 
-   $self = $class->new( [{] key1 => value1, ... [}] );
+   $widget = $class->new( [{] key1 => value1, ... [}] );
 
 Construct a widget. Mostly this is called by the L</build> method. It
 requires the factory subclass for the widget type.
@@ -536,31 +548,37 @@ which use that option
 
 =head2 inflate
 
-Creates new C<HTML::FormWidgets> objects and returns their rendered output.
+   $widget->inflate( $args );
+
+Creates L<new|HTML::FormWidgets/new> objects and returns their rendered output.
 Called by the L</_render> methods in the factory subclasses to inflate
 embeded widget definitions
 
 =head2 init
 
-   $self->init( $args );
+   $widget->init( $args );
 
 Initialises this object with data from the passed arguments. This is
 usually overridden in the factory subclass which sets the default for
 it's own attributes and then calls this method in the base class
 
+=head2 loc
+
 =head2 localize
 
-   $message_text = $self->localize( $message_id );
+   $message_text = $widget->localize( $message_id, @args );
 
-Use the supplied key to return a value from the B<messages>
+Use the supplied key to return a value from the I<messages>
 hash. This hash was passed to the constructor and should contain any
 literal text used by any of the widgets
 
 =head2 render
 
+   $html = $widget->render;
+
 Assemble the components of the generated widget. Each component is
 concatenated onto a scalar which is the returned value. This method
-calls C<_render> which should be defined in the factory subclass for
+calls L</_render> which should be defined in the factory subclass for
 this widget type.
 
 This method uses these attributes:
@@ -569,40 +587,41 @@ This method uses these attributes:
 
 =item clear
 
-If set to B<left> the widget begins with an <br> element
+If set to B<left> the widget begins with an C<< <br> >> element
 
 =item stepno
 
-If true it's value is wrapped in a B<span> element of class B<lineNumber>
-and appended to the return value
+If true it's value is wrapped in a C<< <span class="lineNumber"> >>
+element and appended to the return value
 
 =item prompt
 
-If true it's value is wrapped in a B<label> element of class B<prompt> and
-appended to the return value. The B<id> attribute is used to
-set the B<for> attribute of the B<label> element.  The
-B<palign> attribute sets the text align style for the
-B<label> element. The B<nowrap> attribute sets whitespace
-style to nowrap in the B<label> element. The B<pwidth>
-attribute sets the width style attribute in the B<label> element
+If true it's value is wrapped in a C<< <label class="prompt"> >>
+element and appended to the return value. The I<id> attribute is used
+to set the I<for> attribute of the C<< <label> >> element.  The
+I<palign> attribute sets the text align style for the C<< <label> >>
+element. The I<nowrap> attribute sets whitespace style to B<nowrap> in
+the C<< <label> >> element. The I<pwidth> attribute sets the width style
+attribute in the C<< <label> >> element
 
 =item sep
 
-If true it's value is wrapped in a B<div> element of class B<separator>
-and appended to the return value
+If true it's value is wrapped in a C<< <div class="separator"> >>
+element and appended to the return value
 
 =item container
 
-If true the value return by the C<_render> method is wrapped in B<div>
-element of classes B<container> and B<align>
+If true the value return by the L</_render> method is wrapped in
+C<< <div class="container"> >> element. The value of the I<align>
+attribute is added to the space separated class list
 
 =item tip
 
-The text of the field help. If B<tiptype> is set to B<dagger>
+The text of the field help. If I<tiptype> is set to B<dagger>
 (which is the default) then a dagger symbol is
-wrapped in a B<span> of class B<help tips> and this is appended to the
-returned input field.  The tip text is used as the B<title>
-attribute. If the B<tiptype> is not set to B<dagger> then the help
+wrapped in a C<< <span class="help tips"> >> and this is appended to the
+returned input field. The tip text is used as the I<title>
+attribute. If the I<tiptype> is not set to B<dagger> then the help
 text is wrapped around the input field itself
 
 =item ajaxid
@@ -614,43 +633,57 @@ server side validation
 
 =head2 _bootstrap
 
-Determine the C<id>, C<name> and C<type> of the widget from the supplied
-arguments
+   $widget->_bootstrap( $args );
+
+Determine the I<id>, I<name> and I<type> attributes of the widget from
+the supplied arguments
 
 =head2 _ensure_class_loaded
+
+   $widget->_ensure_class_loaded( $class );
 
 Once the factory subclass is known this method ensures that it is loaded
 and then re-blesses the self referential object into the correct class
 
 =head2 _render
 
+   $html = $widget->_render( $args );
+
 This should have been overridden in the factory subclass. If it gets
-called its probably an error so return the value of our C<text>
+called its probably an error so return the value of the I<text>
 attribute if set or an error message otherwise
 
 =head2 _set_error
 
-Stores the passed error message in the C<text> attribute so that it
+   $widget->_set_error( $error_text );
+
+Stores the passed error message in the I<text> attribute so that it
 gets rendered in place of the widget
 
 =head2 __arg_list
+
+   $args = __arg_list( @rest );
 
 Accepts either a single argument of a hash ref or a list of key/value
 pairs. Returns a hash ref in either case.
 
 =head2 __group_fields
 
-Wraps the top B<nitems> widgets on the build stack in a fieldset
-element with a legend
+   $html = __group_fields( $hacc, $item, $stack );
 
-=head2 __merge_config
+Wraps the top I<nitems> number of widgets on the build stack in a C<<
+<fieldset> >> element with a legend
+
+=head2 __merge_hashes
+
+   $widget = $class->new( __merge_hashes( $config, $item ) );
 
 Does a simple merging of the two hash refs that are passed as
 arguments. The second argument takes precedence over the first
 
 =head1 Configuration and Environment
 
-The following are passed to C<build> in the I<config> hash (they
+The following are passed to L</build> in the I<config> hash (they
 reflect this modules primary use within a L<Catalyst> application):
 
 =over 3
@@ -666,8 +699,8 @@ This is the prefix for our URI
 
 =item content_type
 
-Either I<application/xhtml+xml> which generates XHTML 1.1 or
-I<text/html> which generates HTML 4.01 and is the default
+Either B<application/xhtml+xml> which generates XHTML 1.1 or
+B<text/html> which generates HTML 4.01 and is the default
 
 =item fields
 
@@ -678,12 +711,12 @@ constructor
 
 =item form
 
-Used by the C<::Chooser> subclass
+Used by the L</Chooser> subclass
 
 =item hide
 
-So that the C<::File> and C<::Table> subclasses can store the number
-of rows added as the hidden form variable I<nRows>
+So that the L</File> and L</Table> subclasses can store the number
+of rows added as the hidden form attribute I<nRows>
 
 =item messages
 
@@ -702,11 +735,11 @@ so that the separator colons align vertically
 
 =item templatedir
 
-The path to template files used by the C<::Template> subclass
+The path to template files used by the L</Template> subclass
 
 =item url
 
-Only used by the C<::Tree> subclass to create self referential URIs
+Only used by the L</Tree> subclass to create self referential URIs
 
 =back
 
@@ -715,7 +748,7 @@ Sensible defaults are provided by C<new> if any of the above are undefined
 =head1 Factory Subclasses
 
 These are the possible values for the I<type> attribute which defaults
-to I<textfield>. Each subclass implements the C<_render> method, it
+to B<textfield>. Each subclass implements the L</_render> method, it
 receives a hash ref of options an returns a scalar containing some
 XHTML.
 
@@ -723,9 +756,10 @@ The distribution ships with the following factory subclasses:
 
 =head2 Anchor
 
-Returns an I<anchor> element of class option I<class> (which defaults
-to I<linkFade>) with it's I<href> attribute set to the I<href>
-option. The anchor body is set to the I<text> option
+Returns an C<< <anchor> >> element with a class set from the I<class>
+arg (which defaults to B<linkFade>). It's I<href> attribute
+set to the I<href> arg. The anchor body is set to the I<text>
+arg
 
 =head2 Button
 
@@ -736,30 +770,30 @@ exist a regular input button is rendered instead
 
 =head2 Checkbox
 
-Return a I<checkbox> element of value I<value>. Use the
+Return a C<< <checkbox> >> element of value I<value>. Use the
 element's value as key to the I<labels> hash. The hash value
 (which defaults null) is used as the displayed label. The
-I<checked> option determines the checkbox's initial
+I<checked> arg determines the checkbox's initial
 setting
 
 =head2 Chooser
 
 Creates a popup window which allows one item to be selected from a
-I<long> list of items
+long list of items
 
 =head2 Cloud
 
-Creates list of links from the data set supplied in the I<data> option
+Creates list of links from the data set supplied in the I<data> arg
 
 =head2 Date
 
-Return another text field, this time with a calendar icon which when
-clicked pops up a Javascript date picker. Requires the appropriate JS
-library to have been loaded by the page. Attribute I<width>
-controls the size of the textfield (default 10 characters) and
-I<format> defaults to I<dd/mm/yyyy>. Setting the I<readonly> attribute
-to true (which is the default) causes the input textfield to become
-readonly
+Return another C<< <textfield> >>, this time with a calendar icon
+which when clicked pops up a Javascript date picker. Requires the
+appropriate JS library to have been loaded by the page. Attribute
+I<width> controls the size of the C<< <textfield> >> (default 10
+characters) and I<format> defaults to B<dd/mm/yyyy>. Setting the
+I<readonly> attribute to true (which is the default) causes the input
+C<< <textfield> >> to become readonly
 
 =head2 File
 
@@ -776,27 +810,28 @@ column number of the key field
 
 =item file
 
-Default subtype. Like the logfile subtype but without the I<pre> tags
+Default subtype. Like the logfile subtype but without the C<< <pre> >> tags
 
 =item html
 
-The C<_render> method returns an I<iframe> tag whose I<src> attribute
-is set to I<path>. Paths that begin with I<root>
-will have that replaced with I<base>. Paths that do not begin
-with "http:" will have I<base> prepended to them
+The L</_render> method returns an C<< <iframe> >> element whose I<src>
+attribute is set to I<path>. Paths that begin with B<root> will have
+that replaced with the I<base> attribute value. Paths that do not
+begin with "http:" will have the I<base> attribute value prepended to
+them
 
 =item logfile
 
-The C<_render> method returns a table where each line of the logfile
+The L</_render> method returns a table where each line of the logfile
 appears as a separate row containing one cell. The logfile lines are
-each wrapped in I<pre> tags
+each wrapped in C<< <pre> >> tags
 
 =item source
 
-The module C<Syntax::Highlight::Perl> is used to provide colour
+The module L<Syntax::Highlight::Perl> is used to provide colour
 highlights for the Perl source code. Tabs are expanded to
 I<tabstop> spaces and the result is returned wrapped in
-I<pre> tags
+C<< <pre> >> tags
 
 =back
 
@@ -821,14 +856,14 @@ Generates a hidden input field. Uses the I<default> attribute as the value
 
 Generates an image tag. The I<text> attribute contains the source URI. The
 I<fhelp> attribute contains the alt text and the I<tiptype> attribute is
-defaulted to 'normal' (wraps the image in a span with a JS tooltip)
+defaulted to B<normal> (wraps the image in a span with a JS tooltip)
 
 =head2 Label
 
-Calls I<msg> with I<name> as the message key. If the
-text does not exist I<text> is used. If I<dropcap>
-is true the first character of the text is wrapped in a C<span> of
-class I<dropcap>
+Calls L</localize> with the I<name> attribute as the message key. If
+the message does not exist the value of the I<text> attribute is
+used. If I<dropcap> is true the first character of the text is wrapped
+in a C<< <span class="dropcap"> >>
 
 =head2 Menu
 
@@ -837,10 +872,10 @@ implement a navigation menu
 
 =head2 Note
 
-Calls I<msg> with I<name> as the message key. If the
-text does not exist I<text> is used. The text is wrapped in a
-I<div> of class I<note> with I<align> setting the style text
-alignment and I<width> setting the style width
+Calls L</localize> with the I<name> attribute as the message key. If
+the message does not exist the value if the I<text> attribute is
+used. The text is wrapped in a c<< <div class="note"> >> with I<align>
+setting the style text alignment and I<width> setting the style width
 
 =head2 Paragraphs
 
@@ -851,7 +886,7 @@ approximately the same length. Defines these attributes;
 
 =item column_class
 
-CSS class name of the C<div> wrapped around each column. Defaults
+CSS class name of the C<< <div> >> wrapped around each column. Defaults
 to null
 
 =item columns
@@ -860,15 +895,15 @@ Number of columns to render the paragraphs in. Defaults to 1
 
 =item data
 
-Paragraphs of text. A hash ref whoose I<values> attribute is an array
+Paragraphs of text. A hash ref whose I<values> attribute is an array
 ref. The values of that array are the hash refs that define each
 paragraph. The keys of the paragraph hash ref are I<class>, I<heading>, and
 I<text>.
 
 =item hclass
 
-Each paragraph can have a heading. This is the class of then C<span> that
-wraps the heading text. Defaults to null
+Each paragraph can have a heading. This is the class of then C<<
+<span> >> that wraps the heading text. Defaults to null
 
 =item max_width
 
@@ -887,18 +922,18 @@ than twice this value or the widows and orphans trap will reap it
 =head2 Password
 
 Returns a password field of width I<width> which defaults to
-twenty characters. If I<subtype> equals I<verify> then the
-message I<vPasswordPrompt> and another password field are
+twenty characters. If I<subtype> equals B<verify> then the
+message B<vPasswordPrompt> and another password field are
 appended. The fields I<id> and I<name> are expected
 to contain the digit 1 which will be substituted for the digit 2 in
 the attributes of the second field
 
 =head2 PopupMenu
 
-Returns a list of I<option> elements wrapped in a I<select>
+Returns a list of C<< <option> >> elements wrapped in a C<< <select> >>
 element. The list of options is passed in I<values> with the
 display labels in I<labels>. The onchange event handler will
-be set to I<onchange>
+be set to the I<onchange> attribute value
 
 =head2 RadioGroup
 
@@ -920,57 +955,58 @@ be set to I<onchange>
 
 =head2 Slider
 
-Implements a dragable slider which returns an integer value
+Implements a dragable slider which returns an integer value. The L</Slider>
+widget defines these attributes:
 
 =over 3
 
 =item display
 
 Boolean which if true causes the widget to display a readonly text
-field containing the sliders current value. If false a C<hidden> element is
-generated instead. Defaults to 1
+field containing the sliders current value. If false a C< <hidden> >>
+element is generated instead. Defaults to B<1>
 
 =item element
 
 Name of the Javascript instance variable. This will need setting to a
 unique value for each slider on the same form. Defaults to
-I<behaviour.sliderElement>
+B<behaviour.sliderElement>
 
 =item hide
 
 If the I<display> attribute is false the current value is pushed onto
-this array. Defaults to I<[]>
+this array. Defaults to B<[]>
 
 =item js_obj
 
 This is the callback method for the sliders I<onchange> event
 handler. It is passed the slider I<name> and current
-I<value>. Defaults to I<behaviour.submit.setField>
+I<value>. Defaults to B<behaviour.submit.setField>
 
 =item mode
 
-Which orientation to render in. Defaults to I<horizontal>
+Which orientation to render in. Defaults to B<horizontal>
 
 =item offset
 
-Sets the minimum value for the slider. Defaults to I<0>
+Sets the minimum value for the slider. Defaults to B<0>
 
 =item range
 
 The range is either the offset plus the number of steps or the two
-values of this arrary if it is set. Defaults to I<false>
+values of this array if it is set. Defaults to B<false>
 
 =item snap
 
-Snap to the nearest step value? Defaults to I<1>
+Snap to the nearest step value? Defaults to B<1>
 
 =item steps
 
-Sets the number of steps. Defaults to I<100>
+Sets the number of steps. Defaults to B<100>
 
 =item wheel
 
-Use the mouse wheel? Defaults to I<1>
+Use the mouse wheel? Defaults to B<1>
 
 =back
 
@@ -983,7 +1019,7 @@ field values.
 =head2 Template
 
 Look in I<templatedir> for a L<Template::Toolkit> template
-called I<id> with a I<.tt> extension. Slurp it in and return
+called I<id> with a B<.tt> extension. Slurp it in and return
 it as the content for this widget. This provides for a "user defined"
 widget type
 

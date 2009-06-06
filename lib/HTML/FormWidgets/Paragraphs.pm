@@ -137,7 +137,10 @@ sub _split {
    my $cdr   = substr $text, $split;
    my ($end) = $car =~ m{ \s+ (\S+) \z }mx;
 
-   if ($end) { $car =~ s{ $end \z }{}mx; $cdr = $end.$cdr }
+   if ($end) {
+      $car = substr $car, 0, (length $car) - (length $end);
+      $cdr = $end.$cdr;
+   }
 
    # Widows and orphans
    if (2 * $self->para_lead > length $car) { $car = q(); $cdr = $text }

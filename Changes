@@ -1,5 +1,8 @@
 Revision history for HTML::FormWidgets
 
+0.1.177  06/06/2009
+         - Fixed bug in Paragraphs _split method
+
 0.1.176  11/05/2009
          - Added docs for paragraphs and slider
 

@@ -45,8 +45,8 @@ sub _render {
          if (ref $text) { $para->{body}->{widget} = $text }
          else {
             $class = defined $val->{class} ? $val->{class} : $self->class;
-            $para->{body}->{args}->{class} = $class if ($class);
-            $para->{body}->{widget} = { text => $text };
+            $para->{body}->{args  }->{class} = $class if ($class);
+            $para->{body}->{widget}->{text } = $text;
          }
       }
 

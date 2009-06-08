@@ -20,20 +20,20 @@ sub _init {
    $text .= 'fields and then click this button to add ';
    $text .= 'it to the list';
    $text  = $self->loc( q(tableAddTip) ) || $text;
-   $self->add_tip(      $self->hint_title.$TTS.$text );
-   $self->assets(       q() );
-   $self->class(        q(small table) );
-   $self->container(    0 );
-   $self->data(         { flds => [], values => [] } );
-   $self->edit(         0 );
-   $self->hide(         [] );
-   $self->js_obj(       q(behaviour.table) );
+   $self->add_tip     ( $self->hint_title.$TTS.$text );
+   $self->assets      ( q() );
+   $self->class       ( q(small table) );
+   $self->container   ( 0 );
+   $self->data        ( { flds => [], values => [] } );
+   $self->edit        ( 0 );
+   $self->hide        ( [] );
+   $self->js_obj      ( q(behaviour.table) );
    $text  = 'Select one or more items from the ';
    $text .= 'above list and then click this button ';
    $text .= 'to remove them';
    $text  = $self->loc( q(tableRemoveTip) ) || $text;
-   $self->remove_tip(   $self->hint_title.$TTS.$text );
-   $self->select(       q() );
+   $self->remove_tip  ( $self->hint_title.$TTS.$text );
+   $self->select      ( q() );
    return;
 }
 
@@ -59,6 +59,10 @@ sub _render {
          next if ($data->{hclass}->{ $fld } eq q(hide));
 
          $args->{class} .= q( ).$data->{hclass}->{ $fld };
+      }
+
+      if (exists $data->{widths}->{ $fld }) {
+         $args->{style} = q(width: ).$data->{widths}->{ $fld }.q(;);
       }
 
       $args->{class} .= q( nowrap) unless (exists $data->{wrap}->{ $fld });
@@ -169,8 +173,11 @@ sub _render {
                              id    => $self->name.q(_add) }, $cells );
    }
 
-   return $hacc->table( { class => ($self->prompt ? q(form) : q(std)) },
-                        $rows );
+   $self->class( q(fullWidth) );
+
+   $class = $self->prompt ? q(form ) : q(std);
+
+   return $hacc->table( { class => $class }, $rows );
 }
 
 # Private methods

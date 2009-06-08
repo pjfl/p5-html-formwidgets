@@ -109,7 +109,10 @@ sub __build_widget {
    if ($item->{content}->{group}) {
       return if ($config->{skip_groups});
 
+      my $class = $item->{content}->{class};
+
       $item->{content} = __group_fields( $config->{hacc}, $item, $stack );
+      $item->{class  } = $class if ($class);
    }
    elsif ($item->{content}->{widget}) {
       my $widget = $class->new( __merge_hashes( $config, $item ) );

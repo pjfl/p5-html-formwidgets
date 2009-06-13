@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.4.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.5.%d', q$Rev$ =~ /\d+/gmx );
 use File::Spec::Functions;
 use FindBin qw( $Bin );
 use lib catdir( $Bin, updir, q(lib) );
@@ -16,7 +16,7 @@ BEGIN {
       plan skip_all => q(CPAN Testing stopped);
    }
 
-   plan tests => 15;
+   plan tests => 16;
 }
 
 use_ok q(HTML::FormWidgets);
@@ -90,6 +90,10 @@ $widget = HTML::FormWidgets->new( columns => 3,
 ok( $widget->render =~ m{ value="6" \s name="test" \s type="radio" }mx,
     q(Radio group) );
 
+$widget = HTML::FormWidgets->new( id => q(test), type => q(slider) );
+
+ok( $widget->render =~ m{ class="knob" }mx, q(Slider) );
+
 $widget = HTML::FormWidgets->new( data   => {
    flds   => [ qw(Field1 Field2) ],
    labels => { Field1 => q(Label1),
@@ -105,8 +109,7 @@ $widget = HTML::FormWidgets->new( data   => {
 
 ok( $widget->render =~ m{ tr \s class=".*" \s id="table_row0" }mx, q(Table) );
 
-$widget = HTML::FormWidgets->new( name => q(textarea),
-                                  type => q(textarea) );
+$widget = HTML::FormWidgets->new( name => q(textarea), type => q(textarea) );
 
 ok( $widget->render =~ m{ id="textarea" \s rows="5" \s cols="60" }mx,
     q(Text area) );

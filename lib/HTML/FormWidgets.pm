@@ -4,7 +4,7 @@ package HTML::FormWidgets;
 
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.4.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.5.%d', q$Rev$ =~ /\d+/gmx );
 use parent qw(Class::Accessor::Fast);
 
 use Class::Inspector;

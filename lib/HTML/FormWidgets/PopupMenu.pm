@@ -6,7 +6,7 @@ use strict;
 use warnings;
 use parent q(HTML::FormWidgets);
 
-use version; our $VERSION = qv( sprintf '0.4.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.5.%d', q$Rev$ =~ /\d+/gmx );
 
 __PACKAGE__->mk_accessors( qw(labels values) );
 

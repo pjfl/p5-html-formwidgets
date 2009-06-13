@@ -6,7 +6,7 @@ use strict;
 use warnings;
 use Module::Build;
 
-use version; our $VERSION = qv( sprintf '0.4.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.5.%d', q$Rev$ =~ /\d+/gmx );
 
 my $requires = { 'perl'                    => q(5.008),
                  'parent'                  => q(0.221),

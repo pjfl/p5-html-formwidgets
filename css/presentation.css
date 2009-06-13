@@ -1,6 +1,82 @@
-/* @(#)$Id: presentation.css 507 2008-09-24 13:41:06Z pjf $ */
+/* @(#)$Id: presentation.css 725 2009-06-08 00:49:08Z pjf $ */
 
-a.headerFade { text-decoration: none; }
+/*  Elements */
+
+body {
+   border: 0px;
+   border-left: 1px solid #336; border-right: 1px solid #336;
+   font-family: tahoma, verdana, arial, sans-serif;
+   margin: 0px; padding: 0px; height: 100%; max-height: 100%;
+}
+br { clear: left; }
+fieldset { margin-bottom: 0.5em; }
+html {
+   border: 0px; height: 100%; max-height: 100%; margin: 0px;
+   overflow: hidden; padding: 0px;
+}
+img { border: 0px; margin: 0px; padding: 0px; }
+legend { border: 1px solid #336; padding: 0.25em; }
+p { margin-bottom: 1.5em; }
+pre { margin: 0px; padding: 0px; }
+textarea { margin-bottom: 0.5em; }
+
+/* Classes */
+
+.bigger { font-size: 1.33em; }
+.centre { text-align: center; }
+.clearLeft { clear: left; }
+.container {
+   float: left; margin-bottom: 2px; position: relative; width: auto;
+}
+.error { background-color: #FCC; color: black; }
+.fullWidth { width: 100%; }
+.heading { font-weight: bold; }
+.hidden { visibility: hidden; }
+.iFrameItem { float: left; overflow: hidden; }
+.info { color: #00F; font-size: 0.75em; }
+.instructions {
+   float: left; font-size: 0.75em; text-align: left; width: auto;
+}
+.left { text-align: left; }
+.minimal { width: 1%; }
+.mono {
+   font-family: "Andale Mono", monaco, "Courier New", courier, monospace;
+}
+.most { width: 98%; }
+.multiColumn {
+   float: left; max-width: 30em; margin: 0px;
+   padding-left: 1.00em; padding-right: 1.00em;
+   position: relative; text-align: justify; right: 50%;
+   width: auto;
+}
+.narrow { clear: left; margin-left: 4em; margin-right: 4em; }
+.note { font-size: 0.75em; font-weight: bold; }
+.nowrap { white-space: nowrap; }
+.oneColumn {
+   float: left; margin: 0px;
+   padding-left: 5.00em; padding-right: 5.00em;
+   position: relative; right: 50%; width: auto;
+}
+.paragraphs {
+   clear: left; float: left; margin: 0; padding: 0;
+   position: relative; left: 50%;
+}
+.quickLinkSep { padding-left: 0.25em; }
+.rule { width: 100%; }
+.separator { float: left; width: auto; }
+.small { font-size: 0.75em; }
+.smaller { font-size: 0.87em; }
+.some { width: 5%; }
+.source {
+   font-family: "Andale Mono", monaco, "Courier New", courier, monospace;
+   font-size: 0.75em; margin: 0px; padding: 0px;
+}
+.subheading {  font-weight: bold; }
+.warning { background: Yellow; display: block; }
+
+/* Anchors */
+
+a.headerFade { font-weight: bold; text-decoration: none; }
 a.libraryFade {
    border: 1px solid transparent; display: block;
    padding: 4px; text-decoration: none;
@@ -17,21 +93,14 @@ a.linkFade {
 a.linkFade:hover { border: 1px solid #336; }
 a.searchFade { padding: 0px 5px; text-decoration: none; }
 a.toolWidget { height: 20px; line-height: 20px; }
-body {
-   border: 0px;
-   border-left: 1px solid #336; border-right: 1px solid #336;
-   font-family: tahoma, verdana, arial, sans-serif;
-   margin: 0px; padding: 0px; height: 100%; max-height: 100%;
-}
-br { clear: left; }
+
+/* Divs */
+
 div.appendItem { display: inline; }
 div.appendItem label.prompt { font-weight: bold; }
-
 div.button { margin-bottom: 10px; }
-div.clearLeft { clear: left; }
-div.container { float: left; position: relative; }
 div.footerItem { display: inline; font-weight: bold; }
-div.grid_container { float: left; overflow: hidden; }
+div.grid_container { float: left; overflow: hidden; width: auto; }
 div.iFrameItem input, password, select, textarea {
    border-bottom: 1px solid #336;
    border-left: 1px solid #336; border-right: 1px solid #336;
@@ -54,38 +123,36 @@ div.libraryHeader {
 div.libraryPanel {
    border: 1px solid #336; clear: left; margin-left: 6px;
 }
-div.librarySubject {
-   float: left;
-}
-div.narrow {
-   margin-left: 4em; margin-right: 4em;
-}
-div.sideBarContent {
-   padding: 3px;
-}
-div.sideBarHeader {
+div.librarySubject { float: left; line-height: normal; width: auto; }
+div.sidebarContent { padding: 3px; }
+div.sidebarHeader {
    border-left: 1px solid #336; border-right: 1px solid #336;
    font-size: 14px; height: 25px;
    overflow: hidden; padding: 0px 0px 0px 3px;
    vertical-align: top;
 }
-div.sideBarHeader:hover {
-   cursor: pointer;
-}
-div.sideBarHeaderFirst {
-   border-top: 1px solid #336;
-}
-div.sideBarPanel {
+div.sidebarHeader:hover { cursor: pointer; }
+div.sidebarHeaderFirst { border-top: 1px solid #336; }
+div.sidebarPanel {
    border-bottom: 1px solid #336;
    border-left: 1px solid #336;
    border-right: 1px solid #336;
 }
-div.subheading {
-   font-weight: bold;
+div.slider {
+	border: 1px solid #336;
+	height: 8px; left: 50px; margin-top: 4px;
+	position: absolute; top: 0px;
+	width: 222px;
 }
-div.tools {
-   height: 31px; line-height: 31px;
+div.slider div.knob {
+	border: 1px solid #336;
+	height: 18px; margin-top: -2px; width: 18px;
 }
+div.tick {
+   border-right: 1px solid #336; height: 8px;
+   position: absolute; top: 12px; width: 19px;
+}
+div.tools { height: 31px; line-height: 31px; }
 div.tree {
    border: 1px solid #336; height: 12em;
    font-family: tahoma, verdana, arial, sans-serif; font-size: 0.75em;
@@ -101,60 +168,51 @@ div.treeItem a.treeFade {
    border: 1px solid transparent; margin-left: 3px;
    position: relative; text-decoration: none;
 }
-div.treeItem a.treeFade:hover {
-   border: 1px solid #336;
-}
+div.treeItem a.treeFade:hover { border: 1px solid #336; }
 div.treeItem img.treeIcon {
 	border: 0px; height: 16px; margin: 0px; padding: 0px;
    vertical-align: middle; width: 16px;
 }
-fieldset {
-   margin-bottom: 0.5em;
-}
-h1.split {
-   font-size: 26px; margin: 0px; padding: 0px; position: relative;
-}
-h1.split span {
-   left: -1px; position: absolute; top: -1px;
-}
-h1.split:before {
-   content: attr(title); left: 0; position: absolute; top: 0;
-}
+
+/* Headers */
+
+h1.split { font-size: 26px; margin: 0px; padding: 0px; position: relative; }
+h1.split span { left: -1px; position: absolute; top: -1px; }
+h1.split:before { content: attr(title); left: 0; position: absolute; top: 0; }
+
+/* Horizontal Rules */
+
 hr.footer {
    border-top: 1px dashed #F00;
    height: 1px; margin: 0px; padding: 0px;
 }
-html {
-   border: 0px; height: 100%; max-height: 100%; margin: 0px;
-   overflow: hidden; padding: 0px;
-}
-img {
-   border: 0px; margin: 0px; padding: 0px;
-}
+
+/* Images */
+
 img.libraryHeader {
    height: 20px; position: absolute; right: 0px; width: 20px;
 }
 img.tools {
    height: 17px; padding-right: 1px; padding-bottom: 1px; width: 17px;
 }
+
+/* Labels */
+
 label.prompt {
    cursor: pointer; display: block; float: left;
    margin-bottom: 10px; text-align: right;
+   width: auto;
 }
-legend {
-   border: 1px solid #336;
-   border-bottom: 1px solid #336;
-   border-top: 1px solid #336;
-   padding: 0.25em;
-}
-pre {
-   margin: 0px; padding: 0px;
-}
-select.group {
-   margin-top: 7px; min-width: 10em;
-}
+
+/* Select menus */
+
+select.group { margin-top: 7px; min-width: 10em; }
+
+/* Spans */
+
 span.dropcap {
    float: left; font-size: 2.75em; line-height: 83%; margin-right: 3px;
+   width: auto;
 }
 span.error {
    border: 1px solid #336; clear: left; display: block;
@@ -162,7 +220,7 @@ span.error {
 }
 span.help { cursor: help; }
 span.label {
-   display: block; float: left; margin-bottom: 10px;
+   display: block; float: left; margin-bottom: 10px; width: auto;
 }
 span.lineNumber {
    display: block; float: left;
@@ -171,112 +229,62 @@ span.lineNumber {
    margin-top: 0.33em; text-align: right; width: 1.66em;
 }
 span.prompt {
-   display: block; float: left; margin-bottom: 10px;
+   display: block; float: left; margin-bottom: 10px; width: auto;
 }
-span.textarea {
-   float: right;
-}
+span.textarea { float: right; width: auto; }
 span.title {
    left: 0px; min-width: 8em; padding: 3px; position: absolute;
    right: 0px; white-space: nowrap;
 }
-table.form {
-   margin: 5px; padding: 5px; width: 400px;
-}
-table.recipe {
-   clear: left;
-}
-table.recipe td {
-   padding: 0.12em 0.5em;
-}
-table.std {
-   margin: 5px; padding: 5px; width: 100%;
-}
-td.csv {
-   white-space: nowrap;
-}
-td.dataValue {
-   vertical-align: middle;
-}
-td.first {
-   border-right: 1px solid #336; width: 1%;
-}
-td.fixed {
-   width: 20px;
-}
-td.grid_cell {
-   height: 25px; white-space: nowrap;
-}
+
+/* Tables */
+
+table.form { width: 400px; }
+table.recipe { clear: left; }
+table.recipe td { padding: 0.12em 0.5em; }
+table.std { margin: 5px; padding: 5px; width: 100%; }
+td.csv { white-space: nowrap; }
+td.first { border-right: 1px solid #336; width: 1%; }
+td.fixed { width: 20px; }
+td.grid_cell { height: 25px; white-space: nowrap; }
 td.lineNumber {
    font-family: "Andale Mono", monaco, "Courier New", courier, monospace;
    padding-right: 3px; text-align: right;
 }
-textarea {
-   margin-bottom: 0.5em;
-}
-th.first {
-   text-align: center; width: 1%;
-}
+th.first { text-align: center; width: 1%; }
 th.grid_header {
    border-bottom: 1px solid #336; font-size: 0.75em; text-align: left;
 }
-th.select {
-   width: 48px;
-}
-th.table {
-   text-align: center;
-}
-tr.grid {
-   font-size: 0.75em;
-}
+th.select { width: 48px; }
+th.table { text-align: center; }
+tr.dataValue{ vertical-align: top; }
+tr.grid { font-size: 0.75em; }
 tr.logfile {
    font-family: "Andale Mono", monaco, "Courier New", courier, monospace;
    white-space: nowrap;
 }
-.bigger { font-size: 1.33em; }
-.centre { text-align: center; }
-.error { background-color: #FCC; color: black; }
-.heading { font-weight: bold; }
-.hidden { visibility: hidden; }
-.info { color: #00F; font-size: 0.75em; }
-.instructions { float: left; font-size: 0.75em; text-align: left; }
-.left { text-align: left; }
-.minimal { width: 1%; }
-.mono {
-   font-family: "Andale Mono", monaco, "Courier New", courier, monospace;
-}
-.most { width: 98%; }
-.note { font-size: 0.75em; font-weight: bold; }
-.nowrap { white-space: nowrap; }
-.quickLinkSep { padding-left: 0.25em; }
-.rule { width: 100%; }
-.separator { float: left; }
-.small { font-size: 0.75em; }
-.smaller { font-size: 0.87em; }
-.some { width: 5%; }
-.source {
-   font-family: "Andale Mono", monaco, "Courier New", courier, monospace;
-   font-size: 0.75em; margin: 0px; padding: 0px;
-}
-.warning { background: Yellow; display: block; }
+
+/* Named elements */
+
 #append {
    bottom: 0px; font-size: 0.85em; left: 10px; position: fixed; z-index: 4;
 }
-#bookmark {
-   display: block;
-}
+#bookmark { display: block; }
 #buttonDisp {
    bottom: 55px; padding-right: 3px; position: fixed;
    right: 0px; top: 82px; width: 35px;
 }
-#buttonList {
-   margin-top: 10px;
+#buttonList { margin-top: 10px; }
+#companyLogo {
+   border-bottom: 1px solid #336; height: 71px;
+   position: absolute; right: 0px; top: 0px; width: 100px;
+   z-index: 5;
 }
 #content {
    border: 1px solid #336; bottom: 0px;
 /*   font-family: georgia, "Times New Roman", times, serif; */
-   font-family: tahoma, verdana, arial, sans-serif;
-   left: 10px; margin-right: 35px; margin-bottom: 5px;
+   left: 10px; line-height: 1.5em; 
+   margin-right: 35px; margin-bottom: 5px;
    overflow: auto; padding: 10px;
    position: absolute; right: 10px; top: 82px; z-index: 3;
    -moz-border-radius: 10px;
@@ -289,24 +297,16 @@ tr.logfile {
 #footer {
    cursor: pointer; display: inline; width: 20px;
 }
-#footerLeft {
-   display: inline;
-}
-#footerLogo {
-   height: 32px; width: 259px;
-}
+#footerLeft { display: inline; }
+#footerLogo { height: 32px; width: 259px; }
 #footerMid {
    display: inline; text-align: center; vertical-align: baseline;
 }
 #footerRight {
    bottom: 5px; position: absolute; right: 10px; text-align: right;
 }
-#footerRule {
-   width: 100%;
-}
-#footerRule td {
-   vertical-align: middle;
-}
+#footerRule { width: 100%; }
+#footerRule td { vertical-align: middle; }
 #headerBottom {
    height: 31px; left: 0px; position: absolute; right: 0px; top: 46px;
 }
@@ -322,36 +322,29 @@ tr.logfile {
    padding-right: 5px; right: 100px; text-align: right;
 }
 #headerTitle {
-   float: left; padding: 0px 0px 0px 10px;
+   float: left; padding: 0px 0px 0px 10px; width:auto;
 }
 #headerTop {
    height: 46px; left: 0px; overflow: hidden; position: absolute; top: 0px;
    right: 0px; white-space: nowrap;
 }
-#companyLogo {
-   border-bottom: 1px solid #336; height: 71px; padding-top: 5px;
-   position: absolute; right: 0px; top: 0px; width: 100px;
-   z-index: 5;
-}
-#sideBar {
-   display: block;
-}
-#sideBarDisp {
+#sidebar { display: block; }
+#sidebarDisp {
    border: 1px solid #336; bottom: 0px; left: 0px; overflow: hidden;
    padding: 0px; position: fixed; top: 82px; width: 150px;
    -moz-border-radius: 10px;
 }
-#sideBarFill {
+#sidebarFill {
    border: 5px solid #CC9;
    -moz-border-radius: 10px;
 }
-#sideBarGrippy {
-	cursor: w-resize; margin-top: 200px; float:right;	
+#sidebarGrippy {
+	cursor: w-resize; margin-top: 200px; float:right;	width: auto;
 }
 
 /* Flyover tool tips */
 
-div.tool-tip { color: #fff; z-index: 13000; }
+div.tool-tip { color: #fff; text-align: center; z-index: 13000; }
 td.tool-tip-topLeft { background: url(bubble.png) top left; }
 td.tool-tip-topLeft span {
    color: #9FD4FF; display: block;
@@ -373,27 +366,25 @@ td.tool-tip-bottomRight span {
 
 /* Navigation menu and tools menu */
 
-#sideBarCap {
-   border-top: 5px solid #663; border-bottom: 1px solid #336;
+#sidebarCap {
+   border-top: 5px solid #8b8b32; border-bottom: 1px solid #336;
    height: 20px; padding: 1px 0px 4px 0px; position: absolute;
 }
-#sideBarImg {
+#sidebarImg {
    height: 17px; padding: 3px 5px 4px 10px; width: 17px;
 }
-#sideBarImg:hover { cursor: pointer; }
+#sidebarImg:hover { cursor: pointer; }
 #navigation {
    display: table-row; height: 31px; left: 32px;
 	position: absolute; right: 0px;
 }
-div.navigationMenu {
-   display: table-cell; height: 31px;
-}
+div.navigationMenu { display: table-cell; height: 31px; }
 div.navigationFiller {
-   display: table-cell; height: 31px; vertical-align: top; width: 99%;
+   display: table-cell; height: 31px; vertical-align: top; width: 95%;
 }
 div.navigationTools {
-   height: 31px; position: absolute; right: 100px; vertical-align: top;
-   width: 72px; z-index: 3;
+   height: 31px; position: absolute; right: 100px;
+   vertical-align: top; z-index: 3;
 }
 span.navigationFiller {
    border-top: 1px solid transparent; border-bottom: 1px solid #336;
@@ -435,7 +426,6 @@ span.navigationFiller {
 #menu li a.menuLinkFade:hover { display: block; }
 #tools {
    display: table-row; list-style-type: none; margin: 0px; padding: 0px;
-   width: 72px;
 }
 #tools li { display: table-cell; }
 #tools li:hover dd, #tools li a:hover dd { display: block; }
@@ -550,7 +540,6 @@ b.tr4 {
 div.calendar {
 	margin-left: -16px; position: relative; z-index: 50;
 }
-
 .calendar, .calendar table {
   border: 1px solid #336;
   font-size: 11px;
@@ -565,27 +554,22 @@ div.calendar {
   padding: 2px;          /* Make the buttons seem like they're pressing */
   font-size: 90%;
 }
-
 .calendar thead .title { /* This holds the current "month, year" */
   font-weight: bold;      /* Pressing it will take you to the current date */
   text-align: center;
   padding: 2px;
 }
-
 .calendar thead .headrow { /* Row <TR> containing navigation buttons */
 }
-
 .calendar thead .name { /* Cells <TD> containing the day names */
   border-bottom: 1px solid #336;
   padding: 2px;
   text-align: center;
 }
-
 .calendar thead .hilite { /* How do the buttons in header appear when hover */
   border: 1px solid #336;
   padding: 1px;
 }
-
 .calendar thead .active { /* Active (pressed) buttons in header */
   padding: 2px 0px 0px 2px;
 }
@@ -600,35 +584,28 @@ div.calendar {
 .calendar tbody .day.othermonth {
   font-size: 80%;
 }
-
 .calendar table .wn {
   padding: 2px 3px 2px 2px;
   border-right: 1px solid #336;
 }
-
 .calendar tbody td.hilite { /* Hovered cells <TD> */
   padding: 1px 3px 1px 1px;
   border: 1px solid #bbb;
 }
-
 .calendar tbody td.active { /* Active (pressed) cells <TD> */
   padding: 2px 2px 0px 2px;
 }
-
 .calendar tbody td.selected { /* Cell showing today date */
   font-weight: bold;
   border: 1px solid #000;
   padding: 1px 3px 1px 1px;
 }
-
 .calendar tbody td.today {
 	font-weight: bold;
 }
-
 .calendar tbody .emptycell { /* Empty cells (the best is to hide them) */
   visibility: hidden;
 }
-
 .calendar tbody .emptyrow { /* Empty row (some months need less than 6 rows) */
   display: none;
 }
@@ -638,16 +615,13 @@ div.calendar {
 .calendar tfoot .footrow { /* The <TR> in footer (only one right now) */
   text-align: center;
 }
-
 .calendar tfoot .ttip { /* Tooltip (status bar) cell <TD> */
   padding: 2px;
 }
-
 .calendar tfoot .hilite { /* Hover style for buttons in footer */
   border: 1px solid #084;
   padding: 1px;
 }
-
 .calendar tfoot .active { /* Active (pressed) style for buttons in footer */
   padding: 2px 0px 0px 2px;
 }
@@ -665,29 +639,24 @@ div.calendar {
   font-size: 90%;
   z-index: 100;
 }
-
 .calendar .combo .label,
 .calendar .combo .label-IEfix {
   text-align: center;
   padding: 1px;
 }
-
 .calendar .combo .label-IEfix {
   width: 4em;
 }
-
 .calendar .combo .active {
   border-top: 1px solid #6a4;
   border-bottom: 1px solid #6a4;
   font-weight: bold;
 }
-
 .calendar td.time {
   border-top: 1px solid #336;
   padding: 1px 0px;
   text-align: center;
 }
-
 .calendar td.time .hour,
 .calendar td.time .minute,
 .calendar td.time .ampm {
@@ -695,20 +664,16 @@ div.calendar {
   border: 1px solid #336;
   font-weight: bold;
 }
-
 .calendar td.time .ampm {
   text-align: center;
 }
-
 .calendar td.time .colon {
   padding: 0px 2px 0px 3px;
   font-weight: bold;
 }
-
 .calendar td.time span.hilite {
   border-color: #000;
 }
-
 .calendar td.time span.active {
   border-color: #f00;
 }

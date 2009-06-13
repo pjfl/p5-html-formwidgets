@@ -6,7 +6,7 @@ use strict;
 use warnings;
 use parent qw(HTML::FormWidgets);
 
-use version; our $VERSION = qv( sprintf '0.4.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.5.%d', q$Rev$ =~ /\d+/gmx );
 
 sub _init {
    my ($self, $args) = @_;

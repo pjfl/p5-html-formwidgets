@@ -6,7 +6,9 @@ use strict;
 use warnings;
 use parent qw(HTML::FormWidgets);
 
-use version; our $VERSION = qv( sprintf '0.4.%d', q$Rev$ =~ /\d+/g );
+use version; our $VERSION = qv( sprintf '0.5.%d', q$Rev$ =~ /\d+/g );
+
+my $NUL = q();
 
 __PACKAGE__->mk_accessors( qw(display element hide js_obj mode offset range
                               snap steps wheel) );
@@ -35,8 +37,10 @@ sub _render {
    my $elem = $self->element;
    my $id   = $self->name.q(_slider);
    my $size = int ((log $self->steps) / (log 10));
-   my $html = q();
+   my $html = $NUL;
    my $text;
+
+   $args->{default} ||= q(50);
 
    if ($self->display) {
       $html .= $hacc->textfield( { name     => $self->name,
@@ -48,7 +52,7 @@ sub _render {
       push @{ $self->hide }, {
          content => $hacc->input( { name  => $self->name,
                                     type  => q(hidden),
-                                    value => $args->{default} || q() } ) };
+                                    value => $args->{default} } ) };
    }
 
    $text  = $hacc->div( { class => q(knob) } );

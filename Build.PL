@@ -19,7 +19,7 @@ my $requires = { 'perl'                    => q(5.008),
                  'Text::ParseWords'        => q(3.22),
                  'Text::Tabs'              => q(98.112801) };
 my $build = Module::Build->new
-   ( add_to_cleanup     => [ 'HTML-FormWidgets-*',
+   ( add_to_cleanup     => [ 'Debian_CPANTS.txt', 'HTML-FormWidgets-*',
                              map { ( '*/' x $_ ) . '*~' } 0..5 ],
      build_requires     => { 'Test::More'          => q(0.74) },
      configure_requires => { 'ExtUtils::MakeMaker' => q(6.42),

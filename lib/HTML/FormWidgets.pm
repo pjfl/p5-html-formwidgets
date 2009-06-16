@@ -7,7 +7,7 @@ use warnings;
 use version; our $VERSION = qv( sprintf '0.5.%d', q$Rev$ =~ /\d+/gmx );
 use parent qw(Class::Accessor::Fast);
 
-use Class::Inspector;
+use Class::MOP;
 use English qw(-no_match_vars);
 use HTML::Accessors;
 use Text::Markdown qw(markdown);
@@ -308,16 +308,16 @@ sub _bootstrap {
 }
 
 sub _ensure_class_loaded {
-   my ($self, $class) = @_; my $error;
+   my ($self, $class, $opts) = @_; $opts ||= {};
 
-   ## no critic
-   {  local $EVAL_ERROR; eval "require $class;"; $error = $EVAL_ERROR; }
-   ## critic
+   my $is_class_loaded = sub { Class::MOP::is_class_loaded( $class ) };
 
-   return $self->_set_error( $error ) if ($error);
+   eval { Class::MOP::load_class( $class ) };
 
-   unless (Class::Inspector->loaded( $class )) {
-      return $self->_set_error( "Failed to load class $class" );
+   return $self->_set_error( $EVAL_ERROR ) if ($EVAL_ERROR);
+
+   unless ($is_class_loaded->()) {
+      return $self->_set_error( "Class $class failed to load" );
    }
 
    bless $self, $class;

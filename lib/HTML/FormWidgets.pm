@@ -308,16 +308,19 @@ sub _bootstrap {
 }
 
 sub _ensure_class_loaded {
-   my ($self, $class, $opts) = @_; $opts ||= {};
+   my ($self, $class, $opts) = @_; my $error; $opts ||= {};
 
    my $is_class_loaded = sub { Class::MOP::is_class_loaded( $class ) };
 
-   eval { Class::MOP::load_class( $class ) };
+   {  local $EVAL_ERROR;
+      eval { Class::MOP::load_class( $class ) };
+      $error = $EVAL_ERROR;
+   }
 
-   return $self->_set_error( $EVAL_ERROR ) if ($EVAL_ERROR);
+   return $self->_set_error( $error ) if ($error);
 
    unless ($is_class_loaded->()) {
-      return $self->_set_error( "Class $class failed to load" );
+      return $self->_set_error( "Class $class loaded but package undefined" );
    }
 
    bless $self, $class;

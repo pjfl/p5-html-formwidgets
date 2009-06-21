@@ -1,12 +1,10 @@
-#!/usr/bin/perl
-
 # @(#)$Id$
 
 use strict;
 use warnings;
-use Module::Build;
-
 use version; our $VERSION = qv( sprintf '0.5.%d', q$Rev$ =~ /\d+/gmx );
+
+use Module::Build;
 
 my $requires = { 'perl'                    => q(5.008),
                  'parent'                  => q(0.221),

@@ -68,25 +68,24 @@ sub build {
 }
 
 sub new {
-   my ($class, @rest) = @_;
+   my ($self, @rest) = @_;
 
    # Coerce a hash ref of the passed args
    my $args = __arg_list( @rest );
 
    # Start with some hard coded defaults;
-   my $self = bless { %{ $ATTRS } }, $class;
+   my $new = bless { %{ $ATTRS } }, ref $self || $self;
 
    # Set minimum requirements from the supplied args and the defaults
-   $self->_bootstrap( $args );
+   $new->_bootstrap( $args );
 
    # Your basic factory method trick
-   $class = __PACKAGE__.q(::).(ucfirst $self->type);
-   $self->_ensure_class_loaded( $class );
+   $new->_ensure_class_loaded( __PACKAGE__.q(::).(ucfirst $new->type) );
 
    # Complete the initialization
-   $self->init( $args );
+   $new->init( $args );
 
-   return $self;
+   return $new;
 }
 
 # Private subroutines (not methods)
@@ -100,7 +99,7 @@ sub __arg_list {
 }
 
 sub __build_widget {
-   my ($class, $config, $item, $stack) = @_;
+   my ($self, $config, $item, $stack) = @_;
 
    return unless ($item);
 
@@ -115,7 +114,7 @@ sub __build_widget {
       $item->{class  } = $class if ($class);
    }
    elsif ($item->{content}->{widget}) {
-      my $widget = $class->new( __merge_hashes( $config, $item ) );
+      my $widget = $self->new( __merge_hashes( $config, $item ) );
 
       $item->{content} = $widget->render;
       $item->{class  } = $widget->class if ($widget->class);

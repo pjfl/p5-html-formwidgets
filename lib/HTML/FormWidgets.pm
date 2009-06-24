@@ -311,7 +311,7 @@ sub _ensure_class_loaded {
 
    my $is_class_loaded = sub { Class::MOP::is_class_loaded( $class ) };
 
-   {  local $EVAL_ERROR;
+   {  local $EVAL_ERROR = undef;
       eval { Class::MOP::load_class( $class ) };
       $error = $EVAL_ERROR;
    }

@@ -1,0 +1,104 @@
+Revision history for HTML::FormWidgets
+
+         - Use Class::MOP in ensure_class_loaded
+
+0.5.184  13/06/2009
+         - Added more tests
+
+0.4.179  08/06/2009
+         - Fixed widths in paragraphs and tables
+
+0.4.177  06/06/2009
+         - Fixed bug in Paragraphs _split method
+
+0.4.176  11/05/2009
+         - Added docs for paragraphs and slider
+
+0.4.171  27/04/2009
+         - Fixed paragraph rendering bug
+         - Improved testing idioms
+         - Fixed missing seperator in Menu subclass
+         - Added paragraph splitting to Paragraphs subclass
+         - Fixed bug in arg expansion in localize
+         - Fixed JS bug in group membership
+
+0.4.156  09/03/2009
+         - Debugged menu widget
+
+0.3.141  11/03/2009
+         - Added menu widget
+
+0.3.137  22/02/2009
+         - Dropped use of NEXT
+         - Fixed bug in event handling in Rule
+         - Improved quality of embeded Javascript
+
+0.3.130  30/12/2008
+         - Fixed tree widget
+
+0.3.126  14/12/2008
+         - Editable tables can now use textareas
+         - Added Image subclass
+         - Added Paragraphs subclass
+         - Switched from base to parent
+
+0.3.120  04/12/2008
+         - Renamed ImageButton to Button. Now generates both kinds
+
+0.2.112  03/12/2008
+         - Added the hidden widget type
+         - Made the build method smarter and less gross
+         - Setting skip_groups to true in the build config skips the
+         call to _group_fields
+
+0.2.110  01/12/2008
+         - Image button defines button_name which defaults to _method
+         not _verb
+
+0.2.108  14/11/2008
+         - New approach to CPAN testers
+
+0.2.106  23/10/2008
+         - Added an addition test to prevent Andreas Koenig from
+         testing
+
+0.2.102  16/10/2008
+         - Disabled automated testing
+
+0.2.99   03/10/2008
+         - Bumped revision in POD
+
+0.2.97   28/09/2008
+         - Removed dependancy on Readonly
+         - Tweaked for perlcritic
+         - Extra whitespace before widgets
+
+         2008-09-23
+         - Refactored the attribute list in the base class. Now distributed
+           amongst the subclasses. Bumping version to 0.2
+           Now uses jscalendar for the Date subclass
+
+         2008-09-06
+         - Tweaked POD. Bumping release to fix broken CPAN Testers database.
+
+         2008-08-31
+         - Removed hidden field _verb as unecessary
+
+         2008-08-15
+         - Removed second SIGNATURE entry
+
+         2008-07-21
+         - Added support for markdown
+
+         2008-06-02
+         - Made version a build requirement
+
+         2008-05-25
+         - Fixed invalid output from anchor and chooser widgets
+           Added POD test
+
+         2008-05-19
+         - Added support form HTML 4.01.
+           Added Cloud subclass
+
+

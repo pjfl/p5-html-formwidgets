@@ -1,5 +1,7 @@
 Revision history for HTML::FormWidgets
 
+0.5.199  27/06/2009
+         - Changed key used to sign distro
          - Use Class::MOP in ensure_class_loaded
 
 0.5.184  13/06/2009

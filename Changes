@@ -1,5 +1,7 @@
 Revision history for HTML::FormWidgets
 
+         - Stopped Menu from sqealing about no value to inflate
+
 0.5.200  27/06/2009
          - Changed key used to sign distro
          - Use Class::MOP in ensure_class_loaded

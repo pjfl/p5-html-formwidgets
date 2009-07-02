@@ -23,7 +23,7 @@ sub _init {
 }
 
 sub _render {
-   my ($self, $args) = @_; my ($data, $fill, $html, $text);
+   my ($self, $args) = @_; my ($content, $data, $fill, $html, $text);
 
    my $hacc = $self->hacc;
 
@@ -44,10 +44,11 @@ sub _render {
          $html .= $hacc->li  ( $text );
       }
 
-      $text  = $self->select && $index == $selected
-             ? $self->_top_filler( $hacc )
-             : $hacc->b( { class => q(pad) }, $NBSP );
-      $text .= $self->inflate( $data->[ $index ]->{items}->[ 0 ]->{content} );
+      $text    = $self->select && $index == $selected
+               ? $self->_top_filler( $hacc )
+               : $hacc->b( { class => q(pad) }, $NBSP );
+      $content = $data->[ $index ]->{items}->[ 0 ]->{content} || q();
+      $text   .= $self->inflate( $content );
 
       my $count = 0; my $dlist = q();
 

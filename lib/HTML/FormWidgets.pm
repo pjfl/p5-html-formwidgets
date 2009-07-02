@@ -146,7 +146,7 @@ sub __merge_hashes {
 sub inflate {
    my ($self, $args) = @_;
 
-   return unless ($args);
+   return unless (defined $args);
 
    return $args unless (ref $args);
 

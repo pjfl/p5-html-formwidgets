@@ -211,28 +211,22 @@ sub init {
 *loc = \&localize;
 
 sub localize {
-   my ($self, $key, @args) = @_; my $text;
+   my ($self, $key, @rest) = @_;
 
-   return unless $key;
+   return unless $key; $key = $NUL.$key; # I hate Return::Value
 
-   $key = $NUL.$key if ($key); # I hate Return::Value
+   # Lookup the message using the supplied key
+   my $messages = $self->{messages}   || {};
+   my $message  = $messages->{ $key } || {};
+   my $text     = $message->{text}    || $key;  # Default msg text to the key
 
-   my $message = $self->messages->{ $key };
+   # Expand positional parameters of the form [_<n>]
+   if (-1 < index $text, $LSB) {
+      my @args = $rest[0] && ref $rest[0] eq q(ARRAY) ? @{ $rest[0] } : @rest;
 
-   if ($message and $text = $message->{text}) {
-      $text = $self->text_obj->markdown( $text ) if ($message->{markdown});
-   }
-   else { $text = $key if ($key =~ m{ \s+ }mx) }
-
-   return $NUL unless ($text);
-
-   @args = @{ $args[ 0 ] } if ($args[ 0 ] && ref $args[ 0 ] eq q(ARRAY));
-
-   if ((index $text, $LSB) >= 0) {
       push @args, map { $NUL } 0 .. 10;
       $text =~ s{ \[ _ (\d+) \] }{$args[ $1 - 1 ]}gmx;
    }
-   else { $text .= $SPC.(join $SPC, @args) }
 
    return $text;
 }

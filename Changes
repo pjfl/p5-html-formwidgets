@@ -1,5 +1,6 @@
 Revision history for HTML::FormWidgets
 
+         - No longer calls markdown from localize
          - Label now localizes text then does markdown
          - Stopped Menu from sqealing about no value to inflate
 

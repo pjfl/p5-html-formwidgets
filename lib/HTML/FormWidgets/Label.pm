@@ -24,8 +24,8 @@ sub _render {
    my ($self, $args) = @_; my ($markup, $text);
 
    $text    = $self->text;
-   $text    = $self->text_obj->markdown( $text ) if ($text && $self->markdown);
    ($text ||= $self->loc( $self->name ) || q()) =~ s{ \A \n }{}msx;
+   $text    = $self->text_obj->markdown( $text ) if ($text && $self->markdown);
 
    return unless ($text);
 

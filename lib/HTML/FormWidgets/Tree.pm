@@ -113,7 +113,7 @@ sub scan_hash {
       }
    }
 
-   unless ($args->{parent}) {
+   if (not $args->{parent} and $node) {
       $jscript .= 'document.write('.$node.');'."\n";
       $jscript .= $self->selected.'.focus();'."\n" if ($self->selected);
    }

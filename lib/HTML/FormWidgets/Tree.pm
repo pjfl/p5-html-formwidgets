@@ -17,12 +17,12 @@ my $NUL = q();
 sub _init {
    my ($self, $args) = @_;
 
-   $self->base(      $NUL );
+   $self->base     ( $NUL       );
    $self->behaviour( q(classic) );
-   $self->data(      {} );
-   $self->selected(  undef );
-   $self->target(    q() );
-   $self->url(       undef );
+   $self->data     ( {}         );
+   $self->selected ( undef      );
+   $self->target   ( q()        );
+   $self->url      ( undef      );
    return;
 }
 
@@ -41,8 +41,9 @@ sub _render {
    my $code    = $self->scan_hash(    { data   => $self->data,
                                         parent => $NUL, prev_key => $NUL } );
    my $jscript = $self->hacc->script( { type   => 'text/javascript' }, $code );
+   my $ref     = { class => q(tree), id => $args->{id} };
 
-   return $self->hacc->div( { class => q(tree) }, $jscript );
+   return $self->hacc->div( $ref, $jscript );
 }
 
 sub node_id {
@@ -55,13 +56,14 @@ sub scan_hash {
    my @keys = grep { !m{ \A _ }mx } keys %{ $args->{data} };
 
    for my $key (sort { lc $a cmp lc $b } @keys) {
-      $node         = $self->node_id;
+      $node = $self->node_id;
 
       my $new_key   = $args->{prev_key}
                     ? $args->{prev_key}.$SUBSEP.$key : $key;
       my $data      = $args->{data}->{ $key };
       my $open_icon = $NUL;
       my $shut_icon = $NUL;
+      my $text      = $key;
       my $tip       = $NUL;
       my $url       = $self->url;
 
@@ -69,6 +71,7 @@ sub scan_hash {
          $node      = $data->{_node_id } || $node;
          $open_icon = $data->{_openIcon} || $open_icon;
          $shut_icon = $data->{_shutIcon} || $shut_icon;
+         $text      = $data->{_text    } || $text;
          $tip       = $data->{_tip     } || $tip;
          $url       = $data->{_url     } || $url;
       }
@@ -78,12 +81,12 @@ sub scan_hash {
       $url .= q(?).$self->name.q(_node=).$node if ($self->selected);
 
       unless ($args->{parent}) {
-         $jscript  = "\n".'var '.$node.' = new Tree.Trunk("'.$key.'", "';
+         $jscript  = "\n".'var '.$node.' = new Tree.Trunk("'.$text.'", "';
          $jscript .= $url.'", "'.$tip.'");'."\n";
          $jscript .= $node.'.setBehavior("'.$self->behaviour.'");'."\n";
       }
       else {
-         $jscript .= 'var '.$node.' = new Tree.Branch("'.$key.'", "';
+         $jscript .= 'var '.$node.' = new Tree.Branch("'.$text.'", "';
          $jscript .= $url.'", "'.$tip.'");'."\n";
       }
 

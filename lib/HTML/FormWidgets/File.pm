@@ -11,7 +11,7 @@ use Syntax::Highlight::Perl;
 use Text::ParseWords;
 use Text::Tabs;
 
-use version; our $VERSION = qv( sprintf '0.5.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.6.%d', q$Rev$ =~ /\d+/gmx );
 
 __PACKAGE__->mk_accessors( qw(base header hide path root scheme select
                               style subtype) );

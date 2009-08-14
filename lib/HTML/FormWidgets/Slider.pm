@@ -6,7 +6,7 @@ use strict;
 use warnings;
 use parent qw(HTML::FormWidgets);
 
-use version; our $VERSION = qv( sprintf '0.5.%d', q$Rev$ =~ /\d+/g );
+use version; our $VERSION = qv( sprintf '0.6.%d', q$Rev$ =~ /\d+/g );
 
 my $NUL = q();
 

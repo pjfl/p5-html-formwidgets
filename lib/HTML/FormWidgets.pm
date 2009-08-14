@@ -4,7 +4,7 @@ package HTML::FormWidgets;
 
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.5.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.6.%d', q$Rev$ =~ /\d+/gmx );
 use parent qw(Class::Accessor::Fast);
 
 use Class::MOP;
@@ -221,7 +221,7 @@ sub localize {
    my $text     = $message->{text}    || $key;  # Default msg text to the key
 
    # Expand positional parameters of the form [_<n>]
-   if (-1 < index $text, $LSB) {
+   unless (0 > index $text, $LSB) {
       my @args = $rest[0] && ref $rest[0] eq q(ARRAY) ? @{ $rest[0] } : @rest;
 
       push @args, map { $NUL } 0 .. 10;
@@ -875,6 +875,10 @@ Calls L</localize> with the I<name> attribute as the message key. If
 the message does not exist the value if the I<text> attribute is
 used. The text is wrapped in a c<< <div class="note"> >> with I<align>
 setting the style text alignment and I<width> setting the style width
+
+=head2 POD
+
+Uses L<Pod::Html> to render the POD in the given module as HTML
 
 =head2 Paragraphs
 

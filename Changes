@@ -1,5 +1,7 @@
 Revision history for HTML::FormWidgets
 
+0.6.209  2009-08-14
+         - Added POD widget type
          - Added _text attribute to Tree. Adds id to container div
          - Fixed undefined warning in Tree if no data
          - No longer calls markdown from localize

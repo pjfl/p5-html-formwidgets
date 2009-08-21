@@ -1,5 +1,7 @@
 Revision history for HTML::FormWidgets
 
+         - Can provide absolute (+) class names as widget types
+
 0.6.209  2009-08-14
          - Added POD widget type
          - Added _text attribute to Tree. Adds id to container div

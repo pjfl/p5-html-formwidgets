@@ -80,7 +80,12 @@ sub new {
    $new->_bootstrap( $args );
 
    # Your basic factory method trick
-   $new->_ensure_class_loaded( __PACKAGE__.q(::).(ucfirst $new->type) );
+   my $class = ucfirst $new->type;
+
+   if (q(+) eq substr $class, 0, 1) { $class = substr $class, 1 }
+   else { $class = __PACKAGE__.q(::).$class }
+
+   $new->_ensure_class_loaded( $class );
 
    # Complete the initialization
    $new->init( $args );

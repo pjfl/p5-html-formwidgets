@@ -16,25 +16,18 @@ my $TTS = q( ~ );
 sub _init {
    my ($self, $args) = @_; my $text;
 
-   $self->assets( q() );
-   $self->height( 5 );
-   $self->js_obj( q(behaviour.freeList) );
-   $self->labels( undef );
-   $self->values( [] );
-   $self->width(  20 );
+   $self->assets     ( q() );
+   $self->height     ( 5 );
+   $self->hint_title ( $self->loc( q(Hint) ) ) unless ($self->hint_title);
+   $self->js_obj     ( q(behaviour.freeList) );
+   $self->labels     ( undef );
+   $self->values     ( [] );
+   $self->width      (  20 );
 
-   unless ($self->hint_title) {
-      $self->hint_title( $self->loc( q(Hint ) ) );
-   }
-
-   $text  = 'Enter a new item into the adjacent text field ';
-   $text .= 'and then click this button to add it to the list';
-   $text  = $self->loc( q(freelistAddTip) ) || $text;
-   $self->add_tip(    $self->hint_title.$TTS.$text );
-   $text  = 'Select one or more items from the adjacent list ';
-   $text .= 'and then click this button to remove them';
-   $text  = $self->loc( q(freelistRemoveTip) ) || $text;
-   $self->remove_tip( $self->hint_title.$TTS.$text );
+   $text = $self->loc( q(freelistAddTip) );
+   $self->add_tip    ( $self->hint_title.$TTS.$text );
+   $text = $self->loc( q(freelistRemoveTip) );
+   $self->remove_tip ( $self->hint_title.$TTS.$text );
    return;
 }
 

@@ -15,10 +15,11 @@ my $TTS = q( ~ );
 sub _init {
    my ($self, $args) = @_;
 
-   $self->assets(   q() );
-   $self->format(   q(%d/%m/%Y) );
-   $self->readonly( 1 );
-   $self->width(    10 );
+   $self->assets    ( q() );
+   $self->format    ( q(%d/%m/%Y) );
+   $self->hint_title( $self->loc( q(Hint) ) ) unless ($self->hint_title);
+   $self->readonly  ( 1 );
+   $self->width     ( 10 );
    return;
 }
 

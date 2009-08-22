@@ -16,30 +16,22 @@ my $TTS = q( ~ );
 sub _init {
    my ($self, $args) = @_; my $text;
 
-   $self->all(     [] );
-   $self->assets(  q() );
-   $self->atitle(  q(All) );
-   $self->ctitle(  q(Current) );
-   $self->current( [] );
-   $self->fhelp(   q() );
-   $self->height(  10 );
-   $self->js_obj(  q(behaviour.groupMember) );
-   $self->labels(  undef );
-   $self->sep(     $self->space ) unless ($args->{prompt});
+   $self->all        ( [] );
+   $self->assets     ( q() );
+   $self->atitle     ( q(All) );
+   $self->ctitle     ( q(Current) );
+   $self->current    ( [] );
+   $self->fhelp      ( q() );
+   $self->height     ( 10 );
+   $self->hint_title ( $self->loc( q(Hint) ) ) unless ($self->hint_title);
+   $self->js_obj     ( q(behaviour.groupMember) );
+   $self->labels     ( undef );
+   $self->sep        ( $self->space ) unless ($args->{prompt});
 
-   unless ($self->hint_title) {
-      $self->hint_title( $self->loc( q(Hint ) ) );
-   }
-
-   $text  = 'Select one or more entries from the list on the ';
-   $text .= 'left and then click this button to add them to the ';
-   $text .= 'list on the right';
-   $text  = $self->loc( q(groupMembershipAddTip) ) || $text;
-   $self->add_tip(    $self->hint_title.$TTS.$text );
-   $text  = 'Select one or more entries from the list on the ';
-   $text .= 'right and then click this button to remove them';
-   $text  = $self->loc( q(groupMembershipRemoveTip) ) || $text;
-   $self->remove_tip( $self->hint_title.$TTS.$text );
+   $text = $self->loc( q(groupMembershipAddTip) );
+   $self->add_tip    ( $self->hint_title.$TTS.$text );
+   $text = $self->loc( q(groupMembershipRemoveTip) );
+   $self->remove_tip ( $self->hint_title.$TTS.$text );
    return;
 }
 

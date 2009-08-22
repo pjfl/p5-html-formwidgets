@@ -16,24 +16,20 @@ my $TTS = q( ~ );
 sub _init {
    my ($self, $args) = @_; my $text;
 
-   $text  = 'Enter a new item into the adjacent text ';
-   $text .= 'fields and then click this button to add ';
-   $text .= 'it to the list';
-   $text  = $self->loc( q(tableAddTip) ) || $text;
-   $self->add_tip     ( $self->hint_title.$TTS.$text );
    $self->assets      ( q() );
    $self->class       ( q(small table) );
    $self->container   ( 0 );
    $self->data        ( { flds => [], values => [] } );
    $self->edit        ( 0 );
    $self->hide        ( [] );
+   $self->hint_title  ( $self->loc( q(Hint) ) ) unless ($self->hint_title);
    $self->js_obj      ( q(behaviour.table) );
-   $text  = 'Select one or more items from the ';
-   $text .= 'above list and then click this button ';
-   $text .= 'to remove them';
-   $text  = $self->loc( q(tableRemoveTip) ) || $text;
-   $self->remove_tip  ( $self->hint_title.$TTS.$text );
    $self->select      ( q() );
+
+   $text  = $self->loc( q(tableAddTip) );
+   $self->add_tip     ( $self->hint_title.$TTS.$text );
+   $text  = $self->loc( q(tableRemoveTip) );
+   $self->remove_tip  ( $self->hint_title.$TTS.$text );
    return;
 }
 

@@ -24,6 +24,7 @@ my $ATTRS =
      container_class => undef,             container_id    => undef,
      content_type    => q(text/html),      default         => undef,
      evnt_hndlr      => q(behaviour.server.checkField),
+     fields          => {},
      hacc            => undef,             hint_title      => $NUL,
      id              => undef,             is_xml          => 0,
      messages        => {},                name            => undef,
@@ -39,8 +40,6 @@ my $ATTRS =
      type            => undef, };
 
 __PACKAGE__->mk_accessors( keys %{ $ATTRS } );
-
-__PACKAGE__->mk_accessors( qw(_fields _messages) );
 
 # Class methods
 
@@ -155,8 +154,8 @@ sub inflate {
 
    return $args unless (ref $args);
 
-   $args->{fields  } = $self->_fields;
-   $args->{messages} = $self->_messages;
+   $args->{fields  } = $self->fields;
+   $args->{messages} = $self->messages;
 
    return __PACKAGE__->new( $args )->render;
 }
@@ -221,7 +220,7 @@ sub localize {
    return unless $key; $key = $NUL.$key; # I hate Return::Value
 
    # Lookup the message using the supplied key
-   my $messages = $self->{messages}   || {};
+   my $messages = $self->messages     || {};
    my $message  = $messages->{ $key } || {};
    my $text     = $message->{text}    || $key;  # Default msg text to the key
 
@@ -299,9 +298,9 @@ sub _bootstrap {
    # This is the default widget type if not overidden in the config
    $type = $self->type( q(textfield) ) unless ($type);
 
-   $self->name     ( $type             ) unless ($name);
-   $self->_fields  ( $args->{fields  } );
-   $self->_messages( $args->{messages} );
+   $self->name    ( $type             ) unless ($name);
+   $self->fields  ( $args->{fields  } );
+   $self->messages( $args->{messages} );
    return;
 }
 

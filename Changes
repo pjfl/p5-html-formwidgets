@@ -1,5 +1,6 @@
 Revision history for HTML::FormWidgets
 
+         - Moved English hint text out of subclasses
          - Can provide absolute (+) class names as widget types
 
 0.6.209  2009-08-14

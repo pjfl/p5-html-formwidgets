@@ -120,12 +120,14 @@ sub _render_para {
    }
 
    my $body    = $para->{body};
-   my $args    = $body->{args};
    my $widget  = $body->{widget} || { text => $self->loc( 'Text missing' ) };
    my $content = $widget->{type} ? $self->inflate( $widget ) : $widget->{text};
 
-   if ($args) { $text .= $hacc->p( $args, $content ) }
-   else { $text .= $hacc->p( $content ) }
+   unless ($widget->{markdown}) {
+      if (my $args = $body->{args}) { $text .= $hacc->p( $args, $content ) }
+      else { $text .= $hacc->p( $content ) }
+   }
+   else { $text .= $content }
 
    return $text;
 }

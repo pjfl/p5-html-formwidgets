@@ -44,7 +44,7 @@ sub _render {
 
    if ($self->display) {
       $html .= $hacc->textfield( { name     => $self->name,
-                                   readonly => 1,
+                                   readonly => q(readonly),
                                    size     => $size,
                                    value    => $args->{default} } );
    }

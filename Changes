@@ -1,5 +1,6 @@
 Revision history for HTML::FormWidgets
 
+         - Fixed readonly attribte in Date and slider subclasses
          - Moved English hint text out of subclasses
          - Can provide absolute (+) class names as widget types
 

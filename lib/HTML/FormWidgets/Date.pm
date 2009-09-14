@@ -27,7 +27,7 @@ sub _render {
    my ($self, $args) = @_; my ($hacc, $html, $text);
 
    $hacc              = $self->hacc;
-   $args->{readonly}  = 1 if ($self->readonly);
+   $args->{readonly}  = q(readonly) if ($self->readonly);
    $args->{size    }  = $self->width;
    $text              = $hacc->textfield( $args );
    $html              = $hacc->div( { class => q(container) }, $text );

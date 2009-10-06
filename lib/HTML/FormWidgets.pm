@@ -379,8 +379,7 @@ sub _render {
 
    my $id = $args->{id} || '*unknown id*';
 
-   $self->_set_error( "No _render method for field $id" );
-   return;
+   return $self->_set_error( "No _render method for field $id" );
 }
 
 sub _render_check_field {

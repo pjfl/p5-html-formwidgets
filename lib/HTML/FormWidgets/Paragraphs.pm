@@ -146,6 +146,7 @@ sub _split {
 
    # Widows and orphans
    if (2 * $self->para_lead > length $car) { $car = q(); $cdr = $text }
+   if ($self->para_lead / 2 > length $cdr) { $car = $text; $cdr = q() }
 
    return ($car, $cdr);
 }

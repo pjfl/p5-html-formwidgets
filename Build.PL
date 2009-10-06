@@ -29,7 +29,8 @@ my $build = Module::Build->new
                              'Syntax::Highlight::Perl' => q(1.00),
                              'Text::Markdown'          => q(1.0.20),
                              'Text::ParseWords'        => q(3.22),
-                             'Text::Tabs'              => q(98.112801) },
+                             'Text::Tabs'              => q(98.112801),
+                             'TryCatch'                => 1.002000, },
      sign               => 1, );
 
 $build->create_build_script;

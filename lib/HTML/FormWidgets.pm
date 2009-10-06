@@ -11,6 +11,7 @@ use Class::MOP;
 use English qw(-no_match_vars);
 use HTML::Accessors;
 use Text::Markdown qw(markdown);
+use TryCatch;
 
 my $LSB   = q([);
 my $NB    = q(&nbsp;&dagger;);
@@ -217,7 +218,7 @@ sub init {
 sub localize {
    my ($self, $key, @rest) = @_;
 
-   return unless $key; $key = $NUL.$key; # I hate Return::Value
+   return unless $key; $key = $NUL.$key; # Stringify
 
    # Lookup the message using the supplied key
    my $messages = $self->messages     || {};
@@ -305,23 +306,18 @@ sub _bootstrap {
 }
 
 sub _ensure_class_loaded {
-   my ($self, $class, $opts) = @_; my $error; $opts ||= {};
+   my ($self, $class) = @_;
 
-   my $is_class_loaded = sub { Class::MOP::is_class_loaded( $class ) };
+   try        { Class::MOP::load_class( $class ) }
+   catch ($e) { $self->_set_error( $e ); return 0 }
 
-   {  local $EVAL_ERROR = undef;
-      eval { Class::MOP::load_class( $class ) };
-      $error = $EVAL_ERROR;
-   }
-
-   return $self->_set_error( $error ) if ($error);
-
-   unless ($is_class_loaded->()) {
-      return $self->_set_error( "Class $class loaded but package undefined" );
+   unless (Class::MOP::is_class_loaded( $class )) {
+      $self->_set_error( "Class $class loaded but package undefined" );
+      return 0;
    }
 
    bless $self, $class;
-   return;
+   return 1;
 }
 
 sub _init {
@@ -456,7 +452,7 @@ sub _render_tip {
 }
 
 sub _set_error {
-   my ($self, $error) = @_; $self->text( $error ); return;
+   my ($self, $error) = @_; return $self->text( $error );
 }
 
 1;

@@ -89,7 +89,7 @@ sub _top_filler {
    $fill .= $hacc->b( { class => q(tl3) } );
    $fill .= $hacc->b( { class => q(tl4) } );
    $html  = $hacc->b( { class => q(left) }, $fill );
-   $html .= $NBSP;
+   $html .= $hacc->span( { class => q(menu_top_middle_filler) }, $NBSP );
    $fill  = $hacc->b( { class => q(tr1) } );
    $fill .= $hacc->b( { class => q(tr2) } );
    $fill .= $hacc->b( { class => q(tr3) } );

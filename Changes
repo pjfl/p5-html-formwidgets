@@ -1,5 +1,6 @@
 Revision history for HTML::FormWidgets
 
+         - Fixed missing filler top line menu subclass
          - Switched to using TryCatch
          - Fixed readonly attribte in Date and slider subclasses
          - Moved English hint text out of subclasses

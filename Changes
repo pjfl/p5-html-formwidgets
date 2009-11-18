@@ -1,5 +1,6 @@
 Revision history for HTML::FormWidgets
 
+         - Added row numbering to Table subclass
          - Fixed missing filler top line menu subclass
          - Switched to using TryCatch
          - Fixed readonly attribte in Date and slider subclasses

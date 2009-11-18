@@ -8,28 +8,29 @@ use parent qw(HTML::FormWidgets);
 
 use version; our $VERSION = qv( sprintf '0.6.%d', q$Rev$ =~ /\d+/gmx );
 
-__PACKAGE__->mk_accessors( qw(add_tip assets data edit hide js_obj
-                              remove_tip select) );
+__PACKAGE__->mk_accessors( qw(add_tip assets data edit hide
+                              js_obj number_rows remove_tip select) );
 
 my $TTS = q( ~ );
 
 sub _init {
    my ($self, $args) = @_; my $text;
 
-   $self->assets      ( q() );
-   $self->class       ( q(small table) );
-   $self->container   ( 0 );
-   $self->data        ( { flds => [], values => [] } );
-   $self->edit        ( 0 );
-   $self->hide        ( [] );
-   $self->hint_title  ( $self->loc( q(Hint) ) ) unless ($self->hint_title);
-   $self->js_obj      ( q(behaviour.table) );
-   $self->select      ( q() );
+   $self->assets     ( q() );
+   $self->class      ( q(small table) );
+   $self->container  ( 0 );
+   $self->data       ( { flds => [], values => [] } );
+   $self->edit       ( 0 );
+   $self->hide       ( [] );
+   $self->hint_title ( $self->loc( q(Hint) ) ) unless ($self->hint_title);
+   $self->js_obj     ( q(behaviour.table) );
+   $self->number_rows( 0 );
+   $self->select     ( q() );
 
-   $text  = $self->loc( q(tableAddTip) );
-   $self->add_tip     ( $self->hint_title.$TTS.$text );
-   $text  = $self->loc( q(tableRemoveTip) );
-   $self->remove_tip  ( $self->hint_title.$TTS.$text );
+   $text = $self->loc( q(tableAddTip) );
+   $self->add_tip    ( $self->hint_title.$TTS.$text );
+   $text = $self->loc( q(tableRemoveTip) );
+   $self->remove_tip ( $self->hint_title.$TTS.$text );
    return;
 }
 
@@ -41,6 +42,11 @@ sub _render {
    my $cells = q();
    my $data  = $self->data;
    my $hacc  = $self->hacc;
+
+   if ($self->number_rows) {
+      $args   = { class => $self->class.q( minimal) };
+      $cells .= $hacc->th( $args, '#' );
+   }
 
    if ($self->select eq q(left)) {
       $args           = { class => $self->class };
@@ -63,7 +69,6 @@ sub _render {
 
       $args->{class} .= q( nowrap) unless (exists $data->{wrap}->{ $fld });
       $cells         .= $hacc->th( $args, $data->{labels}->{ $fld } );
-      $c_no++;
    }
 
    if ($self->select eq q(right)) {
@@ -77,8 +82,12 @@ sub _render {
    for $val (@{ $data->{values} }) {
       $cells = q(); $c_no = 0;
 
+      if ($self->number_rows) {
+         $cells .= $self->_row_number( $r_no + 1, $c_no++ );
+      }
+
       if ($self->select eq q(left) and $data->{values}->[0]) {
-         $cells .= $self->_check_box( $r_no, $c_no, $val->{id} );
+         $cells .= $self->_check_box( $r_no, $c_no, $val->{id} ); $c_no++;
       }
 
       for $fld (@{ $data->{flds} }) {
@@ -178,6 +187,17 @@ sub _render {
 
 # Private methods
 
+sub _check_box {
+   my ($self, $r_no, $c_no, $id) = @_; my ($text, $args);
+
+   $args = { name => $self->name.q(_select).$r_no };
+   $args->{value} = $id if ($id);
+   $text = $self->hacc->checkbox( $args );
+   $args = { align => q(center), class => $c_no % 2 == 0 ? q(even) : q(odd) };
+
+   return $self->hacc->td( $args, $text );
+}
+
 sub _editable_cell {
    my ($self, $data, $fld, $args) = @_;
 
@@ -203,15 +223,14 @@ sub _editable_cell {
    return $self->hacc->td( { class => q(dataValue) }, $text );
 }
 
-sub _check_box {
-   my ($self, $r_no, $c_no, $id) = @_; my ($text, $args);
+sub _row_number {
+   my ($self, $row, $col) = @_;
 
-   $args = { name => $self->name.q(_select).$r_no };
-   $args->{value} = $id if ($id);
-   $text = $self->hacc->checkbox( $args );
-   $args = { align => q(center), class => $c_no % 2 == 0 ? q(odd) : q(even) };
+   my $args = { class => $self->class.q( lineNumber minimal) };
 
-   return $self->hacc->td( $args, $text );
+   $args->{class} .= $col % 2 == 0 ? q( even) : q( odd);
+
+   return $self->hacc->td( $args, $row );
 }
 
 1;

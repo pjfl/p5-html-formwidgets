@@ -35,6 +35,7 @@ sub _render {
    my ($self, $args) = @_; my ($hacc, $html, $rno, $text, $text1, $tip, $val);
 
    $hacc              = $self->hacc;
+   $args->{class   } .= q( ifield);
    $args->{name    }  = $self->name.q(_new);
    $args->{size    }  = $self->width;
    $html              = $hacc->div( { class => q(container) },
@@ -63,6 +64,7 @@ sub _render {
 
    $html             .= $hacc->div( { class => q(separator) }, $self->space );
    $args              = {};
+   $args->{class   }  = q( ifield);
    $args->{labels  }  = $self->labels if ($self->labels);
    $args->{multiple}  = q(true);
    $args->{name    }  = $self->name.q(_current);

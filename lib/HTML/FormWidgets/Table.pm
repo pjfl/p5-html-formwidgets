@@ -201,6 +201,8 @@ sub _check_box {
 sub _editable_cell {
    my ($self, $data, $fld, $args) = @_;
 
+   $args->{class} = q(ifield);
+
    if (exists $data->{maxlengths}->{ $fld }) {
       $args->{maxlength} = $data->{maxlengths}->{ $fld };
    }

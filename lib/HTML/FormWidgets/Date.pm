@@ -27,11 +27,11 @@ sub _render {
    my ($self, $args) = @_; my ($hacc, $html, $text);
 
    $hacc              = $self->hacc;
+   $args->{class   } .= q( ifield);
    $args->{readonly}  = q(readonly) if ($self->readonly);
    $args->{size    }  = $self->width;
-   $text              = $hacc->textfield( $args );
-   $html              = $hacc->div( { class => q(container) }, $text );
-   $html             .= $hacc->div( { class => q(separator) }, q(&nbsp;) );
+   $html              = $hacc->textfield( $args );
+   $html             .= $hacc->span( { class => q(shim) }, q(&nbsp;) );
    $args              = { alt => q(Calendar), class => q(icon) };
    $args->{id      }  = $self->id.'_trigger';
    $args->{src     }  = $self->assets.'calendar.png';
@@ -40,8 +40,7 @@ sub _render {
    $args->{class   }  = q(tips);
    $args->{href    }  = q();
    $args->{title   }  = $self->hint_title.$TTS.$self->loc( q(dateWidgetTip) );
-   $text              = $hacc->a( $args, $text );
-   $html             .= $hacc->div( { class => q(container) }, $text );
+   $html             .= $hacc->a( $args, $text );
    $text              = "\n";
    $text             .= 'Calendar.setup( {'."\n";
    $text             .= '   inputField : "'.$self->id.'", '."\n";

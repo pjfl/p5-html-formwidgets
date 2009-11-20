@@ -14,7 +14,7 @@ sub _init {
    my ($self, $args) = @_;
 
    $self->checked(     0 );
-   $self->label_class( q(note) );
+   $self->label_class( q(checkbox_label) );
    $self->labels(      {} );
    $self->value(       1 );
    return;

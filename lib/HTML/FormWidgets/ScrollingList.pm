@@ -22,6 +22,7 @@ sub _init {
 sub _render {
    my ($self, $args) = @_;
 
+   $args->{class }  .= q( ifield);
    $args->{labels}   = $self->labels   if ($self->labels);
    $args->{onchange} = $self->onchange if ($self->onchange);
    $args->{size}     = $self->height;

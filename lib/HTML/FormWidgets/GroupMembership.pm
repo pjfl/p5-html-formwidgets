@@ -46,7 +46,7 @@ sub _render {
    $html              = $hacc->div( $fargs, $self->fhelp );
    $text              = $hacc->span( { class => q(title) }, $self->atitle );
    $text             .= $hacc->br();
-   $args->{class   } .= q( group);
+   $args->{class   } .= q( group ifield);
    $args->{id      }  = $self->id     if ($self->id);
    $args->{labels  }  = $self->labels if ($self->labels);
    $args->{multiple}  = q(true);

@@ -22,7 +22,7 @@ sub _init {
 sub _render {
    my ($self, $args) = @_; my $text;
 
-   $args           = { class => q(note) };
+   $args           = { class => q(container note) };
    $args->{style} .= 'text-align: '.$self->align.q(;) if ($self->align);
    $args->{style} .= ' width: '.$self->width.q(;)     if ($self->width);
 

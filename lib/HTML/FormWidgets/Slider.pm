@@ -43,7 +43,8 @@ sub _render {
    $args->{default} ||= q(50);
 
    if ($self->display) {
-      $html .= $hacc->textfield( { name     => $self->name,
+      $html .= $hacc->textfield( { class    => q(ifield),
+                                   name     => $self->name,
                                    readonly => q(readonly),
                                    size     => $size,
                                    value    => $args->{default} } );

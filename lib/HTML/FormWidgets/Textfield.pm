@@ -20,7 +20,8 @@ sub _init {
 sub _render {
    my ($self, $args) = @_;
 
-   $args->{size} = $self->width;
+   $args->{class} .= q( ifield);
+   $args->{size }  = $self->width;
 
    return $self->hacc->textfield( $args );
 }

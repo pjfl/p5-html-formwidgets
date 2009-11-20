@@ -15,7 +15,6 @@ sub _init {
    my ($self, $args) = @_;
 
    $self->button(     q() );
-   $self->container(  0 );
    $self->field(      q() );
    $self->height(     400 );
    $self->href(       undef );
@@ -35,6 +34,7 @@ sub _render {
    $onclick .= "', 'width=".$self->width.', screenX='.$self->screen_x.', ';
    $onclick .= 'height='.$self->height.', screenY='.$self->screen_y;
    $onclick .= ", dependent=yes, titlebar=no, scrollbars=yes')";
+   $args->{class  } = q(chooser_button);
    $args->{onclick} = $onclick;
    $args->{value  } = $self->button;
 

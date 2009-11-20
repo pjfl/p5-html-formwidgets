@@ -22,10 +22,11 @@ sub _init {
 sub _render {
    my ($self, $args)   = @_;
 
-   $args->{columns}  = $self->columns  if ($self->columns);
-   $args->{labels}   = $self->labels   if ($self->labels);
-   $args->{onchange} = $self->onchange if ($self->onchange);
-   $args->{values}   = $self->values;
+   $args->{label_class} = q(radio_group);
+   $args->{columns    } = $self->columns  if ($self->columns);
+   $args->{labels     } = $self->labels   if ($self->labels);
+   $args->{onchange   } = $self->onchange if ($self->onchange);
+   $args->{values     } = $self->values;
 
    return $self->hacc->radio_group( $args );
 }

@@ -77,7 +77,8 @@ sub _render {
       $text  = 'border: 0px; bottom: 0px; position: absolute; ';
       $text .= 'top: 0px; width: 100%; height: 100%; '.$self->style;
 
-      return $hacc->iframe( { src       => $path,
+      return $hacc->iframe( { class     => $self->subtype,
+                              src       => $path,
                               scrolling => q(auto),
                               style     => $text }, q(&nbsp;) );
    }
@@ -117,7 +118,8 @@ sub _render {
                                       widget  => 1 } );
       push @{ $self->hide }, { content => $content };
 
-      return $hacc->table( { cellpadding => 0, cellspacing => 0 }, $rows );
+      return $hacc->table( { cellpadding => 0, cellspacing => 0,
+                             class       => $self->subtype }, $rows );
    }
 
    for $line (split m { \n }mx, $text) {
@@ -200,7 +202,7 @@ sub _render {
                                    widget  => 1 } );
    push @{ $self->hide }, { content => $content };
 
-   return $hacc->table( $rows );
+   return $hacc->table( { class => $self->subtype }, $rows );
 }
 
 1;

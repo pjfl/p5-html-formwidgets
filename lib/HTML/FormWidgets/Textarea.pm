@@ -13,16 +13,17 @@ __PACKAGE__->mk_accessors( qw(height width) );
 sub _init {
    my ($self, $args) = @_;
 
-   $self->height( 5 );
-   $self->width(  60 );
+   $self->height( 5  );
+   $self->width ( 60 );
    return;
 }
 
 sub _render {
    my ($self, $args)  = @_;
 
-   $args->{cols} = $self->width;
-   $args->{rows} = $self->height;
+   $args->{class} .= q( ifield);
+   $args->{cols }  = $self->width;
+   $args->{rows }  = $self->height;
 
    return $self->hacc->textarea( $args );
 }

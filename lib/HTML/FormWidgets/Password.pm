@@ -22,8 +22,9 @@ sub _init {
 sub _render {
    my ($self, $args) = @_; my $html;
 
-   $args->{size} = $self->width;
-   $html         = $self->hacc->password_field( $args );
+   $args->{class} .= q( ifield);
+   $args->{size }  = $self->width;
+   $html           = $self->hacc->password_field( $args );
 
    return $html unless ($self->subtype && $self->subtype eq q(verify));
 

@@ -41,9 +41,9 @@ sub _render {
 
    $hacc              = $self->hacc;
    $fargs             = { class => q(instructions) };
-   $fargs->{style}   .= 'text-align: '.$self->palign.'; ' if ($self->palign);
-   $fargs->{style}   .= 'width: '.$self->pwidth.q(;)      if ($self->pwidth);
-   $html              = $hacc->div( $fargs, $self->fhelp );
+   $fargs->{style}   .= 'text-align: '.$self->palign.'; '  if ($self->palign);
+   $fargs->{style}   .= 'width: '.$self->pwidth.q(;)       if ($self->pwidth);
+   $html              = $hacc->span( $fargs, $self->fhelp ) if ($self->fhelp);
    $text              = $hacc->span( { class => q(title) }, $self->atitle );
    $text             .= $hacc->br();
    $args->{class   } .= q( group ifield);
@@ -54,8 +54,8 @@ sub _render {
    $args->{name    }  = $self->name.q(_all);
    $args->{values  }  = $self->all;
    $text             .= $hacc->scrolling_list( $args );
-   $html             .= $hacc->div( { class => q(container) }, $text );
-   $html             .= $hacc->div( { class => q(separator) }, $self->space );
+   $html             .= $hacc->span( { class => q(container) }, $text );
+   $html             .= $hacc->span( { class => q(separator) }, $self->space );
 
    $text1             = $hacc->br().$hacc->br().$hacc->br();
    $ref               = {};
@@ -76,16 +76,16 @@ sub _render {
    $text              = $hacc->image_button( $ref );
    $ref               = { class => q(help tips), title => $self->remove_tip };
    $text1            .= $hacc->span( $ref, $text );
-   $html             .= $hacc->div( { class => q(container) }, $text1 );
+   $html             .= $hacc->span( { class => q(container) }, $text1 );
 
    delete $args->{id};
-   $html             .= $hacc->div(  { class => q(separator) }, $self->space );
+   $html             .= $hacc->span(  { class => q(separator) }, $self->space);
    $text              = $hacc->span( { class => q(title) }, $self->ctitle );
    $text             .= $hacc->br();
    $args->{name  }    = $self->name.q(_current);
    $args->{values}    = $self->current;
    $text             .= $hacc->scrolling_list( $args );
-   $html             .= $hacc->div( { class => q(container) }, $text );
+   $html             .= $hacc->span( { class => q(container) }, $text );
 
    $args              = {};
    $args->{name  }    = $self->name.q(_n_added);

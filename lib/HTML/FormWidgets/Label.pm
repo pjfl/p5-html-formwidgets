@@ -45,7 +45,9 @@ sub _render {
       $text = $markup;
    }
 
-   return $text;
+   $self->class or return $text;
+
+   return $self->hacc->span( { class => $self->class }, $text );
 }
 
 1;

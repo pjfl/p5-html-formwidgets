@@ -17,6 +17,7 @@ sub _init {
    my ($self, $args) = @_; my $text;
 
    $self->assets     ( q() );
+   $self->container  ( 0 );
    $self->height     ( 5 );
    $self->hint_title ( $self->loc( q(Hint) ) ) unless ($self->hint_title);
    $self->js_obj     ( q(behaviour.freeList) );
@@ -38,9 +39,9 @@ sub _render {
    $args->{class   } .= q( ifield);
    $args->{name    }  = $self->name.q(_new);
    $args->{size    }  = $self->width;
-   $html              = $hacc->div( { class => q(container) },
-                                    $hacc->textfield( $args ) );
-   $html             .= $hacc->div( { class => q(separator) }, $self->space );
+   $text              = $hacc->textfield( $args );
+   $html              = $hacc->span( { class => q(container) }, $text );
+   $html             .= $hacc->span( { class => q(separator) }, $self->space );
 
    $args              = {};
    $args->{class   }  = $args->{name} = q(button);
@@ -60,9 +61,9 @@ sub _render {
    $text              = $hacc->image_button( $args );
    $args              = { class => q(help tips), title => $self->remove_tip };
    $text1            .= $hacc->span( $args, $text );
-   $html             .= $hacc->div( { class => q(container) }, $text1 );
+   $html             .= $hacc->span( { class => q(container) }, $text1 );
 
-   $html             .= $hacc->div( { class => q(separator) }, $self->space );
+   $html             .= $hacc->span( { class => q(separator) }, $self->space );
    $args              = {};
    $args->{class   }  = q( ifield);
    $args->{labels  }  = $self->labels if ($self->labels);
@@ -70,7 +71,8 @@ sub _render {
    $args->{name    }  = $self->name.q(_current);
    $args->{size    }  = $self->height;
    $args->{values  }  = $self->values;
-   $html             .= $hacc->scrolling_list( $args );
+   $text1             = $hacc->scrolling_list( $args );
+   $html             .= $hacc->span( { class => q(container) }, $text1 );
    $rno               = 0;
 
    for $val (@{ $args->{values} }) {

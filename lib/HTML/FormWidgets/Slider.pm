@@ -56,13 +56,13 @@ sub _render {
                                     value => $args->{default} } ) };
    }
 
-   $text  = $hacc->div( { class => q(knob) } );
-   $html .= $hacc->div( { class => q(slider), id => $id }, $text );
+   $text  = $hacc->span( { class => q(knob) } );
+   $html .= $hacc->span( { class => q(slider), id => $id }, $text );
 
    for (0 .. 10) {
       my $style = q(left: ).(45 + $_ * 20).q(px;);
 
-      $html .= $hacc->div( { class => q(tick), style => $style } );
+      $html .= $hacc->span( { class => q(tick), style => $style } );
    }
 
    $text  = "\n";

@@ -32,7 +32,7 @@ sub _render {
       $href       = $ref->{href      };
       $onclick    = $ref->{onclick   };
       $style      = $ref->{style     };
-      $attrs      = { class => $class_pref.q(HeaderFade),
+      $attrs      = { class => $class_pref.q(_header_fade),
                       id    => $id_pref.$ref->{name} };
 
       $style     .= 'font-size: '.$item->{size}.'em; ' if ($item->{size});
@@ -52,7 +52,7 @@ sub _render {
       $text      .= '('.$ref->{total}.')' if exists $ref->{total};
       $anchor     = $hacc->a( $attrs, "\n".$text );
 
-      $class      = $class_pref.q(Header).q( ).$class_pref.q(Subject);
+      $class      = $class_pref.q(_header).q( ).$class_pref.q(Subject);
       $html      .= $hacc->div( { class => $class }, "\n".$anchor )."\n";
 
       if (!$ref->{href} && !$ref->{onclick}) {

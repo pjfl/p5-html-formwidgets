@@ -243,22 +243,19 @@ sub render {
 
    my $hacc = $self->hacc;
    my $html = "\n".($self->clear eq q(left) ? $hacc->br() : $NUL);
+   my $args = { class => q(step_number) };
 
-   if ($self->stepno) {
-      $html .= $hacc->span( { class => q(lineNumber) }, $self->stepno );
-   }
+   $self->stepno and $html .= $hacc->span( $args, $self->stepno );
 
    $html .= $self->_render_prompt_label( $hacc ) if ($self->prompt);
+   $args  = { class => q(separator) };
 
-   if ($self->sep) {
-      $html .= $hacc->span( { class => q(separator) }, $self->sep );
-   }
+   $self->sep and $html .= $hacc->span( $args, $self->sep );
 
-   return $html unless ($field = $self->_render_field);
-
+   $field = $self->_render_field or return $html;
    $field = $self->_render_tip        ( $hacc, $field ) if ($self->tip);
-   $field = $self->_render_container  ( $hacc, $field ) if ($self->container);
    $field = $self->_render_check_field( $hacc, $field ) if ($self->ajaxid);
+   $field = $self->_render_container  ( $hacc, $field ) if ($self->container);
 
    return $html.$field;
 }
@@ -386,10 +383,10 @@ sub _render_check_field {
    my ($self, $hacc, $field) = @_; my $args;
 
    $args   = { class => q(hidden), id => $self->ajaxid.q(_checkField) };
-   $field .= $hacc->div( $args, $hacc->br().$self->ajaxtext );
-   $args   = { class => $self->container_class || q(container) };
+   $field .= $hacc->span( $args, $hacc->br().$self->ajaxtext );
+   $args   = { class => q(field_group) };
 
-   return $hacc->div( $args, $field );
+   return $hacc->span( $args, $field );
 }
 
 sub _render_container {
@@ -402,7 +399,7 @@ sub _render_container {
    $args       = { class => $class };
    $args->{id} = $self->container_id if ($self->container_id);
 
-   return $hacc->div( $args, $field );
+   return $hacc->span( $args, $field );
 }
 
 sub _render_field {
@@ -447,7 +444,9 @@ sub _render_tip {
 
    return $hacc->span( $args, $field ) if ($self->tiptype ne q(dagger));
 
-   return $field.$hacc->span( $args, $NB );
+   $field .= $hacc->span( $args, $NB );
+
+   return $hacc->span( { class => q(field_group) }, $field );
 }
 
 sub _set_error {
@@ -604,13 +603,13 @@ attribute in the C<< <label> >> element
 
 =item sep
 
-If true it's value is wrapped in a C<< <div class="separator"> >>
+If true it's value is wrapped in a C<< <span class="separator"> >>
 element and appended to the return value
 
 =item container
 
 If true the value return by the L</_render> method is wrapped in
-C<< <div class="container"> >> element. The value of the I<align>
+C<< <span class="container"> >> element. The value of the I<align>
 attribute is added to the space separated class list
 
 =item tip
@@ -872,7 +871,7 @@ implement a navigation menu
 
 Calls L</localize> with the I<name> attribute as the message key. If
 the message does not exist the value if the I<text> attribute is
-used. The text is wrapped in a c<< <div class="note"> >> with I<align>
+used. The text is wrapped in a c<< <span class="note"> >> with I<align>
 setting the style text alignment and I<width> setting the style width
 
 =head2 POD
@@ -888,7 +887,7 @@ approximately the same length. Defines these attributes;
 
 =item column_class
 
-CSS class name of the C<< <div> >> wrapped around each column. Defaults
+CSS class name of the C<< <span> >> wrapped around each column. Defaults
 to null
 
 =item columns

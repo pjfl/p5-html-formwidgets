@@ -222,7 +222,7 @@ sub _editable_cell {
 
    my $text = $self->hacc->$type( $args );
 
-   return $self->hacc->td( { class => q(dataValue) }, $text );
+   return $self->hacc->td( { class => q(dataField) }, $text );
 }
 
 sub _row_number {

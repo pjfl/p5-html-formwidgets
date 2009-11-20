@@ -43,7 +43,7 @@ sub _render {
    my $jscript = $self->hacc->script( { type   => 'text/javascript' }, $code );
    my $ref     = { class => q(tree), id => $args->{id} };
 
-   return $self->hacc->div( $ref, $jscript );
+   return $self->hacc->span( $ref, $jscript );
 }
 
 sub node_id {

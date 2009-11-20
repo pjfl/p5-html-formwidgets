@@ -1,5 +1,6 @@
 Revision history for HTML::FormWidgets
 
+         - Refactored html class names
          - Added ifield class to all input fields not buttons
          - Added row numbering to Table subclass
          - Fixed missing filler top line menu subclass

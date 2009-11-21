@@ -128,8 +128,7 @@ sub _render {
          $cells .= $self->_check_box( $r_no, $c_no, $val->{id} );
       }
 
-      $class = $data->{class} || q(dataValue);
-      $args  = { class => $class, id => $self->name.q(_row).$r_no };
+      $args  = { class => q(dataValue), id => $self->name.q(_row).$r_no };
       $rows .= $hacc->tr( $args, $cells ); $r_no++;
    }
 

@@ -19,7 +19,7 @@ my $NUL   = q();
 my $SPC   = q( );
 my $TTS   = q( ~ );
 my $ATTRS =
-   { ajaxid          => undef,             ajaxtext        => undef,
+   { ajaxid          => undef,
      align           => q(left),           class           => $NUL,
      clear           => $NUL,              container       => 1,
      container_class => undef,             container_id    => undef,
@@ -58,13 +58,50 @@ sub build {
       for my $item (@{ $list->{ $key } }) {
          my $built = __build_widget( $class, $config, $item, \@tmp );
 
-         push @tmp, $built if ($built);
+         $built and push @tmp, $built;
       }
 
       @{ $list->{ $key } } = @tmp;
    }
 
    return;
+}
+
+sub __build_widget {
+   my ($class, $config, $item, $stack) = @_; $item or return;
+
+   return $item unless (ref $item and ref $item->{content} eq q(HASH));
+
+   if ($item->{content}->{group}) {
+      return if ($config->{skip_groups});
+
+      my $class = $item->{content}->{class};
+
+      $item->{content} = __group_fields( $config->{hacc}, $item, $stack );
+      $item->{class  } = $class if ($class);
+   }
+   elsif ($item->{content}->{widget}) {
+      my $widget = $class->new( __merge_hashes( $config, $item ) );
+
+      $item->{content} = $widget->render;
+      $item->{class  } = $widget->class if ($widget->class);
+   }
+
+   return $item;
+}
+
+sub __group_fields {
+   my ($hacc, $item, $list) = @_; my $html = $NUL; my $args;
+
+   for (1 .. $item->{content}->{nitems}) {
+      $args = pop @{ $list };
+      $args->{content} ||= $NUL; chomp $args->{content};
+      $html = $args->{content}.$html;
+   }
+
+   my $legend = $hacc->legend( $item->{content}->{text} );
+
+   return "\n".$hacc->fieldset( "\n".$legend.$html );
 }
 
 sub new {
@@ -93,53 +130,10 @@ sub new {
    return $new;
 }
 
-# Private subroutines (not methods)
-
 sub __arg_list {
-   my (@rest) = @_;
-
-   return {} unless ($rest[0]);
+   my (@rest) = @_; $rest[0] or return {};
 
    return ref $rest[0] eq q(HASH) ? $rest[0] : { @rest };
-}
-
-sub __build_widget {
-   my ($self, $config, $item, $stack) = @_;
-
-   return unless ($item);
-
-   return $item unless (ref $item and ref $item->{content} eq q(HASH));
-
-   if ($item->{content}->{group}) {
-      return if ($config->{skip_groups});
-
-      my $class = $item->{content}->{class};
-
-      $item->{content} = __group_fields( $config->{hacc}, $item, $stack );
-      $item->{class  } = $class if ($class);
-   }
-   elsif ($item->{content}->{widget}) {
-      my $widget = $self->new( __merge_hashes( $config, $item ) );
-
-      $item->{content} = $widget->render;
-      $item->{class  } = $widget->class if ($widget->class);
-   }
-
-   return $item;
-}
-
-sub __group_fields {
-   my ($hacc, $item, $list) = @_; my $html = $NUL; my $args;
-
-   for (1 .. $item->{content}->{nitems}) {
-      $args = pop @{ $list };
-      $args->{content} ||= $NUL; chomp $args->{content};
-      $html = $args->{content}.$html;
-   }
-
-   my $legend = $hacc->legend( $item->{content}->{text} );
-
-   return "\n".$hacc->fieldset( "\n".$legend.$html );
 }
 
 sub __merge_hashes {
@@ -151,9 +145,7 @@ sub __merge_hashes {
 sub inflate {
    my ($self, $args) = @_;
 
-   return unless (defined $args);
-
-   return $args unless (ref $args);
+   defined $args or return; ref $args or return $args;
 
    $args->{fields  } = $self->fields;
    $args->{messages} = $self->messages;
@@ -178,17 +170,16 @@ sub init {
    $self->is_xml( $content_type eq q(text/html) ? 0 : 1 );
 
    # Now we can create HTML elements like we could with CGI.pm
-   unless ($self->hacc) {
+   $self->hacc or
       $self->hacc( HTML::Accessors->new( { content_type => $content_type } ) );
-   }
 
    # Create a Text::Markdown object for use by the msg method
    $self->text_obj( Text::Markdown->new
                     ( empty_element_suffix => $self->is_xml ? q( />) : q(>),
                       tab_width            => $self->tabstop ) );
 
-   # Set the ajax field validation message
-   $self->_init_ajax_text( $fields ) if ($self->ajaxid);
+   # Set the default JS event handler
+   $self->ajaxid and $self->_init_event_handler;
 
    # Calculate the prompt width
    my $pwidth = $self->pwidth;
@@ -218,7 +209,7 @@ sub init {
 sub localize {
    my ($self, $key, @rest) = @_;
 
-   return unless $key; $key = $NUL.$key; # Stringify
+   $key or return; $key = $NUL.$key; # Stringify
 
    # Lookup the message using the supplied key
    my $messages = $self->messages     || {};
@@ -226,33 +217,31 @@ sub localize {
    my $text     = $message->{text}    || $key;  # Default msg text to the key
 
    # Expand positional parameters of the form [_<n>]
-   unless (0 > index $text, $LSB) {
-      my @args = $rest[0] && ref $rest[0] eq q(ARRAY) ? @{ $rest[0] } : @rest;
+   0 > index $text, $LSB and return $text;
 
-      push @args, map { $NUL } 0 .. 10;
-      $text =~ s{ \[ _ (\d+) \] }{$args[ $1 - 1 ]}gmx;
-   }
+   my @args = $rest[0] && ref $rest[0] eq q(ARRAY) ? @{ $rest[0] } : @rest;
 
+   push @args, map { $NUL } 0 .. 10;
+   $text =~ s{ \[ _ (\d+) \] }{$args[ $1 - 1 ]}gmx;
    return $text;
 }
 
 sub render {
    my $self = shift; my $field;
 
-   return $self->text || $NUL unless ($self->type);
+   $self->type or return $self->text || $NUL;
 
    my $hacc = $self->hacc;
    my $html = "\n".($self->clear eq q(left) ? $hacc->br() : $NUL);
    my $args = { class => q(step_number) };
 
    $self->stepno and $html .= $hacc->span( $args, $self->stepno );
-
-   $html .= $self->_render_prompt_label( $hacc ) if ($self->prompt);
+   $self->prompt and $html .= $self->_render_prompt_label( $hacc );
    $args  = { class => q(separator) };
-
-   $self->sep and $html .= $hacc->span( $args, $self->sep );
+   $self->sep    and $html .= $hacc->span( $args, $self->sep );
 
    $field = $self->_render_field or return $html;
+
    $field = $self->_render_tip        ( $hacc, $field ) if ($self->tip);
    $field = $self->_render_check_field( $hacc, $field ) if ($self->ajaxid);
    $field = $self->_render_container  ( $hacc, $field ) if ($self->container);
@@ -294,7 +283,7 @@ sub _bootstrap {
    }
 
    # This is the default widget type if not overidden in the config
-   $type = $self->type( q(textfield) ) unless ($type);
+   $type or $type = $self->type( q(textfield) );
 
    $self->name    ( $type             ) unless ($name);
    $self->fields  ( $args->{fields  } );
@@ -308,34 +297,25 @@ sub _ensure_class_loaded {
    try        { Class::MOP::load_class( $class ) }
    catch ($e) { $self->_set_error( $e ); return 0 }
 
-   unless (Class::MOP::is_class_loaded( $class )) {
-      $self->_set_error( "Class $class loaded but package undefined" );
-      return 0;
+   if (Class::MOP::is_class_loaded( $class )) {
+      bless $self, $class;
+      return 1;
    }
 
-   bless $self, $class;
-   return 1;
+   $self->_set_error( "Class $class loaded but package undefined" );
+   return 0;
 }
 
 sub _init {
    # Can be overridden in factory subclass
 }
 
-sub _init_ajax_text {
-   my ($self, $fields) = @_; my $ajax_id = $self->ajaxid; my ($msg_id, $text);
-
-   $msg_id = exists $fields->{ $ajax_id }
-           ? $fields->{ $ajax_id }->{validate} : $NUL;
-   $msg_id = $msg_id->[0] if ($msg_id and ref $msg_id eq q(ARRAY));
-   $text   = $self->ajaxtext
-          || ($msg_id && $self->loc( $msg_id ))
-          || 'Invalid field value';
-   $self->ajaxtext( $text );
+sub _init_event_handler {
+   my $self = shift; my $ajaxid = $self->ajaxid;
 
    # Install default JavaScript event handler
-   unless ($self->onblur || $self->onchange || $self->onkeypress) {
-      $text = $self->evnt_hndlr.'( "'.$self->ajaxid.'", this.value )';
-      $self->onblur( $text );
+   unless ($self->onblur or $self->onchange or $self->onkeypress) {
+      $self->onblur( $self->evnt_hndlr.'( "'.$ajaxid.'", this.value )' );
    }
 
    return;
@@ -370,9 +350,7 @@ sub _init_fields {
 }
 
 sub _render {
-   my ($self, $args) = @_;
-
-   return $self->text if ($self->text);
+   my ($self, $args) = @_; $self->text and return $self->text;
 
    my $id = $args->{id} || '*unknown id*';
 
@@ -380,24 +358,23 @@ sub _render {
 }
 
 sub _render_check_field {
-   my ($self, $hacc, $field) = @_; my $args;
+   my ($self, $hacc, $field) = @_;
 
-   $args   = { class => q(hidden), id => $self->ajaxid.q(_checkField) };
-   $field .= $hacc->span( $args, $hacc->br().$self->ajaxtext );
-   $args   = { class => q(field_group) };
+   my $args = { class => q(hidden), id => $self->ajaxid.q(_checkField) };
 
-   return $hacc->span( $args, $field );
+   $field .= $hacc->span( $args );
+
+   return $hacc->span( { class => q(field_group) }, $field );
 }
 
 sub _render_container {
-   my ($self, $hacc, $field) = @_; my ($args, $class);
+   my ($self, $hacc, $field) = @_; my $class;
 
-   unless ($class = $self->container_class) {
-      $class = q(container ).$self->align;
-   }
+   $class = $self->container_class or $class = q(container ).$self->align;
 
-   $args       = { class => $class };
-   $args->{id} = $self->container_id if ($self->container_id);
+   my $args = { class => $class };
+
+   $self->container_id and $args->{id} = $self->container_id;
 
    return $hacc->span( $args, $field );
 }
@@ -432,17 +409,15 @@ sub _render_tip {
    ($tip = $self->tip) =~ s{ \n }{ }gmx;
 
    if ($tip !~ m{ $TTS }mx) {
-      unless ($self->hint_title) {
-         $self->hint_title( $self->loc( q(handy_hint_title) ) );
-      }
-
+      $self->hint_title
+         or $self->hint_title( $self->loc( q(handy_hint_title) ) );
       $tip = $self->hint_title.$TTS.$tip;
    }
 
    $tip  =~ s{ \s+ }{ }gmx;
    $args = { class => q(help tips), title => $tip };
 
-   return $hacc->span( $args, $field ) if ($self->tiptype ne q(dagger));
+   $self->tiptype eq q(dagger) or return $hacc->span( $args, $field );
 
    $field .= $hacc->span( $args, $NB );
 

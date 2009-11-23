@@ -345,7 +345,7 @@ Tree.Trunk = Tree.AbstractNode.extend({
    toString: function() {
       var i, sb = [], str;
 
-      str  = '<div id="' + this.id + '" ';
+      str  = '<span id="' + this.id + '" ';
       str += 'ondblclick="Tree.Handler.toggle(this);" ';
       str += 'class="treeBranch" ';
       str += 'onkeydown="return Tree.Handler.keydown(this, event)">';
@@ -368,7 +368,7 @@ Tree.Trunk = Tree.AbstractNode.extend({
 
       if (this.tip) str += '</span>';
 
-      str += '</div>' + '<div id="' + this.id + '-cont" ';
+      str += '</span>' + '<span id="' + this.id + '-cont" ';
       str += 'class="treeContainer" style="display: ';
       str += (this.open ? 'block' : 'none') + ';">';
 
@@ -377,7 +377,7 @@ Tree.Trunk = Tree.AbstractNode.extend({
       }
 
       this.rendered = true;
-      return str + sb.join( '' ) + '</div>';
+      return str + sb.join( '' ) + '</span>';
    },
 });
 
@@ -573,7 +573,7 @@ Tree.Branch = Tree.AbstractNode.extend({
       else { this.icon = this.icon || this.config.fileIcon; }
 
       label = this.text.replace( /</g, '&lt;' ).replace( />/g, '&gt;' );
-      str  = '<div id="' + this.id;
+      str  = '<span id="' + this.id;
       str += '" ondblclick="Tree.Handler.toggle(this);" class="treeBranch" ';
       str += 'onkeydown="return Tree.Handler.keydown(this, event)">' + indent;
       str += '<img class="treeIcon" id="' + this.id + '-plus" src="';
@@ -607,7 +607,7 @@ Tree.Branch = Tree.AbstractNode.extend({
 
       if (this.tip) str += '</span>';
 
-      str += '</div>' + '<div id="' + this.id + '-cont" ';
+      str += '</span>' + '<span id="' + this.id + '-cont" ';
       str += 'class="treeContainer" style="display: ';
       str += (this.open ? 'block' :'none') + ';">';
 
@@ -619,6 +619,6 @@ Tree.Branch = Tree.AbstractNode.extend({
                         ? this.config.lPlusIcon  : this.config.tPlusIcon);
       this.minusIcon = (this.parentNode._last
                         ? this.config.lMinusIcon : this.config.tMinusIcon);
-      return str + sb.join( '' ) + '</div>';
+      return str + sb.join( '' ) + '</span>';
    },
 });

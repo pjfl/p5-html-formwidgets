@@ -27,23 +27,20 @@ sub _init {
 }
 
 sub _render {
-   my ($self, $args) = @_;
-
+   my $self = shift;
    my @root = grep { ! m{ \A _ }mx } keys %{ $self->data };
 
-   if (defined $root[1]) {
-      return $self->hacc->span
+   defined $root[1]
+      and return $self->hacc->span
          ( { class => q(error) }, 'Your tree has more than one root' );
-   }
 
    $self->node_count( 0 );
 
-   my $code    = $self->scan_hash(    { data   => $self->data,
-                                        parent => $NUL, prev_key => $NUL } );
-   my $jscript = $self->hacc->script( { type   => 'text/javascript' }, $code );
-   my $ref     = { class => q(tree), id => $args->{id} };
+   my $args    = { data => $self->data, parent => $NUL, prev_key => $NUL };
+   my $code    = __wrap_cdata( $self->scan_hash( $args ) );
+   my $jscript = $self->hacc->script( { type => 'text/javascript' }, $code );
 
-   return $self->hacc->span( $ref, $jscript );
+   return $self->hacc->span( { class => q(tree), id => $self->id }, $jscript );
 }
 
 sub node_id {
@@ -117,11 +114,15 @@ sub scan_hash {
    }
 
    if (not $args->{parent} and $node) {
-      $jscript .= 'document.write('.$node.');'."\n";
+      $jscript .= '$( "'.$self->id.'" ).setHTML('.$node.' + "" );'."\n";
       $jscript .= $self->selected.'.focus();'."\n" if ($self->selected);
    }
 
    return $jscript;
+}
+
+sub __wrap_cdata {
+   my $code = shift; return q(//<![CDATA[).$code.q(//]]>);
 }
 
 1;

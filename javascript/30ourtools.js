@@ -1,4 +1,4 @@
-// @(#)$Id: 30ourtools.js 659 2009-04-10 11:39:14Z pjf $
+// @(#)$Id: 30ourtools.js 874 2009-11-22 04:20:19Z pjf $
 
 /* Property: setHTML
       Sets the innerHTML of the Element. Should work for application/xhtml+xml
@@ -507,7 +507,7 @@ var GroupMember = new Class({
 
 var LinkFader = new Class({
    options: {
-      cn   : 'Fade',             // Class name matching links to fade
+      cn   : 'fade',             // Class name matching links to fade
       inBy : 6,                  // Fade in colour inc/dec by
       outBy: 6,                  // Fade out colour inc/dec by
       speed: 20,                 // Millisecs between colour changes
@@ -971,7 +971,7 @@ var LiveGrid = new Class({
    }
 });
 
-var LoadMore = new Class({
+var LoadMore = new Class( {
    initialize: function( options ) {
       this.url = options.url;
    },
@@ -984,13 +984,19 @@ var LoadMore = new Class({
    },
 
    updateContent: function( text, xml ) {
-      var html = '';
-      var id   = xml.documentElement.getAttribute( 'id' );
       var rows = xml.documentElement.getElementsByTagName( 'items' );
-      $each( rows, function( row ) { html += row.childNodes[ 0 ].nodeValue } );
+      var id   = xml.documentElement.getAttribute( 'id' );
+      var html = '';
+
+      $each( rows, function( row ) {
+         for (var i = 0; i < row.childNodes.length; i++) {
+            html += row.childNodes[ i ].nodeValue;
+         }
+      } );
+
       $( id ).setHTML( html.unescapeHTML() );
    }
-});
+} );
 
 var ServerUtils = new Class({
    initialize: function( options ) {
@@ -1001,16 +1007,23 @@ var ServerUtils = new Class({
       new Ajax( this.url + 'check_field',
          { method    : 'get',
            data      : 'content-type=text/xml&id=' + id + '&val=' + val,
-           onComplete: this.updateClass } ).request();
+           onComplete: this.updateContent } ).request();
    },
 
    postData: function( url, data ) {
       new Ajax( url, { method: 'post', data: data } ).request();
    },
 
-   updateClass: function( text, xml ) {
-      var id = xml.documentElement.getAttribute( 'id' );
-      $( id ).className = xml.documentElement.getAttribute( 'result' );
+   updateContent: function( text, xml ) {
+      var id        = xml.documentElement.getAttribute( 'id' );
+      var result    = xml.documentElement.getAttribute( 'result' );
+      var className = xml.documentElement.getAttribute( 'class_name' );
+      var elem      = $( id );
+
+      elem.setHTML( result );
+
+      if (result) elem.className = className;
+      else elem.className = 'hidden';
    }
 });
 
@@ -1105,24 +1118,29 @@ var TableUtils = new Class({
 
          if (elem = $( name + '_add' )) {
             row = document.createElement( 'tr' );
+            row.setAttribute( 'class', 'dataValue' );
             row.setAttribute( 'id', name + '_row' + nrows );
 
             while (aelem = $( name + '_add' + cNo )) {
+               cell = document.createElement( 'td' );
+
                if (edit) {
                   fld = document.createElement( 'input' );
                   fld.setAttribute( 'value', aelem.value );
                   fld.setAttribute( 'type', 'input' );
+                  fld.setAttribute( 'class', 'ifield' );
                   fld.setAttribute( 'name', aelem.name + nrows );
                   if (aelem.size) { fld.setAttribute( 'size', aelem.size ) }
                   if (aelem.maxlength) {
                      fld.setAttribute( 'maxlength', aelem.maxlength );
                   }
+                  cell.setAttribute( 'class', 'dataField' );
                }
                else {
                   fld = document.createTextNode( aelem.value );
+                  cell.setAttribute( 'class', 'dataValue' );
                }
 
-               cell = document.createElement( 'td' );
                cell.appendChild( fld );
                row.appendChild( cell );
                aelem.value = ''; cNo++;

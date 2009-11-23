@@ -1,5 +1,6 @@
 /*
  * HTML Parser By John Resig (ejohn.org)
+ * http://ejohn.org/blog/pure-javascript-html-parser
  * Original code by Erik Arvidsson, Mozilla Public License
  * http://erik.eae.net/simplehtmlparser/simplehtmlparser.js
  *
@@ -33,7 +34,7 @@
 	var empty = makeMap("area,base,basefont,br,col,frame,hr,img,input,isindex,link,meta,param,embed");
 
 	// Block Elements - HTML 4.01
-	var block = makeMap("address,applet,blockquote,button,center,dd,del,dir,div,dl,dt,fieldset,form,frameset,hr,iframe,ins,isindex,li,map,menu,noframes,noscript,object,ol,p,pre,script,table,tbody,td,tfoot,th,thead,tr,ul");
+	var block = makeMap("address,applet,blockquote,button,center,dd,del,dir,div,dl,dt,fieldset,form,frameset,hr,iframe,ins,isindex,li,map,menu,noframes,noscript,object,ol,p,pre,table,tbody,td,tfoot,th,thead,tr,ul");
 
 	// Inline Elements - HTML 4.01
 	var inline = makeMap("a,abbr,acronym,applet,b,basefont,bdo,big,br,button,cite,code,del,dfn,em,font,i,iframe,img,input,ins,kbd,label,map,object,q,s,samp,script,select,small,span,strike,strong,sub,sup,textarea,tt,u,var");
@@ -49,8 +50,9 @@
 	var special = makeMap("script,style");
 
 	var HTMLParser = this.HTMLParser = function( html, handler ) {
-		var index, chars, match, stack = [], last = html;
-		stack.last = function(){
+		var index, chars, match, re, stack = [], tag, text, last = html;
+
+		stack.last = function() {
 			return this[ this.length - 1 ];
 		};
 
@@ -59,7 +61,6 @@
 
 			// Make sure we're not in a script or style element
 			if ( !stack.last() || !special[ stack.last() ] ) {
-
 				// Comment
 				if ( html.indexOf("<!--") == 0 ) {
 					index = html.indexOf("-->");
@@ -70,9 +71,9 @@
 						html = html.substring( index + 3 );
 						chars = false;
 					}
-
+				}
 				// end tag
-				} else if ( html.indexOf("</") == 0 ) {
+            else if ( html.indexOf("</") == 0 ) {
 					match = html.match( endTag );
 
 					if ( match ) {
@@ -80,9 +81,9 @@
 						match[0].replace( endTag, parseEndTag );
 						chars = false;
 					}
-
+				}
 				// start tag
-				} else if ( html.indexOf("<") == 0 ) {
+            else if ( html.indexOf("<") == 0 ) {
 					match = html.match( startTag );
 
 					if ( match ) {
@@ -98,21 +99,23 @@
 					var text = index < 0 ? html : html.substring( 0, index );
 					html = index < 0 ? "" : html.substring( index );
 
-					if ( handler.chars )
-						handler.chars( text );
+					if ( handler.chars ) handler.chars( text );
+				}
+			}
+         else {
+            tag = "</" + stack.last() + ">"; index = html.indexOf( tag );
+
+            if (index >= 0) {
+               text  = html.substring( 0, index );
+               html  = html.substring( index + tag.length );
+					text  = text.replace( /<!\[CDATA\[/, "" )
+					text  = text.replace( /\]\]>$/, "" )
+					text  = text.replace( /<!--(.*?)-->/gm, "$1" );
+
+               if ( handler.chars ) handler.chars( text );
 				}
 
-			} else {
-				html = html.replace(new RegExp("(.*)<\/" + stack.last() + "[^>]*>"), function(all, text){
-					text = text.replace(/<!--(.*?)-->/g, "$1")
-						.replace(/<!\[CDATA\[(.*?)]]>/g, "$1");
-
-					if ( handler.chars ) handler.chars( text );
-
-					return "";
-				});
-
-				parseEndTag( "", stack.last() );
+            parseEndTag( "", stack.last() );
 			}
 
 			if ( html == last ) throw "Parse Error: " + html;
@@ -160,20 +163,16 @@
 
 		function parseEndTag( tag, tagName ) {
 			// If no tag name is provided, clean shop
-			if ( !tagName )
-				var pos = 0;
-
-			// Find the closest opened tag of the same type
+			if ( !tagName ) var pos = 0;
 			else
+            // Find the closest opened tag of the same type
 				for ( var pos = stack.length - 1; pos >= 0; pos-- )
-					if ( stack[ pos ] == tagName )
-						break;
+					if ( stack[ pos ] == tagName ) break;
 
 			if ( pos >= 0 ) {
 				// Close all the open elements, up the stack
 				for ( var i = stack.length - 1; i >= pos; i-- )
-					if ( handler.end )
-						handler.end( stack[ i ] );
+					if ( handler.end ) handler.end( stack[ i ] );
 
 				// Remove the open elements from the stack
 				stack.length = pos;

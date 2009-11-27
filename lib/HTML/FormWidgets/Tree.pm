@@ -40,7 +40,9 @@ sub _render {
    my $code    = __wrap_cdata( $self->scan_hash( $args ) );
    my $jscript = $self->hacc->script( { type => 'text/javascript' }, $code );
 
-   return $self->hacc->span( { class => q(tree), id => $self->id }, $jscript );
+   $args = { class => q(tree), id => $self->id };
+
+   return $self->hacc->span( $args )."\n".$jscript;
 }
 
 sub node_id {

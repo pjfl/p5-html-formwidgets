@@ -342,6 +342,17 @@ Tree.Trunk = Tree.AbstractNode.extend({
       return true;
    },
 
+   setAll: function( node ) {
+      if (!node) node = this;
+
+      $( node.id + '-cont' ).style.display
+         = this.cookies.get( node.id ) ? 'block' : 'none';
+
+      for (var i = 0; i < node.childNodes.length; i++) {
+         this.setAll( node.childNodes[ i ] );
+      }
+   },
+
    toString: function() {
       var i, sb = [], str;
 

@@ -29,7 +29,7 @@ my $ATTRS =
      hacc            => undef,             hint_title      => $NUL,
      id              => undef,             is_xml          => 0,
      messages        => {},                name            => undef,
-     nowrap          => 0,
+     nowrap          => 0,                 optional_js     => undef,
      onblur          => undef,             onchange        => undef,
      onkeypress      => undef,             palign          => undef,
      prompt          => $NUL,              pwidth          => 40,
@@ -156,6 +156,7 @@ sub inflate {
 sub init {
    my ($self, $args) = @_;
 
+   $self->optional_js( $args->{optional_js} );
    # Allow the factory subclass to set it's own defaults
    $self->_init( $args );
 
@@ -310,17 +311,6 @@ sub _init {
    # Can be overridden in factory subclass
 }
 
-sub _init_event_handler {
-   my $self = shift; my $ajaxid = $self->ajaxid;
-
-   # Install default JavaScript event handler
-   unless ($self->onblur or $self->onchange or $self->onkeypress) {
-      $self->onblur( $self->evnt_hndlr.'( "'.$ajaxid.'", this.value )' );
-   }
-
-   return;
-}
-
 sub _init_args {
    my ($self, $skip, $args) = @_; my $val;
 
@@ -328,6 +318,17 @@ sub _init_args {
       if (exists $self->{ $_ } and defined ($val = $args->{ $_ })) {
          $self->{ $_ } = $val;
       }
+   }
+
+   return;
+}
+
+sub _init_event_handler {
+   my $self = shift; my $ajaxid = $self->ajaxid;
+
+   # Install default JavaScript event handler
+   unless ($self->onblur or $self->onchange or $self->onkeypress) {
+      $self->onblur( $self->evnt_hndlr.'( "'.$ajaxid.'", this.value )' );
    }
 
    return;

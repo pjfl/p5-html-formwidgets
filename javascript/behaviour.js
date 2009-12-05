@@ -22,9 +22,8 @@ var State = new Class( {
       if (!this.popup) {
          this.cookies.set( 'width',  w );
          this.cookies.set( 'height', h );
+         window.defaultStatus = 'w: ' + w + ' h: ' + h;
       }
-
-      window.defaultStatus = 'w: ' + w + ' h: ' + h;
 
       if (! (content = $( 'content' ))) return;
 
@@ -33,7 +32,7 @@ var State = new Class( {
          height    += elem.getStyle( 'display' ) != 'none' ? elemHeight : 0;
       }
 
-      if (append = $( 'append' )) {
+      if (append = $( 'appendDisp' )) {
          height += append.getStyle( 'height' ).toInt();
 
          if (elem = $( 'footerDisp' )) {
@@ -163,13 +162,13 @@ var State = new Class( {
             if (!this.cookies.get( 'sidebar' )) {
                this.cookies.set( 'sidebar', this.assets + 'pushedpin.gif' );
                this.resize();
-               e = Event( e );
+               e = new Event( e );
                this.slider.slideIn();
                e.stop();
             }
             else {
                this.cookies.delete( 'sidebar' );
-               e = Event( e );
+               e = new Event( e );
                this.slider.slideOut();
                e.stop();
             }
@@ -236,6 +235,12 @@ var State = new Class( {
       }
 
       this.resize();
+
+      if ($( 'results' )) {
+         var autoscroll = new Fx.Style( 'results', 'margin-top',
+            { duration: 1500 } ).set( -window.getHeight() );
+         autoscroll.start( 0 );
+      }
 
       if (first_fld && (elem = $( first_fld ))) elem.focus();
    },

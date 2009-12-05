@@ -1,4 +1,4 @@
-// @(#)$Id: 30ourtools.js 874 2009-11-22 04:20:19Z pjf $
+// @(#)$Id: 30ourtools.js 878 2009-12-02 00:27:38Z pjf $
 
 /* Property: setHTML
       Sets the innerHTML of the Element. Should work for application/xhtml+xml
@@ -93,19 +93,19 @@ Events:
    onBackground - function to execute when an element starts to hide
 */
 
-var Accordion = Fx.Elements.extend({
+var Accordion = Fx.Elements.extend( {
    options: {
-      onActive: Class.empty,
+      onActive    : Class.empty,
       onBackground: Class.empty,
-      display: 0,
-      show: false,
-      height: true,
-      width: false,
-      opacity: true,
-      fixedHeight: false,
-      fixedWidth: false,
-      wait: false,
-      alwaysHide: false
+      display     : 0,
+      show        : false,
+      height      : true,
+      width       : false,
+      opacity     : true,
+      fixedHeight : false,
+      fixedWidth  : false,
+      wait        : false,
+      alwaysHide  : false
    },
 
    initialize: function() {
@@ -129,11 +129,11 @@ var Accordion = Fx.Elements.extend({
 
       if (this.options.alwaysHide) this.options.wait = true;
 
-      if ($chk( this.options.show )){
+      if ($chk( this.options.show )) {
          this.options.display = false; this.previous = this.options.show;
       }
 
-      if (this.options.start){
+      if (this.options.start) {
          this.options.display = false; this.options.show = false;
       }
 
@@ -180,37 +180,50 @@ var Accordion = Fx.Elements.extend({
                 within the accordion.
    */
 
-   addSection: function(toggler, element, pos){
-      toggler = $(toggler);
-      element = $(element);
-      var test = this.togglers.contains(toggler);
-      var len = this.togglers.length;
-      this.togglers.include(toggler);
-      this.elements.include(element);
+   addSection: function( toggler, element, pos ) {
+      toggler  = $( toggler ); element = $( element );
+
+      var test = this.togglers.contains( toggler );
+      var len  = this.togglers.length;
+
+      this.togglers.include( toggler ); this.elements.include( element );
+
       if (len && (!test || pos)){
-         pos = $pick(pos, len - 1);
-         toggler.injectBefore(this.togglers[pos]);
-         element.injectAfter(toggler);
+         pos = $pick( pos, len - 1 );
+         toggler.injectBefore( this.togglers[ pos ] );
+         element.injectAfter( toggler );
       }
       else if (this.container && !test){
-         toggler.inject(this.container);
-         element.inject(this.container);
+         toggler.inject( this.container ); element.inject( this.container );
       }
-      var idx = this.togglers.indexOf(toggler);
-      toggler.addEvent('click', this.display.bind(this, idx));
+
+      var idx = this.togglers.indexOf( toggler );
+
+      toggler.addEvent( 'click', this.display.bind( this, idx ) );
+
       if (this.options.height)
-         element.setStyles({ 'padding-top': 0, 'padding-bottom': 0 });
+         element.setStyles( { 'padding-top': 0, 'padding-bottom': 0 } );
+
       if (this.options.width)
-         element.setStyles({ 'padding-left': 0, 'padding-right': 0 });
-      element.fullOpacity = 1;
-      if (this.options.fixedWidth)
+         element.setStyles( { 'padding-left': 0, 'padding-right': 0 } );
+
+      if (this.options.fixedWidth) {
          element.fullWidth = this.options.fixedWidth;
-      if (this.options.fixedHeight)
-         element.fullHeight = this.options.fixedHeight;
-      element.setStyle('overflow', 'hidden');
-      if (!test){
-         for (var fx in this.effects) element.setStyle(fx, 0);
+         element.setStyle( 'overflow-x', 'auto' );
       }
+      else { element.setStyle( 'overflow-x', 'hidden' ) }
+
+      if (this.options.fixedHeight) {
+         element.fullHeight = this.options.fixedHeight;
+         element.setStyle( 'overflow-y', 'auto' );
+      }
+      else { element.setStyle( 'overflow-y', 'hidden' ) }
+
+      if (!test){
+         for (var fx in this.effects) element.setStyle( fx, 0 );
+      }
+
+      element.fullOpacity = 1;
       return this;
    },
 
@@ -224,9 +237,9 @@ var Accordion = Fx.Elements.extend({
               element to show.
    */
 
-   display: function(index){
-      index = ($type(index) == 'element')
-            ? this.elements.indexOf(index) : index;
+   display: function( index ) {
+      index = ($type( index ) == 'element')
+            ? this.elements.indexOf( index ) : index;
 
       if (index >= this.elements.length) index = 0;
 
@@ -235,31 +248,37 @@ var Accordion = Fx.Elements.extend({
               && !this.options.alwaysHide)) return this;
 
       var obj = {};
+
       this.previous = index;
-      this.elements.each(function(el, i){
-         obj[i] = {};
+      this.elements.each( function( el, i ) {
          var hide = (i != index)
-            || (this.options.alwaysHide && (el.offsetHeight > 0));
-         this.fireEvent(hide ? 'onBackground' : 'onActive',
-                        [this.togglers[i], el]);
+                 || (this.options.alwaysHide && (el.offsetHeight > 0));
+
+         obj[i] = {};
+         this.fireEvent( hide ? 'onBackground' : 'onActive',
+                         [ this.togglers[i], el ] );
+
          for (var fx in this.effects)
-            obj[i][fx] = hide ? 0 : el[this.effects[fx]];
-      }, this);
-      return this.start(obj);
+            obj[i][fx] = hide ? 0 : el[ this.effects[fx] ];
+      }, this );
+
+      return this.start( obj );
    },
 
    showThisHideOpen: function( index ) { return this.display( index ) },
 
    redisplay: function() {
-      var index = this.previous;
-      this.previous = -1;
+      var index = this.previous; this.previous = -1;
+
       return this.display( index );
    },
 
    reload: function( index ) {
       if (!index || index >= this.togglers.length) index = 0;
+
       if (!($defined( this.togglers[ index ] )
             && $defined( this.togglers[ index ].onclick ))) return;
+
       this.togglers[ index ].onclick();
    },
 
@@ -268,9 +287,10 @@ var Accordion = Fx.Elements.extend({
          if (height) el.fullHeight = this.options.fixedHeight = height;
          if (width)  el.fullWidth  = this.options.fixedWidth  = width;
       }, this );
+
       return this.redisplay();
    }
-});
+} );
 
 Fx.Accordion = Accordion;
 
@@ -976,11 +996,13 @@ var LoadMore = new Class( {
       this.url = options.url;
    },
 
-   request: function( action, id, val ) {
+   request: function( action, id, val, onComplete ) {
+      if (onComplete) this.onComplete = onComplete;
+
       new Ajax( this.url + action,
          { method    : 'get',
            data      : 'content-type=text/xml&id=' + id + '&val=' + val,
-           onComplete: this.updateContent } ).request();
+           onComplete: this.updateContent.bind( this ) } ).request();
    },
 
    updateContent: function( text, xml ) {
@@ -995,6 +1017,8 @@ var LoadMore = new Class( {
       } );
 
       $( id ).setHTML( html.unescapeHTML() );
+
+      if (this.onComplete) this.onComplete.call();
    }
 } );
 

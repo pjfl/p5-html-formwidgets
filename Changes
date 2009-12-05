@@ -1,5 +1,6 @@
 Revision history for HTML::FormWidgets
 
+         - Optional JS files are now selectable by the widget
          - Tree widget now self renders via HTML parser
          - Refactored html class names
          - Added ifield class to all input fields not buttons

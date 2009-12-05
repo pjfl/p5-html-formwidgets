@@ -20,6 +20,8 @@ sub _init {
    $self->hint_title( $self->loc( q(Hint) ) ) unless ($self->hint_title);
    $self->readonly  ( 1 );
    $self->width     ( 10 );
+
+   push @{ $self->optional_js }, qw(calendar.js calendar-setup.js);
    return;
 }
 

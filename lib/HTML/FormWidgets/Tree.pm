@@ -23,6 +23,8 @@ sub _init {
    $self->selected ( undef      );
    $self->target   ( q()        );
    $self->url      ( undef      );
+
+   push @{ $self->optional_js }, q(tree.js);
    return;
 }
 

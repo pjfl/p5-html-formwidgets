@@ -1,21 +1,20 @@
-package HTML::FormWidgets::Hidden;
-
 # @(#)$Id$
+
+package HTML::FormWidgets::Hidden;
 
 use strict;
 use warnings;
+use version; our $VERSION = qv( sprintf '0.6.%d', q$Rev$ =~ /\d+/gmx );
 use parent qw(HTML::FormWidgets);
 
-use version; our $VERSION = qv( sprintf '0.6.%d', q$Rev$ =~ /\d+/gmx );
-
-sub _init {
+sub init {
    my ($self, $args) = @_;
 
    $self->container( 0 );
    return;
 }
 
-sub _render {
+sub render_field {
    my ($self, $args) = @_;
 
    delete $args->{id};

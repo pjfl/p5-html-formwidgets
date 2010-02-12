@@ -1,16 +1,15 @@
-package HTML::FormWidgets::Cloud;
-
 # @(#)$Id$
+
+package HTML::FormWidgets::Cloud;
 
 use strict;
 use warnings;
-use parent qw(HTML::FormWidgets);
-
 use version; our $VERSION = qv( sprintf '0.6.%d', q$Rev$ =~ /\d+/gmx );
+use parent qw(HTML::FormWidgets);
 
 __PACKAGE__->mk_accessors( qw(data js_obj) );
 
-sub _init {
+sub init {
    my ($self, $args) = @_;
 
    $self->data(   {} );
@@ -18,7 +17,7 @@ sub _init {
    return;
 }
 
-sub _render {
+sub render_field {
    my ($self, $args) = @_;
    my ($anchor, $attrs, $class, $class_pref, $hacc, $href, $html);
    my ($id_pref, $item, $onclick, $ref, $style, $text);

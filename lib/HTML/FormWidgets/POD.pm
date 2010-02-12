@@ -11,7 +11,7 @@ use Pod::Html;
 
 __PACKAGE__->mk_accessors( qw(css src tempdir tempfile title) );
 
-sub _init {
+sub init {
    my ($self, $args) = @_;
 
    $self->css     ( undef );
@@ -22,7 +22,7 @@ sub _init {
    return;
 }
 
-sub _render {
+sub render_field {
    my ($self, $args) = @_; my $line;
 
    no warnings; ## no critic

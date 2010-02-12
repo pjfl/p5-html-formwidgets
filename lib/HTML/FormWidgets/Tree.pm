@@ -1,20 +1,20 @@
-package HTML::FormWidgets::Tree;
-
 # @(#)$Id$
+
+package HTML::FormWidgets::Tree;
 
 use strict;
 use warnings;
-use parent qw(HTML::FormWidgets);
-use English qw(-no_match_vars);
-
 use version; our $VERSION = qv( sprintf '0.6.%d', q$Rev$ =~ /\d+/gmx );
+use parent qw(HTML::FormWidgets);
+
+use English qw(-no_match_vars);
 
 __PACKAGE__->mk_accessors( qw(base behaviour data node_count
                               selected target url) );
 
 my $NUL = q();
 
-sub _init {
+sub init {
    my ($self, $args) = @_;
 
    $self->base     ( $NUL       );
@@ -28,7 +28,7 @@ sub _init {
    return;
 }
 
-sub _render {
+sub render_field {
    my $self = shift;
    my @root = grep { ! m{ \A _ }mx } keys %{ $self->data };
 

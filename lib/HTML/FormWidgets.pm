@@ -125,7 +125,7 @@ sub new {
    $new->_ensure_class_loaded( $class );
 
    # Complete the initialization
-   $new->init( $args );
+   $new->_init( $args );
 
    return $new;
 }
@@ -154,55 +154,7 @@ sub inflate {
 }
 
 sub init {
-   my ($self, $args) = @_;
-
-   $self->optional_js( $args->{optional_js} );
-   # Allow the factory subclass to set it's own defaults
-   $self->_init( $args );
-
-   my $skip   = { qw(ajaxid 1 id 1 name 1 type 1) };
-   my $fields = $args->{fields};
-
-   $self->_init_fields( $skip, $fields );
-   $self->_init_args  ( $skip, $args   );
-
-   my $content_type = $self->content_type;
-
-   $self->is_xml( $content_type eq q(text/html) ? 0 : 1 );
-
-   # Now we can create HTML elements like we could with CGI.pm
-   $self->hacc or
-      $self->hacc( HTML::Accessors->new( { content_type => $content_type } ) );
-
-   # Create a Text::Markdown object for use by the msg method
-   $self->text_obj( Text::Markdown->new
-                    ( empty_element_suffix => $self->is_xml ? q( />) : q(>),
-                      tab_width            => $self->tabstop ) );
-
-   # Set the default JS event handler
-   $self->ajaxid and $self->_init_event_handler;
-
-   # Calculate the prompt width
-   my $pwidth = $self->pwidth;
-
-   if ($pwidth and $pwidth =~ m{ \A \d+ \z }mx) {
-      $self->pwidth( (int $pwidth * $self->swidth / 100).q(px) );
-   }
-
-   my $sep = $self->sep;
-
-   $sep = q(&nbsp;:&nbsp;) if (not defined $sep and $self->prompt);
-   $sep = $self->space     if (    defined $sep and $sep eq q(space));
-
-   $self->sep( $sep );
-
-   my $stepno = $self->stepno;
-
-   $stepno = $self->space if (defined $stepno and $stepno == 0);
-   $stepno = $stepno.q(.) if ($stepno and $stepno ne $self->space);
-
-   $self->stepno( $stepno );
-   return;
+   # Can be overridden in factory subclass
 }
 
 *loc = \&localize;
@@ -228,26 +180,97 @@ sub localize {
 }
 
 sub render {
-   my $self = shift; my $field;
+   my $self = shift; my $hacc = $self->hacc; my $lead = "\n";
 
    $self->type or return $self->text || $NUL;
 
-   my $hacc = $self->hacc;
-   my $html = "\n".($self->clear eq q(left) ? $hacc->br() : $NUL);
-   my $args = { class => q(step_number) };
+   $self->clear eq q(left) and $lead .= $hacc->br();
 
-   $self->stepno and $html .= $hacc->span( $args, $self->stepno );
-   $self->prompt and $html .= $self->_render_prompt_label( $hacc );
-   $args  = { class => q(separator) };
-   $self->sep    and $html .= $hacc->span( $args, $self->sep );
+   $self->stepno and $lead .= $self->render_stepno   ( $hacc );
+   $self->prompt and $lead .= $self->render_prompt   ( $hacc );
+   $self->sep    and $lead .= $self->render_separator( $hacc );
 
-   $field = $self->_render_field or return $html;
+   my $field = $self->_render or return $lead;
 
-   $field = $self->_render_tip        ( $hacc, $field ) if ($self->tip);
-   $field = $self->_render_check_field( $hacc, $field ) if ($self->ajaxid);
-   $field = $self->_render_container  ( $hacc, $field ) if ($self->container);
+   $self->tip       and $field = $self->render_tip      ( $hacc, $field );
+   $self->ajaxid    and $field = $self->render_ajax     ( $hacc, $field );
+   $self->container and $field = $self->render_container( $hacc, $field );
 
-   return $html.$field;
+   return $lead.$field;
+}
+
+sub render_ajax {
+   my ($self, $hacc, $field) = @_;
+
+   my $args = { class => q(hidden), id => $self->ajaxid.q(_ajax) };
+
+   $field .= $hacc->span( $args );
+
+   return $hacc->span( { class => q(field_group) }, $field );
+}
+
+sub render_container {
+   my ($self, $hacc, $field) = @_; my $class;
+
+   $class = $self->container_class or $class = q(container ).$self->align;
+
+   my $args = { class => $class };
+
+   $self->container_id and $args->{id} = $self->container_id;
+
+   return $hacc->span( $args, $field );
+}
+
+sub render_field {
+   my ($self, $args) = @_; $self->text and return $self->text;
+
+   my $id = $args->{id} || '*unknown id*';
+
+   return $self->_set_error( "No render_field method for field $id" );
+}
+
+sub render_prompt {
+   my ($self, $hacc) = @_; my $args = { class => q(prompt) };
+
+   $self->id     and $args->{for  }  = $self->id;
+   $self->palign and $args->{style} .= 'text-align: '.$self->palign.'; ';
+   $self->nowrap and $args->{style} .= 'white-space: nowrap; ';
+   $self->pwidth and $args->{style} .= 'width: '.$self->pwidth.q(;);
+
+   return $hacc->label( $args, $self->prompt );
+}
+
+sub render_separator {
+   my ($self, $hacc) = @_;
+
+   return $hacc->span( { class => q(separator) }, $self->sep );
+}
+
+sub render_stepno {
+   my ($self, $hacc) = @_;
+
+   return $hacc->span( { class => q(step_number) }, $self->stepno );
+}
+
+sub render_tip {
+   my ($self, $hacc, $field) = @_; my ($args, $tip);
+
+   ($tip = $self->tip) =~ s{ \n }{ }gmx;
+
+   if ($tip !~ m{ $TTS }mx) {
+      $self->hint_title
+         or $self->hint_title( $self->loc( q(handy_hint_title) ) );
+      $tip = $self->hint_title.$TTS.$tip;
+   }
+
+   $tip  =~ s{ \s+ }{ }gmx;
+   $args = { class => q(help tips), title => $tip };
+
+   $self->tiptype eq q(dagger) or return $hacc->span( $args, $field );
+
+   $field .= $hacc->span( $args, $NB );
+
+   return $hacc->span( { class => q(field_group) }, $field );
 }
 
 # Private object methods
@@ -308,7 +331,55 @@ sub _ensure_class_loaded {
 }
 
 sub _init {
-   # Can be overridden in factory subclass
+   my ($self, $args) = @_;
+
+   $self->optional_js( $args->{optional_js} || [] );
+   # Allow the factory subclass to set it's own defaults
+   $self->init( $args );
+
+   my $skip   = { qw(ajaxid 1 id 1 name 1 type 1) };
+   my $fields = $args->{fields};
+
+   $self->_init_fields( $skip, $fields );
+   $self->_init_args  ( $skip, $args   );
+
+   my $content_type = $self->content_type;
+
+   $self->is_xml( $content_type eq q(text/html) ? 0 : 1 );
+
+   # Now we can create HTML elements like we could with CGI.pm
+   $self->hacc or
+      $self->hacc( HTML::Accessors->new( { content_type => $content_type } ) );
+
+   # Create a Text::Markdown object for use by the msg method
+   $self->text_obj( Text::Markdown->new
+                    ( empty_element_suffix => $self->is_xml ? q( />) : q(>),
+                      tab_width            => $self->tabstop ) );
+
+   # Set the default JS event handler
+   $self->ajaxid and $self->_init_event_handler;
+
+   # Calculate the prompt width
+   my $pwidth = $self->pwidth;
+
+   if ($pwidth and $pwidth =~ m{ \A \d+ \z }mx) {
+      $self->pwidth( (int $pwidth * $self->swidth / 100).q(px) );
+   }
+
+   my $sep = $self->sep;
+
+   $sep = q(&nbsp;:&nbsp;) if (not defined $sep and $self->prompt);
+   $sep = $self->space     if (    defined $sep and $sep eq q(space));
+
+   $self->sep( $sep );
+
+   my $stepno = $self->stepno;
+
+   $stepno = $self->space if (defined $stepno and $stepno == 0);
+   $stepno = $stepno.q(.) if ($stepno and $stepno ne $self->space);
+
+   $self->stepno( $stepno );
+   return;
 }
 
 sub _init_args {
@@ -337,7 +408,7 @@ sub _init_event_handler {
 sub _init_fields {
    my ($self, $skip, $fields) = @_; my $id = $self->id; my $val;
 
-   if ($id && $fields && exists $fields->{ $id }) {
+   if ($id and $fields and exists $fields->{ $id }) {
       my $field = $fields->{ $id };
 
       for (grep { not $skip->{ $_ } } keys %{ $field }) {
@@ -351,78 +422,16 @@ sub _init_fields {
 }
 
 sub _render {
-   my ($self, $args) = @_; $self->text and return $self->text;
-
-   my $id = $args->{id} || '*unknown id*';
-
-   return $self->_set_error( "No _render method for field $id" );
-}
-
-sub _render_check_field {
-   my ($self, $hacc, $field) = @_;
-
-   my $args = { class => q(hidden), id => $self->ajaxid.q(_checkField) };
-
-   $field .= $hacc->span( $args );
-
-   return $hacc->span( { class => q(field_group) }, $field );
-}
-
-sub _render_container {
-   my ($self, $hacc, $field) = @_; my $class;
-
-   $class = $self->container_class or $class = q(container ).$self->align;
-
-   my $args = { class => $class };
-
-   $self->container_id and $args->{id} = $self->container_id;
-
-   return $hacc->span( $args, $field );
-}
-
-sub _render_field {
    my $self = shift; my $args = {}; my $id = $self->id; my $name = $self->name;
 
-   $args->{class     } = q(required)       if ($self->required);
-   $args->{default   } = $self->default    if ($self->default);
-   $args->{id        } = $id               if ($id);
-   $args->{name      } = $name             if ($name);
-   $args->{onblur    } = $self->onblur     if ($self->onblur);
-   $args->{onkeypress} = $self->onkeypress if ($self->onkeypress);
+   $id               and $args->{id        } = $id;
+   $name             and $args->{name      } = $name;
+   $self->required   and $args->{class     } = q(required);
+   $self->default    and $args->{default   } = $self->default;
+   $self->onblur     and $args->{onblur    } = $self->onblur;
+   $self->onkeypress and $args->{onkeypress} = $self->onkeypress;
 
-   return $self->_render( $args );
-}
-
-sub _render_prompt_label {
-   my ($self, $hacc) = @_; my $args = { class => q(prompt) };
-
-   $args->{for  }  = $self->id                         if ($self->id);
-   $args->{style} .= 'text-align: '.$self->palign.'; ' if ($self->palign);
-   $args->{style} .= 'white-space: nowrap; '           if ($self->nowrap);
-   $args->{style} .= 'width: '.$self->pwidth.q(;)      if ($self->pwidth);
-
-   return $hacc->label( $args, $self->prompt );
-}
-
-sub _render_tip {
-   my ($self, $hacc, $field) = @_; my ($args, $tip);
-
-   ($tip = $self->tip) =~ s{ \n }{ }gmx;
-
-   if ($tip !~ m{ $TTS }mx) {
-      $self->hint_title
-         or $self->hint_title( $self->loc( q(handy_hint_title) ) );
-      $tip = $self->hint_title.$TTS.$tip;
-   }
-
-   $tip  =~ s{ \s+ }{ }gmx;
-   $args = { class => q(help tips), title => $tip };
-
-   $self->tiptype eq q(dagger) or return $hacc->span( $args, $field );
-
-   $field .= $hacc->span( $args, $NB );
-
-   return $hacc->span( { class => q(field_group) }, $field );
+   return $self->render_field( $args );
 }
 
 sub _set_error {

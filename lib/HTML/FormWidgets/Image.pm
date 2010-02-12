@@ -1,16 +1,15 @@
-package HTML::FormWidgets::Image;
-
 # @(#)$Id$
+
+package HTML::FormWidgets::Image;
 
 use strict;
 use warnings;
-use parent qw(HTML::FormWidgets);
-
 use version; our $VERSION = qv( sprintf '0.6.%d', q$Rev$ =~ /\d+/gmx );
+use parent qw(HTML::FormWidgets);
 
 __PACKAGE__->mk_accessors( qw(fhelp) );
 
-sub _init {
+sub init {
    my ($self, $args) = @_;
 
    $self->fhelp(   q() );
@@ -18,7 +17,7 @@ sub _init {
    return;
 }
 
-sub _render {
+sub render_field {
    my ($self, $args) = @_;
 
    return $self->hacc->img( { alt   => $self->fhelp,

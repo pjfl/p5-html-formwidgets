@@ -1,19 +1,18 @@
-package HTML::FormWidgets::Slider;
-
 # @(#)$Id$
+
+package HTML::FormWidgets::Slider;
 
 use strict;
 use warnings;
-use parent qw(HTML::FormWidgets);
-
 use version; our $VERSION = qv( sprintf '0.6.%d', q$Rev$ =~ /\d+/g );
+use parent qw(HTML::FormWidgets);
 
 my $NUL = q();
 
 __PACKAGE__->mk_accessors( qw(display element hide js_obj mode offset range
                               snap steps wheel) );
 
-sub _init {
+sub init {
    my ($self, $args) = @_;
 
    $self->display( 1                            );
@@ -30,7 +29,7 @@ sub _init {
    return;
 }
 
-sub _render {
+sub render_field {
    my ($self, $args) = @_;
 
    my $hacc = $self->hacc;

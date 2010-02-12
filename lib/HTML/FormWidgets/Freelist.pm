@@ -1,19 +1,18 @@
-package HTML::FormWidgets::Freelist;
-
 # @(#)$Id$
+
+package HTML::FormWidgets::Freelist;
 
 use strict;
 use warnings;
-use parent qw(HTML::FormWidgets);
-
 use version; our $VERSION = qv( sprintf '0.6.%d', q$Rev$ =~ /\d+/gmx );
+use parent qw(HTML::FormWidgets);
 
 __PACKAGE__->mk_accessors( qw(add_tip assets height js_obj labels
                               remove_tip values width) );
 
 my $TTS = q( ~ );
 
-sub _init {
+sub init {
    my ($self, $args) = @_; my $text;
 
    $self->assets     ( q() );
@@ -32,7 +31,7 @@ sub _init {
    return;
 }
 
-sub _render {
+sub render_field {
    my ($self, $args) = @_; my ($hacc, $html, $rno, $text, $text1, $tip, $val);
 
    $hacc              = $self->hacc;

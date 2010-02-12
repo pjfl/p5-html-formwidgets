@@ -1,17 +1,17 @@
-package HTML::FormWidgets::File;
-
 # @(#)$Id$
+
+package HTML::FormWidgets::File;
 
 use strict;
 use warnings;
+use version; our $VERSION = qv( sprintf '0.6.%d', q$Rev$ =~ /\d+/gmx );
 use parent qw(HTML::FormWidgets);
+
 use English qw(-no_match_vars);
 use IO::File;
 use Syntax::Highlight::Perl;
 use Text::ParseWords;
 use Text::Tabs;
-
-use version; our $VERSION = qv( sprintf '0.6.%d', q$Rev$ =~ /\d+/gmx );
 
 __PACKAGE__->mk_accessors( qw(base header hide path root scheme select
                               style subtype) );
@@ -40,39 +40,33 @@ my %SCHEME =
      Label             => [ '<font color="#000000">', '</font>' ],
      Line              => [ '<font color="#000000">', '</font>' ], );
 
-sub _init {
+sub init {
    my ($self, $args) = @_;
 
-   $self->base(      q() );
-   $self->container( 0 );
-   $self->header(    [] );
-   $self->hide(      [] );
-   $self->path(      undef );
-   $self->root(      undef );
-   $self->scheme(    \%SCHEME );
-   $self->select(    -1 );
-   $self->style(     q() );
-   $self->subtype(   q(file) );
+   $self->base     ( q()      );
+   $self->container( 0        );
+   $self->header   ( []       );
+   $self->hide     ( []       );
+   $self->path     ( undef    );
+   $self->root     ( undef    );
+   $self->scheme   ( \%SCHEME );
+   $self->select   ( -1       );
+   $self->style    ( q()      );
+   $self->subtype  ( q(file)  );
    return;
 }
 
-sub _render {
+sub render_field {
    # Subtypes: file, csv, html, source, and logfile
-   my ($self, $args) = @_;
-   my ($attr, $box, $cells, $c_no, $fld, $fmt, $hacc, $key, $line);
-   my ($pat, $path, $r_no, $rdr, $rows, $span, $text);
+   my ($self, $args) = @_; my $path = $self->path or return 'No file';
 
-   $hacc = $self->hacc; $path = $self->path;
-
-   return 'No file' unless ($path);
+   my ($attr, $cells, $c_no, $key, $text); my $hacc = $self->hacc;
 
    if ($self->subtype eq q(html)) {
-      $pat = $self->root;
+      my $pat = $self->root;
 
-      if ($path =~ m{ \A $pat }msx) {
-         $path = $self->base.($path =~ s{ \A $pat }{/}msx);
-      }
-
+      $path  =~ m{ \A $pat }msx
+         and $path = $self->base.($path =~ s{ \A $pat }{/}msx);
       $path  = $path =~ m{ \A http: }msx ? $path : $self->base.$path;
       $text  = 'border: 0px; bottom: 0px; position: absolute; ';
       $text .= 'top: 0px; width: 100%; height: 100%; '.$self->style;
@@ -83,13 +77,15 @@ sub _render {
                               style     => $text }, q(&nbsp;) );
    }
 
-   return 'Not found '.$path   unless (-f $path);
-   return 'Cannot read '.$path unless ($rdr = IO::File->new( $path, q(r) ));
+   -f $path or return "Not found $path";
+
+   my $rdr = IO::File->new( $path, q(r) ) or return 'Cannot read '.$path;
 
    $text = do { local $RS = undef; <$rdr> }; $rdr->close();
 
    if ($self->subtype eq q(source)) {
-      $fmt = Syntax::Highlight::Perl->new();
+      my $fmt = Syntax::Highlight::Perl->new();
+
       $fmt->set_format( $self->scheme );
       $fmt->define_substitution( q(<) => q(&lt;),
                                  q(>) => q(&gt;),
@@ -100,11 +96,11 @@ sub _render {
       return $hacc->pre( { class => $self->subtype }, $text );
    }
 
-   $r_no = 0; $rows = q(); $span = 1;
+   my $r_no = 0; my $rows = q(); my $span = 1;
 
    if ($self->subtype eq q(logfile)) {
       # TODO: Add Prev and next links to append div
-      for $line (split m { \n }mx, $text) {
+      for my $line (split m { \n }mx, $text) {
          $line   = $hacc->escape_html( $line, 0 );
          $line   = $hacc->pre( { class => $self->subtype }, $line );
          $cells  = $hacc->td(  { class => $self->subtype }, $line );
@@ -122,12 +118,12 @@ sub _render {
                              class       => $self->subtype }, $rows );
    }
 
-   for $line (split m { \n }mx, $text) {
+   for my $line (split m { \n }mx, $text) {
       $line  = $hacc->escape_html( $line, 0 );
       $cells = q(); $c_no = 0;
 
       if ($self->subtype eq q(csv)) {
-         for $fld (parse_line( q(,), 0, $line )) {
+         for my $fld (parse_line( q(,), 0, $line )) {
             if ($r_no == 0 && $line =~ m{ \A \# }mx) {
                $fld = substr $fld, 1 if ($c_no == 0);
 
@@ -153,11 +149,12 @@ sub _render {
       }
 
       if ($self->select >= 0) {
-         $box   = $hacc->checkbox( { label => q(),
-                                     name  => q(select).$r_no,
-                                     value => $key } );
-         $cells = $hacc->td( { class => q(odd) }, $box ).$cells;
-         $attr  = { class => q(lineNumber even) };
+         my $box = $hacc->checkbox( { label => q(),
+                                      name  => q(select).$r_no,
+                                      value => $key } );
+
+         $cells  = $hacc->td( { class => q(odd) }, $box ).$cells;
+         $attr   = { class => q(lineNumber even) };
          $c_no++;
       }
       else { $attr = { class => q(lineNumber odd) } }

@@ -1,16 +1,15 @@
-package HTML::FormWidgets::Rule;
-
 # @(#)$Id$
+
+package HTML::FormWidgets::Rule;
 
 use strict;
 use warnings;
-use parent qw(HTML::FormWidgets);
-
 use version; our $VERSION = qv( sprintf '0.6.%d', q$Rev$ =~ /\d+/gmx );
+use parent qw(HTML::FormWidgets);
 
 __PACKAGE__->mk_accessors( qw(alt href imgclass onclick) );
 
-sub _init {
+sub init {
    my ($self, $args) = @_;
 
    $self->alt(       undef );
@@ -21,7 +20,7 @@ sub _init {
    return;
 }
 
-sub _render {
+sub render_field {
    my ($self, $args) = @_; my ($cells, $html); my $hacc = $self->hacc;
 
    if ($self->imgclass) {

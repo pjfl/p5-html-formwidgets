@@ -1,19 +1,18 @@
-package HTML::FormWidgets::GroupMembership;
-
 # @(#)$Id$
+
+package HTML::FormWidgets::GroupMembership;
 
 use strict;
 use warnings;
-use parent qw(HTML::FormWidgets);
-
 use version; our $VERSION = qv( sprintf '0.6.%d', q$Rev$ =~ /\d+/gmx );
+use parent qw(HTML::FormWidgets);
 
 __PACKAGE__->mk_accessors( qw(add_tip all assets atitle ctitle current
                               fhelp height js_obj remove_tip labels) );
 
 my $TTS = q( ~ );
 
-sub _init {
+sub init {
    my ($self, $args) = @_; my $text;
 
    $self->all        ( [] );
@@ -35,7 +34,7 @@ sub _init {
    return;
 }
 
-sub _render {
+sub render_field {
    my ($self, $args) = @_;
    my ($fargs, $hacc, $html, $ref, $text, $text1, $tip, $val);
 

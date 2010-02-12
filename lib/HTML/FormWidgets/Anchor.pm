@@ -1,16 +1,15 @@
-package HTML::FormWidgets::Anchor;
-
 # @(#)$Id$
+
+package HTML::FormWidgets::Anchor;
 
 use strict;
 use warnings;
-use parent qw(HTML::FormWidgets);
-
 use version; our $VERSION = qv( sprintf '0.6.%d', q$Rev$ =~ /\d+/gmx );
+use parent qw(HTML::FormWidgets);
 
 __PACKAGE__->mk_accessors( qw(anchor_class fhelp href imgclass onclick) );
 
-sub _init {
+sub init {
    my ($self, $args) = @_;
 
    $self->anchor_class   ( q(anchor_fade) );
@@ -24,7 +23,7 @@ sub _init {
    return;
 }
 
-sub _render {
+sub render_field {
    my ($self, $args) = @_;
 
    if ($self->imgclass) {

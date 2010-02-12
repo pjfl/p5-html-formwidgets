@@ -1,16 +1,15 @@
-package HTML::FormWidgets::Label;
-
 # @(#)$Id$
+
+package HTML::FormWidgets::Label;
 
 use strict;
 use warnings;
-use parent qw(HTML::FormWidgets);
-
 use version; our $VERSION = qv( sprintf '0.6.%d', q$Rev$ =~ /\d+/gmx );
+use parent qw(HTML::FormWidgets);
 
 __PACKAGE__->mk_accessors( qw(dropcap markdown) );
 
-sub _init {
+sub init {
    my ($self, $args) = @_;
 
    $self->container( 0 );
@@ -20,7 +19,7 @@ sub _init {
    return;
 }
 
-sub _render {
+sub render_field {
    my ($self, $args) = @_; my ($markup, $text);
 
    $text    = $self->text;

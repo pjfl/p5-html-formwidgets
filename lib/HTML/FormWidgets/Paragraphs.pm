@@ -10,7 +10,7 @@ use parent qw(HTML::FormWidgets);
 __PACKAGE__->mk_accessors( qw(column_class columns data hclass
                               max_width para_lead) );
 
-sub _init {
+sub init {
    my ($self, $args) = @_;
 
    $self->column_class( q()              );
@@ -22,7 +22,7 @@ sub _init {
    return;
 }
 
-sub _render {
+sub render_field {
    my ($self, $args) = @_;
 
    my $data  = $self->data; my $hacc = $self->hacc;

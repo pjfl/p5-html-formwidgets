@@ -28,7 +28,7 @@ ok( $widget->render =~ m{ input \s value="" \s name="test" \s type="text" }mx,
 
 $widget = HTML::FormWidgets->new( href => q(test), type => q(anchor) );
 
-ok( $widget->render =~ m{ a \s href="test" \s class="linkFade" }mx,
+ok( $widget->render =~ m{ a \s href="test" \s class="anchor_fade" }mx,
     q(Anchor) );
 
 $widget = HTML::FormWidgets->new( id => q(test), type => q(checkbox) );
@@ -63,7 +63,8 @@ $widget = HTML::FormWidgets->new( id   => q(test),
                                   text => q(Test text),
                                   type => q(note) );
 
-ok( $widget->render =~ m{ class="note">Test \s text</div> }mx, q(Note) );
+ok( $widget->render =~ m{ class="container \s note">Test \s text</div> }mx,
+    q(Note) );
 
 $widget = HTML::FormWidgets->new( id      => q(test1),
                                   subtype => q(verify),
@@ -111,14 +112,13 @@ ok( $widget->render =~ m{ tr \s class=".*" \s id="table_row0" }mx, q(Table) );
 
 $widget = HTML::FormWidgets->new( name => q(textarea), type => q(textarea) );
 
-ok( $widget->render =~ m{ id="textarea" \s rows="5" \s cols="60" }mx,
-    q(Text area) );
+ok( $widget->render =~ m{ id="textarea" \s class="\s ifield" \s rows="5" \s cols="60" }mx, q(Text area) );
 
 $widget = HTML::FormWidgets->new( default => q(test),
                                   name    => q(textfield),
                                   type    => q(textfield) );
 
-ok( $widget->render =~ m{ input \s value="test" \s name="textfield" \s type="text" \s id="textfield" \s size="40" }mx, q(Textfield) );
+ok( $widget->render =~ m{ input \s value="test" \s name="textfield" \s type="text" \s id="textfield" \s class="\s ifield" \s size="40" }mx, q(Textfield) );
 
 # Local Variables:
 # mode: perl

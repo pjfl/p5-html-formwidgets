@@ -1,4 +1,4 @@
-// @(#)$Id: 30ourtools.js 878 2009-12-02 00:27:38Z pjf $
+// @(#)$Id: 30ourtools.js 956 2010-02-13 22:25:22Z pjf $
 
 /* Property: setHTML
       Sets the innerHTML of the Element. Should work for application/xhtml+xml
@@ -1129,8 +1129,9 @@ var SubmitUtils = new Class({
 
 var TableUtils = new Class({
    initialize: function( options ) {
-      this.form = options.form;
-      this.url  = options.url;
+      this.form      = options.form;
+      this.sortables = new Hash();
+      this.url       = options.url;
    },
 
    addTableRow: function( name, edit ) {
@@ -1207,6 +1208,64 @@ var TableUtils = new Class({
       $each( rows, function( row ) { html += row.childNodes[ 0 ].nodeValue } );
       $( keyid + 'Disp' ).setHTML( html.unescapeHTML() );
       this.gridObj = new LiveGrid( keyid + '_grid', urlkey, opts );
+   },
+
+   sortTable: function( table_name, column_name, column_type ) {
+      var table   = $( table_name );
+      var columns = table.getElements( 'th' );
+      var ids     = columns.map( function( column ) { return column.id } );
+      var name    = table_name + '_' + column_name;
+
+      if (! ids.contains( name )) return;
+
+      var index   = ids.indexOf( name );
+      var order   = this._get_sort_order( table_name, ids[ 0 ], name );
+
+      table.getElements( 'tr[id*=_row]' ).map( function( row ) {
+         var field = this._get_sort_field( row, index, column_type );
+         return new Array( field, row.clone() );
+      }, this ).sort( function( a, b ) {
+         if (a[ 0 ] < b[ 0 ]) return order[ 0 ];
+         if (a[ 0 ] > b[ 0 ]) return order[ 1 ];
+         return 0;
+      } ).map( function( item, index ) {
+         var id = table_name + '_row' + index, row = item[ 1 ];
+         row.id = id; $( id ).replaceWith( row );
+      } );
+
+      return;
+   },
+
+   _get_sort_field: function( row, index, type ) {
+      var field = row.cells[ index ].textContent;
+
+      if (type && type == 'date') {
+         field = Date.parse( field ) || Date.parse( '01 Jan 1970' );
+      }
+      else if (type && type == 'money') {
+         field = field.substring( 1 );
+         field.replace( /[^0-9.]/g, '' );
+         field = parseFloat( field ) || 0;
+      }
+      else if (type && type == 'numeric') {
+         field.replace( /[^0-9.]/g, '' );
+         field = parseFloat( field ) || 0;
+      }
+      else { field = field + '' }
+
+      return field;
+   },
+
+   _get_sort_order: function( table_name, default_column, name ) {
+      var sortable = this.sortables.get( table_name )
+                  || { sort_column: default_column, reverse: 0 };
+      var reverse  = sortable.reverse;
+
+      if (name == sortable.sort_column) reverse = 1 - reverse;
+
+      sortable.reverse = reverse; sortable.sort_column = name;
+      this.sortables.set( table_name, sortable );
+      return reverse ? [ 1, -1 ] : [ -1, 1 ];
    },
 
    removeTableRow: function( name ) {

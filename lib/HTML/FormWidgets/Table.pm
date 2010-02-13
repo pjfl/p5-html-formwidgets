@@ -7,8 +7,8 @@ use warnings;
 use version; our $VERSION = qv( sprintf '0.6.%d', q$Rev$ =~ /\d+/gmx );
 use parent qw(HTML::FormWidgets);
 
-__PACKAGE__->mk_accessors( qw(add_tip assets data edit hide
-                              js_obj number_rows remove_tip select) );
+__PACKAGE__->mk_accessors( qw(add_tip assets data edit hide js_obj
+                              number_rows remove_tip select sortable) );
 
 my $NUL = q();
 my $TTS = q( ~ );
@@ -26,6 +26,7 @@ sub init {
    $self->js_obj     ( q(behaviour.table) );
    $self->number_rows( 0 );
    $self->select     ( $NUL );
+   $self->sortable   ( 0 );
 
    $text = $self->loc( q(tableAddTip) );
    $self->add_tip    ( $self->hint_title.$TTS.$text );
@@ -35,14 +36,18 @@ sub init {
 }
 
 sub render_field {
-   my ($self, $args) = @_; my $cells = $NUL; my $data = $self->data;
+   my ($self, $args) = @_;
 
-   $self->number_rows        and $cells .= $self->_render_row_header;
-   $self->select eq q(left)  and $cells .= $self->_render_selectbox;
+   my $cells = $NUL; my $c_no = 0; my $data = $self->data;
 
-   $cells .= $self->_render_header( $data, $_ ) for (@{ $data->{flds} });
+   $self->number_rows       and $cells .= $self->_render_row_header( $c_no++ );
+   $self->select eq q(left) and $cells .= $self->_render_selectbox ( $c_no++ );
 
-   $self->select eq q(right) and $cells .= $self->_render_selectbox;
+   for (@{ $data->{flds} }) {
+      $cells .= $self->_render_header( $data, $_, $c_no++ );
+   }
+
+   $self->select eq q(right) and $cells .= $self->_render_selectbox( $c_no++ );
 
    my $hacc = $self->hacc; my $rows = $hacc->tr( $cells ); my $r_no = 0;
 
@@ -54,7 +59,9 @@ sub render_field {
 
    my $class = $self->prompt ? q(form ) : q(std);
 
-   return $hacc->table( { class => $class }, $rows );
+   $args = { class => $class, id => $self->id };
+
+   return $hacc->table( $args, "\n".$rows );
 }
 
 # Private methods
@@ -63,10 +70,10 @@ sub _add_edit_row {
    my ($self, $data) = @_; my $hacc = $self->hacc; my $cells = $NUL;
 
    for (0 .. $#{ $data->{flds} }) {
-      my $args      = { id => $self->name.q(_add).$_ };
+      my $args      = { id => $self->id.q(_add).$_ };
       my $field     = $data->{flds}->[ $_ ];
 
-      $args->{name} = $self->name.q(_).$field;
+      $args->{name} = $self->id.q(_).$field;
       $cells       .= $self->_editable_cell( $data, $field, $args );
    }
 
@@ -74,9 +81,9 @@ sub _add_edit_row {
 
    $args->{class  }  = $args->{name} = q(button);
    $args->{onclick}  = 'return '.$self->js_obj.".addTableRow('";
-   $args->{onclick} .= $self->name."', 1)";
+   $args->{onclick} .= $self->id."', 1)";
    $args->{src    }  = $self->assets.'add_item.png';
-   $args->{value  }  = $self->name.q(_add);
+   $args->{value  }  = $self->id.q(_add);
 
    my $text = $hacc->image_button( $args );
 
@@ -87,9 +94,9 @@ sub _add_edit_row {
       $args             = {};
       $args->{class  }  = $args->{name} = q(button);
       $args->{onclick}  = 'return '.$self->js_obj;
-      $args->{onclick} .= ".removeTableRow('".$self->name."')";
+      $args->{onclick} .= ".removeTableRow('".$self->id."')";
       $args->{src    }  = $self->assets.'remove_item.png';
-      $args->{value  }  = $self->name.q(_remove);
+      $args->{value  }  = $self->id.q(_remove);
 
       my $text1 = $hacc->image_button( $args );
 
@@ -101,7 +108,7 @@ sub _add_edit_row {
 
    my $class = $data->{class} || q(dataValue);
 
-   $args     = { class => $class, id => $self->name.q(_add) };
+   $args     = { class => $class, id => $self->id.q(_add) };
 
    return $hacc->tr( $args, $cells );
 }
@@ -109,7 +116,7 @@ sub _add_edit_row {
 sub _add_row_count {
    my ($self, $r_no) = @_;
 
-   my $content = $self->inflate( { name    => $self->name.q(_nrows),
+   my $content = $self->inflate( { name    => $self->id.q(_nrows),
                                    default => $r_no,
                                    type    => q(hidden),
                                    widget  => 1 } );
@@ -121,7 +128,7 @@ sub _add_row_count {
 sub _check_box {
    my ($self, $r_no, $c_no, $id) = @_; my $hacc = $self->hacc;
 
-   my $args = { name => $self->name.q(_select).$r_no };
+   my $args = { name => $self->id.q(_select).$r_no };
 
    $id and $args->{value} = $id;
 
@@ -157,17 +164,25 @@ sub _editable_cell {
 }
 
 sub _render_header {
-   my ($self, $data, $field) = @_; my $args = { class => $self->class };
+   my ($self, $data, $field, $c_no) = @_; my $name = q(col).$c_no;
+
+   my $args = { class => $self->class, id => $self->id.q(_).$name };
 
    if (exists $data->{hclass}->{ $field }) {
       $data->{hclass}->{ $field } eq q(hide) and return;
       $args->{class} .= q( ).$data->{hclass}->{ $field };
    }
 
-   exists $data->{widths}->{ $field }
+   exists $data->{widths  }->{ $field }
       and $args->{style} = q(width: ).$data->{widths}->{ $field }.q(;);
 
-   exists $data->{wrap  }->{ $field } or $args->{class} .= q( nowrap);
+   exists $data->{wrap    }->{ $field } or $args->{class} .= q( nowrap);
+
+   my $type = exists $data->{typelist}->{ $field }
+            ? $data->{typelist}->{ $field } : $NUL;
+
+   $self->sortable and $args->{onclick}
+      = $self->js_obj.".sortTable( '".$self->id."', '$name', '$type')";
 
    return $self->hacc->th( $args, $data->{labels}->{ $field } );
 }
@@ -188,7 +203,7 @@ sub _render_row {
 
       if ($self->edit) {
          $args->{default} = $val->{ $field };
-         $args->{name   } = $self->name.q(_).$field.$r_no;
+         $args->{name   } = $self->id.q(_).$field.$r_no;
          $cells          .= $self->_editable_cell( $data, $field, $args );
       }
       else {
@@ -210,7 +225,7 @@ sub _render_row {
 
          my $fld_val = $self->inflate( $val->{ $field } ) || q(&nbsp;);
 
-         $cells .= $hacc->td( $args, $fld_val )."\n";
+         $cells .= $hacc->td( $args, $fld_val );
       }
 
       $c_no++;
@@ -220,19 +235,27 @@ sub _render_row {
       $cells .= $self->_check_box( $r_no, $c_no++, $val->{id} );
    }
 
-   my $args = { class => q(dataValue), id => $self->name.q(_row).$r_no };
+   my $args = { class => q(dataValue), id => $self->id.q(_row).$r_no };
 
-   return $hacc->tr( $args, $cells );
+   return $hacc->tr( $args, "\n".$cells );
 }
 
 sub _render_row_header {
-   my $self = shift;
+   my ($self, $c_no) = @_; my $name = q(col).$c_no;
 
-   return $self->hacc->th( { class => $self->class.q( minimal) }, '#' );
+   my $args = { class => $self->class.q( minimal),
+                id    => $self->id.q(_).$name };
+
+   $self->sortable and $args->{onclick}
+      = $self->js_obj.".sortTable( '".$self->id."', '".$name."')";
+
+   return $self->hacc->th( $args, '#' );
 }
 
 sub _render_selectbox {
-   my $self = shift; my $args = { class => $self->class };
+   my ($self, $c_no) = @_; my $name = q(col).$c_no;
+
+   my $args = { class => $self->class, id => $self->id.q(_).$name };
 
    $args->{class} .= $self->edit ? q( select) : q( minimal);
 

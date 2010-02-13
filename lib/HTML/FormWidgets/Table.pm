@@ -8,7 +8,8 @@ use version; our $VERSION = qv( sprintf '0.6.%d', q$Rev$ =~ /\d+/gmx );
 use parent qw(HTML::FormWidgets);
 
 __PACKAGE__->mk_accessors( qw(add_tip assets data edit hide js_obj
-                              number_rows remove_tip select sortable) );
+                              number_rows remove_tip select
+                              sort_tip sortable) );
 
 my $NUL = q();
 my $TTS = q( ~ );
@@ -28,10 +29,12 @@ sub init {
    $self->select     ( $NUL );
    $self->sortable   ( 0 );
 
-   $text = $self->loc( q(tableAddTip) );
+   $text = $self->loc( q(Add_table_row) );
    $self->add_tip    ( $self->hint_title.$TTS.$text );
-   $text = $self->loc( q(tableRemoveTip) );
+   $text = $self->loc( q(Remove_table_row) );
    $self->remove_tip ( $self->hint_title.$TTS.$text );
+   $text = $self->loc( q(Sort_table_rows) );
+   $self->sort_tip   ( $self->hint_title.$TTS.$text );
    return;
 }
 
@@ -181,8 +184,12 @@ sub _render_header {
    my $type = exists $data->{typelist}->{ $field }
             ? $data->{typelist}->{ $field } : $NUL;
 
-   $self->sortable and $args->{onclick}
-      = $self->js_obj.".sortTable( '".$self->id."', '$name', '$type')";
+   if ($self->sortable) {
+      $args->{onclick}
+         = $self->js_obj.".sortRows( '".$self->id."', '$name', '$type')";
+      $args->{class} .= q( sort tips);
+      $args->{title}  = $self->sort_tip;
+   }
 
    return $self->hacc->th( $args, $data->{labels}->{ $field } );
 }
@@ -246,8 +253,12 @@ sub _render_row_header {
    my $args = { class => $self->class.q( minimal),
                 id    => $self->id.q(_).$name };
 
-   $self->sortable and $args->{onclick}
-      = $self->js_obj.".sortTable( '".$self->id."', '".$name."')";
+   if ($self->sortable) {
+      $args->{onclick}
+         = $self->js_obj.".sortRows( '".$self->id."', '$name', 'numeric' )";
+      $args->{class} .= q( sort tips);
+      $args->{title}  = $self->sort_tip;
+   }
 
    return $self->hacc->th( $args, '#' );
 }

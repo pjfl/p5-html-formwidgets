@@ -1,4 +1,4 @@
-// @(#)$Id: 30ourtools.js 956 2010-02-13 22:25:22Z pjf $
+// @(#)$Id: 30ourtools.js 957 2010-02-13 22:45:07Z pjf $
 
 /* Property: setHTML
       Sets the innerHTML of the Element. Should work for application/xhtml+xml
@@ -1210,7 +1210,7 @@ var TableUtils = new Class({
       this.gridObj = new LiveGrid( keyid + '_grid', urlkey, opts );
    },
 
-   sortTable: function( table_name, column_name, column_type ) {
+   sortRows: function( table_name, column_name, column_type ) {
       var table   = $( table_name );
       var columns = table.getElements( 'th' );
       var ids     = columns.map( function( column ) { return column.id } );

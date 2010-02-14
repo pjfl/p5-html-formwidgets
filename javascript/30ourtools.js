@@ -1222,7 +1222,7 @@ var TableUtils = new Class({
       var order   = this._get_sort_order( table_name, ids[ 0 ], name );
 
       table.getElements( 'tr[id*=_row]' ).map( function( row ) {
-         var field = this._get_sort_field( row, index, column_type );
+         var field = this._get_sort_field( row.cells[ index ], column_type );
          return new Array( field, row.clone() );
       }, this ).sort( function( a, b ) {
          if (a[ 0 ] < b[ 0 ]) return order[ 0 ];
@@ -1236,8 +1236,11 @@ var TableUtils = new Class({
       return;
    },
 
-   _get_sort_field: function( row, index, type ) {
-      var field = row.cells[ index ].textContent;
+   _get_sort_field: function( cell, type ) {
+      var el = cell ? cell.firstChild : '', field = '';
+
+      if      (el && el.nodeName == '#text') field = el.nodeValue;
+      else if (el && el.nodeName == 'INPUT') field = el.value;
 
       if (type && type == 'date') {
          field = Date.parse( field ) || Date.parse( '01 Jan 1970' );
@@ -1251,7 +1254,7 @@ var TableUtils = new Class({
          field.replace( /[^0-9.]/g, '' );
          field = parseFloat( field ) || 0;
       }
-      else { field = field + '' }
+      else field = field + '';
 
       return field;
    },
@@ -1262,6 +1265,7 @@ var TableUtils = new Class({
       var reverse  = sortable.reverse;
 
       if (name == sortable.sort_column) reverse = 1 - reverse;
+      else reverse = 0;
 
       sortable.reverse = reverse; sortable.sort_column = name;
       this.sortables.set( table_name, sortable );

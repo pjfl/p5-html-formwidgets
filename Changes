@@ -1,5 +1,6 @@
 Revision history for HTML::FormWidgets
 
+         - Added clear field to date
          - Tables are now client side sortable
          - Optional JS files are now selectable by the widget
          - Tree widget now self renders via HTML parser

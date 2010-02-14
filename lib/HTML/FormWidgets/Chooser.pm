@@ -33,7 +33,7 @@ sub render_field {
    $onclick .= "', 'width=".$self->width.', screenX='.$self->screen_x.', ';
    $onclick .= 'height='.$self->height.', screenY='.$self->screen_y;
    $onclick .= ", dependent=yes, titlebar=no, scrollbars=yes')";
-   $args->{class  } = q(chooser_button);
+   $args->{class  } = q(button);
    $args->{onclick} = $onclick;
    $args->{value  } = $self->button;
 

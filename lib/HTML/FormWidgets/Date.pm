@@ -7,16 +7,19 @@ use warnings;
 use version; our $VERSION = qv( sprintf '0.6.%d', q$Rev$ =~ /\d+/gmx );
 use parent qw(HTML::FormWidgets);
 
-__PACKAGE__->mk_accessors( qw(assets format readonly width) );
+__PACKAGE__->mk_accessors( qw(assets clear_hint format hint js_obj
+                              readonly width) );
 
 my $TTS = q( ~ );
 
 sub init {
-   my ($self, $args) = @_;
+   my ($self, $args) = @_; my $hint = $self->loc( q(Hint) );
 
    $self->assets    ( q() );
+   $self->clear_hint( $hint.$TTS.$self->loc( q(clearFieldTip) ) );
    $self->format    ( q(%d/%m/%Y) );
-   $self->hint_title( $self->loc( q(Hint) ) ) unless ($self->hint_title);
+   $self->hint      ( $hint.$TTS.$self->loc( q(dateWidgetTip) ) );
+   $self->js_obj    ( q(behaviour.submit.clearField) );
    $self->readonly  ( 1 );
    $self->width     ( 10 );
 
@@ -32,16 +35,19 @@ sub render_field {
    $args->{readonly}  = q(readonly) if ($self->readonly);
    $args->{size    }  = $self->width;
    $html              = $hacc->textfield( $args );
-   $html             .= $hacc->span( { class => q(shim) }, q(&nbsp;) );
-   $args              = { alt => q(Calendar), class => q(icon) };
-   $args->{id      }  = $self->id.'_trigger';
-   $args->{src     }  = $self->assets.'calendar.png';
-   $text              = $hacc->img( $args );
-   $args              = {};
-   $args->{class   }  = q(tips);
-   $args->{href    }  = q();
-   $args->{title   }  = $self->hint_title.$TTS.$self->loc( q(dateWidgetTip) );
-   $html             .= $hacc->a( $args, $text );
+   $args              = { alt     => q(Calendar),
+                          class   => q(action tips),
+                          id      => $self->id.q(_trigger),
+                          src     => $self->assets.q(calendar.png),
+                          title   => $self->hint };
+   $html             .= $hacc->img( $args );
+   $args              = { alt     => q(Clear),
+                          class   => q(action tips),
+                          id      => $self->id.q(_clear),
+                          onclick => $self->js_obj."( '".$self->id."' )",
+                          src     => $self->assets.q(clear_field.png),
+                          title   => $self->clear_hint };
+   $html             .= $hacc->img( $args );
    $text              = "\n";
    $text             .= 'Calendar.setup( {'."\n";
    $text             .= '   inputField : "'.$self->id.'", '."\n";

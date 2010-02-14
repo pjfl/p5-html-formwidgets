@@ -1,4 +1,4 @@
-// @(#)$Id: 30ourtools.js 957 2010-02-13 22:45:07Z pjf $
+// @(#)$Id: 30ourtools.js 960 2010-02-14 20:44:12Z pjf $
 
 /* Property: setHTML
       Sets the innerHTML of the Element. Should work for application/xhtml+xml
@@ -1060,9 +1060,9 @@ var SubmitUtils = new Class({
                                     prefix: options.prefix } );
    },
 
-   chooser: function( field, button, url, winPrefs ) {
+   chooser: function( name, button, url, winPrefs ) {
       var form  = document.forms[ this.form ];
-      var value = form.elements[ field ].value;
+      var value = form.elements[ name ].value;
 
       if (value && value.indexOf( '%' ) < 0) {
          if (button) {
@@ -1075,6 +1075,12 @@ var SubmitUtils = new Class({
       top.chooser = window.open( url + '?form=' + this.form + '&value=' +value,
                                  'chooser', winPrefs );
       top.chooser.opener = top;
+      return false;
+   },
+
+   clearField: function( name ) {
+      var form = document.forms[ this.form ];
+      form.elements[ name ].value = '';
       return false;
    },
 

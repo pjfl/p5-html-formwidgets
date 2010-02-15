@@ -9,7 +9,7 @@ use parent qw(HTML::FormWidgets);
 
 __PACKAGE__->mk_accessors( qw(add_tip assets data edit hide js_obj
                               number_rows remove_tip select
-                              sort_tip sortable) );
+                              sort_tip sortable table_class) );
 
 my $NUL = q();
 my $TTS = q( ~ );
@@ -28,6 +28,7 @@ sub init {
    $self->number_rows( 0 );
    $self->select     ( $NUL );
    $self->sortable   ( 0 );
+   $self->table_class( undef );
 
    $text = $self->loc( q(Add_table_row) );
    $self->add_tip    ( $self->hint_title.$TTS.$text );
@@ -43,6 +44,7 @@ sub render_field {
 
    my $cells = $NUL; my $c_no = 0; my $data = $self->data;
 
+   $self->id                or  $self->id( $self->name || q(table) );
    $self->number_rows       and $cells .= $self->_render_row_header( $c_no++ );
    $self->select eq q(left) and $cells .= $self->_render_selectbox ( $c_no++ );
 
@@ -58,9 +60,9 @@ sub render_field {
 
    $self->_add_row_count( $r_no );
    $self->edit and $rows .= $self->_add_edit_row( $data );
-   $self->class( q(fullWidth) );
+   $self->class( $self->table_class || q(fullWidth) );
 
-   my $class = $self->prompt ? q(form ) : q(std);
+   my $class = $self->table_class || ($self->prompt ? q(form) : q(std));
 
    $args = { class => $class, id => $self->id };
 

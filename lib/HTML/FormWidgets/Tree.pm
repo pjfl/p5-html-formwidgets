@@ -10,7 +10,7 @@ use parent qw(HTML::FormWidgets);
 use English qw(-no_match_vars);
 
 __PACKAGE__->mk_accessors( qw(base behaviour data node_count
-                              selected target url) );
+                              selected static target url) );
 
 my $NUL = q();
 
@@ -21,6 +21,7 @@ sub init {
    $self->behaviour( q(classic) );
    $self->data     ( {}         );
    $self->selected ( undef      );
+   $self->static   ( $NUL       );
    $self->target   ( q()        );
    $self->url      ( undef      );
 
@@ -30,21 +31,30 @@ sub init {
 
 sub render_field {
    my $self = shift;
+   my $hacc = $self->hacc;
    my @root = grep { ! m{ \A _ }mx } keys %{ $self->data };
 
-   defined $root[1]
-      and return $self->hacc->span
-         ( { class => q(error) }, 'Your tree has more than one root' );
+   defined $root[1] and return $hacc->span
+      ( { class => q(error) }, 'Your tree has more than one root' );
 
    $self->node_count( 0 );
 
-   my $args    = { data => $self->data, parent => $NUL, prev_key => $NUL };
-   my $code    = __wrap_cdata( $self->scan_hash( $args ) );
-   my $jscript = $self->hacc->script( { type => 'text/javascript' }, $code );
+   my $args  = { class   => q(action tips),
+                 onclick => $self->name.'_node_0.expandAll()',
+                 src     => $self->static.q(images/expand.png) };
+   my $html  = $hacc->img( $args );
+      $args  = { class   => q(action tips),
+                 onclick => $self->name.'_node_0.collapseAll()',
+                 src     => $self->static.q(images/collapse.png) };
+      $html .= $hacc->img( $args );
+      $args  = { class => q(tree_controls) };
+      $html  = $hacc->span( $args, $html );
+      $args  = { class => q(tree), id => $self->id };
+      $html .= $hacc->span( $args );
+      $args  = { data => $self->data, parent => $NUL, prev_key => $NUL };
+   my $code  = __wrap_cdata( $self->scan_hash( $args ) );
 
-   $args = { class => q(tree), id => $self->id };
-
-   return $self->hacc->span( $args )."\n".$jscript;
+   return $html."\n".$hacc->script( { type => 'text/javascript' }, $code );
 }
 
 sub node_id {
@@ -52,7 +62,7 @@ sub node_id {
 }
 
 sub scan_hash {
-   my ($self, $args) = @_; my $jscript = $NUL; my $node;
+   my ($self, $args) = @_; my $script = $NUL; my $node;
 
    my @keys = grep { !m{ \A _ }mx } keys %{ $args->{data} };
 
@@ -82,47 +92,47 @@ sub scan_hash {
       $url .= q(?).$self->name.q(_node=).$node if ($self->selected);
 
       unless ($args->{parent}) {
-         $jscript  = "\n".'var '.$node.' = new Tree.Trunk("'.$text.'", "';
-         $jscript .= $url.'", "'.$tip.'");'."\n";
-         $jscript .= $node.'.setBehavior("'.$self->behaviour.'");'."\n";
+         $script  = "\n".'var '.$node.' = new Tree.Trunk("'.$text.'", "';
+         $script .= $url.'", "'.$tip.'");'."\n";
+         $script .= $node.'.setBehavior("'.$self->behaviour.'");'."\n";
       }
       else {
-         $jscript .= 'var '.$node.' = new Tree.Branch("'.$text.'", "';
-         $jscript .= $url.'", "'.$tip.'");'."\n";
+         $script .= 'var '.$node.' = new Tree.Branch("'.$text.'", "';
+         $script .= $url.'", "'.$tip.'");'."\n";
       }
 
       if ($self->target) {
-         $jscript .= $node.'.target = "'.$self->target.'"; '."\n";
+         $script .= $node.'.target = "'.$self->target.'"; '."\n";
       }
 
       if ($shut_icon) {
-         $jscript .= $node.'.icon = "'.$shut_icon.'"; '."\n";
+         $script .= $node.'.icon = "'.$shut_icon.'"; '."\n";
       }
 
       if ($open_icon) {
-         $jscript .= $node.'.openIcon = "'.$open_icon.'"; '."\n";
+         $script .= $node.'.openIcon = "'.$open_icon.'"; '."\n";
       }
 
       if ($self->selected && ($self->selected eq $node)) {
-         $jscript .= $node.'.selected = true; '."\n";
+         $script .= $node.'.selected = true; '."\n";
       }
 
       if ($args->{parent}) {
-         $jscript .= $args->{parent}.'.add('.$node.'); '."\n";
+         $script .= $args->{parent}.'.add('.$node.'); '."\n";
       }
 
       if (ref $data eq q(HASH)) { # Recurse
-         $jscript .= $self->scan_hash
+         $script .= $self->scan_hash
             ( { data => $data, parent => $node, prev_key => $new_key } );
       }
    }
 
    if (not $args->{parent} and $node) {
-      $jscript .= '$( "'.$self->id.'" ).setHTML('.$node.' + "" );'."\n";
-      $jscript .= $self->selected.'.focus();'."\n" if ($self->selected);
+      $script .= '$( "'.$self->id.'" ).setHTML('.$node.' + "" );'."\n";
+      $script .= $self->selected.'.focus();'."\n" if ($self->selected);
    }
 
-   return $jscript;
+   return $script;
 }
 
 sub __wrap_cdata {

@@ -137,11 +137,10 @@ sub _check_box {
 
    $id and $args->{value} = $id;
 
-   my $text = $hacc->checkbox( $args );
+   my $text  = $hacc->checkbox( $args );
+   my $class = q(row_select ).($c_no % 2 == 0 ? q(even) : q(odd));
 
-   $args = { align => q(center), class => $c_no % 2 == 0 ? q(even) : q(odd) };
-
-   return $hacc->td( $args, $text );
+   return $hacc->td( { align => q(center), class => $class }, $text );
 }
 
 sub _editable_cell {

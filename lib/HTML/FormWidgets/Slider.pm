@@ -56,14 +56,15 @@ sub render_field {
    }
 
    $text  = $hacc->span( { class => q(knob) } );
-   $html .= $hacc->span( { class => q(slider), id => $id }, $text );
+   $text  = $hacc->span( { class => q(slider), id => $id }, $text );
 
    for (0 .. 10) {
-      my $style = q(left: ).(45 + $_ * 20).q(px;);
+      my $style = q(left: ).(-1 + $_ * 20).q(px;);
 
-      $html .= $hacc->span( { class => q(tick), style => $style } );
+      $text .= $hacc->span( { class => q(tick), style => $style } );
    }
 
+   $html .= $hacc->span( { class => q(slider_group) }, $text );
    $text  = "\n";
    $text .= $elem.' = $( "'.$id.'" );'."\n";
    $text .= 'new Slider( '.$elem.', '.$elem.'.getElement( ".knob" ), {'."\n";

@@ -87,9 +87,8 @@ sub scan_hash {
          $url       = $data->{_url     } || $url;
       }
 
-      $url  = $self->base.$url unless ($url =~ m{ \A http: }mx);
-
-      $url .= q(?).$self->name.q(_node=).$node if ($self->selected);
+      $url =~ m{ \A http: }mx or $url = $self->base.$url;
+      $self->selected and $url .= q(?).$self->name.q(_node=).$node;
 
       unless ($args->{parent}) {
          $script  = "\n".'var '.$node.' = new Tree.Trunk("'.$text.'", "';

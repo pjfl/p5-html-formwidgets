@@ -1,6 +1,6 @@
 # @(#)$Id$
 
-package HTML::FormWidgets::Paragraphs;
+package HTML::FormWidgets::Columnizer;
 
 use strict;
 use warnings;

@@ -40,8 +40,8 @@ sub render_field {
 
    $hacc              = $self->hacc;
    $fargs             = { class => q(instructions) };
-   $fargs->{style}   .= 'text-align: '.$self->palign.'; '  if ($self->palign);
-   $fargs->{style}   .= 'width: '.$self->pwidth.q(;)       if ($self->pwidth);
+   $fargs->{style}   .= 'text-align: '.$self->palign.'; '   if ($self->palign);
+   $fargs->{style}   .= 'width: '.$self->pwidth.q(;)        if ($self->pwidth);
    $html              = $hacc->span( $fargs, $self->fhelp ) if ($self->fhelp);
    $text              = $hacc->span( { class => q(title) }, $self->atitle );
    $text             .= $hacc->br();

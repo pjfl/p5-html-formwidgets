@@ -20,7 +20,7 @@ sub init {
 sub render_field {
    my ($self, $args)  = @_;
 
-   $args->{class} .= q( ifield);
+   $args->{class} .= q( ifield).($self->class ? q( ).$self->class : q());
    $args->{cols }  = $self->width;
    $args->{rows }  = $self->height;
 

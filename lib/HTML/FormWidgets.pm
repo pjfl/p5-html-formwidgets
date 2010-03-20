@@ -426,7 +426,7 @@ sub _render {
 
    $id               and $args->{id        } = $id;
    $name             and $args->{name      } = $name;
-   $self->required   and $args->{class     } = q(required);
+   $self->required   and $args->{class     } = q( required);
    $self->default    and $args->{default   } = $self->default;
    $self->onblur     and $args->{onblur    } = $self->onblur;
    $self->onkeypress and $args->{onkeypress} = $self->onkeypress;

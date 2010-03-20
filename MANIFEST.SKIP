@@ -44,3 +44,5 @@ TAGS
 Thumbs.db
 # Avoid archives of this distribution
 \bHTML-FormWidgets-[\d\.\_]+
+# Don't distribute this
+lib/HTML/FormWidgets/Columnizer.pm

@@ -9,13 +9,14 @@ use parent qw(HTML::FormWidgets);
 
 use English qw(-no_match_vars);
 
-__PACKAGE__->mk_accessors( qw(base behaviour data node_count
-                              selected static target url) );
+__PACKAGE__->mk_accessors( qw(base behaviour data node_count selected
+                              static target url) );
 
 my $NUL = q();
+my $TTS = q( ~ );
 
 sub init {
-   my ($self, $args) = @_;
+   my ($self, $args) = @_; my $text;
 
    $self->base     ( $NUL       );
    $self->behaviour( q(classic) );
@@ -38,16 +39,12 @@ sub render_field {
       ( { class => q(error) }, 'Your tree has more than one root' );
 
    $self->node_count( 0 );
+   $self->hint_title
+      or $self->hint_title( $self->loc( q(handy_hint_title) ) );
 
-   my $args  = { class   => q(action tips),
-                 onclick => $self->name.'_node_0.expandAll()',
-                 src     => $self->static.q(images/expand.png) };
-   my $html  = $hacc->img( $args );
-      $args  = { class   => q(action tips),
-                 onclick => $self->name.'_node_0.collapseAll()',
-                 src     => $self->static.q(images/collapse.png) };
-      $html .= $hacc->img( $args );
-      $args  = { class => q(tree_controls) };
+   my $html  = $self->_image_button( $hacc, q(expand),   q(Expand All)   );
+      $html .= $self->_image_button( $hacc, q(collapse), q(Collapse All) );
+   my $args  = { class => q(tree_controls) };
       $html  = $hacc->span( $args, $html );
       $args  = { class => q(tree), id => $self->id };
       $html .= $hacc->span( $args );
@@ -132,6 +129,18 @@ sub scan_hash {
    }
 
    return $script;
+}
+
+sub _image_button {
+   my ($self, $hacc, $dirn, $tip) = @_;
+
+   my $args = { class   => q(action tips),
+                onclick => $self->name.q(_node_0.).$dirn.'All()',
+                src     => $self->static.q(images/).$dirn.q(.png),
+                tiptype => q(normal),
+                title   => $self->hint_title.$TTS.$self->loc( $tip ) };
+
+   return $hacc->img( $args );
 }
 
 sub __wrap_cdata {

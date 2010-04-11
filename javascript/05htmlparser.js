@@ -53,7 +53,7 @@
 		var index, chars, match, re, stack = [], tag, text, last = html;
 
 		stack.last = function() {
-			return this[ this.length - 1 ];
+			return this.length > 0 ? this[ this.length - 1 ] : null;
 		};
 
 		while ( html ) {

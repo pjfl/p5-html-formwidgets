@@ -9,25 +9,25 @@ use parent qw(HTML::FormWidgets);
 
 use English qw(-no_match_vars);
 
-__PACKAGE__->mk_accessors( qw(base behaviour data node_count selected
-                              static target url) );
+__PACKAGE__->mk_accessors( qw(base data node_count prefix selected static) );
 
 my $NUL = q();
 my $TTS = q( ~ );
 
 sub init {
-   my ($self, $args) = @_; my $text;
+   my ($self, $args) = @_;
 
-   $self->base     ( $NUL       );
-   $self->behaviour( q(classic) );
-   $self->data     ( {}         );
-   $self->selected ( undef      );
-   $self->static   ( $NUL       );
-   $self->target   ( q()        );
-   $self->url      ( undef      );
-
-   push @{ $self->optional_js }, q(tree.js);
+   $self->base      ( $NUL    );
+   $self->data      ( {}      );
+   $self->node_count( 0       );
+   $self->prefix    ( q(tree) );
+   $self->selected  ( undef   );
+   $self->static    ( $NUL    );
    return;
+}
+
+sub node_id {
+   my $self = shift; return $self->name.q(_node_).$self->{node_count}++;
 }
 
 sub render_field {
@@ -38,7 +38,6 @@ sub render_field {
    defined $root[1] and return $hacc->span
       ( { class => q(error) }, 'Your tree has more than one root' );
 
-   $self->node_count( 0 );
    $self->hint_title
       or $self->hint_title( $self->loc( q(handy_hint_title) ) );
 
@@ -46,89 +45,65 @@ sub render_field {
       $html .= $self->_image_button( $hacc, q(collapse), q(Collapse All) );
    my $args  = { class => q(tree_controls) };
       $html  = $hacc->span( $args, $html );
-      $args  = { class => q(tree), id => $self->id };
-      $html .= $hacc->span( $args );
       $args  = { data => $self->data, parent => $NUL, prev_key => $NUL };
-   my $code  = __wrap_cdata( $self->scan_hash( $args ) );
 
-   return $html."\n".$hacc->script( { type => 'text/javascript' }, $code );
-}
-
-sub node_id {
-   my $self = shift; return $self->name.q(_node_).$self->{node_count}++;
+   return $html."\n".$self->scan_hash( $args );
 }
 
 sub scan_hash {
-   my ($self, $args) = @_; my $script = $NUL; my $node;
+   my ($self, $args) = @_;
 
-   my @keys = grep { !m{ \A _ }mx } keys %{ $args->{data} };
+   my @keys = sort  { lc $a cmp lc $b }
+              grep  { ! m{ \A _ }mx   }
+              keys %{ $args->{data}   };
 
-   for my $key (sort { lc $a cmp lc $b } @keys) {
-      $node = $self->node_id;
+   $keys[ 0 ] or return $NUL;
 
-      my $new_key   = $args->{prev_key}
-                    ? $args->{prev_key}.$SUBSEP.$key : $key;
-      my $data      = $args->{data}->{ $key };
-      my $open_icon = $NUL;
-      my $shut_icon = $NUL;
-      my $text      = $key;
-      my $tip       = $NUL;
-      my $url       = $self->url;
+   my $hacc = $self->hacc; my $prefix = $self->prefix; my $html;
+
+   for my $key_no (0 .. $#keys) {
+      my $key     = $keys[ $key_no ];
+      my $node    = $self->node_id;
+      my $new_key = $args->{prev_key}
+                  ? $args->{prev_key}.$SUBSEP.$key : $key;
+      my $data    = $args->{data}->{ $key };
+      my $text    = $key;
+      my $tip     = $NUL;
+      my ($list, $url);
 
       if (ref $data eq q(HASH)) {
-         $node      = $data->{_node_id } || $node;
-         $open_icon = $data->{_openIcon} || $open_icon;
-         $shut_icon = $data->{_shutIcon} || $shut_icon;
-         $text      = $data->{_text    } || $text;
-         $tip       = $data->{_tip     } || $tip;
-         $url       = $data->{_url     } || $url;
-      }
-
-      $url =~ m{ \A http: }mx or $url = $self->base.$url;
-      $self->selected and $url .= q(?).$self->name.q(_node=).$node;
-
-      unless ($args->{parent}) {
-         $script  = "\n".'var '.$node.' = new Tree.Trunk("'.$text.'", "';
-         $script .= $url.'", "'.$tip.'");'."\n";
-         $script .= $node.'.setBehavior("'.$self->behaviour.'");'."\n";
-      }
-      else {
-         $script .= 'var '.$node.' = new Tree.Branch("'.$text.'", "';
-         $script .= $url.'", "'.$tip.'");'."\n";
-      }
-
-      if ($self->target) {
-         $script .= $node.'.target = "'.$self->target.'"; '."\n";
-      }
-
-      if ($shut_icon) {
-         $script .= $node.'.icon = "'.$shut_icon.'"; '."\n";
-      }
-
-      if ($open_icon) {
-         $script .= $node.'.openIcon = "'.$open_icon.'"; '."\n";
-      }
-
-      if ($self->selected && ($self->selected eq $node)) {
-         $script .= $node.'.selected = true; '."\n";
-      }
-
-      if ($args->{parent}) {
-         $script .= $args->{parent}.'.add('.$node.'); '."\n";
-      }
-
-      if (ref $data eq q(HASH)) { # Recurse
-         $script .= $self->scan_hash
+         $node = $data->{_node_id} || $node;
+         $text = $data->{_text   } || $text;
+         $tip  = $data->{_tip    } || $tip;
+         $url  = $data->{_url    };
+         $list = $self->scan_hash
             ( { data => $data, parent => $node, prev_key => $new_key } );
       }
+
+      my $attrs = { title => $tip };
+
+      if ($url) {
+         $url =~ m{ \A http: }mx or $url = $self->base.$url;
+         $self->selected and $url .= q(?).$self->name.q(_node=).$node;
+         $attrs->{href} = $url;
+      }
+      else { $attrs->{href} = '#top' }
+
+      my $class = $list ? $prefix.q(_node) : $prefix.q(_leaf);
+
+      $key_no == $#keys and $class .= q(_last);
+      $class .= $list ? q(_open) : $NUL;
+
+      my $item = $hacc->dt( { class => $class }, $hacc->a( $attrs, $text ) );
+
+      $html .= $item.($list ? $hacc->dd( { class => $class }, $list ) : $NUL);
    }
 
-   if (not $args->{parent} and $node) {
-      $script .= '$( "'.$self->id.'" ).setHTML('.$node.' + "" );'."\n";
-      $script .= $self->selected.'.focus();'."\n" if ($self->selected);
-   }
+   my $attrs = { class => $args->{parent} ? $prefix.q(_branch) : $prefix };
 
-   return $script;
+   $args->{parent} or $attrs->{id} = $self->id;
+
+   return $hacc->dl( $attrs, $html );
 }
 
 sub _image_button {

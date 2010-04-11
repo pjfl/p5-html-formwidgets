@@ -3888,7 +3888,7 @@ Fx.CSS = {
 		var from = fromTo[0], to = fromTo[1];
 		if (!$chk(to)){
 			to = from;
-			from = el.getStyle(property);
+			from = $defined( el.getStyle ) ? el.getStyle(property) : null;
 		}
 		var css = this.select(property, to);
 		return {'from': css.parse(from), 'to': css.parse(to), 'css': css};
@@ -6395,8 +6395,13 @@ var Slider = new Class({
 		}
 		this.half = this.knob[offset] / 2;
 		this.full = this.element[offset] - this.knob[offset] + (this.options.offset * 2);
-		this.min = $chk(this.options.range[0]) ? this.options.range[0] : 0;
-		this.max = $chk(this.options.range[1]) ? this.options.range[1] : this.options.steps;
+      this.min  = this.options.range
+                ? ($chk(this.options.range[0]) ? this.options.range[0] : 0)
+                : this.min = 0;
+		this.max  = this.options.range
+                ? ($chk(this.options.range[1])
+                   ? this.options.range[1] : this.options.steps)
+                : this.options.steps;
 		this.range = this.max - this.min;
 		this.steps = this.options.steps || this.full;
 		this.stepSize = Math.abs(this.range) / this.steps;

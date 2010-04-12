@@ -9,7 +9,8 @@ use parent qw(HTML::FormWidgets);
 
 use English qw(-no_match_vars);
 
-__PACKAGE__->mk_accessors( qw(base data node_count prefix selected static) );
+__PACKAGE__->mk_accessors( qw(base build class_prefix data js_obj node_count
+                              selected static) );
 
 my $NUL = q();
 my $TTS = q( ~ );
@@ -17,12 +18,14 @@ my $TTS = q( ~ );
 sub init {
    my ($self, $args) = @_;
 
-   $self->base      ( $NUL    );
-   $self->data      ( {}      );
-   $self->node_count( 0       );
-   $self->prefix    ( q(tree) );
-   $self->selected  ( undef   );
-   $self->static    ( $NUL    );
+   $self->base        ( $NUL               );
+   $self->build       ( 0                  );
+   $self->class_prefix( q(tree)            );
+   $self->data        ( {}                 );
+   $self->js_obj      ( q(behaviour.state) );
+   $self->node_count  ( 0                  );
+   $self->selected    ( undef              );
+   $self->static      ( $NUL               );
    return;
 }
 
@@ -43,11 +46,19 @@ sub render_field {
 
    my $html  = $self->_image_button( $hacc, q(expand),   q(Expand All)   );
       $html .= $self->_image_button( $hacc, q(collapse), q(Collapse All) );
-   my $args  = { class => q(tree_controls) };
+   my $args  = { class => $self->class_prefix.q(_controls) };
       $html  = $hacc->span( $args, $html );
       $args  = { data => $self->data, parent => $NUL, prev_key => $NUL };
+      $html .= "\n".$self->scan_hash( $args );
+   my $code  = $NUL;
 
-   return $html."\n".$self->scan_hash( $args );
+   if ($self->build) {
+      $code  = $self->js_obj.".trees.build( \$( '".$self->id."' ) );";
+      $code  = __wrap_cdata( $code );
+      $code  = "\n".$hacc->script( { type => 'text/javascript' }, $code );
+   }
+
+   return $html.$code;
 }
 
 sub scan_hash {
@@ -59,9 +70,10 @@ sub scan_hash {
 
    $keys[ 0 ] or return $NUL;
 
-   my $hacc = $self->hacc; my $prefix = $self->prefix; my $html;
+   my $hacc = $self->hacc; my $prefix = $self->class_prefix; my $html;
 
    for my $key_no (0 .. $#keys) {
+      my $attrs   = {};
       my $key     = $keys[ $key_no ];
       my $node    = $self->node_id;
       my $new_key = $args->{prev_key}
@@ -80,8 +92,6 @@ sub scan_hash {
             ( { data => $data, parent => $node, prev_key => $new_key } );
       }
 
-      my $attrs = { title => $tip };
-
       if ($url) {
          $url =~ m{ \A http: }mx or $url = $self->base.$url;
          $self->selected and $url .= q(?).$self->name.q(_node=).$node;
@@ -89,12 +99,17 @@ sub scan_hash {
       }
       else { $attrs->{href} = '#top' }
 
+      my $link = $hacc->a( $attrs, $text );
+
+      $attrs = { class => q(tips), title => $self->hint_title.$TTS.$tip };
+      $link  = $hacc->span( $attrs, $link );
+
       my $class = $list ? $prefix.q(_node) : $prefix.q(_leaf);
 
       $key_no == $#keys and $class .= q(_last);
       $class .= $list ? q(_open) : $NUL;
 
-      my $item = $hacc->dt( { class => $class }, $hacc->a( $attrs, $text ) );
+      my $item = $hacc->dt( { class => $class, id => $node }, $link );
 
       $html .= $item.($list ? $hacc->dd( { class => $class }, $list ) : $NUL);
    }
@@ -109,17 +124,18 @@ sub scan_hash {
 sub _image_button {
    my ($self, $hacc, $dirn, $tip) = @_;
 
-   my $args = { class   => q(action tips),
-                onclick => $self->name.q(_node_0.).$dirn.'All()',
-                src     => $self->static.q(images/).$dirn.q(.png),
-                tiptype => q(normal),
-                title   => $self->hint_title.$TTS.$self->loc( $tip ) };
+   my $args   =  {
+      class   => q(action tips),
+      onclick => $self->js_obj.q(.trees.).$dirn."Tree( '".$self->id."' )",
+      src     => $self->static.q(images/).$dirn.q(.png),
+      tiptype => q(normal),
+      title   => $self->hint_title.$TTS.$self->loc( $tip ) };
 
    return $hacc->img( $args );
 }
 
 sub __wrap_cdata {
-   my $code = shift; return q(//<![CDATA[).$code.q(//]]>);
+   my $code = shift; return q(//<![CDATA[)."\n".$code."\n".q(//]]>);
 }
 
 1;

@@ -68,7 +68,10 @@ sub traverse {
 
    $keys[ 0 ] or return $NUL;
 
-   my $hacc = $self->hacc; my $prefix = $self->class_prefix; my $html;
+   my $hacc  = $self->hacc; my $prefix = $self->class_prefix; my $html;
+   my $attrs = { class => $prefix.($self->node_count > 0 ? q(_branch) : $NUL) };
+
+   $self->node_count > 0 or $attrs->{id} = $self->id;
 
    for my $key_no (0 .. $#keys) {
       my $attrs = {};
@@ -100,24 +103,23 @@ sub traverse {
       $link  = $hacc->span( $attrs, $link );
       $attrs = { class => $prefix.($last ? q(_last) : $NUL).q(_fill) };
 
-      my $fill = $args->{fill}.$hacc->span( $attrs, q( ) );
+      my $fill = $args->{fill}.($self->node_count > 1
+                                ? $hacc->span( $attrs, q( ) ) : $NUL);
 
       ref $data eq q(HASH)
          and $list = $self->traverse( { data => $data, fill => $fill } );
 
       my $class = $prefix.($list ? q(_node) : q(_leaf));
+      my $ctrl  = ($fill
+                   ? $hacc->span( { class => $class.q(_ctrl) }, q( ) ) : $NUL);
       my $icon  = $hacc->span( { class => $class.q(_icon) }, q( ) );
-      my $item  = ($args->{fill} ? $args->{fill} : $NUL).$icon.$link;
+      my $item  = ($args->{fill} ? $args->{fill} : $NUL).$ctrl.$icon.$link;
 
       $last and $class .= q(_last); $list and $class .= q(_open);
 
       $item  = $hacc->dt( { class => $class, id => $node }, $item );
       $html .= $item.($list ? $hacc->dd( { class => $class }, $list ) : $NUL);
    }
-
-   my $attrs = { class => $prefix.($args->{fill} ? q(_branch) : $NUL) };
-
-   $args->{fill} or $attrs->{id} = $self->id;
 
    return $hacc->dl( $attrs, $html );
 }

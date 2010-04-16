@@ -42,23 +42,20 @@ sub render_field {
    $html              = $hacc->span( { class => q(container) }, $text );
    $html             .= $hacc->span( { class => q(separator) }, $self->space );
 
-   $args              = {};
-   $args->{class   }  = $args->{name} = q(button);
-   $args->{onclick }  = 'return '.$self->js_obj.".addItem('".$self->name."')";
-   $args->{src     }  = $self->assets.'add_item.png';
-   $args->{value   }  = q(add).(ucfirst $self->name);
-   $text              = $hacc->image_button( $args );
-   $args              = { class => q(help tips), title => $self->add_tip };
+   $text              = $hacc->span( { class => q(add_item_icon) }, q( ) );
+   $args              = {
+      class   => q(button icon tips),
+      name    => $self->name.q(_add_item),
+      onclick => 'return '.$self->js_obj.".addItem('".$self->name."')",
+      title   => $self->add_tip };
    $text1             = $hacc->span( $args, $text ).$hacc->br().$hacc->br();
 
-   $args              = {};
-   $args->{class   }  = $args->{name} = q(button);
-   $args->{onclick }  = 'return '.$self->js_obj;
-   $args->{onclick } .= ".removeItem('".$self->name."')";
-   $args->{src     }  = $self->assets.'remove_item.png';
-   $args->{value   }  = q(remove).(ucfirst $self->name);
-   $text              = $hacc->image_button( $args );
-   $args              = { class => q(help tips), title => $self->remove_tip };
+   $text              = $hacc->span( { class => q(remove_item_icon) }, q( ) );
+   $args              = {
+      class   => q(button icon tips),
+      name    => $self->name.q(_remove_item),
+      onclick => 'return '.$self->js_obj.".removeItem('".$self->name."')",
+      title   => $self->remove_tip };
    $text1            .= $hacc->span( $args, $text );
    $html             .= $hacc->span( { class => q(container) }, $text1 );
 

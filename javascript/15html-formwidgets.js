@@ -1,4 +1,4 @@
-/* @(#)$Id: 15html-formwidgets.js 978 2010-04-11 23:50:53Z pjf $
+/* @(#)$Id: 15html-formwidgets.js 984 2010-04-16 02:04:48Z pjf $
 
    Portions of this code are taken from MooTools 1.11 which is:
 	   Copyright (c) 2007 Valerio Proietti, <http://mad4milk.net>
@@ -322,10 +322,11 @@ var AutoSize = new Class( {
 		minHeight : 48    // minimum height of textarea
 	},
 
-   initialize: function( elements, options ) {
+   initialize: function( options ) {
       this.setOptions( options );
       this.collection = new Array();
-      $$( elements ).each( this.build, this );
+
+      if (options.elements) $$( options.elements ).each( this.build, this );
    },
 
    build: function( el, index ) {
@@ -1827,18 +1828,18 @@ var TableUtils = new Class( {
       return false;
    },
 
-   liveGrid: function( key, id, imgs, pageSz, toggle ) {
-      if (key && id && imgs) {
+   liveGrid: function( key, id, klasses, pageSz, toggle ) {
+      if (key && id && klasses) {
          var elem = $( key + id + 'Disp' );
 
          if (elem) {
-            var img = imgs.split( '~' );
+            var klass = klasses.split( '~' );
 
             if (toggle && elem.style.display != 'none') {
                elem.style.display = 'none';
-               elem = $( key + id + 'Img' );
+               elem = $( key + id + 'Icon' );
 
-               if (elem) elem.src = img[0];
+               if (elem) elem.className = klass[0];
 
                this.gridKey  = null;
                this.gridId   = null;
@@ -1852,9 +1853,9 @@ var TableUtils = new Class( {
 
                   if (prev) prev.style.display = 'none';
 
-                  prev = $( keyid + 'Img' );
+                  prev = $( keyid + 'Icon' );
 
-                  if (prev) prev.src = img[0];
+                  if (prev) prev.className = klass[0];
 
                   this.gridKey  = null;
                   this.gridId   = null;
@@ -1863,9 +1864,9 @@ var TableUtils = new Class( {
                }
 
                elem.style.display = '';
-               elem = $( key + id + 'Img' );
+               elem = $( key + id + 'Icon' );
 
-               if (elem) elem.src = img[1];
+               if (elem) elem.className = klass[1];
 
                this.gridKey = key;
                this.gridId  = id;
@@ -1975,7 +1976,7 @@ var Tips = new Class( {
       timeout  : 30000
    },
 
-   initialize: function( elements, options ) {
+   initialize: function( options ) {
       var cell, row, table;
 
       this.setOptions( options );
@@ -2005,12 +2006,12 @@ var Tips = new Class( {
                                    + '-tip-bottomRight' } ).inject( row );
       new Element( 'span' ).appendText( this.options.spacer ).inject( cell );
 
-      $$( elements ).each( this.build, this );
+      if (options.elements) $$( options.elements ).each( this.build, this );
 
       if (this.options.initialize) this.options.initialize.call( this );
    },
 
-   build: function( el ) {
+   build: function( el, index ) {
       if (el.$tmp.myTitle || el.$tmp.myText) return;
 
       el.$tmp.myTitle = (el.href && el.getTag() == 'a')
@@ -2132,54 +2133,63 @@ Tips.implement( new Events, new Options );
 
 var Trees = new Class( {
       options: {
-         prefix: 'tree',
+         classPrefix   : 'tree',
+         cookiePrefix  : 'tree',
+         usePersistance: true
       },
 
-      initialize: function( elements, options ) {
+      initialize: function( options ) {
          this.setOptions( options );
          this.collection = new Array();
-         $$( elements ).each( this.build, this );
+
+         if (this.options.usePersistance) {
+            var prefix = behaviour.sessionPrefix + '_'
+                       + this.options.cookiePrefix;
+            this.cookies = new Cookies( { path  : behaviour.sessionPath,
+                                          prefix: prefix } );
+         }
+
+         if (options.elements) $$( options.elements ).each( this.build, this );
       },
 
-      build: function( el, subList ) {
+      addToggle: function( dt, dd ) {
+         var klass = this.options.classPrefix + '_node_ctrl';
+
+         $$( '#' + dt.id + ' span.' + klass ).each( function( el ) {
+               el.onclick = function() {
+                  return this.toggle( dt, dd );
+               }.bind( this );
+            }, this );
+
+         return;
+      },
+
+      build: function( el, index ) {
          if (! el || ! el.childNodes || el.childNodes.length == 0) return;
 
-         var dt;
+         var dt, node;
 
          for (var i = 0, il = el.childNodes.length; i < il; i++) {
-            var node = $( el.childNodes[ i ] );
+            if (! (node = $( el.childNodes[ i ] ))) continue;
 
-            if (! node) continue;
-
-            if (node.nodeName == 'DT') {
-               dt = node;
-               dt.onclick = function() { return false; }
-               continue;
-            }
+            if (node.nodeName == 'DT') { dt = node; continue; }
 
             if (node.nodeName != 'DD') continue; var dd = node;
 
             for (var j = 0, jl = dd.childNodes.length; j < jl; j++) {
-               var dl = $( dd.childNodes[ j ] );
-
-               if (dl && dl.nodeName == 'DL') this.build( dl, true );
+               if ((node = $( dd.childNodes[ j ] )) && node.nodeName == 'DL')
+                  this.build( node, index );
             }
 
-            if (subList) this.recoverState( dt, dd );
-            else this.open( dt, dd );
-
-            dt.onclick = function( obj, dt, dd ) {
-               return function() {
-                  this.toggle( dt, dd ); return false;
-               }.bind( obj );
-            }(this, dt, dd);
+            this.recoverState( el, dt, dd );
+            this.addToggle( dt, dd );
          }
 
          return;
       },
 
       close: function( dt, dd ) {
-         var prefix = this.options.prefix;
+         var prefix = this.options.classPrefix;
 
          if (dt.hasClass( prefix + '_node_open' )) {
             dt.removeClass( prefix + '_node_open'   );
@@ -2194,24 +2204,24 @@ var Trees = new Class( {
             dd.addClass   ( prefix + '_node_last_closed' );
          }
 
+         if (this.options.usePersistance) this.cookies.set( dt.id, '0' );
+
          return;
       },
 
       collapseTree: function( treeId ) {
          var list = $( treeId );
 
-         return list == null ? false : expandCollapseList( list, 'closed' );
+         return list == null ? false : this.expandCollapseList( list, 'close' );
       },
 
       expandCollapseList: function( el, dirn, itemId ) {
          if (! el || ! el.childNodes || el.childNodes.length == 0) return false;
 
-         var dt;
+         var dt, node;
 
          for (var i = 0, il = el.childNodes.length; i < il; i++) {
-            var node = $( el.childNodes[ i ] );
-
-            if (! node) continue;
+            if (! (node = $( el.childNodes[ i ] ))) continue;
 
             if (itemId != null && itemId == node.id) return true;
 
@@ -2220,10 +2230,8 @@ var Trees = new Class( {
             if (node.nodeName != 'DD') continue; var dd = node;
 
             for (var j = 0, jl = dd.childNodes.length; j < jl; j++) {
-               var dl = $( dd.childNodes[ j ] );
-
-               if (dl && dl.nodeName == 'DL') {
-                  var ret = expandCollapseList( dl, dirn, itemId );
+               if ((node = $( dd.childNodes[ j ] )) && node.nodeName == 'DL') {
+                  var ret = this.expandCollapseList( node, dirn, itemId );
 
                   if (itemId != null && ret) {
                      if (dirn == 'close') this.close( dt, dd );
@@ -2248,7 +2256,7 @@ var Trees = new Class( {
 
          if (list == null) return false;
 
-         if (ret = expandCollapseList( list, 'open', itemId )) {
+         if (ret = this.expandCollapseList( list, 'open', itemId )) {
             if (o = $( itemId ) && o.scrollIntoView) o.scrollIntoView( false );
          }
 
@@ -2258,11 +2266,11 @@ var Trees = new Class( {
       expandTree: function( treeId ) {
          var list = $( treeId );
 
-         return list == null ? false : expandCollapseList( list, 'open' );
+         return list == null ? false : this.expandCollapseList( list, 'open' );
       },
 
       open: function( dt, dd ) {
-         var prefix = this.options.prefix;
+         var prefix = this.options.classPrefix;
 
          if (dt.hasClass( prefix + '_node_closed' )) {
             dt.removeClass( prefix + '_node_closed' );
@@ -2277,16 +2285,25 @@ var Trees = new Class( {
             dd.addClass   ( prefix + '_node_last_open'   );
          }
 
+         if (this.options.usePersistance) this.cookies.set( dt.id, '1' );
+
          return;
       },
 
-      recoverState: function( dt, dd ) {
-         this.close( dt, dd );
+      recoverState: function( tree, dt, dd ) {
+         if (this.options.usePersistance) {
+            this.cookies.get( dt.id ) == '1'
+               ? this.open( dt, dd ) : this.close( dt, dd );
+         }
+         else if (! this.collection[ tree.id ]) this.open( dt, dd );
+         else this.close( dt, dd );
+
+         this.collection[ tree.id ] = true;
          return;
       },
 
       toggle: function( dt, dd ) {
-         var prefix = this.options.prefix;
+         var prefix = this.options.classPrefix;
 
          if (dt.hasClass( prefix + '_node_last_open' )
           || dt.hasClass( prefix + '_node_last_closed' )) {
@@ -2301,7 +2318,15 @@ var Trees = new Class( {
             dd.toggleClass( prefix + '_node_open'   );
             dd.toggleClass( prefix + '_node_closed' );
          }
-         return;
+
+         if (this.options.usePersistance) {
+            if (dt.hasClass( prefix + '_node_open' )
+                || dt.hasClass( prefix + '_node_last_open' ))
+               this.cookies.set( dt.id, '1' );
+            else this.cookies.set( dt.id, '0' );
+         }
+
+         return false;
       }
    } );
 
@@ -2326,7 +2351,7 @@ var WindowUtils = new Class( {
    log: function( message ) {
       if (this.quiet) return;
 
-		message = "ourtools.js: " + message;
+		message = "html-formwidgets.js: " + message;
 
 		if (this.customLogFn) { this.customLogFn( message ); }
       else if (window.console && window.console.log) {
@@ -2493,11 +2518,12 @@ var WYSIWYG = new Class( {
       ]
    },
 
-   initialize: function( elements, options ) {
+   initialize: function( options ) {
       this.setOptions( options );
       this.collection = new Array();
       this.barNum     = options.barNum || this.options.defaultBarNum;
-      $$( elements ).each( this.build, this );
+
+      if (options.elements) $$( options.elements ).each( this.build, this );
    },
 
    addButton: function( editor, b ) {

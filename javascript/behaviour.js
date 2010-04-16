@@ -17,7 +17,7 @@ var State = new Class( {
 
    resize: function( changed ) {
       var append, buttons, content, elemWidth, footer;
-      var foot_height, grippy_height, offset, sb, sb_height;
+      var foot_height = 0, grippy_height, offset, sb, sb_height;
       var height = 5, h = window.getHeight(), w = window.getWidth();
 
       if (! this.popup) {
@@ -87,10 +87,6 @@ var State = new Class( {
    setState: function( first_fld ) {
       var cookie_ref, elem, sb, sb_panel = 0, sb_state = false, sb_width = 150;
 
-      /* Initialize the fading links event handlers */
-      this.linkFade  = new LinkFader( { links: document.links,
-                                        view : document.defaultView } );
-
       /* Use state cookie to restore the visual state of the page */
       if (cookie_ref = this.cookies.get()) {
          var cookies = cookie_ref.split( '+' );
@@ -111,6 +107,9 @@ var State = new Class( {
             if (elem = $( p0 + 'Disp' ))
                elem.setStyle( 'display', (p1 != 'false' ? '' : 'none') );
 
+            /* Restore the className for elements whose ids end in Icon */
+            if (elem = $( p0 + 'Icon' )) { if (p1) elem.className = p1; }
+
             /* Restore the source URL for elements whose ids end in Img */
             if (elem = $( p0 + 'Img' )) { if (p1) elem.src = p1; }
 
@@ -121,30 +120,31 @@ var State = new Class( {
          }
       }
 
-      this.autosizer = new AutoSize( '.autosize', {} );
+      this.autosizer = new AutoSize( { elements: '.autosize' } );
       this.checkboxReplacements = new CheckboxReplace( { replaceAll: true } );
+      this.linkFade  = new LinkFader( { links: document.links,
+                                        view : document.defaultView } );
       this.setupSidebar( sb_panel, sb_state, sb_width );
       this.setupScroller( 'content' );
-      this.tips = new Tips( '.tips', {
+      this.trees     = new Trees( { elements: '.tree' } );
+      this.wysiwyg   = new WYSIWYG( { elements: '.wysiwyg' } );
+      this.tips = new Tips( {
+         elements  : '.tips',
          initialize: function() {
-		      this.fx = new Fx.Style( this.toolTip, 'opacity',
+		      this.fx  = new Fx.Style( this.toolTip, 'opacity',
                { duration: 500, wait: false } ).set( 0 );
          },
-	      onShow:     function( toolTip ) { this.fx.start( 1 ) },
-         onHide:     function( toolTip ) { this.fx.start( 0 ) },
-         showDelay:  666
+	      onShow    : function( toolTip ) { this.fx.start( 1 ) },
+         onHide    : function( toolTip ) { this.fx.start( 0 ) },
+         showDelay : 666
       } );
-      this.trees = new Trees( '.tree' );
-      this.wysiwyg = new WYSIWYG( '.wysiwyg', {} );
       this.resize();
       this.setupColumnizer( '.multiColumn' );
 
       // TODO: Either make this look right or drop it
       if ($( 'results' )) {
-         var autoscroll = new Fx.Style( 'results', 'margin-top',
-            { duration: 1500 } ).set( -window.getHeight() );
-
-         autoscroll.start( 0 );
+         new Fx.Style( 'results', 'margin-top',
+            { duration: 1500 } ).set( -window.getHeight() ).start( 0 );
       }
 
       if (first_fld && (elem = $( first_fld ))) elem.focus();
@@ -196,11 +196,11 @@ var State = new Class( {
       this.slider = new Fx.Slide( 'sidebarContainer', {
          mode: 'horizontal',
          onComplete: function() {
-            var sb_image = $( 'sidebarImg' );
+            var sb_icon = $( 'sidebarIcon' );
 
             /* When the effect is complete toggle the state */
             if (this.cookies.get( 'sidebar' )) {
-               if (sb_image) sb_image.src = this.assets + 'pushedpin.gif';
+               if (sb_icon) sb_icon.className = 'pushedpin_icon';
 
                var panel = this.cookies.get( 'sidebarPanel' );
 
@@ -208,7 +208,7 @@ var State = new Class( {
                this.accordion.display( panel );
             }
             else {
-               if (sb_image) sb_image.src = this.assets + 'pushpin.gif';
+               if (sb_icon) sb_icon.className = 'pushpin_icon';
 
                this.resize();
             }
@@ -218,7 +218,7 @@ var State = new Class( {
       /* Setup the event handler to turn the side bar on/off */
       $( 'sidebar' ).addEvent( 'click', function( e ) {
          if (! this.cookies.get( 'sidebar' )) {
-            this.cookies.set( 'sidebar', this.assets + 'pushedpin.gif' );
+            this.cookies.set( 'sidebar', 'pushedpin_icon' );
             this.resize();
             e = new Event( e );
             this.slider.slideIn();
@@ -237,7 +237,6 @@ var State = new Class( {
          sidebar.makeResizable( {
             modifiers:             { x: 'width', y: false },
             limit:                 { x: [ 150, 450 ] },
-            onComplete: function() { this.detach() }.bind( this ),
             onDrag:     function() { this.resize( true ) }.bind( this )
          } );
       }.bind( this, sb ) );

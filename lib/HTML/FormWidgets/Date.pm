@@ -35,19 +35,19 @@ sub render_field {
    $args->{readonly}  = q(readonly) if ($self->readonly);
    $args->{size    }  = $self->width;
    $html              = $hacc->textfield( $args );
-   $args              = { alt     => q(Calendar),
-                          class   => q(action tips),
+   $args              = { class   => q(calendar_icon) };
+   $text              = $hacc->span( $args, q( ) );
+   $args              = { class   => q(icon tips),
                           id      => $self->id.q(_trigger),
-                          src     => $self->assets.q(calendar.png),
                           title   => $self->hint };
-   $html             .= $hacc->img( $args );
-   $args              = { alt     => q(Clear),
-                          class   => q(action tips),
+   $html             .= $hacc->span( $args, $text );
+   $args              = { class   => q(clear_field_icon) };
+   $text              = $hacc->span( $args, q( ) );
+   $args              = { class   => q(icon tips),
                           id      => $self->id.q(_clear),
                           onclick => $self->js_obj."( '".$self->id."' )",
-                          src     => $self->assets.q(clear_field.png),
                           title   => $self->clear_hint };
-   $html             .= $hacc->img( $args );
+   $html             .= $hacc->span( $args, $text );
    $text              = "\n";
    $text             .= 'Calendar.setup( {'."\n";
    $text             .= '   inputField : "'.$self->id.'", '."\n";

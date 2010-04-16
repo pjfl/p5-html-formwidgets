@@ -44,6 +44,8 @@ sub render_field {
 
    my $cells = $NUL; my $c_no = 0; my $data = $self->data;
 
+   $self->table_class( $self->table_class
+                       || ($self->prompt ? q(form) : q(std)) );
    $self->id                or  $self->id( $self->name || q(table) );
    $self->number_rows       and $cells .= $self->_render_row_header( $c_no++ );
    $self->select eq q(left) and $cells .= $self->_render_selectbox ( $c_no++ );
@@ -54,17 +56,16 @@ sub render_field {
 
    $self->select eq q(right) and $cells .= $self->_render_selectbox( $c_no++ );
 
-   my $hacc = $self->hacc; my $rows = $hacc->tr( $cells ); my $r_no = 0;
+   my $hacc = $self->hacc;
+   my $rows = $hacc->tr( { class => $self->table_class.q(_row) }, $cells );
+   my $r_no = 0;
 
    $rows .= $self->_render_row( $data, $_, $r_no++ ) for (@{$data->{values}});
 
    $self->_add_row_count( $r_no );
    $self->edit and $rows .= $self->_add_edit_row( $data );
    $self->class( $self->table_class || q(fullWidth) );
-
-   my $class = $self->table_class || ($self->prompt ? q(form) : q(std));
-
-   $args = { class => $class, id => $self->id };
+   $args = { class => $self->table_class, id => $self->id };
 
    return $hacc->table( $args, "\n".$rows );
 }
@@ -82,31 +83,24 @@ sub _add_edit_row {
       $cells       .= $self->_editable_cell( $data, $field, $args );
    }
 
-   my $args = {};
+   my $text   = $hacc->span( { class => q(add_item_icon) }, q( ) );
+   my $args   = {
+      class   => q(button icon tips),
+      name    => $self->id.q(_add),
+      onclick => 'return '.$self->js_obj.".addTableRow('".$self->id."', 1)",
+      title   => $self->add_tip };
 
-   $args->{class  }  = $args->{name} = q(button);
-   $args->{onclick}  = 'return '.$self->js_obj.".addTableRow('";
-   $args->{onclick} .= $self->id."', 1)";
-   $args->{src    }  = $self->assets.'add_item.png';
-   $args->{value  }  = $self->id.q(_add);
-
-   my $text = $hacc->image_button( $args );
-
-   $args    = { class => q(help tips), title => $self->add_tip };
-   $text    = $hacc->span( $args, $text );
+   $text = $hacc->span( $args, $text );
 
    if ($self->select) {
-      $args             = {};
-      $args->{class  }  = $args->{name} = q(button);
-      $args->{onclick}  = 'return '.$self->js_obj;
-      $args->{onclick} .= ".removeTableRow('".$self->id."')";
-      $args->{src    }  = $self->assets.'remove_item.png';
-      $args->{value  }  = $self->id.q(_remove);
+      my $text1 = $hacc->span( { class => q(remove_item_icon) }, q( ) );
 
-      my $text1 = $hacc->image_button( $args );
-
-      $args     = { class => q(help tips), title => $self->remove_tip };
-      $text    .= $hacc->span( $args, $text1 );
+      $args  = {
+         class   => q(button icon tips),
+         name    => $self->id.q(_remove),
+         onclick => 'return '.$self->js_obj.".removeTableRow('".$self->id."')",
+         title   => $self->remove_tip };
+      $text .= $hacc->span( $args, $text1 );
    }
 
    $cells   .= $hacc->td( $text );
@@ -223,11 +217,7 @@ sub _render_row {
 
          my $class = $data->{class} || q(dataValue);
 
-         if (ref $class and exists $class->{ $field }) {
-            $args->{class} = $class->{ $field };
-         }
-         else { $args->{class} = $class }
-
+         $args->{class}  = ref $class eq q(HASH) ? $class->{ $field } : $class;
          $args->{class} .= $c_no % 2 == 0 ? q( even) : q( odd);
          exists $data->{wrap}->{ $field } or $args->{class} .= q( nowrap);
 
@@ -243,7 +233,8 @@ sub _render_row {
       $cells .= $self->_check_box( $r_no, $c_no++, $val->{id} );
    }
 
-   my $args = { class => q(dataValue), id => $self->id.q(_row).$r_no };
+   my $args = { class => $self->table_class.q(_row),
+                id    => $self->id.q(_row).$r_no };
 
    return $hacc->tr( $args, "\n".$cells );
 }

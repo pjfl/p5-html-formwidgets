@@ -130,7 +130,6 @@ sub _image_button {
    my $args   =  {
       class   => q(action tips ).$dirn,
       onclick => $self->js_obj.q(.).$dirn."Tree( '".$self->id."' )",
-      tiptype => q(normal),
       title   => $self->hint_title.$TTS.$self->loc( $tip ) };
 
    return $hacc->span( $args, q( ) );

@@ -35,15 +35,16 @@ sub render_field {
    $args->{readonly}  = q(readonly) if ($self->readonly);
    $args->{size    }  = $self->width;
    $html              = $hacc->textfield( $args );
+   $html             .= $hacc->span( { class => q(shim) }, q( ) );
    $args              = { class   => q(calendar_icon) };
    $text              = $hacc->span( $args, q( ) );
-   $args              = { class   => q(icon tips),
+   $args              = { class   => q(button icon tips),
                           id      => $self->id.q(_trigger),
                           title   => $self->hint };
    $html             .= $hacc->span( $args, $text );
    $args              = { class   => q(clear_field_icon) };
    $text              = $hacc->span( $args, q( ) );
-   $args              = { class   => q(icon tips),
+   $args              = { class   => q(button icon tips),
                           id      => $self->id.q(_clear),
                           onclick => $self->js_obj."( '".$self->id."' )",
                           title   => $self->clear_hint };

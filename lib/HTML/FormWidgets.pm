@@ -147,8 +147,9 @@ sub inflate {
 
    defined $args or return; ref $args or return $args;
 
-   $args->{fields  } = $self->fields;
-   $args->{messages} = $self->messages;
+   $args->{content_type} = $self->content_type;
+   $args->{fields      } = $self->fields;
+   $args->{messages    } = $self->messages;
 
    return __PACKAGE__->new( $args )->render;
 }

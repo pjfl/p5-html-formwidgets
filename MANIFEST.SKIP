@@ -46,3 +46,4 @@ Thumbs.db
 \bHTML-FormWidgets-[\d\.\_]+
 # Don't distribute this
 lib/HTML/FormWidgets/Columnizer.pm
+^MYMETA.yml$

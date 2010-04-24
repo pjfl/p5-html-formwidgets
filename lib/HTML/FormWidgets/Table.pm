@@ -87,29 +87,25 @@ sub _add_edit_row {
    my $args   = {
       class   => q(button icon tips),
       name    => $self->id.q(_add),
-      onclick => 'return '.$self->js_obj.".addTableRow('".$self->id."', 1)",
+      onclick => 'return '.$self->js_obj.".addRows('".$self->id."', 1)",
       title   => $self->add_tip };
 
-   $text = $hacc->span( $args, $text );
+   $text      = $hacc->span( $args, $text );
 
-   if ($self->select) {
-      my $text1 = $hacc->span( { class => q(remove_item_icon) }, q( ) );
+   my $text1  = $hacc->span( { class => q(remove_item_icon) }, q( ) );
 
-      $args  = {
-         class   => q(button icon tips),
-         name    => $self->id.q(_remove),
-         onclick => 'return '.$self->js_obj.".removeTableRow('".$self->id."')",
-         title   => $self->remove_tip };
-      $text .= $hacc->span( $args, $text1 );
-   }
+   $args      = {
+      class   => q(button icon tips),
+      name    => $self->id.q(_remove),
+      onclick => 'return '.$self->js_obj.".removeRows('".$self->id."')",
+      title   => $self->remove_tip };
+   $text     .= $hacc->span( $args, $text1 );
+   $text      = $hacc->span( { class => q(table_edit_buttons) }, $text );
+   $cells    .= $hacc->td( $text );
 
-   $cells   .= $hacc->td( $text );
+   my $class  = $data->{class} || q(edit_row);
 
-   my $class = $data->{class} || q(dataValue);
-
-   $args     = { class => $class, id => $self->id.q(_add) };
-
-   return $hacc->tr( $args, $cells );
+   return $hacc->tr( { class => $class, id => $self->id.q(_add) }, $cells );
 }
 
 sub _add_row_count {

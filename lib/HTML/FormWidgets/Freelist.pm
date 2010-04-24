@@ -35,17 +35,27 @@ sub render_field {
    my ($self, $args) = @_; my ($hacc, $html, $rno, $text, $text1, $tip, $val);
 
    $hacc              = $self->hacc;
-   $args->{class   } .= q( ifield);
+   $args->{class   } .= q( ifield freelist);
    $args->{name    }  = $self->name.q(_new);
    $args->{size    }  = $self->width;
-   $text              = $hacc->textfield( $args );
-   $html              = $hacc->span( { class => q(container) }, $text );
+   $html              = $hacc->textfield( $args );
+   $args              = {};
+   $args->{class   }  = q( ifield freelist);
+   $args->{labels  }  = $self->labels if ($self->labels);
+   $args->{multiple}  = q(true);
+   $args->{name    }  = $self->name.q(_current);
+   $args->{size    }  = $self->height;
+   $args->{values  }  = $self->values;
+   $text1             = $hacc->scrolling_list( $args );
+   $args              = { class => q(container freelist_scrolling) };
+   $html             .= $hacc->span( $args, $text1 );
+   $args              = { class => q(container freelist_container) };
+   $html              = $hacc->span( $args, $html );
    $html             .= $hacc->span( { class => q(separator) }, $self->space );
 
    $text              = $hacc->span( { class => q(add_item_icon) }, q( ) );
    $args              = {
       class   => q(button icon tips),
-      name    => $self->name.q(_add_item),
       onclick => 'return '.$self->js_obj.".addItem('".$self->name."')",
       title   => $self->add_tip };
    $text1             = $hacc->span( $args, $text ).$hacc->br().$hacc->br();
@@ -53,22 +63,11 @@ sub render_field {
    $text              = $hacc->span( { class => q(remove_item_icon) }, q( ) );
    $args              = {
       class   => q(button icon tips),
-      name    => $self->name.q(_remove_item),
       onclick => 'return '.$self->js_obj.".removeItem('".$self->name."')",
       title   => $self->remove_tip };
    $text1            .= $hacc->span( $args, $text );
    $html             .= $hacc->span( { class => q(container) }, $text1 );
 
-   $html             .= $hacc->span( { class => q(separator) }, $self->space );
-   $args              = {};
-   $args->{class   }  = q( ifield);
-   $args->{labels  }  = $self->labels if ($self->labels);
-   $args->{multiple}  = q(true);
-   $args->{name    }  = $self->name.q(_current);
-   $args->{size    }  = $self->height;
-   $args->{values  }  = $self->values;
-   $text1             = $hacc->scrolling_list( $args );
-   $html             .= $hacc->span( { class => q(container) }, $text1 );
    $rno               = 0;
 
    for $val (@{ $args->{values} }) {

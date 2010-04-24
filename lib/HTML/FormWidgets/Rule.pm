@@ -26,9 +26,15 @@ sub render_field {
    if ($self->imgclass) {
       $html  = $hacc->hr(  { class => $self->class } );
       $cells = $hacc->td(  { class => q(minimal) }, $html );
-      $html  = $hacc->img( { alt   => $self->alt,
-                             class => $self->imgclass,
-                             src   => $self->text } );
+
+      if ($self->text) {
+         $html = $hacc->img( { alt   => $self->alt,
+                                class => $self->imgclass,
+                                src   => $self->text } );
+      }
+      else {
+         $html = $hacc->span( { class => $self->imgclass } );
+      }
    }
    else { $html = $self->text }
 

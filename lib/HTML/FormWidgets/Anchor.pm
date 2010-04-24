@@ -24,12 +24,17 @@ sub init {
 }
 
 sub render_field {
-   my ($self, $args) = @_;
+   my ($self, $args) = @_; my $hacc = $self->hacc;
 
    if ($self->imgclass) {
-      $self->text( $self->hacc->img( { alt   => $self->fhelp,
-                                       class => $self->imgclass,
-                                       src   => $self->text } ) );
+      if ($self->text) {
+         $self->text( $hacc->img( { alt   => $self->fhelp,
+                                    class => $self->imgclass,
+                                    src   => $self->text } ) );
+      }
+      else {
+         $self->text( $hacc->span( { class => $self->imgclass } ) );
+      }
    }
 
    if ($self->href) {
@@ -38,7 +43,7 @@ sub render_field {
       $args->{class  } = $self->anchor_class;
       $args->{onclick} = $self->onclick if ($self->onclick);
 
-      return $self->hacc->a( $args, $self->text );
+      return $hacc->a( $args, $self->text );
    }
 
    return $self->text;

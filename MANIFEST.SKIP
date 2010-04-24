@@ -13,7 +13,7 @@
 \bblibdirs$
 ^MANIFEST\.skip$
 ^MANIFEST\.SKIP$
-^Build.PL$
+^MYMETA.yml$
 ^SIGNATURE$
 ^Debian_CPANTS.txt$
 
@@ -46,4 +46,3 @@ Thumbs.db
 \bHTML-FormWidgets-[\d\.\_]+
 # Don't distribute this
 lib/HTML/FormWidgets/Columnizer.pm
-^MYMETA.yml$

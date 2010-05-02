@@ -18,7 +18,7 @@ sub init {
    $self->class(       q(button) );
    $self->container(   0 );
    $self->button_name( q(_method) );
-   $self->onclick(     q(window.submit) );
+   $self->onclick(     q() );
    $self->src(         q() );
    $self->tiptype(     q(normal) );
    return;
@@ -30,10 +30,10 @@ sub render_field {
    $args            = {};
    $args->{class  } = $self->class;
    $args->{name   } = $self->button_name;
-   $args->{onclick} = $self->onclick;
+   $args->{onclick} = $self->onclick if ($self->onclick);
    $args->{value  } = ucfirst $self->name;
 
-   return $self->hacc->submit( $args ) unless ($self->src);
+   $self->src or return $self->hacc->submit( $args );
 
    $args->{alt} = ucfirst $self->name;
    $args->{src} = q(http:) eq (substr $self->src, 0, 5)

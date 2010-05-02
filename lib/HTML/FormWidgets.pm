@@ -25,7 +25,7 @@ my $ATTRS =
      container_class => undef,             container_id    => undef,
      content_type    => q(text/html),      default         => undef,
      evnt_hndlr      => q(behaviour.server.checkField),
-     fields          => {},
+     fields          => {},                frame_class     => $NUL,
      hacc            => undef,             hint_title      => $NUL,
      id              => undef,             is_xml          => 0,
      messages        => {},                name            => undef,
@@ -75,7 +75,7 @@ sub __build_widget {
    if ($item->{content}->{group}) {
       return if ($config->{skip_groups});
 
-      my $class = $item->{content}->{class};
+      my $class = delete $item->{content}->{frame_class};
 
       $item->{content} = __group_fields( $config->{hacc}, $item, $stack );
       $item->{class  } = $class if ($class);
@@ -84,7 +84,7 @@ sub __build_widget {
       my $widget = $class->new( __merge_hashes( $config, $item ) );
 
       $item->{content} = $widget->render;
-      $item->{class  } = $widget->class if ($widget->class);
+      $item->{class  } = $widget->frame_class if ($widget->frame_class);
    }
 
    return $item;
@@ -94,9 +94,7 @@ sub __group_fields {
    my ($hacc, $item, $list) = @_; my $html = $NUL; my $args;
 
    for (1 .. $item->{content}->{nitems}) {
-      $args = pop @{ $list };
-      $args->{content} ||= $NUL; chomp $args->{content};
-      $html = $args->{content}.$html;
+      $args = pop @{ $list }; $html = ($args->{content} || $NUL).$html;
    }
 
    my $legend = $hacc->legend( $item->{content}->{text} );
@@ -287,24 +285,21 @@ sub _bootstrap {
    # Defaults id from name (least significant) from id from ajaxid (most sig.)
    my $id = $self->id; my $name = $self->name; my $type = $self->type;
 
-   $id = $self->id( $self->ajaxid ) if (not $id and $self->ajaxid);
+   not $id and $self->ajaxid and $id = $self->id( $self->ajaxid );
 
    if ($id and not $name) {
-      if ($id =~ m{ \. }mx) {
-         $name = $self->name( (split m{ \. }mx, $id)[1] );
-      }
-      else { $name = $self->name( (reverse split m{ _ }mx, $id)[0] ) }
+      $name = $self->name( $id =~ m{ \. }mx ? (split m{ \. }mx, $id)[1]
+                                            : (reverse split m{ _ }mx, $id)[0]);
    }
 
-   $id = $self->id( $name ) if (not $id and $name);
+   not $id and $name and $id = $self->id( $name );
 
    # We can get the widget type from the config file
    if (not $type and $id and exists $args->{fields}) {
       my $fields = $args->{fields};
 
-      if (exists $fields->{ $id } and exists $fields->{ $id }->{type}) {
-         $type = $self->type( $fields->{ $id }->{type} );
-      }
+      exists $fields->{ $id } and exists $fields->{ $id }->{type}
+         and $type = $self->type( $fields->{ $id }->{type} );
    }
 
    # This is the default widget type if not overidden in the config
@@ -1036,6 +1031,8 @@ None
 
 =item L<Class::Inspector>
 
+=item L<Class::MOP>
+
 =item L<HTML::Accessors>
 
 =item L<Syntax::Highlight::Perl>
@@ -1046,12 +1043,14 @@ None
 
 =item L<Text::Tabs>
 
+=item L<TryCatch>
+
 =back
 
 Included in the distribution are the Javascript files whose methods
 are called by the event handlers associated with these widgets
 
-=head2 10htmlparser.js
+=head2 05htmlparser.js
 
    HTML Parser By John Resig (ejohn.org)
    Original code by Erik Arvidsson, Mozilla Public License
@@ -1059,7 +1058,7 @@ are called by the event handlers associated with these widgets
 
 Used to reimplement "innerHTML" assignments from XHTML
 
-=head2 20mootools.js
+=head2 10mootools.js
 
    Mootools - My Object Oriented javascript.
    License: MIT-style license.
@@ -1067,27 +1066,19 @@ Used to reimplement "innerHTML" assignments from XHTML
 
 This is the main JS library used with this package
 
-=head2 30ourtools.js
+=head2 15html-formwidgets.js
 
 Replaces Mootools' C<setHTML> method with one that uses the HTML
 parser. The included copy has a few hacks that improve the Accordion
 widget
 
-=head2 40calendar.js
+=head2 50calendar.js
 
    Copyright Mihai Bazon, 2002-2005  |  www.bazon.net/mishoo
    The DHTML Calendar, version 1.0   |  www.dynarch.com/projects/calendar
    License: GNU Lesser General Public License
 
 Implements the calendar popup used by the I<::Date> subclass
-
-=head2 60tree.js
-
-   Originally Cross Browser Tree Widget 1.17
-   Created by Emil A Eklund (http://webfx.eae.net/contact.html#emil)
-   Copyright (c) 1999 - 2002 Emil A Eklund
-
-Implements the tree widget used by the I<::Tree> subclass
 
 =head2 behaviour.js
 
@@ -1116,7 +1107,7 @@ Peter Flanigan, C<< <Support at RoxSoft.co.uk> >>
 
 =head1 License and Copyright
 
-Copyright (c) 2008 Peter Flanigan. All rights reserved
+Copyright (c) 2010 Peter Flanigan. All rights reserved
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself. See L<perlartistic>

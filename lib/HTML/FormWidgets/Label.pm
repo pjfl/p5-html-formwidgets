@@ -20,13 +20,11 @@ sub init {
 }
 
 sub render_field {
-   my ($self, $args) = @_; my ($markup, $text);
+   my ($self, $args) = @_; my $text = $self->text; my $markup;
 
-   $text    = $self->text;
    ($text ||= $self->loc( $self->name ) || q()) =~ s{ \A \n }{}msx;
-   $text    = $self->text_obj->markdown( $text ) if ($text && $self->markdown);
-
-   return unless ($text);
+   $text and $self->markdown and $text = $self->text_obj->markdown( $text );
+   $text or return;
 
    if ($self->dropcap) {
       if ($text =~ m{ \A (\<[A-Za-z0-9]+\>) }mx) {

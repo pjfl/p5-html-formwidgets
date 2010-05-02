@@ -46,7 +46,7 @@ sub render_field {
 
    $args = $self->column_class ? { class => $self->column_class } : {};
 
-   return "\n".$hacc->div( $args, $paras );
+   return "\n".$hacc->span( $args, $paras );
 }
 
 1;

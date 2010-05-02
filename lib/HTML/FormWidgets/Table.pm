@@ -40,12 +40,11 @@ sub init {
 }
 
 sub render_field {
-   my ($self, $args) = @_;
+   my ($self, $args) = @_; my $c_no = 0; my $cells = $NUL;
 
-   my $cells = $NUL; my $c_no = 0; my $data = $self->data;
+   my $class = $self->prompt ? q(form) : q(std); my $data = $self->data;
 
-   $self->table_class( $self->table_class
-                       || ($self->prompt ? q(form) : q(std)) );
+   $self->table_class       or  $self->table_class( $class );
    $self->id                or  $self->id( $self->name || q(table) );
    $self->number_rows       and $cells .= $self->_render_row_header( $c_no++ );
    $self->select eq q(left) and $cells .= $self->_render_selectbox ( $c_no++ );
@@ -64,7 +63,6 @@ sub render_field {
 
    $self->_add_row_count( $r_no );
    $self->edit and $rows .= $self->_add_edit_row( $data );
-   $self->class( $self->table_class || q(fullWidth) );
    $args = { class => $self->table_class, id => $self->id };
 
    return $hacc->table( $args, "\n".$rows );
@@ -109,10 +107,10 @@ sub _add_edit_row {
 }
 
 sub _add_row_count {
-   my ($self, $r_no) = @_;
+   my ($self, $default) = @_;
 
    my $content = $self->inflate( { name    => $self->id.q(_nrows),
-                                   default => $r_no,
+                                   default => $default,
                                    type    => q(hidden),
                                    widget  => 1 } );
 
@@ -128,7 +126,7 @@ sub _check_box {
    $id and $args->{value} = $id;
 
    my $text  = $hacc->checkbox( $args );
-   my $class = q(row_select ).($c_no % 2 == 0 ? q(even) : q(odd));
+   my $class = q(row_select ).__column_class( $c_no );
 
    return $hacc->td( { align => q(center), class => $class }, $text );
 }
@@ -167,10 +165,10 @@ sub _render_header {
       $args->{class} .= q( ).$data->{hclass}->{ $field };
    }
 
-   exists $data->{widths  }->{ $field }
+   exists $data->{widths}->{ $field }
       and $args->{style} = q(width: ).$data->{widths}->{ $field }.q(;);
 
-   exists $data->{wrap    }->{ $field } or $args->{class} .= q( nowrap);
+   exists $data->{wrap  }->{ $field } or $args->{class} .= q( nowrap);
 
    my $type = exists $data->{typelist}->{ $field }
             ? $data->{typelist}->{ $field } : $NUL;
@@ -214,7 +212,7 @@ sub _render_row {
          my $class = $data->{class} || q(dataValue);
 
          $args->{class}  = ref $class eq q(HASH) ? $class->{ $field } : $class;
-         $args->{class} .= $c_no % 2 == 0 ? q( even) : q( odd);
+         $args->{class} .= q( ).__column_class( $c_no );
          exists $data->{wrap}->{ $field } or $args->{class} .= q( nowrap);
 
          my $fld_val = $self->inflate( $val->{ $field } ) || q(&nbsp;);
@@ -266,9 +264,15 @@ sub _row_number {
 
    my $args = { class => $self->class.q( lineNumber minimal) };
 
-   $args->{class} .= $col % 2 == 0 ? q( even) : q( odd);
+   $args->{class} .= q( ).__column_class( $col );
 
    return $self->hacc->td( $args, $row );
+}
+
+# Private subroutines
+
+sub __column_class {
+   return $_[ 0 ] % 2 == 0 ? q(even) : q(odd);
 }
 
 1;

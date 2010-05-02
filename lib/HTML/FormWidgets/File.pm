@@ -13,8 +13,8 @@ use Syntax::Highlight::Perl;
 use Text::ParseWords;
 use Text::Tabs;
 
-__PACKAGE__->mk_accessors( qw(base header hide path root scheme select
-                              style subtype) );
+__PACKAGE__->mk_accessors( qw(base header header_class hide path root
+                              scheme select style subtype) );
 
 my %SCHEME =
    ( Variable_Scalar   => [ '<font color="#CC6600">', '</font>' ],
@@ -43,163 +43,207 @@ my %SCHEME =
 sub init {
    my ($self, $args) = @_;
 
-   $self->base     ( q()      );
-   $self->container( 0        );
-   $self->header   ( []       );
-   $self->hide     ( []       );
-   $self->path     ( undef    );
-   $self->root     ( undef    );
-   $self->scheme   ( \%SCHEME );
-   $self->select   ( -1       );
-   $self->style    ( q()      );
-   $self->subtype  ( q(file)  );
+   $self->base        ( q()            );
+   $self->container   ( 0              );
+   $self->header      ( []             );
+   $self->header_class( q(small table) );
+   $self->hide        ( []             );
+   $self->path        ( undef          );
+   $self->root        ( undef          );
+   $self->scheme      ( \%SCHEME       );
+   $self->select      ( -1             );
+   $self->style       ( q()            );
+   $self->subtype     ( q(file)        );
    return;
 }
 
 sub render_field {
    # Subtypes: file, csv, html, source, and logfile
-   my ($self, $args) = @_; my $path = $self->path or return 'No file';
+   my ($self, $args) = @_; my $hacc = $self->hacc;
 
-   my ($attr, $cells, $c_no, $key, $text); my $hacc = $self->hacc;
+   my $path = $self->path or return 'Path not specified';
 
-   if ($self->subtype eq q(html)) {
-      my $pat = $self->root;
+   $self->subtype eq q(html) and return $self->_render_html( $hacc, $path );
 
-      $path  =~ m{ \A $pat }msx
-         and $path = $self->base.($path =~ s{ \A $pat }{/}msx);
-      $path  = $path =~ m{ \A http: }msx ? $path : $self->base.$path;
-      $text  = 'border: 0px; bottom: 0px; position: absolute; ';
-      $text .= 'top: 0px; width: 100%; height: 100%; '.$self->style;
+   -f $path or return "Path $path not found";
 
-      return $hacc->iframe( { class     => $self->subtype,
-                              src       => $path,
-                              scrolling => q(auto),
-                              style     => $text }, q(&nbsp;) );
-   }
+   my $rdr    = IO::File->new( $path, q(r) ) or return "Path $path cannot read";
+   my $text   = do { local $RS = undef; <$rdr> }; $rdr->close;
+   my $method = q(_render_).($self->subtype || q(default));
 
-   -f $path or return "Not found $path";
+   return $self->$method( $hacc, $text );
+}
 
-   my $rdr = IO::File->new( $path, q(r) ) or return 'Cannot read '.$path;
+# Private subroutines
 
-   $text = do { local $RS = undef; <$rdr> }; $rdr->close();
+sub _add_row_count {
+   my ($self, $default) = @_;
 
-   if ($self->subtype eq q(source)) {
-      my $fmt = Syntax::Highlight::Perl->new();
+   my $content = $self->inflate( { name    => $self->id.q(_nrows),
+                                   default => $default,
+                                   type    => q(hidden),
+                                   widget  => 1 } );
 
-      $fmt->set_format( $self->scheme );
-      $fmt->define_substitution( q(<) => q(&lt;),
-                                 q(>) => q(&gt;),
-                                 q(&) => q(&amp;) );
-      $tabstop = $self->tabstop;
-      $text    = $fmt->format_string( expand( $text ) );
+   push @{ $self->hide }, { content => $content };
+   return;
+}
 
-      return $hacc->pre( { class => $self->subtype }, $text );
-   }
+sub _add_select_box {
+   my ($self, $hacc, $r_no, $c_no, $val) = @_;
 
-   my $r_no = 0; my $rows = q(); my $span = 1;
+   my $box   = $hacc->checkbox( { label => q(),
+                                  name  => q(select).$r_no,
+                                  value => $val } );
+   my $class = $self->subtype.q( ).__column_class( $c_no );
 
-   if ($self->subtype eq q(logfile)) {
-      # TODO: Add Prev and next links to append div
-      for my $line (split m { \n }mx, $text) {
-         $line   = $hacc->escape_html( $line, 0 );
-         $line   = $hacc->pre( { class => $self->subtype }, $line );
-         $cells  = $hacc->td(  { class => $self->subtype }, $line );
-         $rows  .= $hacc->tr(  { class => $self->subtype }, $cells )."\n";
+   return $hacc->td( { class => $class }, $box );
+}
+
+sub _build_table {
+   my ($self, $hacc, $text, $header_cells, $row_cells) = @_;
+
+   my ($class, $lead, $val); my $r_no = 0; my $rows = q(); my $c_max = 1;
+
+   for my $line (split m { \n }mx, $text) {
+      my $c_no = 0; $line = $hacc->escape_html( $line, 0 );
+
+      my ($ncells, $cells, $val) = $row_cells->( $hacc, $line, $r_no );
+
+      if ($cells) {
+         $class = q(lineNumber ).__column_class( $c_no++ );
+         $lead  = $hacc->td( { class => $class }, $r_no + 1 );
+         $self->select >= 0
+            and $lead .= $self->_add_select_box( $hacc, $r_no, $c_no++, $val );
+         $rows .= $hacc->tr( { class => $self->subtype }, $lead.$cells );
          $r_no++;
       }
 
-      my $content = $self->inflate( { name    => q(_nrows),
-                                      default => $r_no,
-                                      type    => q(hidden),
-                                      widget  => 1 } );
-      push @{ $self->hide }, { content => $content };
-
-      return $hacc->table( { cellpadding => 0, cellspacing => 0,
-                             class       => $self->subtype }, $rows );
+      $c_no += $ncells; $c_no > $c_max and $c_max = $c_no;
    }
 
-   for my $line (split m { \n }mx, $text) {
-      $line  = $hacc->escape_html( $line, 0 );
-      $cells = q(); $c_no = 0;
+   $class = $self->header_class.q( minimal);
 
-      if ($self->subtype eq q(csv)) {
-         for my $fld (parse_line( q(,), 0, $line )) {
-            if ($r_no == 0 && $line =~ m{ \A \# }mx) {
-               $fld = substr $fld, 1 if ($c_no == 0);
+   my $cells = $hacc->th( { class => $class }, chr 35 );
 
-               unless ($self->header->[ $c_no ]) {
-                  $self->header->[ $c_no ] = $fld;
-               }
-            }
-            else {
-               $attr   = { class => $self->subtype.q( ).($c_no % 2 == 0 ?
-                                                         q(even) : q(odd)) };
-               $cells .= $hacc->td( $attr, $fld );
-            }
+   $self->select >= 0 and $cells .= $hacc->th( { class => $class }, 'M' );
+   $cells .= $header_cells->( $hacc, $c_max, $self->select < 0 ? 1 : 2 );
+   $rows   = $hacc->tr( $cells ).$rows;
+   $self->_add_row_count( $r_no );
 
-            $key = $fld if ($c_no == $self->select);
-            $c_no++;
+   return $hacc->table( { class => $self->subtype }, $rows );
+}
+
+sub _render_csv {
+   my ($self, $hacc, $text) = @_;
+
+   my $header_cells = sub {
+      my ($hacc, $c_max, $c_no) = @_; my $cells = q();
+
+      my @headers = $self->header->[0] ? @{ $self->header } : ('A' .. 'Z');
+
+      for my $header (@headers) {
+         $cells .= $hacc->th( { class => $self->header_class }, $header );
+         ++$c_no >= $c_max and last;
+      }
+
+      return $cells;
+   };
+   my $row_cells = sub {
+      my ($hacc, $line, $r_no) = @_;
+
+      my $cells = q(); my $f_no = 0; my $val = q();
+
+      for my $fld (parse_line( q(,), 0, $line )) {
+         if ($r_no == 0 and $line =~ m{ \A \# }mx) {
+            $f_no == 0 and $fld = substr $fld, 1;
+            $self->header->[ $f_no ] = $fld;
+         }
+         else {
+            my $class = $self->subtype.q( ).__column_class
+               ( ($self->select < 0 ? 1 : 2) + $f_no );
+
+            $cells .= $hacc->td( { class => $class }, $fld );
          }
 
-         next if ($r_no == 0 && $line =~ m{ \A \# }msx);
-      }
-      else {
-         $cells .= $hacc->td( { class => $self->subtype }, $line );
-         $c_no++;
+         $f_no == $self->select and $val = $fld; $f_no++;
       }
 
-      if ($self->select >= 0) {
-         my $box = $hacc->checkbox( { label => q(),
-                                      name  => q(select).$r_no,
-                                      value => $key } );
+      return ($f_no, $cells, $val);
+   };
 
-         $cells  = $hacc->td( { class => q(odd) }, $box ).$cells;
-         $attr   = { class => q(lineNumber even) };
-         $c_no++;
-      }
-      else { $attr = { class => q(lineNumber odd) } }
+   return $self->_build_table( $hacc, $text, $header_cells, $row_cells );
+}
 
-      $cells = $hacc->td( $attr, $r_no+1 ).$cells;
-      $c_no++;
+sub _render_default {
+   my ($self, $hacc, $text) = @_;
 
-      $span  = $c_no if ($c_no > $span);
-      $rows .= $hacc->tr( { class => $self->subtype }, $cells );
+   my $header_cells = sub {
+      my ($hacc, $c_max, $c_no) = @_;
+
+      return $hacc->th( { class => $self->header_class }, 'Lines' );
+   };
+   my $row_cells = sub {
+      my ($hacc, $line, $r_no) = @_;
+
+      my $cells = $hacc->td( { class => $self->subtype }, $line );
+
+      return (1, $cells, $line);
+   };
+
+   return $self->_build_table( $hacc, $text, $header_cells, $row_cells );
+}
+
+sub _render_html {
+   my ($self, $hacc, $path) = @_; my $pat = $self->root;
+
+   $path  =~ m{ \A $pat }msx
+      and $path = $self->base.($path =~ s{ \A $pat }{/}msx);
+   $path  = $path =~ m{ \A http: }msx ? $path : $self->base.$path;
+
+   my $style  = 'border: 0px; bottom: 0px; position: absolute; ';
+      $style .= 'top: 0px; width: 100%; height: 100%; '.$self->style;
+
+   return $hacc->iframe( { class     => $self->subtype,
+                           src       => $path,
+                           scrolling => q(auto),
+                           style     => $style }, q(&nbsp;) );
+}
+
+sub _render_logfile {
+   my ($self, $hacc, $text) = @_; my $r_no = 0; my $rows = q(); my $cells;
+
+   # TODO: Add Prev and next links to append div
+   for my $line (split m { \n }mx, $text) {
+      $line   = $hacc->escape_html( $line, 0 );
+      $line   = $hacc->pre( { class => $self->subtype }, $line );
+      $cells  = $hacc->td(  { class => $self->subtype }, $line );
+      $rows  .= $hacc->tr(  { class => $self->subtype }, $cells )."\n";
       $r_no++;
    }
 
-   $cells = $hacc->th( { class => q(small table minimal) }, chr 35 );
-   $c_no  = 1;
+   $self->_add_row_count( $r_no );
 
-   if ($self->select >= 0) {
-      $cells .= $hacc->th( { class => q(small table minimal) }, q(M) );
-      $c_no++;
-   }
+   return $hacc->table( { cellpadding => 0, cellspacing => 0,
+                          class       => $self->subtype }, $rows );
+}
 
-   if ($self->subtype eq q(csv)) {
-      if ($self->header->[0]) {
-         for $text (@{ $self->header }) {
-            $cells .= $hacc->th( { class => q(small table) }, $text );
-            last if (++$c_no >= $span);
-         }
-      }
-      else {
-         for $text ('A' .. 'Z') {
-            $cells .= $hacc->th( { class => q(small table) }, $text );
-            last if (++$c_no >= $span);
-         }
-      }
-   }
-   else { $cells .= $hacc->th( { class => q(small table) }, 'Lines' ) }
+sub _render_source {
+   my ($self, $hacc, $text) = @_; my $fmt = Syntax::Highlight::Perl->new();
 
-   $rows  = $hacc->tr( $cells ).$rows;
+   $fmt->set_format( $self->scheme );
+   $fmt->define_substitution( q(<) => q(&lt;),
+                              q(>) => q(&gt;),
+                              q(&) => q(&amp;) );
+   $tabstop = $self->tabstop; # Text::Tabs
+   $text    = $fmt->format_string( expand( $text ) );
 
-   my $content = $self->inflate( { name    => q(_nrows),
-                                   default => $r_no,
-                                   type    => q(hidden),
-                                   widget  => 1 } );
-   push @{ $self->hide }, { content => $content };
+   return $hacc->pre( { class => $self->subtype }, $text );
+}
 
-   return $hacc->table( { class => $self->subtype }, $rows );
+# Private subroutines
+
+sub __column_class {
+   return $_[ 0 ] % 2 == 0 ? q(even) : q(odd);
 }
 
 1;

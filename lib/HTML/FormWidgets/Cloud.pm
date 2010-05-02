@@ -18,43 +18,39 @@ sub init {
 }
 
 sub render_field {
-   my ($self, $args) = @_;
-   my ($anchor, $attrs, $class, $class_pref, $hacc, $href, $html);
-   my ($id_pref, $item, $onclick, $ref, $style, $text);
+   my ($self, $args) = @_; my $hacc = $self->hacc; my $html;
 
-   $hacc = $self->hacc;
+   for my $item (@{ $self->data }) {
+      my $ref        = $item->{value};
+      my $class_pref = $ref->{class_pref};
+      my $id_pref    = $ref->{id_pref   };
+      my $href       = $ref->{href      };
+      my $onclick    = $ref->{onclick   };
+      my $style      = $ref->{style     };
+      my $attrs      = { class => $class_pref.q(_header_fade),
+                         id    => $id_pref.$ref->{name} };
 
-   for $item (@{ $self->data }) {
-      $ref        = $item->{value};
-      $class_pref = $ref->{class_pref};
-      $id_pref    = $ref->{id_pref   };
-      $href       = $ref->{href      };
-      $onclick    = $ref->{onclick   };
-      $style      = $ref->{style     };
-      $attrs      = { class => $class_pref.q(_header_fade),
-                      id    => $id_pref.$ref->{name} };
+      $item->{size  } and $style .= 'font-size: '.$item->{size}.'em; ';
+      $item->{colour} and $style .= 'color: #'.$item->{colour}.'; ';
 
-      $style     .= 'font-size: '.$item->{size}.'em; ' if ($item->{size});
-      $style     .= 'color: #'.$item->{colour}.'; '    if ($item->{colour});
-
-      if (!$href && !$onclick ) {
+      if (not $href and not $onclick) {
          $href     = 'javascript:Expand_Collapse()';
          $onclick  = $self->js_obj."('$id_pref', '".$ref->{name};
          $onclick .= "', 'a~b', ".$ref->{table_len}.', 1)';
       }
 
-      $attrs->{href   } = $href    if ($href);
-      $attrs->{onclick} = $onclick if ($onclick);
-      $attrs->{style  } = $style   if ($style);
+      $href    and $attrs->{href   } = $href;
+      $onclick and $attrs->{onclick} = $onclick;
+      $style   and $attrs->{style  } = $style;
 
-      $text       = $ref->{labels}->{ $ref->{name} };
-      $text      .= '('.$ref->{total}.')' if exists $ref->{total};
-      $anchor     = $hacc->a( $attrs, "\n".$text );
+      my $text    = $ref->{labels}->{ $ref->{name} };
+         $text   .= '('.$ref->{total}.')' if exists $ref->{total};
+      my $anchor  = $hacc->a( $attrs, "\n".$text );
+      my $class   = $class_pref.q(_header).q( ).$class_pref.q(Subject);
 
-      $class      = $class_pref.q(_header).q( ).$class_pref.q(Subject);
       $html      .= $hacc->div( { class => $class }, "\n".$anchor )."\n";
 
-      if (!$ref->{href} && !$ref->{onclick}) {
+      if (not $ref->{href} and not $ref->{onclick}) {
          $style   = 'display: none; width: '.$ref->{width}.'px;';
          $html   .= $hacc->div( { class => $class_pref.q(Panel),
                                   id    => $id_pref.$ref->{name}.q(Disp),

@@ -23,7 +23,7 @@ sub init {
    $self->fhelp      ( q() );
    $self->height     ( 10 );
    $self->hint_title ( $self->loc( q(Hint) ) ) unless ($self->hint_title);
-   $self->js_obj     ( q(behaviour.groupMember) );
+   $self->js_obj     ( q(behaviour.state.groupMember) );
    $self->labels     ( undef );
    $self->sep        ( $self->space ) unless ($args->{prompt});
 
@@ -50,7 +50,7 @@ sub render_field {
    $args->{labels  }  = $self->labels if ($self->labels);
    $args->{multiple}  = q(true);
    $args->{size    }  = $self->height;
-   $args->{name    }  = $self->name.q(_all);
+   $args->{name    }  = q(_).$self->name.q(_all);
    $args->{values  }  = $self->all;
    $text             .= $hacc->scrolling_list( $args );
    $html             .= $hacc->span( { class => q(container) }, $text );
@@ -77,17 +77,11 @@ sub render_field {
    $html             .= $hacc->span(  { class => q(separator) }, $self->space);
    $text              = $hacc->span( { class => q(title) }, $self->ctitle );
    $text             .= $hacc->br();
-   $args->{name  }    = $self->name.q(_current);
+   $args->{name  }    = q(_).$self->name.q(_current);
    $args->{values}    = $self->current;
    $text             .= $hacc->scrolling_list( $args );
    $html             .= $hacc->span( { class => q(container) }, $text );
 
-   $args              = {};
-   $args->{name  }    = $self->name.q(_n_added);
-   $args->{value }    = 0;
-   $html             .= $hacc->hidden( $args );
-   $args->{name  }    = $self->name.q(_n_deleted);
-   $html             .= $hacc->hidden( $args );
    return $html;
 }
 

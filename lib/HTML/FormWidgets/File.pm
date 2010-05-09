@@ -79,7 +79,7 @@ sub render_field {
 sub _add_row_count {
    my ($self, $default) = @_;
 
-   my $content = $self->inflate( { name    => $self->id.q(_nrows),
+   my $content = $self->inflate( { name    => q(_).($self->id || q()).q(_nrows),
                                    default => $default,
                                    type    => q(hidden),
                                    widget  => 1 } );

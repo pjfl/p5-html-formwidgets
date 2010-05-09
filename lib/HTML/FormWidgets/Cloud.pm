@@ -24,24 +24,19 @@ sub render_field {
       my $ref        = $item->{value};
       my $class_pref = $ref->{class_pref};
       my $id_pref    = $ref->{id_pref   };
-      my $href       = $ref->{href      };
-      my $onclick    = $ref->{onclick   };
+      my $href       = $ref->{href      } || 'javascript:Expand_Collapse()';
+      my $onclick    = $self->js_obj."('$id_pref', '".$ref->{name};
+         $onclick   .= "', 'a~b', ".$ref->{table_len}.', 1)';
+         $onclick    = $ref->{onclick   } || $onclick;
       my $style      = $ref->{style     };
-      my $attrs      = { class => $class_pref.q(_header_fade),
-                         id    => $id_pref.$ref->{name} };
+      my $attrs      = { class   => $class_pref.q(_header_fade),
+                         href    => $href,
+                         id      => $id_pref.$ref->{name},
+                         onclick => $onclick };
 
       $item->{size  } and $style .= 'font-size: '.$item->{size}.'em; ';
       $item->{colour} and $style .= 'color: #'.$item->{colour}.'; ';
-
-      if (not $href and not $onclick) {
-         $href     = 'javascript:Expand_Collapse()';
-         $onclick  = $self->js_obj."('$id_pref', '".$ref->{name};
-         $onclick .= "', 'a~b', ".$ref->{table_len}.', 1)';
-      }
-
-      $href    and $attrs->{href   } = $href;
-      $onclick and $attrs->{onclick} = $onclick;
-      $style   and $attrs->{style  } = $style;
+      $style and $attrs->{style  } = $style;
 
       my $text    = $ref->{labels}->{ $ref->{name} };
          $text   .= '('.$ref->{total}.')' if exists $ref->{total};

@@ -77,14 +77,14 @@ sub _add_edit_row {
       my $args      = { id => $self->id.q(_add).$_ };
       my $field     = $data->{flds}->[ $_ ];
 
-      $args->{name} = $self->id.q(_).$field;
+      $args->{name} = q(_).$self->id.q(_).$field;
       $cells       .= $self->_editable_cell( $data, $field, $args );
    }
 
    my $text   = $hacc->span( { class => q(add_item_icon) }, q( ) );
    my $args   = {
       class   => q(button icon tips),
-      name    => $self->id.q(_add),
+      id      => $self->id.q(_add_button),
       onclick => 'return '.$self->js_obj.".addRows('".$self->id."', 1)",
       title   => $self->add_tip };
 
@@ -94,22 +94,22 @@ sub _add_edit_row {
 
    $args      = {
       class   => q(button icon tips),
-      name    => $self->id.q(_remove),
+      id      => $self->id.q(_remove_button),
       onclick => 'return '.$self->js_obj.".removeRows('".$self->id."')",
       title   => $self->remove_tip };
    $text     .= $hacc->span( $args, $text1 );
    $text      = $hacc->span( { class => q(table_edit_buttons) }, $text );
    $cells    .= $hacc->td( $text );
+   $args      = { class => $data->{class} || q(edit_row),
+                  id    => $self->id.q(_edit) };
 
-   my $class  = $data->{class} || q(edit_row);
-
-   return $hacc->tr( { class => $class, id => $self->id.q(_add) }, $cells );
+   return $hacc->tr( $args, $cells );
 }
 
 sub _add_row_count {
    my ($self, $default) = @_;
 
-   my $content = $self->inflate( { name    => $self->id.q(_nrows),
+   my $content = $self->inflate( { name    => q(_).$self->id.q(_nrows),
                                    default => $default,
                                    type    => q(hidden),
                                    widget  => 1 } );
@@ -199,7 +199,7 @@ sub _render_row {
 
       if ($self->edit) {
          $args->{default} = $val->{ $field };
-         $args->{name   } = $self->id.q(_).$field.$r_no;
+         $args->{name   } = $self->id.q(_).$r_no.q(_).$c_no;
          $cells          .= $self->_editable_cell( $data, $field, $args );
       }
       else {

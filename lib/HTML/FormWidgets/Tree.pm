@@ -9,10 +9,11 @@ use parent qw(HTML::FormWidgets);
 
 use English qw(-no_match_vars);
 
-__PACKAGE__->mk_accessors( qw(base build class_prefix data js_obj node_count
+__PACKAGE__->mk_accessors( qw(base build class_prefix data node_count
                               selected static) );
 
 my $NUL = q();
+my $SPC = q( );
 my $TTS = q( ~ );
 
 sub init {
@@ -21,8 +22,8 @@ sub init {
    $self->base        ( $NUL    );
    $self->build       ( 0       );
    $self->class_prefix( q(tree) );
+   $self->container   ( 1       );
    $self->data        ( {}      );
-   $self->js_obj      ( q(behaviour.state.trees) );
    $self->node_count  ( 0       );
    $self->selected    ( undef   );
    $self->static      ( $NUL    );
@@ -49,11 +50,14 @@ sub render_field {
    my $args  = { class => $self->class_prefix.q(_controls) };
       $html  = $hacc->span( $args, $html );
       $html .= "\n".$self->traverse( { data => $self->data, fill => $NUL } );
-   my $code  = $NUL;
+
+   $self->container and $html = $hacc->div( { class => q(container) }, $html );
+
+   my $code  = $NUL; $self->container( 0 );
 
    if ($self->build) {
-      $code  = __wrap_cdata( $self->js_obj.".build( \$('".$self->id."') );" );
-      $code  = "\n".$hacc->script( { type => 'text/javascript' }, $code );
+      $code  = $self->js_obj.".state.trees.build( \$('".$self->id."') );";
+      $code  = "\n".$self->_wrap_script( $code );
    }
 
    return $html.$code;
@@ -104,15 +108,15 @@ sub traverse {
       $attrs = { class => $prefix.($last ? q(_last) : $NUL).q(_fill) };
 
       my $fill = $args->{fill}.($self->node_count > 1
-                                ? $hacc->span( $attrs, q( ) ) : $NUL);
+                                ? $hacc->span( $attrs, $SPC ) : $NUL);
 
       ref $data eq q(HASH)
          and $list = $self->traverse( { data => $data, fill => $fill } );
 
       my $class = $prefix.($list ? q(_node) : q(_leaf));
       my $ctrl  = ($fill
-                   ? $hacc->span( { class => $class.q(_ctrl) }, q( ) ) : $NUL);
-      my $icon  = $hacc->span( { class => $class.q(_icon) }, q( ) );
+                   ? $hacc->span( { class => $class.q(_ctrl) }, $SPC ) : $NUL);
+      my $icon  = $hacc->span( { class => $class.q(_icon) }, $SPC );
       my $item  = ($args->{fill} ? $args->{fill} : $NUL).$ctrl.$icon.$link;
 
       $last and $class .= q(_last); $list and $class .= q(_open);
@@ -127,16 +131,10 @@ sub traverse {
 sub _image_button {
    my ($self, $hacc, $dirn, $tip) = @_;
 
-   my $args   =  {
-      class   => q(action tips ).$dirn,
-      onclick => $self->js_obj.q(.).$dirn."Tree( '".$self->id."' )",
-      title   => $self->hint_title.$TTS.$self->loc( $tip ) };
-
-   return $hacc->span( $args, q( ) );
-}
-
-sub __wrap_cdata {
-   my $code = shift; return q(//<![CDATA[)."\n".$code."\n".q(//]]>);
+   return $hacc->span( {
+      class => q(action tips ).$dirn,
+      id    => $self->id.q(_).$dirn.q(_button),
+      title => $self->hint_title.$TTS.$self->loc( $tip ) }, $SPC );
 }
 
 1;

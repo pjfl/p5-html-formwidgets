@@ -7,37 +7,33 @@ use warnings;
 use version; our $VERSION = qv( sprintf '0.6.%d', q$Rev$ =~ /\d+/gmx );
 use parent qw(HTML::FormWidgets);
 
-__PACKAGE__->mk_accessors( qw(button field height href js_obj key
-                              screen_x screen_y width) );
+__PACKAGE__->mk_accessors( qw(config field href) );
 
 sub init {
    my ($self, $args) = @_;
 
-   $self->button(     q() );
-   $self->field(      q() );
-   $self->height(     400 );
-   $self->href(       undef );
-   $self->js_obj(     q(behaviour.submit.chooser) );
-   $self->key(        q() );
-   $self->screen_x(   10 );
-   $self->screen_y(   10 );
-   $self->width(      200 );
+   $self->class  ( q(button chooser_button fade) );
+   $self->config ( { height   => 500, screen_x => 10,
+                     screen_y => 10,  width    => 500 } );
+   $self->default( q(Choose) );
+   $self->field  ( q() );
+   $self->href   ( undef );
    return;
 }
 
 sub render_field {
-   my ($self, $args) = @_; my $onclick;
+   my $self = shift;
+   my $html = $self->hacc->submit( { class => $self->class,
+                                     id    => $self->id,
+                                     name  => q(_method),
+                                     value => $self->default } );
 
-   $onclick  = 'return '.$self->js_obj."('".$self->field."', '";
-   $onclick .= $self->key."', '".$self->href;
-   $onclick .= "', 'width=".$self->width.', screenX='.$self->screen_x.', ';
-   $onclick .= 'height='.$self->height.', screenY='.$self->screen_y;
-   $onclick .= ", dependent=yes, titlebar=no, scrollbars=yes')";
-   $args->{class  } = q(button);
-   $args->{onclick} = $onclick;
-   $args->{value  } = $self->button;
+   $self->config->{field} = '"'.$self->field.'"';
+   $self->config->{href } = '"'.$self->href.'"';
 
-   return $self->hacc->submit( $args );
+   $html .= $self->_js_config( 'submit', $self->id, $self->config );
+
+   return $html;
 }
 
 1;

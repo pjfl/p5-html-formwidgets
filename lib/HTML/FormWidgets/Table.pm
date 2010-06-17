@@ -7,7 +7,7 @@ use warnings;
 use version; our $VERSION = qv( sprintf '0.6.%d', q$Rev$ =~ /\d+/gmx );
 use parent qw(HTML::FormWidgets);
 
-__PACKAGE__->mk_accessors( qw(add_tip assets data edit hide js_obj
+__PACKAGE__->mk_accessors( qw(add_tip assets data edit hide
                               number_rows remove_tip select
                               sort_tip sortable table_class) );
 
@@ -24,7 +24,6 @@ sub init {
    $self->edit       ( 0 );
    $self->hide       ( [] );
    $self->hint_title ( $self->loc( q(Hint) ) ) unless ($self->hint_title);
-   $self->js_obj     ( q(behaviour.table) );
    $self->number_rows( 0 );
    $self->select     ( $NUL );
    $self->sortable   ( 0 );
@@ -83,9 +82,8 @@ sub _add_edit_row {
 
    my $text   = $hacc->span( { class => q(add_item_icon) }, q( ) );
    my $args   = {
-      class   => q(button icon tips),
-      id      => $self->id.q(_add_button),
-      onclick => 'return '.$self->js_obj.".addRows('".$self->id."', 1)",
+      class   => q(button icon tips add),
+      id      => $self->id.q(_add),
       title   => $self->add_tip };
 
    $text      = $hacc->span( $args, $text );
@@ -93,9 +91,8 @@ sub _add_edit_row {
    my $text1  = $hacc->span( { class => q(remove_item_icon) }, q( ) );
 
    $args      = {
-      class   => q(button icon tips),
-      id      => $self->id.q(_remove_button),
-      onclick => 'return '.$self->js_obj.".removeRows('".$self->id."')",
+      class   => q(button icon tips remove),
+      id      => $self->id.q(_remove),
       title   => $self->remove_tip };
    $text     .= $hacc->span( $args, $text1 );
    $text      = $hacc->span( { class => q(table_edit_buttons) }, $text );
@@ -158,7 +155,7 @@ sub _editable_cell {
 sub _render_header {
    my ($self, $data, $field, $c_no) = @_; my $name = q(col).$c_no;
 
-   my $args = { class => $self->class, id => $self->id.q(_).$name };
+   my $args = { class => $self->class };
 
    if (exists $data->{hclass}->{ $field }) {
       $data->{hclass}->{ $field } eq q(hide) and return;
@@ -173,11 +170,10 @@ sub _render_header {
    my $type = exists $data->{typelist}->{ $field }
             ? $data->{typelist}->{ $field } : $NUL;
 
+   $args->{id} = $self->id.q(.).$name.($type ? q(.).$type : $NUL);
+
    if ($self->sortable) {
-      $args->{onclick}
-         = $self->js_obj.".sortRows( '".$self->id."', '$name', '$type')";
-      $args->{class} .= q( sort tips);
-      $args->{title}  = $self->sort_tip;
+      $args->{class} .= q( sort tips); $args->{title} = $self->sort_tip;
    }
 
    return $self->hacc->th( $args, $data->{labels}->{ $field } );
@@ -237,13 +233,10 @@ sub _render_row_header {
    my ($self, $c_no) = @_; my $name = q(col).$c_no;
 
    my $args = { class => $self->class.q( minimal),
-                id    => $self->id.q(_).$name };
+                id    => $self->id.q(.).$name.q(.numeric) };
 
    if ($self->sortable) {
-      $args->{onclick}
-         = $self->js_obj.".sortRows( '".$self->id."', '$name', 'numeric' )";
-      $args->{class} .= q( sort tips);
-      $args->{title}  = $self->sort_tip;
+      $args->{class} .= q( sort tips); $args->{title} = $self->sort_tip;
    }
 
    return $self->hacc->th( $args, '#' );

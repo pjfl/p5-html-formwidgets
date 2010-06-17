@@ -20,25 +20,24 @@ my $SPC   = q( );
 my $TTS   = q( ~ );
 my $ATTRS =
    { ajaxid          => undef,
-     align           => q(left),           class           => $NUL,
-     clear           => $NUL,              container       => 1,
-     container_class => undef,             container_id    => undef,
-     content_type    => q(text/html),      default         => undef,
-     evnt_hndlr      => q(behaviour.server.checkField),
-     fields          => {},                frame_class     => $NUL,
-     hacc            => undef,             hint_title      => $NUL,
-     id              => undef,             is_xml          => 0,
-     messages        => {},                name            => undef,
-     nowrap          => 0,                 optional_js     => undef,
-     onblur          => undef,             onchange        => undef,
-     onkeypress      => undef,             palign          => undef,
-     prompt          => $NUL,              pwidth          => 40,
-     required        => 0,                 sep             => undef,
-     space           => q(&nbsp;) x 3,     stepno          => undef,
-     swidth          => 1000,              tabstop         => 3,
-     text            => $NUL,              text_obj        => undef,
-     tip             => $NUL,              tiptype         => q(dagger),
-     type            => undef, };
+     align           => q(left),      class           => $NUL,
+     clear           => $NUL,         container       => 1,
+     container_class => undef,        container_id    => undef,
+     content_type    => q(text/html), default         => undef,
+     fields          => {},           frame_class     => $NUL,
+     hacc            => undef,        hint_title      => $NUL,
+     id              => undef,        is_xml          => 0,
+     js_obj          => q(behaviour), messages        => {},
+     name            => undef,        nowrap          => 0,
+     optional_js     => undef,        onblur          => undef,
+     onchange        => undef,        onkeypress      => undef,
+     palign          => undef,        prompt          => $NUL,
+     pwidth          => 40,           required        => 0,
+     sep             => undef,        space           => q(&nbsp;) x 3,
+     stepno          => undef,        swidth          => 1000,
+     tabstop         => 3,            text            => $NUL,
+     text_obj        => undef,        tip             => $NUL,
+     tiptype         => q(dagger),    type            => undef, };
 
 __PACKAGE__->mk_accessors( keys %{ $ATTRS } );
 
@@ -106,24 +105,23 @@ sub new {
    my ($self, @rest) = @_;
 
    # Coerce a hash ref of the passed args
-   my $args = __arg_list( @rest );
+   my $args  = __arg_list( @rest );
 
    # Start with some hard coded defaults;
-   my $new = bless { %{ $ATTRS } }, ref $self || $self;
+   my $new   = bless { %{ $ATTRS } }, ref $self || $self;
 
    # Set minimum requirements from the supplied args and the defaults
-   $new->_bootstrap( $args );
+   my $skip  = $new->_bootstrap( $args );
 
    # Your basic factory method trick
    my $class = ucfirst $new->type;
-
-   if (q(+) eq substr $class, 0, 1) { $class = substr $class, 1 }
-   else { $class = __PACKAGE__.q(::).$class }
+      $class = (q(+) eq substr $class, 0, 1)
+             ? (substr $class, 1) : __PACKAGE__.q(::).$class;
 
    $new->_ensure_class_loaded( $class );
 
    # Complete the initialization
-   $new->_init( $args );
+   $new->_init( $skip, $args );
 
    return $new;
 }
@@ -179,27 +177,27 @@ sub localize {
 }
 
 sub render {
-   my $self = shift; my $hacc = $self->hacc; my $lead = "\n";
+   my $self = shift; my $lead = "\n";
 
    $self->type or return $self->text || $NUL;
 
-   $self->clear eq q(left) and $lead .= $hacc->br();
+   $self->clear eq q(left) and $lead .= $self->hacc->br();
 
-   $self->stepno and $lead .= $self->render_stepno   ( $hacc );
-   $self->prompt and $lead .= $self->render_prompt   ( $hacc );
-   $self->sep    and $lead .= $self->render_separator( $hacc );
+   $self->stepno and $lead .= $self->render_stepno;
+   $self->prompt and $lead .= $self->render_prompt;
+   $self->sep    and $lead .= $self->render_separator;
 
    my $field = $self->_render or return $lead;
 
-   $self->tip       and $field = $self->render_tip      ( $hacc, $field );
-   $self->ajaxid    and $field = $self->render_ajax     ( $hacc, $field );
-   $self->container and $field = $self->render_container( $hacc, $field );
+   $self->tip       and $field = $self->render_tip        ( $field );
+   $self->ajaxid    and $field = $self->render_check_field( $field );
+   $self->container and $field = $self->render_container  ( $field );
 
    return $lead.$field;
 }
 
-sub render_ajax {
-   my ($self, $hacc, $field) = @_;
+sub render_check_field {
+   my ($self, $field) = @_; my $hacc = $self->hacc;
 
    my $args = { class => q(hidden), id => $self->ajaxid.q(_ajax) };
 
@@ -209,15 +207,13 @@ sub render_ajax {
 }
 
 sub render_container {
-   my ($self, $hacc, $field) = @_; my $class;
+   my ($self, $field) = @_;
 
-   $class = $self->container_class or $class = q(container ).$self->align;
-
-   my $args = { class => $class };
+   my $args = { class => $self->container_class || q(container ).$self->align };
 
    $self->container_id and $args->{id} = $self->container_id;
 
-   return $hacc->span( $args, $field );
+   return $self->hacc->span( $args, $field );
 }
 
 sub render_field {
@@ -229,32 +225,32 @@ sub render_field {
 }
 
 sub render_prompt {
-   my ($self, $hacc) = @_; my $args = { class => q(prompt) };
+   my $self = shift; my $args = { class => q(prompt) };
 
    $self->id     and $args->{for  }  = $self->id;
    $self->palign and $args->{style} .= 'text-align: '.$self->palign.'; ';
    $self->nowrap and $args->{style} .= 'white-space: nowrap; ';
    $self->pwidth and $args->{style} .= 'width: '.$self->pwidth.q(;);
 
-   return $hacc->label( $args, $self->prompt );
+   return $self->hacc->label( $args, $self->prompt );
 }
 
 sub render_separator {
-   my ($self, $hacc) = @_;
+   my $self = shift;
 
-   return $hacc->span( { class => q(separator) }, $self->sep );
+   return $self->hacc->span( { class => q(separator) }, $self->sep );
 }
 
 sub render_stepno {
-   my ($self, $hacc) = @_;
+   my $self = shift;
 
-   return $hacc->span( { class => q(step_number) }, $self->stepno );
+   return $self->hacc->span( { class => q(step_number) }, $self->stepno );
 }
 
 sub render_tip {
-   my ($self, $hacc, $field) = @_; my ($args, $tip);
+   my ($self, $field) = @_; my $hacc = $self->hacc;
 
-   ($tip = $self->tip) =~ s{ \n }{ }gmx;
+   (my $tip = $self->tip) =~ s{ \n }{ }gmx;
 
    if ($tip !~ m{ $TTS }mx) {
       $self->hint_title
@@ -262,8 +258,9 @@ sub render_tip {
       $tip = $self->hint_title.$TTS.$tip;
    }
 
-   $tip  =~ s{ \s+ }{ }gmx;
-   $args = { class => q(help tips), title => $tip };
+   $tip =~ s{ \s+ }{ }gmx;
+
+   my $args = { class => q(help tips), title => $tip };
 
    $self->tiptype eq q(dagger) or return $hacc->span( $args, $field );
 
@@ -308,7 +305,8 @@ sub _bootstrap {
    $self->name    ( $type             ) unless ($name);
    $self->fields  ( $args->{fields  } );
    $self->messages( $args->{messages} );
-   return;
+
+   return { qw(ajaxid 1 id 1 name 1 type 1) };
 }
 
 sub _ensure_class_loaded {
@@ -327,21 +325,17 @@ sub _ensure_class_loaded {
 }
 
 sub _init {
-   my ($self, $args) = @_;
+   my ($self, $skip, $args) = @_;
 
-   $self->optional_js( $args->{optional_js} || [] );
-   # Allow the factory subclass to set it's own defaults
-   $self->init( $args );
-
-   my $skip   = { qw(ajaxid 1 id 1 name 1 type 1) };
-   my $fields = $args->{fields};
-
-   $self->_init_fields( $skip, $fields );
-   $self->_init_args  ( $skip, $args   );
+   $self->optional_js ( $args->{optional_js} || [] );
+   $self->init        ( $args ); # Allow subclass to set it's own defaults
+   $self->_init_fields( $skip, $args->{fields} );
+   $self->_init_args  ( $skip, $args );
+   $self->_init_event_handler;   # Set the default JS event handler
 
    my $content_type = $self->content_type;
 
-   $self->is_xml( $content_type eq q(text/html) ? 0 : 1 );
+   $self->is_xml( $content_type =~ m{ / (.*) xml \z }mx ? 1 : 0 );
 
    # Now we can create HTML elements like we could with CGI.pm
    $self->hacc or
@@ -351,9 +345,6 @@ sub _init {
    $self->text_obj( Text::Markdown->new
                     ( empty_element_suffix => $self->is_xml ? q( />) : q(>),
                       tab_width            => $self->tabstop ) );
-
-   # Set the default JS event handler
-   $self->ajaxid and $self->_init_event_handler;
 
    # Calculate the prompt width
    my $pwidth = $self->pwidth;
@@ -391,11 +382,13 @@ sub _init_args {
 }
 
 sub _init_event_handler {
-   my $self = shift; my $ajaxid = $self->ajaxid;
+   my $self = shift; my $ajaxid = $self->ajaxid or return;
 
    # Install default JavaScript event handler
    unless ($self->onblur or $self->onchange or $self->onkeypress) {
-      $self->onblur( $self->evnt_hndlr.'( "'.$ajaxid.'", this.value )' );
+      my $method = $self->js_obj.'.server.checkField';
+
+      $self->onblur( $method.'( "'.$ajaxid.'", this.value )' );
    }
 
    return;
@@ -417,6 +410,22 @@ sub _init_fields {
    return;
 }
 
+sub _js_config {
+   my ($self, $element, $id, $config) = @_; my $list = $NUL;
+
+   ($element and $id and $config) or return $NUL;
+   ref $config eq q(HASH) or return $NUL;
+
+   while (my ($k, $v) = each %{ $config }) {
+      $list and $list .= ', '; $list .= $k.': '.$v;
+   }
+
+   my $text  = $self->js_obj.'.state.config.'.$element.'[ "';
+      $text .= $id.'" ] = { '.$list.' };';
+
+   return $self->_wrap_script( $text );
+}
+
 sub _render {
    my $self = shift; my $args = {}; my $id = $self->id; my $name = $self->name;
 
@@ -432,6 +441,13 @@ sub _render {
 
 sub _set_error {
    my ($self, $error) = @_; return $self->text( $error );
+}
+
+sub _wrap_script {
+   my ($self, $code) = @_;
+
+   return $self->hacc->script( { type => q(text/javascript) },
+                               q(//<![CDATA[)."\n".$code."\n".q(//]]>) );
 }
 
 1;

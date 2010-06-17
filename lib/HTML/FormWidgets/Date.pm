@@ -7,19 +7,19 @@ use warnings;
 use version; our $VERSION = qv( sprintf '0.6.%d', q$Rev$ =~ /\d+/gmx );
 use parent qw(HTML::FormWidgets);
 
-__PACKAGE__->mk_accessors( qw(assets clear_hint format hint js_obj
-                              readonly width) );
+__PACKAGE__->mk_accessors( qw(clear_hint config hint readonly width) );
 
+my $SPC = q( );
 my $TTS = q( ~ );
 
 sub init {
    my ($self, $args) = @_; my $hint = $self->loc( q(Hint) );
 
-   $self->assets    ( q() );
    $self->clear_hint( $hint.$TTS.$self->loc( q(clearFieldTip) ) );
-   $self->format    ( q(%d/%m/%Y) );
+   $self->config    ( { align       => q("bR"),
+                        ifFormat    => q("%d/%m/%Y"),
+                        singleClick => q(true) } );
    $self->hint      ( $hint.$TTS.$self->loc( q(dateWidgetTip) ) );
-   $self->js_obj    ( q(behaviour.submit.clearField) );
    $self->readonly  ( 1 );
    $self->width     ( 10 );
 
@@ -28,35 +28,26 @@ sub init {
 }
 
 sub render_field {
-   my ($self, $args) = @_; my ($hacc, $html, $text);
+   my ($self, $args) = @_;
 
-   $hacc              = $self->hacc;
-   $args->{class   } .= q( ifield);
+   $args->{class   } .= q( ifield calendars);
    $args->{readonly}  = q(readonly) if ($self->readonly);
    $args->{size    }  = $self->width;
-   $html              = $hacc->textfield( $args );
-   $html             .= $hacc->span( { class => q(shim) }, q( ) );
-   $args              = { class   => q(calendar_icon) };
-   $text              = $hacc->span( $args, q( ) );
-   $args              = { class   => q(button icon tips),
-                          id      => $self->id.q(_trigger),
-                          title   => $self->hint };
-   $html             .= $hacc->span( $args, $text );
-   $args              = { class   => q(clear_field_icon) };
-   $text              = $hacc->span( $args, q( ) );
-   $args              = { class   => q(button icon tips),
-                          id      => $self->id.q(_clear),
-                          onclick => $self->js_obj."( '".$self->id."' )",
-                          title   => $self->clear_hint };
-   $html             .= $hacc->span( $args, $text );
-   $text              = "\n";
-   $text             .= 'Calendar.setup( {'."\n";
-   $text             .= '   inputField : "'.$self->id.'", '."\n";
-   $text             .= '   ifFormat   : "'.$self->format.'", '."\n";
-   $text             .= '   button     : "'.$self->id.'_trigger", '."\n";
-   $text             .= '   align      : "bR", '."\n";
-   $text             .= '   singleClick: true } );';
-   $html             .= $hacc->script( { type => q(text/javascript) }, $text );
+
+   my $hacc = $self->hacc;
+   my $html = $hacc->textfield( $args );
+   my $icon = $hacc->span( { class => q(calendar_icon) }, $SPC );
+   my $text = $hacc->span( { class => q(button icon tips),
+                             id    => $self->id.q(_trigger),
+                             title => $self->hint }, $icon );
+
+   $icon    = $hacc->span( { class => q(clear_field_icon) }, $SPC );
+   $text   .= $hacc->span( { class => q(button icon tips),
+                             id    => $self->id.q(_clear),
+                             title => $self->clear_hint }, $icon );
+   $html   .= $hacc->span( { class => q(icon_buttons) }, $text );
+   $html   .= $self->_js_config( 'calendars', $self->id, $self->config );
+
    return $html;
 }
 

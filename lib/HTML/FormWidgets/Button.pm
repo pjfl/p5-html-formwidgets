@@ -14,13 +14,13 @@ my $TTS = q( ~ );
 sub init {
    my ($self, $args) = @_;
 
-   $self->assets(      q() );
-   $self->class(       q(button) );
-   $self->container(   0 );
+   $self->assets     ( q()        );
+   $self->class      ( q(button)  );
+   $self->container  ( 0          );
    $self->button_name( q(_method) );
-   $self->onclick(     q() );
-   $self->src(         q() );
-   $self->tiptype(     q(normal) );
+   $self->onclick    ( undef      );
+   $self->src        ( q()        );
+   $self->tiptype    ( q(normal)  );
    return;
 }
 

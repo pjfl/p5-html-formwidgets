@@ -19,7 +19,7 @@ sub render_field {
 
    delete $args->{id};
    $args->{type}  = q(hidden);
-   $args->{value} = delete $args->{default};
+   $args->{value} = delete $args->{default} || q();
 
    return $self->hacc->input( $args );
 }

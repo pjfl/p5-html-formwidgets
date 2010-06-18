@@ -206,7 +206,7 @@ sub _render_html {
    return $hacc->iframe( { class     => $self->subtype,
                            src       => $path,
                            scrolling => q(auto),
-                           style     => $style }, q(&nbsp;) );
+                           style     => $style }, '&#160;' );
 }
 
 sub _render_logfile {

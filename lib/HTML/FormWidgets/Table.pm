@@ -211,7 +211,7 @@ sub _render_row {
          $args->{class} .= q( ).__column_class( $c_no );
          exists $data->{wrap}->{ $field } or $args->{class} .= q( nowrap);
 
-         my $fld_val = $self->inflate( $val->{ $field } ) || q(&nbsp;);
+         my $fld_val = $self->inflate( $val->{ $field } ) || '&#160;';
 
          $cells .= $hacc->td( $args, $fld_val );
       }

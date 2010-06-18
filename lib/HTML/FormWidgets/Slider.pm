@@ -62,8 +62,8 @@ sub render_field {
 
    $html .= $hacc->span( { class => q(slider_group) }, $text );
 
-   $self->config->{default} = $args->{default};
-   $self->config->{name   } = '"'.$args->{name}.'"';
+   $self->config->{default_v} = $args->{default};
+   $self->config->{name     } = '"'.$args->{name}.'"';
 
    $html .= $self->_js_config( 'sliders', $id, $self->config );
 

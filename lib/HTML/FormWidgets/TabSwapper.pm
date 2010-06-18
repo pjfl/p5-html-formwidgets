@@ -25,9 +25,9 @@ sub render_field {
       my $clicker = $self->inflate( $item->{clicker} );
       my $section = $self->inflate( $item->{section} );
 
+      $html   .= $hacc->dt ( { class => q(tab off)       }, $clicker );
       $section = $hacc->div( { class => q(panel_content) }, $section );
-      $html   .= $hacc->dt ( { class => q(tab off)   }, $clicker );
-      $html   .= $hacc->dd ( { class => q(panel) }, $section );
+      $html   .= $hacc->dd ( { class => q(panel)         }, $section );
    }
 
    $html = $hacc->dl( { class => q(tabset) }, $html );

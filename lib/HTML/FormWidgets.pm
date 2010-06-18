@@ -14,7 +14,7 @@ use Text::Markdown qw(markdown);
 use TryCatch;
 
 my $LSB   = q([);
-my $NB    = q(&nbsp;&dagger;);
+my $NB    = '&#160;&dagger;';
 my $NUL   = q();
 my $SPC   = q( );
 my $TTS   = q( ~ );
@@ -33,7 +33,7 @@ my $ATTRS =
      onchange        => undef,        onkeypress      => undef,
      palign          => undef,        prompt          => $NUL,
      pwidth          => 40,           required        => 0,
-     sep             => undef,        space           => q(&nbsp;) x 3,
+     sep             => undef,        space           => '&#160;' x 3,
      stepno          => undef,        swidth          => 1000,
      tabstop         => 3,            text            => $NUL,
      text_obj        => undef,        tip             => $NUL,
@@ -355,8 +355,8 @@ sub _init {
 
    my $sep = $self->sep;
 
-   $sep = q(&nbsp;:&nbsp;) if (not defined $sep and $self->prompt);
-   $sep = $self->space     if (    defined $sep and $sep eq q(space));
+   $sep = '&#160;:&#160;' if (not defined $sep and $self->prompt);
+   $sep = $self->space    if (    defined $sep and $sep eq q(space));
 
    $self->sep( $sep );
 

@@ -9,7 +9,7 @@ use parent qw(HTML::FormWidgets);
 
 __PACKAGE__->mk_accessors( qw(data select spacer) );
 
-my $NBSP = q(&nbsp;);
+my $NBSP = '&#160;';
 
 sub init {
    my ($self, $args) = @_;

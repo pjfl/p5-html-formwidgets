@@ -29,19 +29,15 @@ sub render_field {
       if ($text = $val->{heading}) {
          $class  = defined $val->{hclass} ? $val->{hclass} : $self->hclass;
          $paras .= "\n".$hacc->span( $class ? { class => $class } : {},
-                                    $self->inflate( $text ) );
+                                     $self->inflate( $text ) );
       }
 
-      if ($val->{text} and ref $val->{text}) {
-         $text = $self->inflate( $val->{text} );
-      }
-      else { $text = $val->{text} || $self->loc( 'Text missing' ) }
-
-      $class = defined $val->{class} ? $val->{class} : $self->class;
-      $args  = $class ? { class => $class } : {};
-
-      if ($val->{markdown}) { $paras .= $text }
-      else { $paras .= $hacc->p( $args, $text ) }
+      $text   = $val->{text} && ref $val->{text}
+              ? $self->inflate( $val->{text} )
+              : $val->{text} || $self->loc( 'Text missing' );
+      $class  = defined $val->{class} ? $val->{class} : $self->class;
+      $args   = $class ? { class => $class } : {};
+      $paras .= $val->{markdown} ? $text : $hacc->p( $args, $text );
    }
 
    $args = $self->column_class ? { class => $self->column_class } : {};

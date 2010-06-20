@@ -35,7 +35,8 @@ my $ATTRS =
      pwidth          => 40,           required        => 0,
      sep             => undef,        space           => '&#160;' x 3,
      stepno          => undef,        swidth          => 1000,
-     tabstop         => 3,            text            => $NUL,
+     tabstop         => 3,            template_dir    => undef,
+     text            => $NUL,
      text_obj        => undef,        tip             => $NUL,
      tiptype         => q(dagger),    type            => undef, };
 
@@ -146,6 +147,7 @@ sub inflate {
    $args->{content_type} = $self->content_type;
    $args->{fields      } = $self->fields;
    $args->{messages    } = $self->messages;
+   $args->{template_dir} = $self->template_dir;
 
    return __PACKAGE__->new( $args )->render;
 }
@@ -494,7 +496,7 @@ HTML::FormWidgets - Create HTML form markup
       $config->{root        } = $c->config->{root};
       $config->{static      } = $s->{static};
       $config->{swidth      } = $s->{width} if ($s->{width});
-      $config->{templatedir } = $self->dynamic_templates;
+      $config->{template_dir} = $c->config->{template_dir};
       $config->{url         } = $c->req->path;
 
       HTML::FormWidgets->build( $config, $data );

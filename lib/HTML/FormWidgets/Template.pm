@@ -11,19 +11,10 @@ use English qw(-no_match_vars);
 use File::Spec;
 use IO::File;
 
-__PACKAGE__->mk_accessors( qw(templatedir) );
-
-sub init {
-   my ($self, $args) = @_;
-
-   $self->templatedir( undef );
-   return;
-}
-
 sub render_field {
    my ($self, $args) = @_;
 
-   my $path = File::Spec->catfile( $self->templatedir, $self->name.q(.tt) );
+   my $path = File::Spec->catfile( $self->template_dir, $self->name.q(.tt) );
 
    -f $path or return "Not found $path";
 

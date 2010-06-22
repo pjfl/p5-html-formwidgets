@@ -46,7 +46,8 @@ $widget = HTML::FormWidgets->new( hide => [],
                                   path => q(honestly),
                                   type => q(file) );
 
-ok( $widget->render =~ m{ Not \s found \s honestly }mx, q(File not found) );
+ok( $widget->render =~ m{ Path \s honestly \s not \s found }mx,
+    q(File not found) );
 
 $widget->path( q(t/10base.t) );
 

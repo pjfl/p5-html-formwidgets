@@ -1,4 +1,4 @@
-/* @(#)$Id: presentation.css 991 2010-04-28 17:09:35Z pjf $ */
+/* @(#)$Id: presentation.css 1012 2010-06-20 15:38:48Z pjf $ */
 
 /*  Elements - Reset and base styling */
 
@@ -55,8 +55,18 @@ ul { list-style-position: inside; list-style-type: none; }
    font-weight: bold; padding: 0.15em 0.5em; margin-bottom: 0.6em;
    text-decoration: none;
 }
+.anchor_fade:active { position: relative; top: 1px; }
 .anchor_fade:hover { background-position: top left; }
+.banner { text-align: center; width: 100%; }
 .bigger { font-size: 1.33em; }
+.button  {
+   background: #CC9 url(form.png) repeat-x center left; border: 1px solid #336;
+}
+.button:active { position: relative; top: 1px; }
+.button:hover  { background-position: top; }
+.buttonItem { margin-bottom: 10px; }
+.buttonItem input.button { background: transparent; border: 0px; }
+.buttonItem input.button:hover { background: #9C9; border: 0px; }
 .calendar_icon {
    background: url(icons.png) no-repeat -30px -300px;
    display: inline-block; height: 18px; overflow: hidden; width: 18px;
@@ -77,7 +87,7 @@ ul { list-style-position: inside; list-style-type: none; }
 }
 .clearLeft { clear: left; }
 .container {
-   display: block; float: left; margin: 0px 0px 0.7em 0px; position: relative;
+   display: block; float: left; margin: 0.5em 0px; position: relative;
 }
 .down_point_icon {
    background: url(icons.png) no-repeat -210px -210px; float: right;
@@ -94,13 +104,27 @@ ul { list-style-position: inside; list-style-type: none; }
    background: url(icons.png) no-repeat -120px -270px;
    display: inline-block; height: 25px; overflow: hidden; width: 20px;
 }
-.freelist_container { width: 15em; }
-.freelist_scrolling { clear: left; }
+.freelist_buttons {
+   display: block; float: right; margin: 0.5em 0px; position: relative;
+}
+.freelist_buttons .add { margin-bottom: 1em; }
+.freelist_buttons .remove { display: block; margin-top: 0.25em; }
+.freelist_container { display: block; float: left; position: relative; min-width: 18em; }
+.freelist_ifields {
+   display: block; float: left; margin: 0.5em 0px; position: relative;
+}
 .fullWidth { width: 100%; }
+.groupmember_buttons { display: inline-block; float: left; padding: 0px 10px 0px 10px; }
+.groupmember_buttons .add { margin: 5em 0px 1em 0px; }
+.groupmember_buttons .remove { display: block; }
+.groupmember_container { display: block; float:left; margin: 0.5em 0px; }
+.groupmember_ifields { display: inline-block; float: left; }
 .header_fade { font-weight: bold; text-decoration: none; }
+.header_fade:active { position: relative; top: 1px; }
 .header_title {
-	font-family: "Mukokuseki Kitchen"; font-size: 1.75em; font-weight: normal;
-	margin-left: 11px; margin-top: 4px; position: absolute;
+   font-family: "Mukokuseki Kitchen";
+   font-size: 1.75em; font-weight: normal;
+   margin-left: 11px; margin-top: 4px; position: absolute;
 }
 .heading { font-weight: bold; }
 .help_icon {
@@ -110,20 +134,25 @@ ul { list-style-position: inside; list-style-type: none; }
 .hidden { display: none; }
 .icon {
    cursor: pointer; display: inline-block; height: 20px;
-   padding: 0.15em 0.25em; width: 20px;
+   padding: 0px 0.25em; width: 20px;
 }
+.icon_buttons { padding-left: 0.15em; }
 .ifield { font-size: 100%; font-weight: bold; padding: 0.15em 0.25em; }
 .iFrameHeading {
    font-size: 1.5em; font-weight: bold;
    margin-bottom: 1em; text-align: center;
 }
-.iFrameItem { float: left; line-height: 1em; overflow: hidden; }
+.iFrameItem { float: left; line-height: 1.5em; overflow: hidden; }
 .iFrameItem legend {
    background: #FFC url(form.png) repeat-x center left;
-   border: 1px solid #336; font-weight: bold; padding: 0.35em 0.25em;
+   border: 1px solid #336; font-weight: bold; padding: 0.25em;
 }
 .iFrameItem li { margin: 0.5em 0px 0.5em 0px; }
 .iFrameItem ul { margin: 0.5em 0px 0.5em 0px; }
+.iFramePanel {
+   display: block; margin-left: 3em; margin-right: 3em; text-align: center;
+}
+
 .iFrameSubHeading {
    font-weight: bold; margin-bottom: 1em; text-align: center;
 }
@@ -150,16 +179,18 @@ ul { list-style-position: inside; list-style-type: none; }
 .multiColumn {
    float: left; position: relative; text-align: justify; right: 50%; width: auto;
 }
-.narrow { clear: left; margin-left: 4em; margin-right: 4em; }
+.narrow { display: block; margin-left: 3em; margin-right: 3em; }
 .navigation_fade {
-   border: 1px solid transparent; display: block; text-decoration: none;
+   border: 1px solid transparent; display: block;
+   padding: 0.25em; text-decoration: none;
 }
+.navigation_fade:active { position: relative; top: 1px; }
 .navigation_fade:hover { border: 1px solid #336; }
 .note {
    float: left; font-size: 0.75em; font-weight: bold; margin: 0.5em 0;
 }
 .nowrap { white-space: nowrap; }
-.nudge-right { padding-left: 2px; }
+.nudge-right { padding-left: 4px; }
 .oneColumn {
    float: left; margin: 0px;
    padding-left: 5.00em; padding-right: 5.00em;
@@ -168,6 +199,7 @@ ul { list-style-position: inside; list-style-type: none; }
 .paragraphs {
    clear: left; float: left; position: relative; left: 50%; line-height: 1.5em;
 }
+.paragraphs p { margin-bottom: 1.5em; }
 .pushedpin_icon {
    background: url(icons.png) no-repeat -270px -270px;
    display: inline-block; height: 17px; overflow: hidden; width: 17px;
@@ -186,6 +218,7 @@ ul { list-style-position: inside; list-style-type: none; }
    background: #FFC url(form.png) repeat-x center left;
    border: 1px solid #336; font-weight: bold; padding: 0.35em 0.25em;
 }
+.right { float: right; }
 .row_select { padding: 0.25em; }
 .rule { width: 100%; }
 .scissors_icon {
@@ -193,8 +226,9 @@ ul { list-style-position: inside; list-style-type: none; }
    display: inline-block; height: 19px; overflow: hidden; width: 19px;
 }
 .search_fade { padding: 0px 5px; text-decoration: none; }
+.search_fade:active { position: relative; top: 1px; }
 .separator { float: left; width: auto; margin: 0.5em 0px 0.5em 0px; }
-.sidebarContent { direction: ltr; padding: 3px; }
+.sidebarContent { direction: ltr; padding: 0px 3px; }
 .sidebarContent .tree {
    border: 0px; margin: 0px;
 }
@@ -232,10 +266,24 @@ ul { list-style-position: inside; list-style-type: none; }
    display: block; float: left;
    font-family: "Andale Mono", monaco, "Courier New", courier, monospace;
    font-size: 0.75em; margin: 0.5em 1em 0.5em 0px;
-   text-align: right; width: 2.66em;
+   text-align: right; width: 2em;
 }
 .subheading {  font-weight: bold; margin-bottom: 1em; }
 .table_edit_buttons { display: block; height: 30px; width: 70px; }
+.tabset { display: block; float: left; position: relative; right: 50%; width: auto; }
+.tabset .dataValue { padding: 0px; }
+.tabset .tab {
+   border-color: #336; border-style: solid; border-width: 1px;
+   display: inline-block; margin: 0px 0.5em -1px; padding: 0.25em;
+   position: relative; white-space: nowrap;
+}
+.tabset .panel { display: block; width: auto; }
+.tabset .panel_content {
+   border-color: #336; border-style: solid; border-width: 1px;
+   padding: 0.25em; width: auto;
+}
+.tabs_fade { display:block; font-weight: bold; text-decoration: none; }
+.tabswapper { float: left; left: 50%; position: relative; }
 .tick {
    border-right: 1px solid #336; height: 8px;
    position: absolute; top: 9px; width: 19px;
@@ -264,51 +312,10 @@ ul { list-style-position: inside; list-style-type: none; }
 
 div.appendItem { display: inline; }
 div.appendItem label.prompt { font-weight: bold; }
-div.buttonItem { margin-bottom: 10px; }
+div.chooser { clear: left; }
 div.footerItem { display: inline; font-weight: bold; }
 div.grid_container { float: left; overflow: hidden; width: auto; }
 div.tools { height: 31px; line-height: 31px; }
-
-/*  Tree Definitions */
-
-dd.tree_node_closed { display: none; }
-dd.tree_node_last_closed { display: none; }
-dd.tree_node_open { display: block; }
-dd.tree_node_last_open { display: block; }
-dl.tree a { text-decoration: none; white-space: nowrap; }
-dl.tree a.tree_selected { text-decoration: underline; }
-dl.tree span { vertical-align: middle; }
-dl.tree_branch { margin-bottom: 0px; }
-dl.tree_branch dt { display: block; }
-dt.tree_leaf span.tree_leaf_ctrl {
-    background: transparent url(icons.png) no-repeat -30px -270px;
-}
-dt.tree_leaf_last span.tree_leaf_ctrl {
-    background: transparent url(icons.png) no-repeat -60px -240px;
-}
-dt.tree_node_closed span.tree_node_icon,
-dt.tree_node_last_closed span.tree_node_icon {
-   background: transparent url(icons.png) no-repeat 0px -240px;
-   display: inline-block; height: 30px; overflow: hidden;
-   vertical-align: middle; width: 16px;	
-}
-dt.tree_node_closed span.tree_node_ctrl {
-    background: transparent url(icons.png) no-repeat -90px -270px;
-}
-dt.tree_node_last_closed span.tree_node_ctrl {
-    background: transparent url(icons.png) no-repeat -120px -240px;
-}
-dt.tree_node_open span.tree_node_icon, dt.tree_node_last_open span.tree_node_icon {
-   background: transparent url(icons.png) no-repeat -210px -240px;
-   display: inline-block; height: 30px; overflow: hidden;
-   vertical-align: middle; width: 16px;	
-}
-dt.tree_node_open span.tree_node_ctrl {
-    background: transparent url(icons.png) no-repeat -60px -270px;
-}
-dt.tree_node_last_open span.tree_node_ctrl {
-    background: transparent url(icons.png) no-repeat -90px -240px;
-}
 
 /* Horizontal Rules */
 
@@ -327,7 +334,7 @@ img.tools {
    border: 1px solid #336; padding: 0.15em 0.25em;
 }
 .iFrameItem input.button:hover { background-position: top left; }
-input.freelist { margin-bottom: 1em; width: 13em; }
+input.freelist { float: left; margin-bottom: 1em; width: 13em; }
 input.ifield, password.ifield, select.ifield {
    border: 1px solid #336; font-family: tahoma, verdana, arial, sans-serif;
    margin-right: 2px;
@@ -339,7 +346,6 @@ textarea.ifield {
    border: 1px solid #336; font-family: tahoma, verdana, arial, sans-serif;
    line-height: 150%; margin-bottom: 0.5em; margin-right: 2px;
 }
-select.freelist { width: 15em; }
 
 /* Labels */
 
@@ -352,7 +358,8 @@ label.radio_group { padding: 0.15em 0.25em; }
 
 /* Select menus */
 
-select.group { min-width: 10em; }
+select.freelist { clear: left; float: left; width: 15em; }
+select.group { clear: left; float: left; min-width: 10em; width: auto; }
 
 /* Spans */
 
@@ -361,10 +368,6 @@ span.action {
    cursor: pointer; display: inline-block; height: 30px;
    overflow: hidden; width: 30px;
 }
-span.button  {
-   background: #CC9 url(form.png) repeat-x center left; border: 1px solid #336;
-}
-span.button:hover  { background-position: top; }
 span.collapse { background-position: -150px -210px; }
 span.dropcap {
    float: left; font-size: 3em; margin-right: 3px; line-height: 1em; width: auto;
@@ -378,38 +381,23 @@ span.help { cursor: help; }
 span.label {
    display: block; float: left; margin-bottom: 10px; width: auto;
 }
-span.paragraphs p { margin-bottom: 1.5em; }
 span.prompt {
    display: block; float: left; margin: 0.5em 0px 0.5em 0px; width: auto;
 }
 span.textarea { float: right; width: auto; }
 span.title {
-   left: 0px; min-width: 8em; padding: 0.15em 0.25em; position: absolute;
-   right: 0px; white-space: nowrap;
+   float: left; min-width: 8em; padding: 0.15em 0.25em;
+   white-space: nowrap; width: 95%;
 }
-span.tree_fill, span.tree_last_fill, span.tree_leaf_ctrl, span.tree_node_ctrl {
-   display: inline-block; height: 30px; overflow: hidden; width: 16px;
-}
-span.tree_fill {
-   background: transparent url(icons.png) no-repeat -30px -240px;
-}
-span.tree_last_fill {
-   background: transparent url(icons.png) no-repeat 0px 0px;
-}
-span.tree_leaf_icon {
-   background: transparent url(icons.png) no-repeat -150px -240px;
-   display: inline-block; height: 30px; overflow: hidden;
-   vertical-align: middle; width: 16px;
-}
-span.tree_node_ctrl { cursor: pointer; }
 
 /* Tables */
 
-table.compact { margin: 0px auto; }
-table.form { width: 400px; }
-table.logfile { margin: 0.5em 0px 0.5em 0px; }
+table.compact { line-height: 1em; margin: 0px auto; }
+table.csv { line-height: 1em; }
+table.form { line-height: 1em; width: 400px; }
+table.logfile { margin: 0.5em 0px; }
 table.logfile pre { margin-bottom: 0px; }
-table.std { margin: 0.12em; width: 100%; }
+table.std { line-height: 1em; margin: 0.125em; }
 td.csv { padding: 0.25em; white-space: nowrap; }
 td.dataValue { padding: 0.25em; }
 td.first { border-right: 1px solid #336; width: 1%; }
@@ -778,6 +766,62 @@ td.tool-tip-bottomRight span {
    display: block; font-size: 14px; padding: 4px 8px 16px 8px;
 }
 
+/*  Tree Definitions */
+
+dd.tree_node_closed { display: none; }
+dd.tree_node_last_closed { display: none; }
+dd.tree_node_open { display: block; }
+dd.tree_node_last_open { display: block; }
+dl.tree a { text-decoration: none; white-space: nowrap; }
+dl.tree a.tree_selected { text-decoration: underline; }
+dl.tree span { vertical-align: middle; }
+dl.tree_branch { margin-bottom: 0px; }
+dl.tree_branch dt { display: block; }
+dt.tree_leaf span.tree_leaf_ctrl {
+    background: transparent url(icons.png) no-repeat -30px -270px;
+}
+dt.tree_leaf_last span.tree_leaf_ctrl {
+    background: transparent url(icons.png) no-repeat -60px -240px;
+}
+dt.tree_node_closed span.tree_node_icon,
+dt.tree_node_last_closed span.tree_node_icon {
+   background: transparent url(icons.png) no-repeat 0px -240px;
+   display: inline-block; height: 30px; overflow: hidden;
+   vertical-align: middle; width: 16px;	
+}
+dt.tree_node_closed span.tree_node_ctrl {
+    background: transparent url(icons.png) no-repeat -90px -270px;
+}
+dt.tree_node_last_closed span.tree_node_ctrl {
+    background: transparent url(icons.png) no-repeat -120px -240px;
+}
+dt.tree_node_open span.tree_node_icon, dt.tree_node_last_open span.tree_node_icon {
+   background: transparent url(icons.png) no-repeat -210px -240px;
+   display: inline-block; height: 30px; overflow: hidden;
+   vertical-align: middle; width: 16px;	
+}
+dt.tree_node_open span.tree_node_ctrl {
+    background: transparent url(icons.png) no-repeat -60px -270px;
+}
+dt.tree_node_last_open span.tree_node_ctrl {
+    background: transparent url(icons.png) no-repeat -90px -240px;
+}
+span.tree_fill, span.tree_last_fill, span.tree_leaf_ctrl, span.tree_node_ctrl {
+   display: inline-block; height: 30px; overflow: hidden; width: 16px;
+}
+span.tree_fill {
+   background: transparent url(icons.png) no-repeat -30px -240px;
+}
+span.tree_last_fill {
+   background: transparent url(icons.png) no-repeat 0px 0px;
+}
+span.tree_leaf_icon {
+   background: transparent url(icons.png) no-repeat -150px -240px;
+   display: inline-block; height: 30px; overflow: hidden;
+   vertical-align: middle; width: 16px;
+}
+span.tree_node_ctrl { cursor: pointer; }
+
 /* WYSIWYG */
 
 .toolbar {
@@ -791,9 +835,6 @@ td.tool-tip-bottomRight span {
 } * html .toolbar * { height: 24px; width: 24px; }
 .toolbar br { margin: 0px; padding: 0px; }
 .toolbar *:hover { background-color: #9c9; }
-.wysiwyg_container iframe {
-   background: #cc9; border: 1px solid #336;
-}
 .toolbar.disabled * { opacity: 0.3; -moz-opacity: 0.3; }
 .toolbar.disabled *:hover { background-color: transparent; border-color: #663; }
 .toolbar.disabled .toggle {
@@ -804,6 +845,9 @@ td.tool-tip-bottomRight span {
    margin: 0px 5px 0px 3px; width: 0px;
 }
 .toolbar .toggle { background-position: -180px -180px; }
+.wysiwyg_container iframe {
+   background: #cc9; border: 1px solid #336;
+}
 
 /* Application specific */
 
@@ -828,7 +872,7 @@ img.library_header {
 }
 div.library_header {
    border: 1px solid #336; margin: 3px; padding: 3px;
-   position: relative; text-align: center;
+   text-align: center;
 }
 th.grid_header {
    border-bottom: 1px solid #336; font-size: 0.75em;

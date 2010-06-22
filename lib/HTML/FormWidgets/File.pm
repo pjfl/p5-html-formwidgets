@@ -69,7 +69,7 @@ sub render_field {
 
    my $rdr    = IO::File->new( $path, q(r) ) or return "Path $path cannot read";
    my $text   = do { local $RS = undef; <$rdr> }; $rdr->close;
-   my $method = q(_render_).($self->subtype || q(default));
+   my $method = q(_render_).($self->subtype || q(file));
 
    return $self->$method( $hacc, $text );
 }
@@ -174,7 +174,7 @@ sub _render_csv {
    return $self->_build_table( $hacc, $text, $header_cells, $row_cells );
 }
 
-sub _render_default {
+sub _render_file {
    my ($self, $hacc, $text) = @_;
 
    my $header_cells = sub {

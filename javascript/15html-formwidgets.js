@@ -1,38 +1,10 @@
-/* @(#)$Id: 15html-formwidgets.js 986 2010-04-26 20:16:13Z pjf $
+/* @(#)$Id: 15html-formwidgets.js 1016 2010-06-22 18:56:12Z pjf $
 
-   Portions of this code are taken from MooTools 1.11 which is:
-	   Copyright (c) 2007 Valerio Proietti, <http://mad4milk.net>
-
-   Property: setHTML
-      Sets the innerHTML of the Element. Should work for application/xhtml+xml
-
-   Arguments:
-      html - string; the new innerHTML for the element.
-
-   Example:
-      $('myElement').setHTML(newHTML) //the innerHTML of myElement
-                                        is now = newHTML
+   Portions of this code are taken from MooTools 1.2 which is:
+      Copyright (c) 2006-2008 [Valerio Proietti](http://mad4milk.net/).
 */
 
-Element.extend( {
-   setHTML: function( html ) {
-      while (this.firstChild) this.removeChild( this.firstChild );
-
-      return HTMLtoDOM( html, this );
-   }
-} );
-
-/* Script: String.js
-      Contains String prototypes.
-
-   License:
-      MIT-style license.
-
-   Class: String
-      A collection of The String Object prototype methods.
-*/
-
-String.extend( {
+String.implement( {
    escapeHTML: function() {
       var text = this;
       text = text.replace( /\</g, '&lt;'   );
@@ -53,20 +25,19 @@ String.extend( {
 } );
 
 /*
-Script: Accordion.js
-   Contains <Accordion>
 
-License:
-   MIT-style license.
+Description: An Fx.Elements extension which allows you to easily
+             create accordion type controls.
+
+License: MIT-style license.
+
+Authors: Valerio Proietti, Peter Flanigan
 
 Class: Accordion
    The Accordion class creates a group of elements that
    are toggled when their handles are clicked. When one elements
    toggles in, the others toggles back.  Inherits methods, properties,
    options and events from <Fx.Elements>.
-
-Note:
-   The Accordion requires an XHTML doctype.
 
 Arguments:
    togglers - required, a collection of elements, the elements handlers
@@ -96,77 +67,79 @@ Events:
    onBackground - function to execute when an element starts to hide
 */
 
-var Accordion = Fx.Elements.extend( {
-   options: {
-      onActive    : Class.empty,
-      onBackground: Class.empty,
-      display     : 0,
-      show        : false,
-      height      : true,
-      width       : false,
-      opacity     : true,
-      fixedHeight : false,
-      fixedWidth  : false,
-      wait        : false,
-      alwaysHide  : false
+Fx.Accordion = new Class( {
+   Extends: Fx.Elements,
+
+   options              : {
+      alwaysHide        : false,
+      display           : 0,
+      fixedHeight       : false,
+      fixedWidth        : false,
+      height            : true,
+      initialDisplayFx  : true,
+      onActive          : Class.empty,
+      onBackground      : Class.empty,
+      opacity           : true,
+      returnHeightToAuto: true,
+      show              : false,
+      trigger           : 'click',
+      wait              : false,
+      width             : false
    },
 
    initialize: function() {
-      var container, elements, options, togglers;
-
-      $each( arguments, function( argument, i ) {
-         switch( $type( argument ) ) {
-            case 'object' : options   = argument;      break;
-            case 'element': container = $( argument ); break;
-            default       : var temp = $$( argument );
-                            if (!togglers) togglers = temp;
-                            else elements = temp;
-         }
+      var params = Array.link( arguments, {
+         'container': Element.type,
+         'options'  : Object.type,
+         'togglers' : $defined,
+         'elements' : $defined
       } );
 
-      this.previous  = -1;
-      this.togglers  = togglers || [];
-      this.elements  = elements || [];
-      this.container = $( container );
-      this.setOptions( options );
+      this.parent( params.elements, params.options );
+      this.togglers      = $$( params.togglers );
+      this.container     = params.container;
+      this.internalChain = new Chain();
+      this.previous      = -1;
+      this.effects       = {};
 
-      if (this.options.alwaysHide) this.options.wait = true;
+      var options = this.options;
 
-      if ($chk( this.options.show )) {
-         this.options.display = false; this.previous = this.options.show;
+      if (options.alwaysHide) options.wait = true;
+
+      if ($chk( options.show )) {
+         options.display = false; this.previous = options.show;
       }
 
-      if (this.options.start) {
-         this.options.display = false; this.options.show = false;
+      if (options.start) {
+         options.display = false; options.show = false;
       }
 
-      this.effects = {};
+      if (options.opacity) this.effects.opacity = 'fullOpacity';
 
-      if (this.options.opacity) this.effects.opacity = 'fullOpacity';
+      if (options.width) this.effects.width = options.fixedWidth
+                                            ? 'fullWidth' : 'offsetWidth';
 
-      if (this.options.width)
-         this.effects.width = this.options.fixedWidth
-                            ? 'fullWidth' : 'offsetWidth';
-
-      if (this.options.height)
-         this.effects.height = this.options.fixedHeight
-                             ? 'fullHeight' : 'scrollHeight';
+      if (options.height) this.effects.height = options.fixedHeight
+                                              ? 'fullHeight' : 'scrollHeight';
 
       for (var i = 0, l = this.togglers.length; i < l; i++)
          this.addSection( this.togglers[ i ], this.elements[ i ] );
 
       this.elements.each( function( el, i ) {
-         if (this.options.show === i){
-            this.fireEvent( 'onActive', [ this.togglers, i, el ] );
-         }
-         else {
+         if (options.show === i) {
+            this.fireEvent( 'active', [ this.togglers, i , el ] );
+         } else {
             for (var fx in this.effects) el.setStyle( fx, 0 );
          }
       }, this );
 
-      this.parent( this.elements );
+      if ($chk( options.display ) || options.initialDisplayFx === false)
+         this.display( options.display, options.initialDisplayFx );
 
-      if ($chk( this.options.display )) this.display( this.options.display );
+      if (options.fixedHeight !== false) options.returnHeightToAuto = false;
+
+      this.addEvent( 'complete',
+                     this.internalChain.callChain.bind( this.internalChain ) );
    },
 
    /*
@@ -183,51 +156,62 @@ var Accordion = Fx.Elements.extend( {
                 within the accordion.
    */
 
-   addSection: function( toggler, element, pos ) {
-      toggler  = $( toggler ); element = $( element );
+   addSection: function( toggler, el, pos ) {
+      toggler = $( toggler ); el = $( el );
 
       var test = this.togglers.contains( toggler );
       var len  = this.togglers.length;
 
-      this.togglers.include( toggler ); this.elements.include( element );
-
-      if (len && (!test || pos)){
+      if (len && (! test || pos)) {
          pos = $pick( pos, len - 1 );
+
          toggler.injectBefore( this.togglers[ pos ] );
-         element.injectAfter( toggler );
+         el.injectAfter( toggler );
       }
-      else if (this.container && !test){
-         toggler.inject( this.container ); element.inject( this.container );
-      }
-
-      var idx = this.togglers.indexOf( toggler );
-
-      toggler.addEvent( 'click', this.display.bind( this, idx ) );
-
-      if (this.options.height)
-         element.setStyles( { 'padding-top': 0, 'padding-bottom': 0 } );
-
-      if (this.options.width)
-         element.setStyles( { 'padding-left': 0, 'padding-right': 0 } );
-
-      if (this.options.fixedWidth) {
-         element.fullWidth = this.options.fixedWidth;
-         element.setStyle( 'overflow-x', 'auto' );
-      }
-      else { element.setStyle( 'overflow-x', 'hidden' ) }
-
-      if (this.options.fixedHeight) {
-         element.fullHeight = this.options.fixedHeight;
-         element.setStyle( 'overflow-y', 'auto' );
-      }
-      else { element.setStyle( 'overflow-y', 'hidden' ) }
-
-      if (!test){
-         for (var fx in this.effects) element.setStyle( fx, 0 );
+      else if (this.container && ! test){
+         toggler.inject( this.container ); el.inject( this.container );
       }
 
-      element.fullOpacity = 1;
+      this.togglers.include( toggler ); this.elements.include( el );
+
+      var idx       = this.togglers.indexOf( toggler );
+      var displayer = this.display.bind( this, idx );
+      var options   = this.options;
+
+      toggler.store( 'accordion:display', displayer );
+      toggler.addEvent( options.trigger, displayer );
+
+      if (options.height)
+         el.setStyles( { 'padding-top': 0, 'padding-bottom': 0 } );
+
+      if (options.width)
+         el.setStyles( { 'padding-left': 0, 'padding-right': 0 } );
+
+      if (options.fixedWidth) {
+         el.fullWidth = options.fixedWidth;
+         el.setStyle( 'overflow-x', 'auto' );
+      }
+      else { el.setStyle( 'overflow-x', 'hidden' ) }
+
+      if (options.fixedHeight) {
+         el.fullHeight = options.fixedHeight;
+         el.setStyle( 'overflow-y', 'auto' );
+      }
+      else { el.setStyle( 'overflow-y', 'hidden' ) }
+
+      if (! test) {
+         for (var fx in this.effects) el.setStyle( fx, 0 );
+      }
+
+      el.fullOpacity = 1;
       return this;
+   },
+
+   detach: function() {
+      this.togglers.each( function( toggler ) {
+         toggler.removeEvent( this.options.trigger,
+                              toggler.retrieve( 'accordion:display' ) );
+      }, this );
    },
 
    /*
@@ -240,35 +224,59 @@ var Accordion = Fx.Elements.extend( {
               element to show.
    */
 
-   display: function( index ) {
-      index = ($type( index ) == 'element')
+   display: function( index, useFx ) {
+      if (! this.check( index, useFx ) ) return this;
+
+      useFx = $pick( useFx, true ); var obj = {}, options = this.options;
+
+      if (options.returnHeightToAuto) {
+         var prev = this.elements[ this.previous ];
+
+         if (prev && ! this.selfHidden) {
+            for (var fx in this.effects) {
+               prev.setStyle( fx, prev[ this.effects[ fx ] ] );
+            }
+         }
+      }
+
+      index = $type( index ) == 'element'
             ? this.elements.indexOf( index ) : index;
 
       if (index >= this.elements.length) index = 0;
 
-      if ((this.timer && this.options.wait)
-          || (index === this.previous
-              && !this.options.alwaysHide)) return this;
-
-      var obj = {};
+      if ((this.timer && options.wait)
+          || (index === this.previous && ! options.alwaysHide)) return this;
 
       this.previous = index;
-      this.elements.each( function( el, i ) {
-         var hide = (i != index)
-                 || (this.options.alwaysHide && (el.offsetHeight > 0));
 
-         obj[i] = {};
-         this.fireEvent( hide ? 'onBackground' : 'onActive',
-                         [ this.togglers, i, el ] );
+      this.elements.each( function( el, i ) {
+         var hide = false; obj[ i ] = {};
+
+         if (i != index) {
+            hide = true;
+         } else if (options.alwaysHide
+                    && ((el.offsetHeight > 0 && options.height)
+                        || el.offsetWidth > 0 && options.width)) {
+            hide = this.selfHidden = true;
+         }
+
+         this.fireEvent( hide ? 'background' : 'active',
+                         [ this.togglers, i,  el ] );
 
          for (var fx in this.effects)
-            obj[i][fx] = hide ? 0 : el[ this.effects[fx] ];
+            obj[ i ][ fx ] = hide ? 0 : el[ this.effects[ fx ] ];
       }, this );
 
-      return this.start( obj );
-   },
+      this.internalChain.chain( function() {
+         if (options.returnHeightToAuto && ! this.selfHidden) {
+            var el = this.elements[ index ];
 
-   showThisHideOpen: function( index ) { return this.display( index ) },
+            if (el) el.setStyle( 'height', 'auto' );
+         };
+      }.bind(this) );
+
+      return useFx ? this.start( obj ) : this.set( obj );
+   },
 
    redisplay: function() {
       var index = this.previous; this.previous = -1;
@@ -277,12 +285,11 @@ var Accordion = Fx.Elements.extend( {
    },
 
    reload: function( index ) {
-      if (!index || index >= this.togglers.length) index = 0;
+      if (! index || index >= this.togglers.length) index = 0;
 
-      if (!($defined( this.togglers[ index ] )
-            && $defined( this.togglers[ index ].onclick ))) return;
+      var toggler = this.togglers[ index ];
 
-      this.togglers[ index ].onclick();
+      if ($defined( toggler ) && $defined( toggler.onclick )) toggler.onclick();
    },
 
    resize: function( height, width ) {
@@ -295,119 +302,149 @@ var Accordion = Fx.Elements.extend( {
    }
 } );
 
-Fx.Accordion = Accordion;
+/*
 
-/* AUTOGROW TEXTAREA Version 1.0
- * A mooTools plugin by Gary Glass (www.bookballoon.com)
- * mailto:bookballoon -at- bookballoon.com
- *
- * Based on a jQuery plugin by Chrys Bader (www.chrysbader.com).
- * Thanks to Aaron Newton for reviews and improvements.
- *
- * Copyright (c) 2009 Gary Glass (www.bookballoon.com)
- * Dual licensed under the MIT (MIT-LICENSE.txt)
- * and GPL (GPL-LICENSE.txt) licenses.
- *
- * USAGE:
- *		new AutoSize( 'class_name', options );
- * where 'class_name' is the element class to search for, e.g.:
- *		new AutoSize( '.autosize', {} );
- */
+A mooTools plugin by Gary Glass (www.bookballoon.com)
+mailto:bookballoon -at- bookballoon.com
+
+Based on a jQuery plugin by Chrys Bader (www.chrysbader.com).
+Thanks to Aaron Newton for reviews and improvements.
+
+Copyright (c) 2009 Gary Glass (www.bookballoon.com)
+Dual licensed under the MIT (MIT-LICENSE.txt)
+and GPL (GPL-LICENSE.txt) licenses.
+
+Usage: new AutoSize( options );
+
+*/
 
 var AutoSize = new Class( {
-	options: {
-		interval : 1100, // update interval in milliseconds
-		margin   : 24,   // gap (in px) to maintain between last line
-                       // of text and bottom of textarea
-		minHeight: 48,   // minimum height of textarea
-      selector : '.autosize'
-	},
+   Implements: [ Events, Options ],
 
-   initialize: function( options ) {
-      this.setOptions( options );
-      this.collection = new Array();
-
-      if (this.options.selector)
-         $$( this.options.selector ).each( this.build, this );
+   options     : {
+      interval : 1100,       // update interval in milliseconds
+      margin   : 24,         // gap (in px) to maintain between last line
+                             // of text and bottom of textarea
+      minHeight: 48,         // minimum height of textarea
+      selector : '.autosize' // element class to search for
    },
 
-   build: function( el, index ) {
+   initialize: function( options ) {
+      this.setOptions( options ); options = this.options; this.collection = [];
+
+      if (options.selector) $$( options.selector ).each( this.build, this );
+   },
+
+   build: function( el ) {
       var autoSizer = {};
 
       autoSizer.element = $( el );
-		autoSizer.dummy = new Element( 'div', {
-			styles: {
+      autoSizer.dummy = new Element( 'div', {
+         styles: {
             'overflow-y': 'auto',
-				'position'  : 'absolute',
-				'top'       : '0px',
-				'left'      : '-9999px'
-			}
-		} ).setStyles
+            'position'  : 'absolute',
+            'top'       : '0px',
+            'left'      : '-9999px'
+         }
+      } ).setStyles
          ( el.getStyles
            ( 'font-size', 'font-family', 'width', 'line-height', 'padding' )
            ).injectBefore( el );
       autoSizer.html = '';
       autoSizer.minHeight
-         = Math.max( this.options.minHeight, el.getSize().size.y );
-		this.resize.periodical( this.options.interval, this, autoSizer );
-      this.collection[ index ] = autoSizer;
+         = Math.max( this.options.minHeight, el.getSize().y );
+      this.resize.periodical( this.options.interval, this, autoSizer );
+      this.collection.include( autoSizer );
    },
 
-	resize: function( autoSizer ) {
+   resize: function( autoSizer ) {
       var el   = autoSizer.element;
-		var html = el.value.replace( /\n|\r\n/g, '<br>X' ).toLowerCase();
+      var html = el.value.replace( /\n|\r\n/g, '<br>X' ).toLowerCase();
 
-		if (autoSizer.html == html ) return;
+      if (autoSizer.html == html ) return;
 
-      autoSizer.html = html; autoSizer.dummy.setHTML( html );
+      autoSizer.html = html; autoSizer.dummy.set( 'html', html );
 
       var options       = this.options;
-      var dummyHeight   = autoSizer.dummy.getSize().size.y;
+      var dummyHeight   = autoSizer.dummy.getSize().y;
       var triggerHeight = dummyHeight + options.margin;
       var newHeight     = Math.max( autoSizer.minHeight, triggerHeight );
 
       if (el.clientHeight != triggerHeight) {
-         el.effect( 'height', {
+         new Fx.Tween( el, {
             duration  : 1000,
+            property  : 'height',
             transition: Fx.Transitions.linear } ).start( newHeight );
       }
 
       return;
-	}
+   }
 } );
 
-AutoSize.implement( new Options, new Events );
+var Calendars = new Class( {
+   Implements: [ Options ],
+
+   options    : {
+      config  : {},
+      selector: '.calendars',
+      submit  : $empty
+   },
+
+   initialize: function( options ) {
+      this.setOptions( options ); options = this.options;
+
+      if (options.selector) $$( options.selector ).each( this.build, this );
+   },
+
+   build: function( el ) {
+      var button, config, options = this.options, submit = options.submit;
+
+      if (! (config = options.config[ el.id ])) return;
+
+      if (submit && (button = $( el.id + '_clear' )))
+         button.addEvent( 'click', function() { submit.clearField( el.id ) } );
+
+      Calendar.setup( $extend( config, {
+               inputField: el.id, button: el.id + '_trigger' } ) );
+   }
+} );
 
 var CheckboxReplace = new Class( {
-   options: {
-      replaceAll: true
+   Implements: [ Events, Options ],
+
+   options               : {
+      checkboxSelector   : 'input[type=checkbox]',
+      radiobuttonSelector: 'input[type=radio]',
+      replaceAll         : true,
+      suffix             : '_replacement'
    },
 
    initialize: function( options ) {
       this.setOptions( options );
-      this.boxes = new Array();
+      this.boxes = [];
 
       if (this.options.replaceAll) this.replaceAll();
    },
 
    replaceAll: function() {
-      var checks = document.getElements( 'input[type=checkbox]' );
-      var radios = document.getElements( 'input[type=radio]'    );
+      var checks = document.getElements( this.options.checkboxSelector    );
+      var radios = document.getElements( this.options.radiobuttonSelector );
 
       checks.each( this.replace.bind( this ) );
       radios.each( this.replace.bind( this ) );
    },
 
    replace: function( el ) {
-      var oldbox = $( el ), newbox;
-      var newId  = (oldbox.id || oldbox.name + oldbox.value) + '_replacement';
+      var oldbox = $( el ), newbox, suffix = this.options.suffix;
+      var newId  = oldbox.name + (oldbox.type == 'checkbox'
+                                  ? '' : oldbox.value) + suffix ;
 
       if (! (newbox = $( newId ))) {
          newbox = new Element( 'span', {
                class: 'checkbox' + (oldbox.checked ? ' checked' : ''),
                id   : newId,
-               name : oldbox.name + '_replacement'
-            } );
+               name : oldbox.name
+         } );
          this.boxes.push( [ oldbox, newbox ] );
          oldbox.setStyles( { position: 'absolute', left: '-9999px' } );
          newbox.injectBefore( oldbox );
@@ -439,14 +476,14 @@ var CheckboxReplace = new Class( {
    }
 } );
 
-CheckboxReplace.implement( new Options, new Events );
-
 /* Originally created by: Adam Wulf adam.wulf@gmail.com Version 1.4.0
  * http://welcome.totheinter.net/columnizer-jquery-plugin/
  */
 
 var Columnizer = new Class( {
-   options: {
+   Implements: [ Events, Options ],
+
+   options     : {
       accuracy : false,
       // true to build columns once regardless of window resize
       // false to rebuild when content box changes bounds
@@ -456,7 +493,6 @@ var Columnizer = new Class( {
       // optional # of columns instead of width
       columns : false,
       // this function is called after content is columnized
-      doneFunc : Class.empty,
       // should columns float left or right
       float : 'left',
       height : false,
@@ -468,9 +504,9 @@ var Columnizer = new Class( {
       // an object with options if the text should overflow
       // it's container if it can't fit within a specified height
       overflow : false,
-		// if the content should be columnized into a
-		// container node other than it's own node
-		target : false,
+      // if the content should be columnized into a
+      // container node other than it's own node
+      target : false,
       // default width of columnx
       width : 400
    },
@@ -483,8 +519,8 @@ var Columnizer = new Class( {
 
       this.setOptions( options );
       // this is where we'll put the real content
-		this.cache = new Element( 'div' );
-		this.cache.adopt( el.getChildren().clone() );
+      this.cache = new Element( 'div' );
+      this.cache.adopt( el.getChildren().clone() );
       this.node  = $( this.options.target || el );
 
       if (! this.node.data) this.node.data = new Hash( { lastWidth: 0 } );
@@ -492,14 +528,14 @@ var Columnizer = new Class( {
       // images loading after dom load can screw up the column heights,
       // so recolumnize after images load
       if (! this.options.ignoreImageLoading && ! this.options.target) {
-	    	if (! this.node.data.get( 'imageLoaded' )) {
-		    	this.node.data.set( 'imageLoaded', true );
+          if (! this.node.data.get( 'imageLoaded' )) {
+             this.node.data.set( 'imageLoaded', true );
 
             var images = el.getElements( 'img' );
 
-		    	if (images.length > 0) {
-		    		// only bother if there are actually images...
-			    	var func = function( obj, el, images ) {
+             if (images.length > 0) {
+                // only bother if there are actually images...
+                var func = function( obj, el, images ) {
                   return function() {
                      if (! this.node.data.get( 'firstImageLoaded' )) {
                         this.node.data.set( 'firstImageLoaded', true );
@@ -512,20 +548,20 @@ var Columnizer = new Class( {
 
                images.addEvents( { abort: func, load: func } );
                return;
-		    	}
-	    	}
+             }
+          }
       }
 
-		this.columnizeIt();
+      this.columnizeIt();
 
-		if (! this.options.buildOnce) {
-			window.addEvent( 'resize', function() {
+      if (! this.options.buildOnce) {
+         window.addEvent( 'resize', function() {
             this.columnizeIt();
          }.bind( this ) );
-		}
+      }
    },
 
-	checkDontEndColumn: function( el ) {
+   checkDontEndColumn: function( el ) {
       el = $( el );
 
       if (! $defined( el ))          return false;
@@ -537,7 +573,7 @@ var Columnizer = new Class( {
    },
 
    columnize: function( putInHere, pullOutHere, parentColumn, height ) {
-      while (parentColumn.getSize().size.y < height
+      while (parentColumn.getSize().y < height
              && pullOutHere.childNodes.length ) {
          putInHere.appendChild( pullOutHere.childNodes[ 0 ] );
       }
@@ -559,7 +595,7 @@ var Columnizer = new Class( {
                       ? this.options.accuracy : this.options.width / 18;
          var columnText, latestTextNode = null;
 
-         while (parentColumn.getSize().size.y < height && oText.length) {
+         while (parentColumn.getSize().y < height && oText.length) {
             if (oText.indexOf( ' ', counter2 ) != '-1')
                columnText = oText.substring( 0, oText.indexOf( ' ', counter2));
             else columnText = oText;
@@ -572,7 +608,7 @@ var Columnizer = new Class( {
             else oText = '';
          }
 
-         if (parentColumn.getSize().size.y >= height
+         if (parentColumn.getSize().y >= height
              && latestTextNode != null) {
             // too tall :(
             putInHere.removeChild( latestTextNode );
@@ -592,7 +628,7 @@ var Columnizer = new Class( {
    },
 
    columnizeIt: function() {
-      var data = this.node.data, size = this.node.getSize().size;
+      var data = this.node.data, size = this.node.getSize();
 
       if (data.get( 'lastWidth' ) == size.x || data.get( 'columnizing' ))
          return;
@@ -663,7 +699,7 @@ var Columnizer = new Class( {
             while (this.checkDontEndColumn( col.lastChild )) {
                var para = $( col.lastChild );
 
-               para.remove(); para.injectTop( destroyable );
+               para.dispose(); para.injectTop( destroyable );
             }
 
             i++;
@@ -675,7 +711,7 @@ var Columnizer = new Class( {
             var overflow = $( options.overflow.id );
             var kids     = destroyable.getChildren();
 
-            overflow.empty(); overflow.adopt( kids.clone() );
+            overflow.empty().adopt( kids.clone() );
          }
          else if (! horizontal) {
             // the last column in the series
@@ -691,7 +727,7 @@ var Columnizer = new Class( {
             var totalH    = 0;
 
             columns.each( function( col ) {
-               var h = col.getSize().size.y; lastIsMax = false; totalH += h;
+               var h = col.getSize().y; lastIsMax = false; totalH += h;
 
                if (h > max) { max = h; lastIsMax = true; }
                if (h < min) { min = h; }
@@ -743,12 +779,12 @@ var Columnizer = new Class( {
 
       this.node.data.set( 'columnizing', false );
 
-      if (options.overflow) options.overflow.doneFunc();
+      if (options.overflow) options.overflow.fireEvent( 'complete' );
 
-      return options.doneFunc();
+      this.fireEvent( 'complete' );
    },
 
-	singleColumnizeIt: function() {
+   singleColumnizeIt: function() {
       var options = this.options;
       var style   = { float: options.float, padding: '0px 1.5%', width: '97%' };
       var col     = new Element( 'span', { class : 'column first last',
@@ -769,24 +805,24 @@ var Columnizer = new Class( {
          while (this.checkDontEndColumn( col.lastChild )) {
             var para = $( col.lastChild );
 
-            para.remove(); para.injectTop( destroyable );
+            para.dispose(); para.injectTop( destroyable );
          }
 
-         var overflow = $( options.overflow.id ); overflow.empty();
+         var overflow = $( options.overflow.id ).empty();
 
          while ($defined( destroyable.firstChild )) {
             var para = $( destroyable.firstChild );
 
-            para.remove(); para.injectInside( overflow );
+            para.dispose(); para.injectInside( overflow );
          }
       }
       else this.cache.injectInside( col );
 
       this.node.data.set( 'columnizing', false );
 
-      if (options.overflow) options.overflow.doneFunc();
+      if (options.overflow) options.overflow.fireEvent( 'complete' );
 
-      return options.doneFunc();
+      this.fireEvent( 'complete' );
    },
 
    split: function( putInHere, pullOutHere, parentColumn, height ) {
@@ -798,16 +834,16 @@ var Columnizer = new Class( {
 
       clone.injectInside( putInHere );
 
-      if (clone.getTag() == 'img'
-          && parentColumn.getSize().size.y < height + 20) {
-         cloneMe.remove();
+      if (clone.tag == 'img'
+          && parentColumn.getSize().y < height + 20) {
+         cloneMe.dispose();
       }
       else if (! cloneMe.hasClass( 'dontsplit' )
-               && parentColumn.getSize().size.y < height + 20) {
-         cloneMe.remove();
+               && parentColumn.getSize().y < height + 20) {
+         cloneMe.dispose();
       }
-      else if (clone.getTag() == 'img' || cloneMe.hasClass( 'dontsplit' )) {
-         clone.remove();
+      else if (clone.tag == 'img' || cloneMe.hasClass( 'dontsplit' )) {
+         clone.dispose();
       }
       else {
          clone.empty();
@@ -819,7 +855,7 @@ var Columnizer = new Class( {
 
          if (clone.childNodes.length == 0) {
             // it was split, but nothing is in it :(
-            clone.remove();
+            clone.dispose();
          }
       }
 
@@ -827,86 +863,63 @@ var Columnizer = new Class( {
    }
 } );
 
-Columnizer.implement( new Events, new Options );
-
 var Columnizers = new Class( {
-      options: {
-         classNames       : [ 'zero', 'one', 'two', 'three', 'four', 'five',
-                              'six', 'seven', 'eight', 'nine', 'ten',
-                              'eleven', 'twelve', 'thirteen', 'fourteen',
-                              'fifteen' ],
-         columnizerOptions: {},
-         selector         : '.multiColumn'
-      },
+   Implements: [ Options ],
 
-      initialize: function( options ) {
-         this.setOptions( options );
-         this.collection = new Array();
+   options             : {
+      classNames       : [ 'zero', 'one', 'two', 'three', 'four', 'five',
+                           'six', 'seven', 'eight', 'nine', 'ten',
+                           'eleven', 'twelve', 'thirteen', 'fourteen',
+                           'fifteen' ],
+      columnizerOptions: {},
+      selector         : '.multiColumn'
+   },
 
-         $$( this.options.selector ).each( function ( el, index ) {
-               var cols    = el.getProperty( 'class' ).split( ' ' )[ 0 ];
-               var options = this.options.columnizerOptions;
+   initialize: function( options ) {
+      this.setOptions( options ); options = this.options; this.collection = [];
 
-               options.columns = this.options.classNames.indexOf( cols )
-               this.collection[ index ] = new Columnizer( el, options );
-            }.bind( this ) );
+      if (options.selector) $$( options.selector ).each( function( el ) {
+         var cols    = el.getProperty( 'class' ).split( ' ' )[ 0 ];
+         var options = this.options.columnizerOptions;
 
-         return;
-      }
-   } );
-
-Columnizers.implement( new Options );
+         options.columns = this.options.classNames.indexOf( cols );
+         this.collection.include( new Columnizer( el, options ) );
+      }.bind( this ) );
+   }
+} );
 
 var Cookies = new Class( {
-   options: {
+   Implements: [ Options ],
+
+   options  : {
       domain: '',
       expire: 90,
       name  : 'state',
       path  : '/',
+      prefix: '',
       secure: false
    },
 
    initialize: function( options ) {
-      this.setOptions( options );
-      this.cname = options.prefix
-                 ? options.prefix + '_' + this.options.name
-                 : this.options.name;
-      this.copts = { duration: this.options.expire,
-                     path    : this.options.path,
-                     domain  : this.options.domain,
-                     secure  : this.options.secure };
-   },
+      this.setOptions( options ); options = this.options;
 
-   remove: function( name ) {
-      var i, j, opts, pair, val = Cookie.get( this.cname );
+      var cname = (options.prefix ? options.prefix + '_' : '') + options.name;
+      var copts = { domain: options.domain, duration: options.expire,
+                    path  : options.path,   secure  : options.secure };
 
-      if (val && name) name = escape(name);
-      else return false;
-
-      if ((i = val.indexOf( name + '~' )) < 0) return false;
-
-      j = val.substring(i).indexOf( '+' );
-
-      if (i == 0) val = (j < 0) ? '' : val.substring( j + 1 );
-
-      if (i > 0) {
-         val = (j < 0) ? val.substring( 0, i - 1 )
-                       : val.substring( 0, i - 1 ) + val.substring( i + j );
-      }
-
-      return Cookie.set( this.cname, val, this.copts );
+      this.cookie = new Cookie( cname, copts );
    },
 
    get: function( name ) {
-      var cookies, i, pair, val = Cookie.get( this.cname );
+      var val = this.cookie.read();
 
       if (name && val) {
-         cookies = val.split( '+' );
+         var cookies = val.split( '+' );
 
-         for (i = 0; i < cookies.length; i++) {
-            pair = cookies[i].split( '~' );
+         for (var i = 0, cl = cookies.length; i < cl; i++) {
+            var pair = cookies[ i ].split( '~' );
 
-            if (unescape( pair[0] ) == name) return unescape( pair[1] );
+            if (unescape( pair[ 0 ] ) == name) return unescape( pair[ 1 ] );
          }
 
          return '';
@@ -915,8 +928,28 @@ var Cookies = new Class( {
       return val;
    },
 
+   remove: function( name ) {
+      var i, val = this.cookie.read();
+
+      if (val && name) name = escape( name );
+      else return false;
+
+      if ((i = val.indexOf( name + '~' )) < 0) return false;
+
+      var j = val.substring( i ).indexOf( '+' );
+
+      if (i == 0) val = (j < 0) ? '' : val.substring( j + 1 );
+
+      if (i > 0) {
+         val = (j < 0) ? val.substring( 0, i - 1 )
+                       : val.substring( 0, i - 1 ) + val.substring( i + j );
+      }
+
+      return this.cookie.write( val );
+   },
+
    set: function( name, cookie ) {
-      var i, j, opts, pair, val = Cookie.get( this.cname );
+      var i, val = this.cookie.read();
 
       if (name) name = escape( name );
       else return;
@@ -925,7 +958,7 @@ var Cookies = new Class( {
 
       if (val) {
          if ((i = val.indexOf( name + '~' )) >= 0) {
-            j = val.substring( i ).indexOf( '+' );
+            var j = val.substring( i ).indexOf( '+' );
 
             if (i == 0) {
                val = (j < 0) ? name + '~' + cookie
@@ -941,145 +974,140 @@ var Cookies = new Class( {
       }
       else { val = name + '~' + cookie }
 
-      return Cookie.set( this.cname, val, this.copts );
+      return this.cookie.write( val );
    }
 } );
 
-Cookies.implement( new Options );
-
 var FreeList = new Class( {
+   Implements: [ Options ],
+
+   options: { selector: 'input.freelist' },
+
    initialize: function( options ) {
-      this.form = options.form;
+      this.setOptions( options );
+
+      if (this.options.selector)
+         $$( this.options.selector ).each( function( el ) {
+            $( el.id + '_add' ).addEvent( 'click', function( e ) {
+               e = new Event( e ); e.stop(); return this.addItem( el.id );
+            }.bind( this ) );
+
+            $( el.id + '_remove' ).addEvent( 'click', function( e ) {
+               e = new Event( e ); e.stop(); return this.removeItem( el.id );
+            }.bind( this ) );
+         }, this );
    },
 
-   addItem: function( name ) {
-      var form     = document.forms[ this.form ];
-      var new_elem = form.elements[ name + '_new' ];
-      var cur_elem = form.elements[ name + '_current' ];
+   addItem: function( id ) {
+      var el = $( id ), list = $( id + '_list' ), options = list.options;
 
-      cur_elem.options[ cur_elem.length ] = new Option( new_elem.value );
-      this.createHidden( form, name, new_elem.value );
-      new_elem.value = '';
+      new Element( 'input', {
+         name: id, type: 'hidden', value: el.value
+      } ).injectAfter( list );
+
+      options[ options.length ] = new Option( el.value );
+      el.value = null;
+      el.focus();
       return false;
    },
 
-   createHidden: function( form, name, val ) {
-      var row_elem = form.elements[ name + '_n_rows' ];
-      var nrows    = parseInt( row_elem.value );
+   removeItem: function( id ) {
+      var el = $( id ), list = $( id + '_list' ), options = list.options;
 
-      hidden = document.createElement( 'input' );
-      hidden.setAttribute( 'type', 'hidden' );
-      hidden.setAttribute( 'id', name + nrows );
-      hidden.setAttribute( 'name', name );
-      hidden.setAttribute( 'value', val );
-      $( 'body' ).appendChild( hidden );
-      row_elem.value = nrows + 1;
-      return;
-   },
+      for (var i = options.length - 1; i >= 0; i--) {
+         if (options[ i ].selected != true) continue;
 
-   deleteHidden: function( form, name, val ) {
-      var row_elem = form.elements[ name + '_n_rows' ];
-      var nrows    = parseInt( row_elem.value );
-      var hidden;
+         var value = options[ i ].value;
 
-      for (var i = 0; i < nrows; i++) {
-         if ((hidden = $( name + i )) && (hidden.value == val)) {
-            hidden.remove(); row_elem.value = nrows - 1;
-            return true;
-         }
+         $$( 'input[name=' + id + ']' ).some( function( el ) {
+            if (el.type == 'hidden' && el.value == value) {
+               el.destroy(); return true;
+            }
+
+            return false;
+         } );
+
+         options[ i ].destroy();
       }
 
-      return false;
-   },
-
-   removeItem: function(name) {
-      var form     = document.forms[ this.form ];
-      var cur_elem = form.elements[ name + '_current' ];
-
-      for (var i = cur_elem.length - 1; i >= 0; i--) {
-         if (cur_elem.options[ i ].selected == true) {
-            this.deleteHidden( form, name, cur_elem.options[ i ].value );
-            cur_elem.options[ i ] = null;
-         }
-      }
-
+      el.focus();
       return false;
    }
 } );
 
 var GroupMember = new Class( {
+   Implements: [ Options ],
+
+   options: { selector: 'select.groupmembers' },
+
    initialize: function( options ) {
-      this.form = options.form;
+      this.setOptions( options );
+
+      if (this.options.selector)
+         $$( this.options.selector ).each( function( el ) {
+            $( el.id + '_add' ).addEvent( 'click', function( e ) {
+               e = new Event( e ); e.stop(); return this.addItem( el.id );
+            }.bind( this ) );
+
+            $( el.id + '_remove' ).addEvent( 'click', function( e ) {
+               e = new Event( e ); e.stop(); return this.removeItem( el.id );
+            }.bind( this ) );
+         }, this );
    },
 
-   addItem: function( name ) {
-      var form     = document.forms[ this.form ];
-      var all_elem = form.elements[ name + '_all' ];
-      var cur_elem = form.elements[ name + '_current' ];
+   addItem: function( id ) {
+      var all = $( id ), members = $( id + '_current' );
 
-      for (var i = all_elem.length - 1; i >= 0; i--) {
-         if (all_elem.options[ i ].selected == true) {
-            var val = all_elem.options[ i ].value;
-            cur_elem.options[ cur_elem.length ] = all_elem.options[ i ];
+      for (var i = all.length - 1; i >= 0; i--) {
+         if (all.options[ i ].selected != true) continue;
 
-            if(!this.deleteHidden( form, name, 'deleted', val )) {
-               this.createHidden( form, name, 'added', val );
-            }
+         var value = all.options[ i ].value;
 
-            // This suddenly started happening, weird but works after v0.1.657
-            //            all_elem.options[ i ] = null;
+         if (! this.deleteHidden( id + '_deleted', value )) {
+            var name = all.name.replace( /^_/g, '' ) + '_added';
+
+            new Element( 'input', {
+               name:  name, type: 'hidden', value: value
+            } ).injectAfter( members );
          }
+
+         members.options[ members.length ] = all.options[ i ];
+         // This suddenly started happening, weird but works after v0.1.657
+         // all.options[ i ] = null;
       }
 
       return false;
    },
 
-   createHidden: function( form, name, type, val ) {
-      var row_elem = form.elements[ name + '_n_' + type ];
-      var nrows    = parseInt( row_elem.value );
+   deleteHidden: function( id, value ) {
+      return $$( 'input[name=' + id + ']' ).some( function( el ) {
+         if (el.type == 'hidden' && el.value == value) {
+            el.destroy(); return true;
+         }
 
-      hidden = document.createElement( 'input' );
-      hidden.setAttribute( 'type', 'hidden' );
-      hidden.setAttribute( 'id', name + '_' + type + nrows );
-      hidden.setAttribute( 'name', name + '_' + type );
-      hidden.setAttribute( 'value', val );
-      $( 'body' ).appendChild( hidden );
-      row_elem.value = nrows + 1;
-      return;
+         return false;
+      } );
    },
 
-   deleteHidden: function( form, name, type, val ) {
-      var row_elem = form.elements[ name + '_n_' + type ];
-      var nrows    = parseInt( row_elem.value );
-      var hidden;
+   removeItem: function( id ) {
+      var all = $( id ), members = $( id + '_current' );
 
-      for (var i = 0; i < nrows; i++) {
-         if ((hidden = $( name + '_' + type + i )) && (hidden.value == val)) {
-            hidden.remove(); row_elem.value = nrows - 1;
-            return true;
+      for (var i = members.length - 1; i >= 0; i--) {
+         if (members.options[ i ].selected != true) continue;
+
+         var value = members.options[ i ].value;
+
+         if (! this.deleteHidden( id + '_added', value )) {
+            var name = all.name.replace( /^_/g, '' )+ '_deleted' ;
+
+            new Element( 'input', {
+               name: name, type: 'hidden', value: value
+            } ).injectAfter( members );
          }
-      }
 
-      return false;
-   },
-
-   removeItem: function( name ) {
-      var form     = document.forms[ this.form ];
-      var all_elem = form.elements[ name + '_all' ];
-      var cur_elem = form.elements[ name + '_current' ];
-
-      for (var i = cur_elem.length - 1; i >= 0; i--) {
-         if (cur_elem.options[ i ].selected == true) {
-            var val = cur_elem.options[ i ].value;
-            all_elem.options[ all_elem.length ] = cur_elem.options[ i ];
-
-            if (!this.deleteHidden( form, name, 'added', val )) {
-               this.createHidden( form, name, 'deleted', val );
-            }
-
-            // This suddenly started happening, weird but works after v0.1.657
-            //            cur_elem.options[ i ] = null;
-         }
+         all.options[ all.length ] = members.options[ i ];
+         // This suddenly started happening, weird but works after v0.1.657
+         // members.options[ i ] = null;
       }
 
       return false;
@@ -1087,53 +1115,41 @@ var GroupMember = new Class( {
 } );
 
 var LinkFader = new Class( {
-   options: {
-      fc      : 'ff0000',         // Fade to colour
-      inBy    : 6,                // Fade in colour inc/dec by
-      outBy   : 6,                // Fade out colour inc/dec by
-      selector: 'fade',           // Class name matching links to fade
-      speed   : 20                // Millisecs between colour changes
+   Implements: [ Options ],
+
+   options    : {
+      fc      : 'ff0000', // Fade to colour
+      inBy    : 6,        // Fade in colour inc/dec by
+      outBy   : 6,        // Fade out colour inc/dec by
+      selector: 'fade',   // Class name matching links to fade
+      speed   : 20        // Millisecs between colour changes
    },
 
    initialize: function( options ) {
-      options = options || {};
-
       this.setOptions( options );
-      this.links  = options.links ? options.links : document.links;
-      this.view   = options.view  ? options.view  : document.defaultView;
-      this.colour = null;         // Store links original colour
-      this.linkNo = 0;            // Index of currently fading link
-      this.timer  = null;         // Interval object
 
-      for (var i = 0; i < this.links.length; i++) {
-         var link     = this.links[ i ];
-         var ignoreIt = link.className.indexOf( this.options.selector ) < 0;
+      $$( 'a' ).each( function( el ) {
+         var ignoreIt = el.className.indexOf( this.options.selector ) < 0;
 
-         if (! ignoreIt) {
-            if (! link.id) link.id = 'link' + i;
-
-            if (! link.onmouseover && ! link.onmouseout) {
-               link.onmouseover = this.startFade.bind( this, link.id );
-               link.onmouseout  = this.clearFade.bind( this, link.id );
-            }
+         if (! ignoreIt && ! el.onmouseover && ! el.onmouseout) {
+            el.onmouseover = this.startFade.bind( this, el );
+            el.onmouseout  = this.clearFade.bind( this, el );
          }
-      }
+      }.bind( this ) );
    },
 
-   clearFade: function( id ) {
-      if (this.timer) { clearInterval( this.timer ); this.timer = null }
+   clearFade: function( el ) {
+      if (el.timer) $clear( el.timer );
 
-      this.timer = setInterval( this.fade.bind( this ), this.options.speed, 0);
+      el.timer = this.fade.periodical( this.options.speed, this, [ el, 0 ] );
+      return;
    },
 
-   currentColour: function( index ) {
-      var cc, i, style, temp = '';
-
-      style = this.view.getComputedStyle( this.links[index], '' );
-      cc    = style.getPropertyValue( 'color' );
+   currentColour: function( el ) {
+      var cc = el.getStyle( 'color' ), temp = '';
 
       if (cc.length == 4 && cc.substring( 0, 1 ) == '#') {
-         for (i = 0; i < 3; i++) {
+         for (var i = 0; i < 3; i++) {
             temp += cc.substring( i + 1, i + 2 ) + cc.substring( i + 1, i + 2);
          }
 
@@ -1146,33 +1162,29 @@ var LinkFader = new Class( {
       return cc;
    },
 
-   fade: function( d ) {
-      var cc = new Array(), tc = new Array();
-
-      if (d == 1) tc = this.options.fc.hexToRgb( true );
-      else tc = this.colour ? this.colour.hexToRgb( true ) : [ 0, 0, 0 ];
-
-      cc = this.currentColour( this.linkNo ).hexToRgb( true );
+   fade: function( el, d ) {
+      var cc = this.currentColour( el ).hexToRgb( true );
+      var tc = (d == 1)  ? this.options.fc.hexToRgb( true )
+             : el.colour ? el.colour.hexToRgb( true )
+                         : [ 0, 0, 0 ];
 
       if (tc[ 0 ] == cc[ 0 ] && tc[ 1 ] == cc[ 1 ] && tc[ 2 ] == cc[ 2 ]) {
-         clearInterval( this.timer ); this.timer = null;
-         return;
+         return el.timer = $clear( el.timer );
       }
 
-      this.links[ this.linkNo ].style.color = this.nextColour( tc, cc, d );
+      el.setStyle( 'color', this.nextColour( tc, cc, d ) );
+      return;
    },
 
    nextColour: function( tc, cc, d ) {
-      var change, colour, diff, i, nc;
+      var change = (d == 1) ? this.options.inBy : this.options.outBy;
+      var colour;
 
-      for (i = 0; i < 3; i++) {
-         if (d == 1) { change = this.options.inBy }
-         else { change = this.options.outBy }
+      for (var i = 0; i < 3; i++) {
+         var diff, nc = cc[ i ];
 
-         if (!colour) colour = 'rgb(';
+         if (! colour) colour = 'rgb(';
          else colour += ',';
-
-         nc = cc[ i ];
 
          if (tc[ i ]-cc[ i ] > 0) { diff   = tc[ i ] - cc[ i ] }
          else                     { diff   = cc[ i ] - tc[ i ] }
@@ -1189,235 +1201,31 @@ var LinkFader = new Class( {
       return colour;
    },
 
-   startFade: function( id ) {
-      if (this.timer) {
-         clearInterval( this.timer ); this.timer = null;
+   startFade: function( el ) {
+      if (el.timer) {
+         el.timer = $clear( el.timer );
 
-         if (this.colour) {
-            this.links[ this.linkNo ].style.color = this.colour.hexToRgb();
-         }
+         if (el.colour) el.setStyle( 'color', el.colour.hexToRgb() );
       }
 
-      for (var i = 0; i < this.links.length; i++) {
-         if (id == this.links[ i ].id) {
-            this.linkNo = i;
-            this.colour = this.currentColour( i );
-            this.timer  = setInterval( this.fade.bind( this ),
-                                       this.options.speed, 1);
-            return;
-         }
-      }
-   }
-} );
-
-LinkFader.implement( new Options );
-
-var LiveGridMetaData = new Class( {
-   initialize: function( options ) {
-      this.bufferSize   = options.bufferSize   || 7;
-      this.onscroll     = options.onscroll     || null;
-      this.onscrollidle = options.onscrollidle || null;
-      this.pageSize     = options.pageSize     || 10;
-      this.totalRows    = options.totalRows    || 0;
-   },
-
-   getBufferSize: function()    { return this.bufferSize },
-
-   getPageSize:   function()    { return this.pageSize },
-
-   getTotalRows:  function()    { return this.totalRows },
-
-   setTotalRows:  function( n ) { this.totalRows = n }
-} );
-
-var LiveGridScroller = new Class( {
-   initialize: function( liveGrid ) {
-      this.isIE = window.ie;
-      this.liveGrid = liveGrid;
-      this.metaData = liveGrid.metaData;
-      this.scrollTimeout = null;
-      this.lastScrollPos = 0;
-      this.createScrollBar();
-   },
-
-   isUnPlugged: function() { return this.scrollerDiv.onscroll == null },
-
-   plugin: function() {
-      this.scrollerDiv.onscroll = this.handleScroll.bindAsEventListener(this);
-   },
-
-   unplug: function() { this.scrollerDiv.onscroll = null },
-
-   createScrollBar: function() {
-      var table              = this.liveGrid.table;
-      var visibleHeight      = table.offsetHeight;
-      this.lineHeight        = visibleHeight / this.metaData.getPageSize();
-      this.scrollerDiv       = document.createElement( 'div' );
-      var scrollerStyle      = this.scrollerDiv.style;
-      scrollerStyle.position = 'relative';
-      scrollerStyle.left     = this.isIE ? '-6px' : '-4px';
-      scrollerStyle.width    = '19px';
-      scrollerStyle.height   = visibleHeight + 'px';
-      scrollerStyle.overflow = 'auto';
-
-      if (this.isIE) {
-         table.onmousewheel =
-            function( evt ) {
-               if (event.wheelDelta>=0) {//wheel-up
-                  this.scrollerDiv.scrollTop -= this.lineHeight;
-               }
-               else { this.scrollerDiv.scrollTop += this.lineHeight }
-
-               this.handleScroll( true );
-            }.bind( this );
-      } else {
-        table.addEventListener( 'DOMMouseScroll',
-            function( evt ) {
-                if (evt.detail < 0) { //wheel-up
-                   this.scrollerDiv.scrollTop -= this.lineHeight;
-                }
-                else { this.scrollerDiv.scrollTop += this.lineHeight }
-
-                this.handleScroll( true );
-            }.bind( this ), true );
-      }
-
-      // create the inner div...
-      this.heightDiv = document.createElement( 'div' );
-      this.heightDiv.style.width  = '1px';
-      this.heightDiv.style.height = parseInt(visibleHeight *
-            this.metaData.getTotalRows()/this.metaData.getPageSize()) + 'px' ;
-
-      this.scrollerDiv.appendChild(this.heightDiv);
-      this.scrollerDiv.onscroll = this.handleScroll.bindAsEventListener(this);
-      table.parentNode.parentNode.insertBefore( this.scrollerDiv,
-                                                table.parentNode.nextSibling );
-   },
-
-   updateSize: function() {
-      var table = this.liveGrid.table;
-      var visibleHeight = table.offsetHeight;
-      this.heightDiv.style.height = parseInt(visibleHeight *
-            this.metaData.getTotalRows()/this.metaData.getPageSize()) + 'px';
-   },
-
-   adjustScrollTop: function() {
-      this.unplug();
-      var rem = this.scrollerDiv.scrollTop % this.lineHeight;
-
-      if (rem != 0) {
-         if (this.lastScrollPos < this.scrollerDiv.scrollTop) {
-            this.scrollerDiv.scrollTop = this.scrollerDiv.scrollTop
-               + this.lineHeight - rem;
-         }
-         else {
-            this.scrollerDiv.scrollTop = this.scrollerDiv.scrollTop - rem;
-         }
-      }
-
-      this.lastScrollPos = this.scrollerDiv.scrollTop;
-      this.plugin();
-   },
-
-   moveScroll: function( rowOffset ) {
-      var pixelOffset = (rowOffset / this.metaData.getTotalRows())
-                           * this.heightDiv.offsetHeight;
-      this.scrollerDiv.scrollTop = pixelOffset;
-   },
-
-   handleScroll: function( skiptimeout ) {
-      if ( this.scrollTimeout ) clearTimeout( this.scrollTimeout );
-
-      var contentOffset = parseInt( this.scrollerDiv.scrollTop *
-                 this.metaData.getTotalRows() / this.heightDiv.offsetHeight );
-
-      if ( this.metaData.onscroll )
-         this.metaData.onscroll( contentOffset, this.metaData );
-
-      if (skiptimeout == true) { this.scrollIdle() }
-      else {
-        this.scrollTimeout = setTimeout( this.scrollIdle.bind( this ), 100 );
-      }
-   },
-
-   scrollIdle: function() {
-      if ( this.scrollTimeout ) clearTimeout( this.scrollTimeout );
-
-      // this.adjustScrollTop();
-      var contentOffset = parseInt( this.scrollerDiv.scrollTop *
-                 this.metaData.getTotalRows() / this.heightDiv.offsetHeight );
-      this.liveGrid.requestContentRefresh( contentOffset );
-
-      if ( this.metaData.onscrollidle ) this.metaData.onscrollidle();
-   }
-} );
-
-var LiveGridBuffer = new Class( {
-   initialize: function( metaData ) {
-      this.start    = 0;
-      this.size     = 0;
-      this.metaData = metaData;
-      this.rows     = new Array();
-   },
-
-   update: function(text, xml) {
-      this.start = parseInt( xml.documentElement.getAttribute( 'offset' ) );
-      this.size  = parseInt( xml.documentElement.getAttribute( 'count' ) );
-      var rows   = xml.documentElement.getElementsByTagName( 'items' );
-
-      for (var i = 0; i < this.size; i++) {
-         this.rows[this.start + i]
-            = rows[ i ].childNodes[ 0 ].nodeValue.unescapeHTML();
-      }
-   },
-
-   isClose: function( start ) {
-      return this.rows[start]
-             || this.rows[start + this.metaData.getPageSize()];
-   },
-
-   isFullyInRange: function( start ) {
-      return this.rows[start]
-             && this.rows[start + this.metaData.getPageSize()];
-   },
-
-   needsPrevPage: function( start ) {
-      return !this.rows[start - this.metaData.getPageSize()];
-   },
-
-   needsNextPage: function( start ) {
-      return !this.rows[start + 2 * this.metaData.getPageSize()];
-   },
-
-   needsMorePages: function( start ) {
-      return this.needsPrevPage( start ) || this.needsNextPage( start );
-   },
-
-   getRows: function( start ) {
-      return this.rows.slice( start, start + this.metaData.getPageSize() );
-   }
-} );
-
-var LiveGridRequest = new Class( {
-   initialize: function( requestOffset, options ) {
-      this.requestOffset = requestOffset;
+      el.colour = this.currentColour( el );
+      el.timer  = this.fade.periodical( this.options.speed, this, [ el, 1 ] );
+      return;
    }
 } );
 
 var LiveGrid = new Class( {
    initialize: function( tableId, url, options ) {
-      if ( options == null ) options = {};
-
       this.url      = url;
-      this.options  = options;
       this.tableId  = tableId;
+      this.options  = options = options || {};
       this.table    = $( tableId );
       this.metaData = new LiveGridMetaData( options );
       this.buffer   = new LiveGridBuffer( this.metaData );
 
       this.lastDisplayedStartPos = -1;
       this.timeoutHander         = null;
-      this.additionalParms       = options.requestParameters || '';
+      this.additionalParms       = options.requestParameters || {};
       this.processingRequest     = null;
       this.unprocessedRequest    = null;
 
@@ -1434,20 +1242,33 @@ var LiveGrid = new Class( {
       else { this.scroller = new LiveGridScroller( this ) }
    },
 
-   setRequestParams: function( params ) {
-      this.additionalParms = params;
-   },
+   ajaxUpdate: function( text, xml ) {
+      this.timeoutHandler = $clear( this.timeoutHandler );
 
-   setTotalRows: function( newTotalRows ) {
-      this.metaData.setTotalRows( newTotalRows );
-      this.scroller.updateSize();
-   },
+      try {
+         var totalrows =  xml.documentElement.getAttribute( 'totalcount' );
 
-   handleTimedOut: function() {
-      //server did not respond in n secs assume that there could have been
-      //an error or something, and allow requests to be processed again...
+         if (totalrows) this.setTotalRows( totalrows );
+      }
+      catch (err) {}
+
+      this.buffer.update( text, xml );
+
+      if (this.unprocessedRequest == null)
+         this.updateContent( this.processingRequest.requestOffset );
+
       this.processingRequest = null;
+
+      if (! this.scroller) {
+         this.scroller = new LiveGridScroller( this );
+
+         if (this.options.onFirstContent) this.options.onFirstContent( this );
+      }
+
+      if (this.options.onComplete) this.options.onComplete( this );
+
       this.processQueuedRequest();
+      return;
    },
 
    fetchBuffer: function( offset, sequence_buffers ) {
@@ -1460,77 +1281,37 @@ var LiveGrid = new Class( {
 
       this.processingRequest = new LiveGridRequest( offset );
 
+      if (! this.ajaxRequest) {
+         var options = {}; Object.extend( options, this.options );
+
+         options.onSuccess = this.ajaxUpdate.bind( this );
+         options.url       = this.url;
+         this.ajaxRequest  = new Request( options );
+      }
+
       page_size = this.metaData.getBufferSize() * this.metaData.getPageSize();
       page      = Math.floor( offset / page_size );
 
-      if (sequence_buffers) {
+      if (sequence_buffers)
          page  += offset - page * page_size > page_size / 2 ? 1 : -1;
-      }
 
       if (page < 0) page = 0;
 
-      var callParms = 'content-type=text/xml&id=' + this.tableId
-                    + '&page=' + page + '&page_size=' + page_size;
+      var callParms = { 'content-type': 'text/xml', 'id'       : this.tableId,
+                        'page'        : page,       'page_size': page_size };
 
-      if (this.additionalParms.length) {
-         callParms = callParms + '&' + this.additionalParms;
-      }
-
-      if (!this.ajaxRequest) {
-         var options = { data: callParms, method: 'get' };
-         Object.extend( options, this.options );
-         options.onComplete = this.ajaxUpdate.bind( this );
-         this.ajaxRequest = new Ajax( this.url, options )
-         this.ajaxRequest.request();
-      }
-      else {
-         Object.extend( this.ajaxRequest.options, { data: callParms } );
-         this.ajaxRequest.request();
-      }
-
-      this.timeoutHandler = setTimeout(this.handleTimedOut.bind(this), 10000);
+      Object.extend( callParms, this.additionalParms );
+      this.ajaxRequest.get( callParms );
+      this.timeoutHandler = setTimeout( this.handleTimedOut.bind(this), 10000);
+      return;
    },
 
-   requestContentRefresh: function( offset ) {
-      if ( this.buffer.isFullyInRange( offset ) ) {
-         this.updateContent( offset );
-
-         if (this.buffer.needsMorePages( offset )) {
-            this.fetchBuffer( offset, true );
-         }
-      }
-      else if (this.buffer.isClose( offset )) {
-         this.fetchBuffer( offset, true );
-      }
-      else { this.fetchBuffer( offset, false ) }
-   },
-
-   ajaxUpdate: function( text, xml ) {
-      clearTimeout( this.timeoutHandler );
-
-      try {
-         var totalrows =  xml.documentElement.getAttribute( 'totalcount' );
-         if (totalrows) this.setTotalRows( totalrows );
-      }
-      catch (err) {}
-
-      this.buffer.update( text, xml );
-
-      if (this.unprocessedRequest == null) {
-         this.updateContent( this.processingRequest.requestOffset );
-      }
-
+   handleTimedOut: function() {
+      //server did not respond in n secs assume that there could have been
+      //an error or something, and allow requests to be processed again...
       this.processingRequest = null;
-
-      if (!this.scroller) {
-         this.scroller = new LiveGridScroller( this );
-
-         if (this.options.onFirstContent) this.options.onFirstContent( this );
-      }
-
-      if (this.options.onComplete) this.options.onComplete( this );
-
       this.processQueuedRequest();
+      return;
    },
 
    processQueuedRequest: function() {
@@ -1538,17 +1319,235 @@ var LiveGrid = new Class( {
          this.requestContentRefresh( this.unprocessedRequest.requestOffset );
          this.unprocessedRequest = null
       }
-   },
 
-   updateContent: function( offset ) {
-      this.replaceCellContents( this.buffer, offset );
+      return;
    },
 
    replaceCellContents: function( buffer, start ) {
       if (start == this.lastDisplayedStartPos) return;
 
-      this.table.setHTML( buffer.getRows( start ).join( '' ) );
+      this.table.set( 'html', buffer.getRows( start ).join( '' ) );
       this.lastDisplayedStartPos = start
+      return;
+   },
+
+   requestContentRefresh: function( offset ) {
+      if ( this.buffer.isFullyInRange( offset ) ) {
+         this.updateContent( offset );
+
+         if (this.buffer.needsMorePages( offset ))
+            this.fetchBuffer( offset, true );
+      }
+      else if (this.buffer.isClose( offset )) {
+         this.fetchBuffer( offset, true );
+      }
+      else { this.fetchBuffer( offset, false ) }
+
+      return;
+   },
+
+   setRequestParams: function( params ) {
+      this.additionalParms = params;
+      return;
+   },
+
+   setTotalRows: function( newTotalRows ) {
+      this.metaData.setTotalRows( newTotalRows );
+      this.scroller.updateSize();
+      return;
+   },
+
+   updateContent: function( offset ) {
+      return this.replaceCellContents( this.buffer, offset );
+   }
+} );
+
+var LiveGridBuffer = new Class( {
+   initialize: function( metaData ) {
+      this.start    = 0;
+      this.size     = 0;
+      this.metaData = metaData;
+      this.rows     = [];
+   },
+
+   getRows: function( start ) {
+      return this.rows.slice( start, start + this.metaData.getPageSize() );
+   },
+
+   isClose: function( start ) {
+      return this.rows[start] || this.rows[start + this.metaData.getPageSize()];
+   },
+
+   isFullyInRange: function( start ) {
+      return this.rows[start] && this.rows[start + this.metaData.getPageSize()];
+   },
+
+   needsMorePages: function( start ) {
+      return this.needsPrevPage( start ) || this.needsNextPage( start );
+   },
+
+   needsNextPage: function( start ) {
+      return ! this.rows[ start + 2 * this.metaData.getPageSize() ];
+   },
+
+   needsPrevPage: function( start ) {
+      return ! this.rows[ start - this.metaData.getPageSize() ];
+   },
+
+   update: function( text, xml ) {
+      var doc    = xml.documentElement;
+      var rows   = doc.getElementsByTagName( 'items' );
+
+      this.start = parseInt( doc.getAttribute( 'offset' ) );
+      this.size  = parseInt( doc.getAttribute( 'count'  ) );
+
+      for (var i = 0, size = this.size; i < size; i++) {
+         this.rows[ this.start + i ]
+            = rows[ i ].childNodes[ 0 ].nodeValue.unescapeHTML();
+      }
+
+      return;
+   }
+} );
+
+var LiveGridMetaData = new Class( {
+   initialize: function( options ) {
+      this.bufferSize   = options.bufferSize   || 7;
+      this.onscroll     = options.onScroll     || null;
+      this.onscrollidle = options.onScrollidle || null;
+      this.pageSize     = options.pageSize     || 10;
+      this.totalRows    = options.totalRows    || 0;
+   },
+
+   getBufferSize: function()    { return this.bufferSize },
+
+   getPageSize:   function()    { return this.pageSize },
+
+   getTotalRows:  function()    { return this.totalRows },
+
+   setTotalRows:  function( n ) { this.totalRows = n }
+} );
+
+var LiveGridRequest = new Class( {
+   initialize: function( requestOffset, options ) {
+      this.requestOffset = requestOffset;
+   }
+} );
+
+var LiveGridScroller = new Class( {
+   initialize: function( liveGrid ) {
+      this.liveGrid      = liveGrid;
+      this.metaData      = liveGrid.metaData;
+      this.scrollTimeout = null;
+      this.lastScrollPos = 0;
+      this.createScrollBar();
+   },
+
+   adjustScrollTop: function() {
+      var sd = this.scrollerDiv, rem = sd.scrollTop % this.lineHeight;
+
+      this.unplug();
+
+      if (rem != 0)
+         sd.scrollTop +=
+            (this.lastScrollPos < sd.scrollTop ? this.lineHeight : 0) - rem;
+
+      this.lastScrollPos = sd.scrollTop;
+      this.plugin();
+      return;
+   },
+
+   createScrollBar: function() {
+      var table         = this.liveGrid.table;
+      var visibleHeight = table.offsetHeight;
+      var pageSize      = this.metaData.getPageSize();
+      var lineHeight    = visibleHeight / pageSize;
+      var height        = this.metaData.getTotalRows() * lineHeight;
+
+      this.lineHeight   = lineHeight;
+      this.heightDiv    = new Element( 'div', {
+         styles: { height: parseInt( height ) + 'px', width: '1px' }
+      } );
+      this.scrollerDiv  = new Element( 'div', {
+         styles     : {
+            height  : visibleHeight + 'px',
+            overflow: 'auto',
+            position: 'relative',
+            width   : '19px' }
+      } );
+      this.scrollerDiv.setStyle( 'left',
+                                 Browser.Engine.trident ? '-6px' : '-4px' );
+      this.scrollerDiv.appendChild( this.heightDiv );
+      this.scrollerDiv.injectAfter( table.parentNode );
+      this.plugin();
+
+      if (Browser.Engine.trident) {
+         table.onmousewheel = function( evt ) {
+            this.scrollerDiv.scrollTop
+               += (event.wheelDelta >= 0 < 0 ? -1 : 1) * this.lineHeight;
+            this.handleScroll( true );
+         }.bind( this );
+      }
+      else {
+         table.addEventListener( 'DOMMouseScroll', function( evt ) {
+            this.scrollerDiv.scrollTop
+               += (evt.detail < 0 ? -1 : 1) * this.lineHeight;
+            this.handleScroll( true );
+         }.bind( this ), true );
+      }
+
+      return;
+   },
+
+   handleScroll: function( skiptimeout ) {
+      if (this.scrollTimeout) this.scrollTimeout = $clear( this.scrollTimeout );
+
+      var contentOffset = parseInt( this.scrollerDiv.scrollTop
+                * this.metaData.getTotalRows() / this.heightDiv.offsetHeight );
+
+      if (this.metaData.onscroll)
+         this.metaData.onscroll( contentOffset, this.metaData );
+
+      if (skiptimeout == true) this.scrollIdle();
+      else this.scrollTimeout = setTimeout( this.scrollIdle.bind( this ), 100 );
+
+      return;
+   },
+
+   isUnPlugged: function() { return this.scrollerDiv.onscroll == null },
+
+   moveScroll: function( rowOffset ) {
+      this.scrollerDiv.scrollTop = this.heightDiv.offsetHeight
+                                     * rowOffset / this.metaData.getTotalRows();
+      return;
+   },
+
+   plugin: function() {
+      this.scrollerDiv.onscroll = this.handleScroll.bind( this ); return;
+   },
+
+   scrollIdle: function() {
+      if (this.scrollTimeout) this.scrollTimeout = $clear( this.scrollTimeout );
+
+      // this.adjustScrollTop();
+      var contentOffset = parseInt( this.scrollerDiv.scrollTop *
+                 this.metaData.getTotalRows() / this.heightDiv.offsetHeight );
+
+      this.liveGrid.requestContentRefresh( contentOffset );
+
+      if ( this.metaData.onscrollidle ) this.metaData.onscrollidle();
+
+      return;
+   },
+
+   unplug: function() { this.scrollerDiv.onscroll = null; return },
+
+   updateSize: function() {
+      var table = this.liveGrid.table, visibleHeight = table.offsetHeight;
+
+      this.heightDiv.style.height = parseInt( visibleHeight *
+         this.metaData.getTotalRows() / this.metaData.getPageSize() ) + 'px';
+      return;
    }
 } );
 
@@ -1560,10 +1559,9 @@ var LoadMore = new Class( {
    request: function( action, id, val, onComplete ) {
       if (onComplete) this.onComplete = onComplete;
 
-      new Ajax( this.url + action,
-         { method    : 'get',
-           data      : 'content-type=text/xml&id=' + id + '&val=' + val,
-           onComplete: this.updateContent.bind( this ) } ).request();
+      new Request( { onSuccess: this.updateContent.bind( this ),
+                     url      : this.url + action } ).get( {
+                        'content-type': 'text/xml', 'id': id, 'val': val } );
    },
 
    updateContent: function( text, xml ) {
@@ -1577,31 +1575,36 @@ var LoadMore = new Class( {
          }
       } );
 
-      $( id ).setHTML( html.unescapeHTML() );
+      $( id ).set( 'html', html.unescapeHTML() );
 
       if (this.onComplete) this.onComplete.call( this );
    }
 } );
 
 var Sidebar = new Class( {
-   options: {
-      accordion: 'accordionDiv',
-      prefix   : 'sidebar'
+   Implements: [ Options ],
+
+   options                : {
+      accordion           : 'accordionDiv',
+      panel               : 0,
+      prefix              : 'sidebar',
+      togglerHeight       : 25,
+      togglersMarginHeight: 15,
+      width               : 250
    },
 
-   initialize: function( options ) {
+   initialize: function( state, options ) {
       this.setOptions( options );
+      this.cookies = state.cookies;
+      this.state   = state;
 
-      var prefix = this.options.prefix, sb;
+      var options  = this.options, prefix = options.prefix, sb;
 
       if (! (sb = $( prefix + 'Disp' ))) return;
 
-      this.state   = options.state;
-      this.cookies = this.state.cookies;
-
       var sb_state = this.cookies.get( prefix ) ? true : false;
-      var sb_panel = this.cookies.get( prefix + 'Panel' ) || 0;
-      var sb_width = this.cookies.get( prefix + 'Width' ) || 250;
+      var sb_panel = this.cookies.get( prefix + 'Panel' ) || options.panel;
+      var sb_width = this.cookies.get( prefix + 'Width' ) || options.width;
 
       this.cookies.set( prefix + 'Width', sb_width );
 
@@ -1625,57 +1628,49 @@ var Sidebar = new Class( {
 
                this.state.resize();
             }
-         }.bind( this )
+         }.bind( this ),
+         transition: Fx.Transitions.Circ.easeInOut
       } );
 
       /* Setup the event handler to turn the side bar on/off */
-      $( prefix ).addEvent( 'click', function( e ) {
+      $( prefix ).addEvent( 'click', function( ev ) {
+         ev = new Event( ev ); ev.stop();
+
          if (this.cookies.get( prefix )) {
-            this.cookies.remove( prefix );
-            e = new Event( e );
-            this.slider.slideOut();
-            e.stop();
+            this.cookies.remove( prefix ); this.slider.slideOut();
          }
          else {
             this.cookies.set( prefix, 'pushedpin_icon' );
-            this.state.resize();
-            e = new Event( e );
-            this.slider.slideIn();
-            e.stop();
+            this.state.resize(); this.slider.slideIn();
          }
+
+         return false;
       }.bind( this ) );
 
       /* Setup the horizontal resize grippy for the side bar */
-      $( prefix + 'Grippy' ).addEvent( 'mousedown', function( sidebar ) {
-         sidebar.makeResizable( {
-            modifiers : { x: 'width', y: false },
-            limit     : { x: [ 150, 450 ] },
-            onComplete: function() { this.detach() }.bind( sidebar ),
-            onDrag    : function() { this.state.resize( true ) }.bind( this )
-         } );
-      }.bind( this, sb ) );
+      sb.makeResizable( {
+         handle   : $( prefix + 'Grippy' ),
+         limit    : { x: [ 150, 450 ] },
+         modifiers: { x: 'width', y: false },
+         onDrag   : function() { this.state.resize( true ) }.bind( this )
+      } );
 
       var toggler_class = '.' + prefix + 'Header';
 
       /* Create an Accordion widget in the side bar */
-      this.accordion
-         = new Accordion( toggler_class, '.' + prefix + 'Panel', {
-            fixedHeight : this.getAccordionHeight( sb, $$( toggler_class ) ),
-            opacity     : false,
-            onActive    : function( togglers, index, element ) {
-               var prefix = this.options.prefix, toggler = togglers[ index ];
+      this.accordion = new Fx.Accordion( $( options.accordion ), {
+         fixedHeight : this.getAccordionHeight( sb, $$( toggler_class ) ),
+         opacity     : false,
+         onActive    : function( togglers, index, element ) {
+            var prefix = this.options.prefix, toggler = togglers[ index ];
 
-               toggler.setStyle( 'background-color', '#663' );
-               toggler.setStyle( 'color', '#FFC' );
-               this.cookies.set( prefix + 'Panel', togglers.indexOf( toggler ));
-            }.bind( this ),
-            onBackground: function( togglers, index, element ) {
-               var toggler = togglers[ index ];
-
-               toggler.setStyle( 'background-color', '#CC9' );
-               toggler.setStyle( 'color', '#000' );
-            }
-         }, $( this.options.accordion ) );
+            toggler.swapClass( 'inactive', 'active' );
+            this.cookies.set( prefix + 'Panel', togglers.indexOf( toggler ));
+         }.bind( this ),
+         onBackground: function( togglers, index, element ) {
+            togglers[ index ].swapClass( 'active', 'inactive' );
+         }
+      }, toggler_class, '.' + prefix + 'Panel' );
 
       /* Redisplay and reload the last accordion side bar panel */
       if (sb_state) this.accordion.reload( sb_panel );
@@ -1685,9 +1680,11 @@ var Sidebar = new Class( {
    },
 
    getAccordionHeight: function( el, togglers ) {
-      var height = el.getSize().size.y - ( 25 * togglers.length ) - 15;
+      var options = this.options;
+      var height  = (options.togglerHeight * togglers.length)
+                   + options.togglersMarginHeight;
 
-      return Math.max( 1, height );
+      return Math.max( 1, el.getSize().y - height );
    },
 
    resize: function( changed, height ) {
@@ -1700,8 +1697,8 @@ var Sidebar = new Class( {
       sb.setStyle( 'marginBottom', height + 'px' );
 
       // Calculate and set vertical offset for side bar grippy
-      var sb_height     = sb.getSize().size.y;
-      var grippy_height = $( prefix + 'Grippy' ).getSize().size.y;
+      var sb_height     = sb.getSize().y;
+      var grippy_height = $( prefix + 'Grippy' ).getSize().y;
       var offset        = Math.max( 1, Math.round( sb_height / 2 )
                                        - Math.round( grippy_height / 2 ) );
 
@@ -1728,71 +1725,134 @@ var Sidebar = new Class( {
    }
 } );
 
-Sidebar.implement( new Options );
-
 var ServerUtils = new Class( {
    initialize: function( options ) {
       this.url = options.url;
    },
 
    checkField: function( id, val ) {
-      new Ajax( this.url + 'check_field',
-         { method    : 'get',
-           data      : 'content-type=text/xml&id=' + id + '&val=' + val,
-           onComplete: this.updateContent } ).request();
+      new Request( {
+         'onSuccess': this.updateContent, 'url': this.url + 'check_field'
+      } ).get( { 'content-type': 'text/xml', 'id': id, 'val': val } );
    },
 
    postData: function( url, data ) {
-      new Ajax( url, { method: 'post', data: data } ).request();
+      new Request( { 'url': url } ).post( data );
    },
 
    updateContent: function( text, xml ) {
-      var id        = xml.documentElement.getAttribute( 'id' );
-      var result    = xml.documentElement.getAttribute( 'result' );
-      var className = xml.documentElement.getAttribute( 'class_name' );
-      var elem      = $( id );
+      var doc    = xml.documentElement;
+      var el     = $( doc.getAttribute( 'id' ) );
+      var result = doc.getAttribute( 'result' );
 
-      elem.setHTML( result );
+      el.set( 'html', result );
+      el.className = result ? doc.getAttribute( 'class_name' ) : 'hidden';
+   }
+} );
 
-      if (result) elem.className = className;
-      else elem.className = 'hidden';
+var Sliders = new Class( {
+   Implements: [ Options ],
+
+   options    : {
+      config  : {},
+      selector: '.slider',
+      submit  : $empty
+   },
+
+   initialize: function( options ) {
+      this.setOptions( options ); options = this.options; this.collection = [];
+
+      if (options.selector) $$( options.selector ).each( this.build, this );
+   },
+
+   build: function( el ) {
+      var config, options = this.options, submit = options.submit;
+
+      if (! (config = options.config[ el.id ])) return;
+
+      var name       = config.name;       delete config[ 'name'       ];
+      var default_v  = config.default_v;  delete config[ 'default_v'  ];
+      var knob_class = config.knob_class; delete config[ 'knob_class' ];
+      var knob       = el.getElement( knob_class );
+
+      config = $extend( config, {
+         onChange: function( value ) {
+            submit.setField.call( submit, name, value ) }
+      } );
+
+      this.collection.include( new Slider( el, knob, config ).set( default_v ));
    }
 } );
 
 var SubmitUtils = new Class( {
-   initialize: function( options ) {
-      this.form    = options.form;
-      this.cookies = new Cookies( { path:   options.path,
-                                    prefix: options.prefix } );
+   Implements: [ Options ],
+
+   options          : {
+      config        : {},
+      formName      : null,
+      chooseSelector: '.chooser_button',
+      submitSelector: '.submit'
    },
 
-   chooser: function( name, button, url, winPrefs ) {
-      var form  = document.forms[ this.form ];
-      var value = form.elements[ name ].value;
+   initialize: function( options ) {
+      this.cookies = options.cookies; delete options[ 'cookies' ];
 
-      if (value && value.indexOf( '%' ) < 0) {
-         if (button) {
-            form.elements[ '_method' ].value = button; form.submit();
-         }
+      this.setOptions( options ); options = this.options;
 
-         return false;
+      this.form = document.forms ? document.forms[ options.formName ] : $empty;
+
+      if (options.chooseSelector)
+         $$( options.chooseSelector ).each( this.attachChooser, this );
+
+      if (options.submitSelector)
+         $$( options.submitSelector ).each( this.attachSubmit, this );
+   },
+
+   attachChooser: function( el ) {
+      var config; if (! (config = this.options.config[ el.id ])) return;
+
+      var winPrefs  = 'width=' + config.width + ', screenX=' + config.screen_x;
+          winPrefs += ', height=' + config.height + ', screenY=';
+          winPrefs += config.screen_y + ', dependent=yes, titlebar=no, ';
+          winPrefs += 'scrollbars=yes';
+
+      el.addEvent( 'click', function() {
+         return this.chooser( config.field, config.href, winPrefs );
+      }.bind( this ) );
+   },
+
+   attachSubmit: function( el ) {
+      var config; if (! (config = this.options.config[ el.id ])) return;
+
+      var ev = config.event || 'click';
+
+      el.addEvent( ev, function() {
+         return this[ config.method ].apply( this, config.args );
+      }.bind( this ) );
+   },
+
+   chooser: function( name, base, winPrefs ) {
+      var value = this.form.elements[ name ].value || '';
+
+      if (value.indexOf( '%' ) < 0) this.form.submit();
+      else {
+         var uri  = base + '?form=' + this.options.formName;
+             uri += '&field=' + name + '&value=' + value;
+
+         top.chooser = window.open( uri, 'chooser', winPrefs );
+         top.chooser.opener = top;
       }
 
-      top.chooser = window.open( url + '?form=' + this.form + '&value=' +value,
-                                 'chooser', winPrefs );
-      top.chooser.opener = top;
       return false;
    },
 
    clearField: function( name ) {
-      var form = document.forms[ this.form ];
-      form.elements[ name ].value = '';
-      return false;
+      return this.setField( name, '' );
    },
 
-   confirmSubmit: function( key, text ) {
+   confirmSubmit: function( button, text ) {
       if (text.length < 1 || window.confirm( text )) {
-         this.submitForm( key );
+         this.submitForm( button );
          return true;
       }
 
@@ -1800,16 +1860,18 @@ var SubmitUtils = new Class( {
    },
 
    refresh: function( name, value ) {
-      this.cookies.set( name, value ); document.forms[ this.form ].submit();
+      if (name) this.cookies.set( name, value );
+
+      this.form.submit();
    },
 
-   returnValue: function( form, name, value ) {
-      var field = opener.document.forms[ form ].elements[ name ];
+   returnValue: function( formName, name, value ) {
+      if (formName && name && opener) {
+         var forms = opener.document.forms[ formName ], field;
 
-      if (field) {
-         field.value = value;
-
-         if (field.focus) field.focus();
+         if (forms && (field = forms.elements[ name ])) {
+            field.value = value; if (field.focus) field.focus();
+         }
       }
 
       window.close();
@@ -1817,21 +1879,22 @@ var SubmitUtils = new Class( {
    },
 
    setField: function( name, value ) {
-      var form = document.forms[ this.form ];
-      form.elements[ name ].value = value;
+      var els;
+
+      if (name && (els = this.form.elements[ name ])) els.value = value;
+
+      return value;
    },
 
-   submitForm: function( key ) {
-      var form = document.forms[ this.form ];
-      form.elements[ '_method' ].value = key;
-      form.submit();
+   submitForm: function( button ) {
+      this.setField( '_method', button ); this.form.submit(); return false;
    },
 
-   submitOnReturn: function( evt, key ) {
-      var code = evt.which;
+   submitOnReturn: function( ev, button ) {
+      ev = new Event( ev );
 
-      if (code == 13) {
-         if (document.forms) this.submitForm( key );
+      if (ev.key == 'enter') {
+         if (document.forms) this.submitForm( button );
          else window.alert( 'Document contains no forms' );
       }
 
@@ -1840,125 +1903,222 @@ var SubmitUtils = new Class( {
 } );
 
 var TableUtils = new Class( {
+   Implements: [ Events, Options ],
+
+   options          : {
+      editSelector  : 'table.form',
+      formName      : null,
+      gridSelector  : '.liveGrid',
+      gridSize      : 10,
+      gridToggle    : true,
+      iconClasses   : [ 'a', 'b' ],
+      inputCellClass: 'dataField',
+      rowClass      : 'form_row',
+      rowSelector   : 'tr[id*=_row]',
+      sortSelector  : 'th.sort',
+      textCellClass : 'dataValue',
+      url           : null
+   },
+
    initialize: function( options ) {
-      this.form         = options.form;
-      this.rowSelector  = options.rowSelector || 'tr[id*=_row]';
-      this.sortables    = new Hash();
-      this.sortComplete = options.sortComplete  || false;
-      this.url          = options.url;
+      this.setOptions( options ); var opt = this.options;
+
+      this.form = document.forms ? document.forms[ opt.formName ] : $empty;
+
+      this.sortables = new Hash();
+
+      if (opt.editSelector)
+         $$( opt.editSelector ).each( function( el ) {
+            $( el.id + '_add' ).addEvent( 'click', function( ev ) {
+               ev = new Event( ev ); ev.stop();
+
+               return this.addRows( el.id, true );
+            }.bind( this ) );
+
+            $( el.id + '_remove' ).addEvent( 'click', function( ev ) {
+               ev = new Event( ev ); ev.stop(); return this.removeRows( el.id );
+            }.bind( this ) );
+         }, this );
+
+      if (opt.gridSelector)
+         $$( opt.gridSelector ).each( function( el ) {
+            el.addEvent( 'click', function( ev ) {
+               ev = new Event( ev ); ev.stop(); return this.liveGrid( el.id );
+            }.bind( this ) );
+         }, this );
+
+      if (opt.sortSelector)
+         $$( opt.sortSelector ).each( function( el ) {
+            el.addEvent( 'click', function( ev ) {
+               ev = new Event( ev ); ev.stop(); return this.sortRows( el.id );
+            }.bind( this ) );
+         }, this );
    },
 
    addRows: function( table_id, edit ) {
-      var aelem, cell, cNo = 0, elem, fld, nelem, nrows, row;
-      var form = document.forms[ this.form ];
+      var cNo   = 0, aelem, elem, opt = this.options;
+      var rows  = $( table_id ).getElements( opt.rowSelector );
+      var nrows = rows ? rows.length : 0;
 
-      if (! (nelem = form.elements[ table_id + '_nrows' ])) return false;
+      if (! (elem = $( table_id + '_edit' ))) return false;
 
-      nrows = nelem.value ? parseInt( nelem.value ) : 0;
-
-      if (! (elem = $( table_id + '_add' ))) return false;
-
-      row = document.createElement( 'tr' );
-      row.setAttribute( 'class', 'dataValue' );
-      row.setAttribute( 'id', table_id + '_row' + nrows );
+      var row   = new Element( 'tr', {
+         class: opt.rowClass, id: table_id + '_row' + nrows
+      } );
 
       while (aelem = $( table_id + '_add' + cNo )) {
-         cell = document.createElement( 'td' );
+         var cell = new Element( 'td' );
 
          if (edit) {
-            fld = document.createElement( 'input' );
-            fld.setAttribute( 'value', aelem.value );
-            fld.setAttribute( 'type', 'input' );
-            fld.setAttribute( 'class', 'ifield' );
-            fld.setAttribute( 'name', aelem.name + nrows );
+            var type  = aelem.tag == 'textarea' ? 'textarea' : 'input';
+            var input = new Element( type, {
+               class: 'ifield',
+               name : table_id + '_' + nrows + '_' + cNo,
+               value: aelem.value
+            } );
 
-            if (aelem.size) fld.setAttribute( 'size', aelem.size );
-
+            if (aelem.cols) input.setAttribute( 'cols', aelem.cols );
+            if (aelem.rows) input.setAttribute( 'rows', aelem.rows );
+            if (aelem.size) input.setAttribute( 'size', aelem.size );
             if (aelem.maxlength)
-               fld.setAttribute( 'maxlength', aelem.maxlength );
+               input.setAttribute( 'maxlength', aelem.maxlength );
 
-            cell.setAttribute( 'class', 'dataField' );
+            cell.appendChild( input );
+            cell.setAttribute( 'class', opt.inputCellClass );
          }
          else {
-            fld = document.createTextNode( aelem.value );
-            cell.setAttribute( 'class', 'dataValue' );
+            cell.appendText( aelem.value );
+            cell.setAttribute( 'class', opt.textCellClass );
          }
 
-         cell.appendChild( fld );
-         row.appendChild( cell );
-         aelem.value = ''; cNo++;
+         row.appendChild( cell ); aelem.value = ''; cNo++;
       }
 
       if (edit) {
-         fld = document.createElement( 'input' );
-         fld.setAttribute( 'name', table_id + '_select' + nrows );
-         fld.setAttribute( 'type', 'checkbox' );
-         cell = document.createElement( 'td' );
-         cell.setAttribute( 'align', 'center' );
-         cell.setAttribute( 'class', (cNo%2 == 0 ? 'even' : 'odd') );
-         cell.appendChild( fld );
-         row.appendChild( cell );
+         var input = new Element( 'input', {
+            name: table_id + '_select' + nrows, type: 'checkbox'
+         } );
+         var cell  = new Element( 'td', {
+            align: 'center', class: (cNo % 2 == 0 ? 'even' : 'odd')
+         } );
+
+         cell.appendChild( input ); row.appendChild( cell );
       }
 
-      elem.parentNode.insertBefore( row, elem );
-      nelem.value = nrows + 1;
+      row.injectBefore( elem );
+      this.form.elements[ '_' + table_id + '_nrows' ].value = nrows + 1;
       return false;
    },
 
    createGrid: function( text, xml ) {
-      var keyid  = this.gridKey + this.gridId;
+      var keyid  = this.gridKey + '_' + this.gridId;
       var count  = parseInt( xml.documentElement.getAttribute( 'totalcount' ));
-      var html   = '';
+      var rows   = xml.documentElement.getElementsByTagName( 'items' );
+      var urlkey = this.options.url + this.gridKey + '_grid_rows';
       var opts   = {
          bufferSize    : 7,
-         pageSize      : 10,
+         gridSize      : this.options.gridSize,
          prefetchBuffer: true,
-         onscroll      : this.updateHeader.bind( this ),
+         onScroll      : this.updateHeader.bind( this ),
          onFirstContent: this.updateHeader.bind( this, 0 ),
          totalRows     : count
       };
-      var rows   = xml.documentElement.getElementsByTagName( 'items' );
-      var urlkey = this.url + this.gridKey + '_grid_rows';
+      var html   = '';
 
       $each( rows, function( row ) { html += row.childNodes[ 0 ].nodeValue } );
-      $( keyid + 'Disp' ).setHTML( html.unescapeHTML() );
+
+      $( keyid + 'Disp' ).set( 'html', html.unescapeHTML() );
+
       this.gridObj = new LiveGrid( keyid + '_grid', urlkey, opts );
    },
 
-   sortRows: function( table_id, column_name, column_type ) {
-      var table   = $( table_id );
-      var columns = table.getElements( 'th' );
-      var col_ids = columns.map( function( column ) { return column.id } );
-      var name    = table_id + '_' + column_name;
+   liveGrid: function( elId ) {
+      var el, pair = elId.split( '_' ), key = pair[ 0 ], id = pair[ 1 ];
 
-      if (! col_ids.contains( name )) return;
+      if (! key || ! id || ! (el = $( elId + 'Disp' ))) return;
 
-      var row_ids = new Array();
-      var col_id  = col_ids.indexOf( name );
-      var order   = this._get_sort_order( table_id, col_ids[ 0 ], name );
+      var options = this.options;
 
-      table.getElements( this.rowSelector ).map( function( row, index ) {
+      if (options.gridToggle && el.getStyle( 'display' ) != 'none') {
+         el.setStyle( 'display', 'none' );
+
+         if (el = $( elId + 'Icon' )) el.className = options.iconClasses[ 0 ];
+
+         this.gridKey = null; this.gridId = null; this.gridObj = null;
+         return;
+      }
+
+      if (this.gridKey && this.gridId) {
+         var keyid = this.gridKey + '_' + this.gridId, prev;
+
+         if (prev = $( keyid + 'Disp' )) prev.setStyle( 'display', 'none' );
+         if (prev = $( keyid + 'Icon' ))
+            prev.className = options.iconClasses[ 0 ];
+
+         this.gridKey = null; this.gridId = null; this.gridObj = null;
+      }
+
+      el.setStyle( 'display', '' ); this.gridKey = key; this.gridId = id;
+
+      if (el = $( elId + 'Icon' )) el.className = options.iconClasses[ 1 ];
+
+      new Request( {
+         onSuccess: this.createGrid.bind( this ),
+         url      : options.url + key +  '_grid_table' } ).get( {
+            'content-type': 'text/xml', 'id': id, 'val': options.gridSize } );
+      return;
+   },
+
+   removeRows: function( table_id ) {
+      var table;
+
+      if (table = $( table_id )) {
+         var nrows = 0, selector = this.options.rowSelector;
+
+         table.getElements( selector ).map( function( row, index ) {
+            var cb = this.form.elements[ table_id + '_select' + index ];
+
+            if (cb && cb.checked) row.destroy();
+            else nrows++;
+         }.bind( this ) );
+
+         this.form.elements[ '_' + table_id + '_nrows' ].value = nrows;
+      }
+
+      return;
+   },
+
+   sortRows: function( id ) {
+      var a        = id.split( '.' );
+      var table_id = a[ 0 ], column_type = a[ 2 ];
+      var table    = $( table_id );
+      var columns  = table.getElements( 'th' );
+      var col_ids  = columns.map( function( column ) { return column.id } );
+
+      if (! col_ids.contains( id )) return;
+
+      var col_id   = col_ids.indexOf( id );
+      var order    = this._get_sort_order( table_id, col_ids[ 0 ], id );
+      var row_ids  = [];
+
+      table.getElements( this.options.rowSelector ).map( function( row, index ){
          var field = this._get_sort_field( row.cells[ col_id ], column_type );
 
-         row_ids[ index ] = row.id;
-
-         return new Array( field, row.clone() );
+         return [ field, row.clone( true, true ), row_ids[ index ] = row.id ];
       }.bind( this ) ).sort( function( a, b ) {
          return a[ 0 ] < b[ 0 ] ? order[ 0 ]
              : (a[ 0 ] > b[ 0 ] ? order[ 1 ] : 0);
-      } ).map( function( row_array, index ) {
-         var id = row_ids[ index ], row = row_array[ 1 ];
+      } ).map( function( sorted_rows, index ) {
+         var old_row_id = row_ids[ index ], new_row = sorted_rows[ 1 ];
 
-         row_ids[ index ] = row.id; row.removeProperty( 'id' );
+         new_row.removeAttribute( 'id' ); new_row.replaces( $( old_row_id ) );
 
-         return $( id ).replaceWith( row );
-      } ).map( function( row, index ) {
-         row.id = row_ids[ index ];
-
-         return row;
+         return [ new_row, sorted_rows[ 2 ] ];
+      } ).map( function( sorted_rows, index ) {
+         var row = sorted_rows[ 0 ]; row.id = sorted_rows[ 1 ]; return row;
       } );
 
-      if (this.sortComplete) this.sortComplete.call( this );
+      this.fireEvent( 'sortComplete' );
 
       return;
    },
@@ -1986,84 +2146,27 @@ var TableUtils = new Class( {
       return field;
    },
 
-   _get_sort_order: function( table_id, default_column, column_name ) {
+   _get_sort_order: function( table_id, default_column, column_id ) {
       var sortable = this.sortables.get( table_id )
                   || { sort_column: default_column, reverse: 0 };
       var reverse  = sortable.reverse;
 
-      if (column_name == sortable.sort_column) reverse = 1 - reverse;
+      if (column_id == sortable.sort_column) reverse = 1 - reverse;
       else reverse = 0;
 
-      sortable.reverse = reverse; sortable.sort_column = column_name;
+      sortable.reverse = reverse; sortable.sort_column = column_id;
       this.sortables.set( table_id, sortable );
       return reverse ? [ 1, -1 ] : [ -1, 1 ];
-   },
-
-   removeRows: function( table_id ) {
-      var form = document.forms[ this.form ], table;
-
-      if (table = $( table_id )) {
-         table.getElements( this.rowSelector ).map( function( row, index ) {
-            var cb = form.elements[ table_id + '_select' + index ];
-
-            if (cb && cb.checked) row.remove();
-         } );
-      }
-
-      return false;
-   },
-
-   liveGrid: function( key, id, klasses, pageSz, toggle ) {
-      var elem;
-
-      if (! key || ! id || ! klasses || ! (elem = $( key + id + 'Disp' )))
-         return;
-
-      var klass = klasses.split( '~' );
-
-      if (toggle && elem.getStyle( 'display' ) != 'none') {
-         elem.setStyle( 'display', 'none' );
-
-         if (elem = $( key + id + 'Icon' )) elem.className = klass[0];
-
-         this.gridKey = null; this.gridId = null;
-         this.gridObj = null; this.pageSz = 10;
-         return;
-      }
-
-      if (this.gridKey && this.gridId) {
-         var keyid = this.gridKey + this.gridId, prev;
-
-         if (prev = $( keyid + 'Disp' )) prev.setStyle( 'display', 'none' );
-         if (prev = $( keyid + 'Icon' )) prev.className = klass[0];
-
-         this.gridKey = null; this.gridId = null;
-         this.gridObj = null; this.pageSz = 10;
-      }
-
-      elem.setStyle( 'display', '' );
-
-      if (elem = $( key + id + 'Icon' )) elem.className = klass[1];
-
-      this.gridKey = key;
-      this.gridId  = id;
-      this.pageSz  = (pageSz ? pageSz : 10);
-
-      new Ajax( this.url + key +  '_grid_table',
-                { method: 'get',
-                  data  : 'content-type=text/xml&id=' + id + '&val=' + pageSz,
-                  onComplete: this.createGrid.bind( this ) } ).request();
-      return;
    },
 
    updateHeader: function( offset ) {
       var id, sortInfo, text, urlkey, metaData = this.gridObj.metaData;
 
-      id    = this.gridKey + this.gridId + '_header';
+      id    = this.gridKey + '_' + this.gridId + '_header';
       text  = 'Listing ' + (offset + 1) + ' - ';
       text += (offset + metaData.getPageSize());
       text += ' of ' + metaData.getTotalRows();
-      $( id ).setHTML( text );
+      $( id ).set( 'html', text );
 
       if (this.gridObj.sortCol) {
          sortInfo  = '&data_grid_sort_col=' + this.gridObj.sortCol;
@@ -2071,445 +2174,672 @@ var TableUtils = new Class( {
       }
       else sortInfo = '';
 
-      urlkey = this.url + this.gridKey + '_gridPage';
+      urlkey = this.options.url + this.gridKey + '_gridPage';
       text   = urlkey + '?data_grid_index=' + offset + sortInfo;
       $( id ).href = text;
+      return;
    }
 } );
 
-TableUtils.implement( new Options );
+/* Clientcide Copyright (c) 2006-2009
 
-/* Script: Tips.js
-      Tooltips, BubbleTips, whatever they are, they will appear on mouseover
+Contents: TabSwapper
 
-   License:
-      MIT-style license.
+name: TabSwapper.js
+description: Handles the scripting for a common UI layout; the tabbed box.
+License: http://www.clientcide.com/wiki/cnet-libraries#license
 
-   Credits:
-      The idea behind Tips.js is based on Bubble Tooltips
-      (<http://web-graphics.com/mtarchive/001717.php>) by Alessandro
-      Fulcitiniti <http://web-graphics.com>
-   Class: Tips
-      Display a tip on any element with a title and/or href.
+requires:
+ - core: Element.Event, Fx.Tween, Fx.Morph
+ - more: Element.Shortcuts, Element.Dimensions, Element.Measure
+*/
 
-   Note:
-      Tips requires an XHTML doctype.
+var TabSwapper = new Class( {
+   Implements: [ Options, Events ],
 
-   Arguments:
-      elements - collection of elements to apply the tooltips to on mouseover.
-      options - an object. See options Below.
+   options           : {
+      clickers       : 'a',
+      cookiePrefix   : 'tabswapper_',
+      cookies        : false,
+      deselectedClass: 'off',
+      effectOptions  : { duration: 500 },
+      initPanel      : 0,
+      maxSize        : null,
+      mouseoverClass : 'tab_over',
+//    onActive       : $empty,
+//    onActiveAfterFx: $empty,
+//    onBackground   : $empty
+      rearrangeDOM   : true,
+      sections       : 'dd.panel',
+      selectedClass  : 'tab_selected',
+      smooth         : false,
+      smoothSize     : false,
+      tabs           : 'dt',
+   },
 
-   Options:
-      maxTitleChars - the maximum number of characters to display in the
-                      title of the tip. defaults to 30.
-      showDelay - the delay the onShow method is called. (defaults to 100 ms)
-      hideDelay - the delay the onHide method is called. (defaults to 100 ms)
-      className - the prefix for your tooltip classNames. defaults to 'tool'.
-         the whole tooltip will have as classname: tool-tip
-         the title will have as classname: tool-title
-         the text will have as classname: tool-text
-      offsets - the distance of your tooltip from the mouse. an Object
-                with x/y properties.
-      fixed - if set to true, the toolTip will not follow the mouse.
+   tabs: [],
 
-   Events:
-      onShow - optionally you can alter the default onShow behaviour with
-               this option (like displaying a fade in effect);
-      onHide - optionally you can alter the default onHide behaviour with
-               this option (like displaying a fade out effect);
+   initialize: function( el, options ) {
+      this.setOptions( options ); var opt = this.options;
 
-   Example:
-      (start code)
-      <img src="/images/i.png" title="The body of the tooltip is stored
-                                      in the title" class="toolTipImg"/>
-      <script>
-         var myTips = new Tips($$('.toolTipImg'), {
-            maxTitleChars: 50 //I like my captions a little long
-         });
-      </script>
-      (end)
+      this.cookieName = opt.cookies ? opt.cookiePrefix + el.id : null;
 
-   Note:
-      The title of the element will always be used as the tooltip
-      body. If you put ~ in your title, the text before the ~ will become
-      the tooltip title.
+      var sections = el.getElements( opt.sections );
+
+      tabs = el.getElements( opt.tabs );
+
+      tabs.each( function( tab, index ) {
+         this.addTab( $( tab ), $( sections[ index ] ), index );
+         this.hideSection( index );
+      }, this );
+
+      this.show( this.recall() );
+   },
+
+   addTab: function( tab, section, index ) {
+      var opt = this.options, clicker = tab.getElement( opt.clickers ) || tab;
+
+      // If the index isn't specified, put the tab at the end
+      if (! $defined( index )) index = this.tabs.length;
+
+      // If the tab is already in the interface, just move it
+      if (this.tabs.indexOf( tab ) >= 0 && tab.retrieve( 'tabbered' )
+          && this.tabs.indexOf( tab ) != index && opt.rearrangeDOM) {
+         this.moveTab( this.tabs.indexOf( tab ), index );
+         return this;
+      }
+
+      // If this isn't the first item, and there's a tab
+      // already in the interface at the index 1 less than this
+      // insert this after that one
+      if (index > 0 && this.tabs[ index - 1 ] && opt.rearrangeDOM) {
+         tab.inject( this.tabs[ index - 1 ], 'after' );
+         section.inject( this.tabs[ index - 1 ].retrieve( 'section' ), 'after');
+      }
+
+      this.tabs.splice( index, 0, tab );
+
+      tab.addEvents( {
+         mouseout : function() {
+            this.removeClass( opt.mouseoverClass ); }.bind( tab ),
+         mouseover: function() {
+            this.addClass( opt.mouseoverClass ); }.bind( tab )
+      } );
+
+      clicker.addEvent( 'click', function( ev ) {
+         ev.preventDefault(); this.show( index );
+      }.bind( this ) );
+
+      tab.store( 'tabbered', true    );
+      tab.store( 'section',  section );
+      tab.store( 'clicker',  clicker );
+      return this;
+   },
+
+   hideSection: function( idx ) {
+      var tab; if (! (tab = this.tabs[ idx ])) return this;
+
+      var section; if (! (section = tab.retrieve( 'section' ))) return this;
+
+      if (section.getStyle( 'display' ) != 'none') {
+         this.lastHeight = section.getSize().y;
+         section.setStyle( 'display', 'none' );
+         tab.swapClass( this.options.selectedClass,
+                        this.options.deselectedClass );
+         this.fireEvent( 'onBackground', [ tab, section, idx ] );
+      }
+
+      return this;
+   },
+
+   moveTab: function( from, to ) {
+      var tab       = this.tabs[ from ];
+      var clicker   = tab.retrieve( 'clicker' );
+      var section   = tab.retrieve( 'section' );
+      var toTab     = this.tabs[ to ];
+      var toClicker = toTab.retrieve( 'clicker' );
+      var toSection = toTab.retrieve( 'section' );
+
+      this.tabs.erase( tab ).splice( to, 0, tab );
+      tab.inject( toTab, 'before' );
+      clicker.inject( toClicker, 'before' );
+      section.inject( toSection, 'before' );
+      return this;
+   },
+
+   recall: function() {
+      var opt = this.options, name, panel;
+
+      if (name = this.cookieName) panel = opt.cookies.get( name );
+
+      return panel ? panel.toInt() : opt.initPanel;
+   },
+
+   removeTab: function( index ) {
+      var now = this.tabs[ this.now ];
+
+      if (this.now == index) {
+         if (index > 0) this.show( index - 1 );
+         else if (index < this.tabs.length) this.show( index + 1 );
+      }
+
+      this.now = this.tabs.indexOf( now );
+      return this;
+   },
+
+   save: function( index ) {
+      var name;
+
+      if (name = this.cookieName) this.options.cookies.set( name, index );
+
+      return this;
+   },
+
+   show: function( i ) {
+      if (! $chk( this.now )) {
+         this.tabs.each( function( tab, idx ) {
+            if (i != idx) this.hideSection( idx );
+         }, this );
+      }
+
+      this.showSection( i ).save( i );
+      return this;
+   },
+
+   showSection: function( idx ) {
+      var opt = this.options, smoothOk = opt.smooth && !Browser.Engine.trident4;
+
+      var tab; if (! (tab = this.tabs[ idx ])) return this;
+
+      var section; if (! (section = tab.retrieve( 'section' ))) return this;
+
+      if (this.now != idx) {
+         if (! tab.retrieve( 'tabFx' ))
+            tab.store( 'tabFx', new Fx.Morph( section, opt.effectOptions ) );
+
+         var effect   = false;
+         var overflow = section.getStyle( 'overflow' );
+         var start    = { display: 'block', overflow: 'hidden' };
+
+         if (smoothOk) {
+            start.opacity = 0; effect = { opacity: 1 };
+         } else if (section.getStyle( 'opacity' ).toInt() < 1) {
+            section.setStyle( 'opacity', 1 );
+
+            if (! opt.smoothSize)
+               this.fireEvent( 'onActiveAfterFx', [ tab, section, idx ] );
+         }
+
+         if (opt.smoothSize) {
+            var size = section.getDimensions().height;
+
+            if ($chk( opt.maxSize ) && opt.maxSize < size) size = opt.maxSize;
+
+            if (! effect) effect = {};
+
+            effect.height = size;
+         }
+
+         if ($chk( this.now )) this.hideSection( this.now );
+
+         if (opt.smoothSize && this.lastHeight) start.height = this.lastHeight;
+
+         section.setStyles( start );
+
+         if (effect) {
+            tab.retrieve( 'tabFx' ).start( effect ).chain( function() {
+               this.fireEvent( 'onActiveAfterFx', [ tab, section, idx ] );
+
+               section.setStyles( {
+                  height  : this.options.maxSize == effect.height
+                          ? this.options.maxSize : 'auto',
+                  overflow: overflow
+               } );
+
+               var inputs = section.getElements( 'input, textarea' );
+
+               inputs.setStyle( 'opacity', 1 );
+            }.bind( this ) );
+         }
+
+         this.now = idx; this.fireEvent( 'onActive', [ tab, section, idx ] );
+      }
+
+      tab.swapClass( opt.deselectedClass, opt.selectedClass );
+      return this;
+   }
+} );
+
+var TabSwappers = new Class( {
+   Implements: [ Options ],
+
+   options: { cookies: false, config: {}, selector: '.tabswapper' },
+
+   initialize: function( options ) {
+      this.setOptions( options ); var opt = this.options; this.collection = [];
+
+      if (opt.selector) $$( opt.selector ).each( this.build, this );
+   },
+
+   build: function( el ) {
+      var opt = this.options;
+      var cfg = $merge( opt.config[ 'options' ], opt.config[ el.id ] );
+
+      if (opt.cookies) cfg.cookies = opt.cookies;
+
+      this.collection.include( new TabSwapper( el, cfg ) );
+   }
+} );
+
+/*
+
+Description: Class for creating nice tips that follow the mouse cursor
+             when hovering an element.
+
+License: MIT-style license
+
+Authors: Valerio Proietti, Christoph Pojer, Peter Flanigan
+
 */
 
 var Tips = new Class( {
-   options: {
-      className: 'tool',
-      fixed    : false,
-      hellip   : '\u2026',
-      hideDelay: 100,
+   Implements: [ Events, Options ],
+
+   options         : {
+      className    : 'tool',
+      fixed        : false,
+      hellip       : '\u2026',
+      hideDelay    : 100,
       maxTitleChars: 40,
-      offsets  : { 'x': 20, 'y': 20 },
-      onHide   : function( tip ) { tip.setStyle( 'visibility', 'hidden'  ) },
-      onShow   : function( tip ) { tip.setStyle( 'visibility', 'visible' ) },
-      selector : '.tips',
-      separator: '~',
-      showDelay: 100,
-      spacer   : '\u00a0\u00a0\u00a0',
-      timeout  : 30000
+      offsets      : { 'x': 20, 'y': 20 },
+      onHide       : function( tip ) { tip.setStyle( 'visibility', 'hidden'  )},
+      onShow       : function( tip ) { tip.setStyle( 'visibility', 'visible' )},
+      selector     : '.tips',
+      separator    : '~',
+      showDelay    : 100,
+      spacer       : '\u00a0\u00a0\u00a0',
+      text         : function( el ) {
+         return (el.get( 'rel' )
+                 || el.get( 'href' ) || '').replace( 'http://', '' );
+      },
+      timeout      : 30000,
+      title        : 'title'
    },
 
    initialize: function( options ) {
-      var cell, row, table;
-
       this.setOptions( options );
-      this.toolTip = new Element( 'div', {
-         'class' : this.options.className + '-tip',
-         'styles': { 'position'  : 'absolute',
-                     'top'       : '0',
-                     'left'      : '0',
-                     'visibility': 'hidden' } } ).inject( document.body );
-      table = new Element( 'table',
-         { 'cellpadding': '0', 'cellspacing': '0' } ).inject( this.toolTip );
-      row   = new Element( 'tr' ).inject( table );
-      this.titleCell = new Element( 'td',
-         { 'class': this.options.className + '-tip-topLeft'} ).inject( row );
-      this.title = new Element( 'span' ).inject( this.titleCell );
-
-      cell  = new Element( 'td',
-         { 'class': this.options.className + '-tip-topRight'} ).inject( row );
-      new Element( 'span' ).appendText( this.options.spacer ).inject( cell );
-
-      row   = new Element( 'tr' ).inject( table );
-      this.textCell  = new Element( 'td', { 'class': this.options.className
-                                   + '-tip-bottomLeft'} ).inject( row );
-      this.text = new Element( 'span' ).inject( this.textCell );
-
-      cell  = new Element( 'td', { 'class': this.options.className
-                                   + '-tip-bottomRight' } ).inject( row );
-      new Element( 'span' ).appendText( this.options.spacer ).inject( cell );
+      this.collection = [];
+      this.tip = this.createTipMarkup();
 
       if (this.options.selector)
          $$( this.options.selector ).each( this.build, this );
 
-      if (this.options.initialize) this.options.initialize.call( this );
+      this.fireEvent( 'initialize' );
    },
 
-   build: function( el, index ) {
-      if (el.$tmp.myTitle || el.$tmp.myText) return;
+   attach: function( el ) {
+      var events = [ 'enter', 'leave' ];
 
-      el.$tmp.myTitle = (el.href && el.getTag() == 'a')
-                      ? el.href.replace( 'http://', '' )
-                      : (el.rel || false);
+      if (! this.options.fixed) events.push( 'move' );
 
-      if (el.title){
-         var dual = el.title.split( this.options.separator );
+      events.each( function( value ) {
+         var key = 'tip:' + value, method = 'element' + value.capitalize();
+         var handler;
 
-         if (dual.length > 1){
-            el.$tmp.myTitle = dual[ 0 ].trim();
-            el.$tmp.myText  = dual[ 1 ].trim();
-         }
-         else {
-            if (!el.$tmp.myTitle) el.$tmp.myTitle = this.options.hellip;
+         if (! (handler = el.retrieve( key )))
+            handler = this[ method ].bindWithEvent( this, el );
 
-            el.$tmp.myText = el.title;
-         }
-
-         el.removeAttribute( 'title' );
-      }
-      else { el.$tmp.myText = false }
-
-      if (el.$tmp.myTitle && el.$tmp.myTitle.length >
-          this.options.maxTitleChars) {
-         el.$tmp.myTitle
-            = el.$tmp.myTitle.substr( 0, this.options.maxTitleChars - 1 )
-            + this.options.hellip;
-      }
-
-      el.addEvent( 'mouseenter', function( event ) {
-         this.start( el );
-
-         if (!this.options.fixed) this.locate( event );
-         else this.position( el );
-      }.bind( this ) );
-
-      if (!this.options.fixed)
-         el.addEvent( 'mousemove', this.locate.bindWithEvent( this ) );
-
-      el.addEvent( 'mouseleave', this.end.bind( this ) );
-      el.addEvent( 'trash', this.hide.bind( this ) );
+         el.store( key, handler ).addEvent( 'mouse' + value, handler );
+      }, this );
    },
 
-   end: function( event ) {
+   build: function( el ) {
+      this.collection.include( el );
+      this.storeTitleAndText( el )
+      this.attach( el );
+   },
+
+   createTipMarkup: function() {
+      var klass  = this.options.className;
+      var spacer = this.options.spacer;
+      var div    = new Element( 'div', {
+         'class' : klass + '-tip',
+         'styles': { 'left'      : 0,
+                     'position'  : 'absolute',
+                     'top'       : 0,
+                     'visibility': 'hidden' } } ).inject( document.body );
+      var table  = new Element( 'table', {
+         'cellpadding': 0, 'cellspacing': 0 } ).inject( div );
+      var row    = new Element( 'tr' ).inject( table );
+
+      this.titleCell = new Element( 'td', {
+         'class' : klass + '-tip-topLeft' } ).inject( row );
+      this.title = new Element( 'span' ).inject( this.titleCell );
+
+      var cell   = new Element( 'td', {
+         'class' : klass + '-tip-topRight' } ).inject( row );
+
+      new Element( 'span' ).appendText( spacer ).inject( cell );
+
+      row = new Element( 'tr' ).inject( table );
+      this.textCell = new Element( 'td', {
+         'class' : klass + '-tip-bottomLeft' } ).inject( row );
+      this.text = new Element( 'span' ).inject( this.textCell );
+
+      cell = new Element( 'td', {
+         'class' : klass + '-tip-bottomRight' } ).inject( row );
+      new Element( 'span' ).appendText( spacer ).inject( cell );
+
+      return div;
+   },
+
+   elementEnter: function( ev, el ) {
+      this.setup( el ); this.position( ev, el ); $clear( this.timer );
+      this.timer = this.show.delay( this.options.showDelay, this, el );
+   },
+
+   elementLeave: function( ev, el ) {
       $clear( this.timer );
-      this.timer = this.hide.delay( this.options.hideDelay, this );
+      this.timer = this.hide.delay( this.options.hideDelay, this, el );
    },
 
-   hide: function() {
-      this.fireEvent( 'onHide', [ this.toolTip ] ); this.timer = false;
+   elementMove: function( ev, el ) {
+      this.position( ev, el );
    },
 
-   locate: function( event ) {
-      var win = { 'x': window.getWidth(), 'y': window.getHeight() };
-      var scroll
-         = { 'x': window.getScrollLeft(), 'y': window.getScrollTop() };
-      var tip
-         = { 'x': this.toolTip.offsetWidth, 'y': this.toolTip.offsetHeight };
-      var prop = { 'x': 'left', 'y': 'top' };
+   hide: function( el ) {
+      this.timer = $clear( this.timer );
+      this.fireEvent( 'hide', [ this.tip, el ] );
+   },
+
+   position: function( ev, el ) {
+      var options = this.options, offsets = options.offsets;
+
+      if (options.fixed) {
+         var pos = el.getPosition();
+
+         this.tip.setStyles( {
+            'left': pos.x + offsets.x, 'top': pos.y + offsets.y
+         } );
+
+         return;
+      }
+
+      var win    = { 'x': window.getWidth(),      'y': window.getHeight()    };
+      var scroll = { 'x': window.getScrollLeft(), 'y': window.getScrollTop() };
+      var tip    = { 'x': this.tip.offsetWidth,   'y': this.tip.offsetHeight };
+      var prop   = { 'x': 'left',                 'y': 'top'                 };
 
       for (var z in prop) {
-         var pos = event.page[z] + this.options.offsets[z];
-         if ((pos + tip[z] - scroll[z]) > win[z])
-            pos = event.page[z] - this.options.offsets[z] - tip[z];
-         this.toolTip.setStyle( prop[z], pos );
-      };
+         var pos = ev.page[ z ] + offsets[ z ];
+
+         if ((pos + tip[ z ] - scroll[ z ]) > win[ z ])
+            pos = ev.page[ z ] - offsets[ z ] - tip[ z ];
+
+         this.tip.setStyle( prop[ z ], pos );
+      }
+
+      return;
    },
 
-   position: function( element ) {
-      var pos = element.getPosition();
-
-      this.toolTip.setStyles( {
-         'left': pos.x + this.options.offsets.x,
-         'top' : pos.y + this.options.offsets.y
-      } );
+   _read: function( option, el ) {
+      return option ? ($type( option ) == 'function'
+                       ? option( el ) : el.get( option )) : '';
    },
 
-   show: function() {
-      if (this.timer) { $clear( this.timer ); this.hide }
+   setup: function( el ) {
+      var max   = Math.floor( window.getWidth() / 4 );
+      var text  = el.retrieve( 'tip:text'  ) || '';
+      var title = el.retrieve( 'tip:title' ) || '';
+      var w     = 10 * Math.max( title.length, text.length );
+
+      w = w < 100 ? 100 : w > max ? max : w;
+
+      this.titleCell.setStyle( 'width', parseInt( w ) + 'px' );
+      this.title.empty().appendText( title || this.options.spacer );
+      this.textCell.setStyle( 'width', parseInt( w ) + 'px' );
+      this.text.empty().appendText( text || this.options.spacer );
+   },
+
+   show: function( el ) {
+      this.timer = $clear( this.timer );
 
       if (this.options.timeout)
          this.timer = this.hide.delay( this.options.timeout, this );
 
-      this.fireEvent( 'onShow', [ this.toolTip ] );
+      this.fireEvent( 'show', [ this.tip, el ] );
    },
 
-   start: function(el) {
-      var len, width, w = 100;
+   storeTitleAndText: function( el ) {
+      if (el.retrieve( 'tip:title' )) return;
 
-      if (el.$tmp.myText) {
-         width = window.getWidth();
-         len   = el.$tmp.myTitle.length > el.$tmp.myText.length
-               ? el.$tmp.myTitle.length : el.$tmp.myText.length;
-         w     = 10 * len;
+      var options = this.options;
+      var title   = this._read( options.title, el );
+      var text    = this._read( options.text,  el );
 
-         if (w < 100)       w = 100;
-         if (w > width / 4) w = width / 4;
+      if (title) {
+         var pair = title.split( options.separator );
+
+         if (pair.length > 1) {
+            title = pair[ 0 ].trim(); text = (pair[ 1 ] + ' ' + text).trim();
+         }
+      }
+      else title = options.hellip;
+
+      if (title.length > options.maxTitleChars) {
+         title = title.substr( 0, options.maxTitleChars - 1 ) + options.hellip;
       }
 
-      this.titleCell.setStyle( 'width', parseInt( w ) + 'px' );
-
-      if ($defined( this.title.lastChild ))
-         this.title.removeChild( this.title.lastChild );
-
-      this.title.appendText( el.$tmp.myTitle || this.options.spacer );
-      this.textCell.setStyle( 'width', parseInt( w ) + 'px' );
-
-      if ($defined( this.text.lastChild ))
-         this.text.removeChild( this.text.lastChild );
-
-      this.text.appendText( el.$tmp.myText || this.options.spacer );
-      $clear( this.timer );
-      this.timer = this.show.delay( this.options.showDelay, this );
+      el.store( 'tip:title', title );
+      el.store( 'tip:text',  text  );
+      el.erase( 'title' );
    }
 } );
 
-Tips.implement( new Events, new Options );
-
 var Trees = new Class( {
-      options: {
-         classPrefix   : 'tree',
-         cookiePrefix  : 'tree',
-         selector      : '.tree',
-         usePersistance: true
-      },
+   Implements: [ Options ],
 
-      initialize: function( options ) {
-         this.setOptions( options );
-         this.collection = new Array();
+   options          : {
+      classPrefix   : 'tree',
+      cookiePrefix  : 'tree',
+      selector      : '.tree',
+      sessionPath   : '/',
+      sessionPrefix : 'html_formwidgets',
+      usePersistance: true
+   },
 
-         if (this.options.usePersistance) {
-            var prefix = behaviour.sessionPrefix + '_'
-                       + this.options.cookiePrefix;
-            this.cookies = new Cookies( { path  : behaviour.sessionPath,
-                                          prefix: prefix } );
+   initialize: function( options ) {
+      this.setOptions( options ); options = this.options; this.collection = [];
+
+      if (options.usePersistance) {
+         var prefix = options.sessionPrefix + '_' + options.cookiePrefix;
+
+         this.cookies = new Cookies( { path  : options.sessionPath,
+                                       prefix: prefix } );
+      }
+
+      if (options.selector) $$( options.selector ).each( this.build, this );
+   },
+
+   attachControls: function( id ) {
+      $( id + '_collapse_button' ).addEvent
+         ( 'click', this.collapseTree.bind( this, id ) );
+      $( id + '_expand_button' ).addEvent
+         ( 'click', this.expandTree.bind( this, id ) );
+   },
+
+   attachToggler: function( dt, dd, klass, event ) {
+      $$( '#' + dt.id + ' span.' + klass ).each( function( el ) {
+         el.addEvent( event, function( e ) {
+            e = new Event( e ); e.stop(); return this.toggle( dt, dd );
+         }.bind( this ) );
+      }, this );
+   },
+
+   attachTogglers: function( dt, dd ) {
+      var prefix = this.options.classPrefix;
+
+      this.attachToggler( dt, dd, prefix + '_node_ctrl', 'click'    );
+      this.attachToggler( dt, dd, prefix + '_node_icon', 'dblclick' );
+   },
+
+   build: function( el, index ) {
+      if (! el || ! el.childNodes || el.childNodes.length == 0) return;
+
+      var dt, first = ! this.collection[ index ], node;
+
+      this.collection[ index ] = true;
+
+      if (first) this.attachControls( el.id );
+
+      for (var i = 0, il = el.childNodes.length; i < il; i++) {
+         if (! (node = $( el.childNodes[ i ] ))) continue;
+
+         if (node.nodeName == 'DT') { dt = node; continue; }
+
+         if (node.nodeName != 'DD') continue; var dd = node;
+
+         this.setState( dt, dd, first ); this.attachTogglers( dt, dd );
+
+         for (var j = 0, jl = dd.childNodes.length; j < jl; j++) {
+            if ((node = $( dd.childNodes[ j ] )) && node.nodeName == 'DL')
+               this.build( node, index );
          }
+      }
+   },
 
-         if (this.options.selector)
-            $$( this.options.selector ).each( this.build, this );
-      },
+   close: function( dt, dd ) {
+      var prefix = this.options.classPrefix;
 
-      addToggle: function( dt, dd ) {
-         var klass = this.options.classPrefix + '_node_ctrl';
+      if (dt.hasClass( prefix + '_node_open' )) {
+         dt.swapClass( prefix + '_node_open', prefix + '_node_closed' );
+         dd.swapClass( prefix + '_node_open', prefix + '_node_closed' );
+      }
+      else if (dt.hasClass( prefix + '_node_last_open' )) {
+         dt.swapClass( prefix + '_node_last_open',
+                       prefix + '_node_last_closed' );
+         dd.swapClass( prefix + '_node_last_open',
+                       prefix + '_node_last_closed' );
+      }
 
-         $$( '#' + dt.id + ' span.' + klass ).each( function( el ) {
-               el.onclick = function() {
-                  return this.toggle( dt, dd );
-               }.bind( this );
-            }, this );
+      if (this.options.usePersistance) this.cookies.set( dt.id, '0' );
+   },
 
-         return;
-      },
+   collapseTree: function( treeId ) {
+      var list = $( treeId );
 
-      build: function( el, index ) {
-         if (! el || ! el.childNodes || el.childNodes.length == 0) return;
+      return list == null ? false : this.expandCollapseList( list, 'close' );
+   },
 
-         var dt, node;
+   expandCollapseList: function( el, dirn, itemId ) {
+      if (! el || ! el.childNodes || el.childNodes.length == 0) return false;
 
-         for (var i = 0, il = el.childNodes.length; i < il; i++) {
-            if (! (node = $( el.childNodes[ i ] ))) continue;
+      var dt, node;
 
-            if (node.nodeName == 'DT') { dt = node; continue; }
+      for (var i = 0, il = el.childNodes.length; i < il; i++) {
+         if (! (node = $( el.childNodes[ i ] ))) continue;
 
-            if (node.nodeName != 'DD') continue; var dd = node;
+         if (itemId != null && itemId == node.id) return true;
 
-            for (var j = 0, jl = dd.childNodes.length; j < jl; j++) {
-               if ((node = $( dd.childNodes[ j ] )) && node.nodeName == 'DL')
-                  this.build( node, index );
-            }
+         if (node.nodeName == 'DT') { dt = node; continue; }
 
-            this.recoverState( el, dt, dd );
-            this.addToggle( dt, dd );
-         }
+         if (node.nodeName != 'DD') continue; var dd = node;
 
-         return;
-      },
+         for (var j = 0, jl = dd.childNodes.length; j < jl; j++) {
+            if ((node = $( dd.childNodes[ j ] )) && node.nodeName == 'DL') {
+               var ret = this.expandCollapseList( node, dirn, itemId );
 
-      close: function( dt, dd ) {
-         var prefix = this.options.classPrefix;
+               if (itemId != null && ret) {
+                  if (dirn == 'close') this.close( dt, dd );
+                  else this.open( dt, dd );
 
-         if (dt.hasClass( prefix + '_node_open' )) {
-            dt.removeClass( prefix + '_node_open'   );
-            dt.addClass   ( prefix + '_node_closed' );
-            dd.removeClass( prefix + '_node_open'   );
-            dd.addClass   ( prefix + '_node_closed' );
-         }
-         else if (dt.hasClass( prefix + '_node_last_open' )) {
-            dt.removeClass( prefix + '_node_last_open'   );
-            dt.addClass   ( prefix + '_node_last_closed' );
-            dd.removeClass( prefix + '_node_last_open'   );
-            dd.addClass   ( prefix + '_node_last_closed' );
-         }
-
-         if (this.options.usePersistance) this.cookies.set( dt.id, '0' );
-
-         return;
-      },
-
-      collapseTree: function( treeId ) {
-         var list = $( treeId );
-
-         return list == null ? false : this.expandCollapseList( list, 'close' );
-      },
-
-      expandCollapseList: function( el, dirn, itemId ) {
-         if (! el || ! el.childNodes || el.childNodes.length == 0) return false;
-
-         var dt, node;
-
-         for (var i = 0, il = el.childNodes.length; i < il; i++) {
-            if (! (node = $( el.childNodes[ i ] ))) continue;
-
-            if (itemId != null && itemId == node.id) return true;
-
-            if (node.nodeName == 'DT') { dt = node; continue; }
-
-            if (node.nodeName != 'DD') continue; var dd = node;
-
-            for (var j = 0, jl = dd.childNodes.length; j < jl; j++) {
-               if ((node = $( dd.childNodes[ j ] )) && node.nodeName == 'DL') {
-                  var ret = this.expandCollapseList( node, dirn, itemId );
-
-                  if (itemId != null && ret) {
-                     if (dirn == 'close') this.close( dt, dd );
-                     else this.open( dt, dd );
-
-                     return true;
-                  }
+                  return true;
                }
             }
-
-            if (itemId == null) {
-               if (dirn == 'close') this.close( dt, dd );
-               else this.open( dt, dd );
-            }
          }
 
-         return false;
-      },
-
-      expandToItem: function( treeId, itemId ) {
-         var list  = $( treeId ), o, ret;
-
-         if (list == null) return false;
-
-         if (ret = this.expandCollapseList( list, 'open', itemId )) {
-            if (o = $( itemId ) && o.scrollIntoView) o.scrollIntoView( false );
+         if (itemId == null) {
+            if (dirn == 'close') this.close( dt, dd );
+            else this.open( dt, dd );
          }
-
-         return ret;
-      },
-
-      expandTree: function( treeId ) {
-         var list = $( treeId );
-
-         return list == null ? false : this.expandCollapseList( list, 'open' );
-      },
-
-      open: function( dt, dd ) {
-         var prefix = this.options.classPrefix;
-
-         if (dt.hasClass( prefix + '_node_closed' )) {
-            dt.removeClass( prefix + '_node_closed' );
-            dt.addClass   ( prefix + '_node_open'   );
-            dd.removeClass( prefix + '_node_closed' );
-            dd.addClass   ( prefix + '_node_open'   );
-         }
-         else if (dt.hasClass( prefix + '_node_last_closed' )) {
-            dt.removeClass( prefix + '_node_last_closed' );
-            dt.addClass   ( prefix + '_node_last_open'   );
-            dd.removeClass( prefix + '_node_last_closed' );
-            dd.addClass   ( prefix + '_node_last_open'   );
-         }
-
-         if (this.options.usePersistance) this.cookies.set( dt.id, '1' );
-
-         return;
-      },
-
-      recoverState: function( tree, dt, dd ) {
-         if (this.options.usePersistance) {
-            this.cookies.get( dt.id ) == '1'
-               ? this.open( dt, dd ) : this.close( dt, dd );
-         }
-         else if (! this.collection[ tree.id ]) this.open( dt, dd );
-         else this.close( dt, dd );
-
-         this.collection[ tree.id ] = true;
-         return;
-      },
-
-      toggle: function( dt, dd ) {
-         var prefix = this.options.classPrefix;
-
-         if (dt.hasClass( prefix + '_node_last_open' )
-          || dt.hasClass( prefix + '_node_last_closed' )) {
-            dt.toggleClass( prefix + '_node_last_open'   );
-            dt.toggleClass( prefix + '_node_last_closed' );
-            dd.toggleClass( prefix + '_node_last_open'   );
-            dd.toggleClass( prefix + '_node_last_closed' );
-         }
-         else {
-            dt.toggleClass( prefix + '_node_open'   );
-            dt.toggleClass( prefix + '_node_closed' );
-            dd.toggleClass( prefix + '_node_open'   );
-            dd.toggleClass( prefix + '_node_closed' );
-         }
-
-         if (this.options.usePersistance) {
-            if (dt.hasClass( prefix + '_node_open' )
-                || dt.hasClass( prefix + '_node_last_open' ))
-               this.cookies.set( dt.id, '1' );
-            else this.cookies.set( dt.id, '0' );
-         }
-
-         return false;
       }
-   } );
 
-Trees.implement( new Options );
+      return false;
+   },
+
+   expandToItem: function( treeId, itemId ) {
+      var list  = $( treeId ), o, ret;
+
+      if (list == null) return false;
+
+      if (ret = this.expandCollapseList( list, 'open', itemId )) {
+         if (o = $( itemId ) && o.scrollIntoView) o.scrollIntoView( false );
+      }
+
+      return ret;
+   },
+
+   expandTree: function( treeId ) {
+      var list = $( treeId );
+
+      return list == null ? false : this.expandCollapseList( list, 'open' );
+   },
+
+   open: function( dt, dd ) {
+      var prefix = this.options.classPrefix;
+
+      if (dt.hasClass( prefix + '_node_closed' )) {
+         dt.swapClass( prefix + '_node_closed', prefix + '_node_open' );
+         dd.swapClass( prefix + '_node_closed', prefix + '_node_open' );
+      }
+      else if (dt.hasClass( prefix + '_node_last_closed' )) {
+         dt.swapClass( prefix + '_node_last_closed',
+                       prefix + '_node_last_open' );
+         dd.swapClass( prefix + '_node_last_closed',
+                       prefix + '_node_last_open' );
+      }
+
+      if (this.options.usePersistance) this.cookies.set( dt.id, '1' );
+   },
+
+   setState: function( dt, dd, state ) {
+      if (this.options.usePersistance) {
+         this.cookies.get( dt.id ) == '1'
+            ? this.open( dt, dd ) : this.close( dt, dd );
+      }
+      else {
+         if (state) this.open( dt, dd );
+         else this.close( dt, dd );
+      }
+   },
+
+   toggle: function( dt, dd ) {
+      var prefix = this.options.classPrefix;
+
+      if (dt.hasClass( prefix + '_node_last_open' )
+          || dt.hasClass( prefix + '_node_last_closed' )) {
+         dt.toggleClass( prefix + '_node_last_open'   );
+         dt.toggleClass( prefix + '_node_last_closed' );
+         dd.toggleClass( prefix + '_node_last_open'   );
+         dd.toggleClass( prefix + '_node_last_closed' );
+      }
+      else {
+         dt.toggleClass( prefix + '_node_open'   );
+         dt.toggleClass( prefix + '_node_closed' );
+         dd.toggleClass( prefix + '_node_open'   );
+         dd.toggleClass( prefix + '_node_closed' );
+      }
+
+      if (this.options.usePersistance) {
+         if (dt.hasClass( prefix + '_node_open' )
+             || dt.hasClass( prefix + '_node_last_open' ))
+            this.cookies.set( dt.id, '1' );
+         else this.cookies.set( dt.id, '0' );
+      }
+
+      return false;
+   }
+} );
 
 var WindowUtils = new Class( {
    initialize: function( options ) {
@@ -2530,17 +2860,16 @@ var WindowUtils = new Class( {
    log: function( message ) {
       if (this.quiet) return;
 
-		message = "html-formwidgets.js: " + message;
+      message = "html-formwidgets.js: " + message;
 
-		if (this.customLogFn) { this.customLogFn( message ); }
+      if (this.customLogFn) { this.customLogFn( message ); }
       else if (window.console && window.console.log) {
-			window.console.log( message );
-		}
-	},
+         window.console.log( message );
+      }
+   },
 
-   openWindow: function( href, key, prefs ) {
-      window.open( href, key, prefs );
-      return;
+   openWindow: function( href, options ) {
+      new Browser.Popup( href, options ); return false;
    },
 
    placeOnTop: function() {
@@ -2551,35 +2880,37 @@ var WindowUtils = new Class( {
    },
 
    wayOut: function( href ) {
-      Cookie.remove( this.cname, this.copts );
+      Cookie.dispose( this.cname, this.copts );
 
       if (document.images) top.location.replace( href );
       else top.location.href = href;
    }
-});
+} );
 
 /*
 Author     : luistar15, <leo020588 [at] gmail.com>
 License    : MIT License
 Class      : wysiwyg (rev.06-07-08)
 Parameters :
-	textarea: textarea dom element | default: first textarea
-	klass   : string | css class | default: 'wysiwyg'
-	src     : string | iframe src | default: 'about:blank'
-	buttons : array | list editor buttons | default: ['strong','em','u','superscript','subscript',null,'left','center','right','indent','outdent',null,'h1','h2','h3','p','ul','ol',null,'img','link','unlink',null,'clean','toggle']
-		null -> spacer
+   textarea: textarea dom element | default: first textarea
+   klass   : string | css class | default: 'wysiwyg'
+   src     : string | iframe src | default: 'about:blank'
+   buttons : array | list editor buttons | default: ['strong','em','u','superscript','subscript',null,'left','center','right','indent','outdent',null,'h1','h2','h3','p','ul','ol',null,'img','link','unlink',null,'clean','toggle']
+      null -> spacer
 Methods    :
-	toggleView( editor ): toggle view iframe <-> textarea and update content
-	toTextarea( editor, view ): update content from iframe to textarea
-		view : bolean | if is true, change view | default:false
-	toEditor(editor, view ): update content from textarea to iframe
-		view : bolean | if is true, change view | default:false
-	exec( editor, cmd, value ): execute command on iframe document
-	clean( html ): return valid xhtml string
+   toggleView( editor ): toggle view iframe <-> textarea and update content
+   toTextarea( editor, view ): update content from iframe to textarea
+      view : bolean | if is true, change view | default:false
+   toEditor(editor, view ): update content from textarea to iframe
+      view : bolean | if is true, change view | default:false
+   exec( editor, cmd, value ): execute command on iframe document
+   clean( html ): return valid xhtml string
 */
 
 var WYSIWYG = new Class( {
-   options: {
+   Implements: [ Events, Options ],
+
+   options             : {
       barNum           : 4,
       buttonWidth      : 24,
       buttons          : {
@@ -2649,6 +2980,7 @@ var WYSIWYG = new Class( {
       defaultBody   : '\u00a0',
       defaultClass  : 'wysiwyg_container',
       defaultState  : true,
+      iconGridSize  : 30,
       iframeMargin  : 40,
       iframePadding : 6,
       minWidth      : 600,
@@ -2699,66 +3031,54 @@ var WYSIWYG = new Class( {
    },
 
    initialize: function( options ) {
-      this.setOptions( options );
-      this.collection = new Array();
+      this.setOptions( options ); options = this.options; this.collection = [];
 
-      if (this.options.selector)
-         $$( this.options.selector ).each( this.build, this );
+      if (options.selector) $$( options.selector ).each( this.build, this );
    },
 
    addButton: function( editor, b ) {
-      var but = this.options.buttons[ b ];
+      var but = this.options.buttons[ b ]; if (! but) return false;
+      var el  = Browser.Engine.trident
+              ? new Element( 'a', { class: b, href: '//' + b, title: but[ 1 ] })
+              : new Element( 'span', { class: b, title: but[ 1 ] } );
 
-      if (! but) return false;
+      if (b != 'toggle') this.set_icon( el, but[ 0 ] );
 
-      var x   = 0 - 30 * (but[ 0 ] % 10);
-      var y   = 0 - 30 * Math.floor( but[ 0 ] / 10 );
+      var handler = function( self, editor, b ) {
+         return function( e ) {
+            e = new Event( e ); e.stop();
 
-      if (window.ie) {
-         var elem = new Element( 'a', {
-            class: b, href: '//' + b, title: but[ 1 ] } );
+            return b == 'toggle' ? this.toggleView( editor, true )
+                                 : this.exec( editor, b );
+         }.bind( self );
+      }( this, editor, b );
 
-         if (b != 'toggle')
-            elem.setStyle( 'background-position', x + 'px ' + y + 'px' );
-
-         elem.addEvent( 'click', function( e ) {
-            var ev = new Event(e); ev.stop();
-
-            if (b == 'toggle') this.toggleView( editor );
-            else this.exec( editor, b );
-         }.bind( this ) ).inject( editor.toolbar );
-      }
-      else {
-         var elem = new Element( 'span', { class: b, title: but[ 1 ] } );
-         var func = b == 'toggle'
-                  ? this.toggleView.bind( this, editor )
-                  : this.exec.bind( this, [ editor, b ] );
-
-         if (b != 'toggle')
-            elem.setStyle( 'background-position', x + 'px ' + y + 'px' );
-
-        elem.addEvent( 'click', func ).inject( editor.toolbar );
-      }
-
+      el.addEvent( 'click', handler ).inject( editor.toolbar );
       return true;
    },
 
    build: function( el, index ) {
-      var editor = {}, options = this.options;
+      var options = this.options;
+      var editor  = {
+         element: el,
+         height : -1,
+         barNum : options.barNum,
+         open   : ! options.defaultState,
+         toolbar: new Element( 'span',   { class: 'toolbar' } ),
+         iframe : new Element( 'iframe', { frameborder: 0, src: 'about:blank' })
+      };
 
-      editor.element = el;
-      editor.height  = -1;
-      editor.barNum  = this.options.barNum;
-      editor.open    = ! options.defaultState;
-      editor.toolbar = new Element( 'span' , { class: 'toolbar' } );
-      editor.iframe  = new Element( 'iframe', {
-         frameborder: 0, src: 'about:blank'
-      } ).addEvent( 'load', function() {
-         editor.doc = editor.iframe.contentWindow.document;
-         this.initialiseBody( editor );
-         editor.doc.designMode = 'on';
-         this.toggleView( editor );
-      }.bind( this ) );
+      this.loader = function( self, editor ) {
+         return function() {
+            editor.iframe.removeEvent( 'load', this.loader );
+            editor.doc = editor.iframe.contentWindow.document;
+            this.initialiseBody( editor );
+            editor.doc.designMode = 'on';
+            this.toggleView( editor );
+         }.bind( self );
+      }( this, editor );
+
+      editor.iframe.addEvent( 'load', this.loader );
 
       new Element( 'span', {
          class: options.defaultClass
@@ -2770,17 +3090,17 @@ var WYSIWYG = new Class( {
          if (editor.open) this.toTextarea( editor );
       }.bind( this ) );
 
-      this.collection[ index ] = editor;
+      this.collection.include( editor );
    },
 
    clean: function( html ) {
-      return html.unescapeHTML()
+      return html
          .replace(/\s{2,}/g,' ')
          .replace(/^\s+|\s+$/g,'')
          .replace(/<[^> ]*/g,function(s){return s.toLowerCase()})
          .replace(/<[^>]*>/g,function(s){s=s.replace(/ [^=]+=/g,function(a){return a.toLowerCase()});return s})
          .replace(/<[^>]*>/g,function(s){s=s.replace(/( [^=]+=)([^\"][^ >]*)/g,"$1\"$2\"");return s})
-         .replace(/<[^>]*>/g,function(s){s=s.replace(/ ([^=]+)="[^\"]*"/g,function(a,b){if(b=='alt'||b=='href'||b=='id'||b=='name'||b=='src'||b=='style'||b=='title'){return a}return''});return s})
+         .replace(/<[^>]*>/g,function(s){s=s.replace(/ ([^=]+)="[^\"]*"/g,function(a,b){if(b=='alt'||b=='class'||b=='href'||b=='id'||b=='name'||b=='src'||b=='style'||b=='title'){return a}return''});return s})
          .replace(/<b(\s+|>)/g,"<strong$1")
          .replace(/<\/b(\s+|>)/g,"</strong$1")
          .replace(/<i(\s+|>)/g,"<em$1")
@@ -2799,10 +3119,11 @@ var WYSIWYG = new Class( {
          .replace(/<\?xml[^>]*>/g,'')
          .replace(/<[^ >]+:[^>]*>/g,'')
          .replace(/<\/[^ >]+:[^>]*>/g,'')
-         .replace(/<br(\s+\/)?>$/g, '')
-         .replace(/^\s*&nbsp\;\s*/g, '')
-         .replace(/\s*&nbsp\;\s*$/g, '')
+         .replace(/(<br(\s+\/)?>)([^\n]|[^\r])/g,"$1\r$3")
+         .replace(/^&nbsp\;/g,'')
+         .replace(/&nbsp\;$/g,'')
    },
+      //         .replace(/<br(\s+\/)?>$/g, '')
    //         .replace(/(<[^\/]>|<[^\/][^>]*[^\/]>)\s*<\/[^>]*>/g,'')
 
    exec: function( editor, b, v ) {
@@ -2824,7 +3145,7 @@ var WYSIWYG = new Class( {
       case 'fullscreen':
          return this.fullscreen( editor );
       case 'nbsp':
-         return doc.execCommand( 'inserthtml', false, '&nbsp;' );
+         return doc.execCommand( 'inserthtml', false, '\u00a0' );
       case 'nexttoolbar':
          return this.nextToolBar( editor );
       default:
@@ -2837,7 +3158,7 @@ var WYSIWYG = new Class( {
 
       if (b == 'clear') this.initialiseBody( editor );
 
-      return;
+      return false;
    },
 
    fullscreen: function( editor ) {
@@ -2847,24 +3168,23 @@ var WYSIWYG = new Class( {
       if (editor.height == -1) {
          var container = $( options.container );
 
-         editor.width  = iframe.getSize().size.x;
-         editor.height = iframe.getSize().size.y;
-         width         = container.getSize().size.x - options.iframeMargin;
-         height        = container.getSize().size.y - options.iframeMargin
-            - toolbar.getSize().size.y;
+         editor.width  = iframe.getSize().x;
+         editor.height = iframe.getSize().y;
+         width         = container.getSize().x - options.iframeMargin;
+         height        = container.getSize().y - options.iframeMargin
+                         - toolbar.getSize().y;
       }
       else { width = editor.width; height = editor.height; editor.height = -1; }
 
       toolbar.setStyle( 'width', (width  - options.iframePadding) + 'px' );
       iframe.setStyle(  'width',  width  + 'px' );
       iframe.setStyle(  'height', height + 'px' );
-      return;
    },
 
    initialiseBody: function( editor, html ) {
       html = html && html.length > 0
            ? html.replace( /&nbsp;/g, '\u00a0' ) : this.options.defaultBody;
-      $( editor.doc.body ).setHTML( html );
+      $( editor.doc.body ).set( 'html', html );
    },
 
    initialiseToolbar: function( editor ) {
@@ -2902,7 +3222,6 @@ var WYSIWYG = new Class( {
       barWidth = Math.max( options.minWidth, barWidth );
       editor.toolbar.setStyle( 'width', barWidth );
       editor.iframe.setStyle( 'width', barWidth + options.iframePadding );
-      return;
    },
 
    nextToolBar: function( editor ) {
@@ -2911,48 +3230,53 @@ var WYSIWYG = new Class( {
       if (editor.barNum > this.options.toolbars.length - 1) editor.barNum = 0;
 
       this.initialiseToolbar( editor );
-      return;
+   },
+
+   set_icon: function( el, but_no ) {
+      var x = 0 - this.options.iconGridSize * (but_no % 10);
+      var y = 0 - this.options.iconGridSize * Math.floor( but_no / 10 );
+
+      el.setStyle( 'background-position', x + 'px ' + y + 'px' );
    },
 
    toEditor: function( editor, view ) {
-      this.initialiseBody( editor, editor.element.value.trim() || '' );
+      var html = editor.element.value.trim() || '';
+
+      this.initialiseBody( editor, html );
 
       if (view) {
          editor.element.addClass( 'hidden' );
          editor.iframe.removeClass( 'hidden' );
          editor.toolbar.removeClass( 'disabled' );
-         editor.iframe.contentWindow.focus();
       }
-
-      return;
    },
 
-   toggleView: function( editor ) {
+   toggleView: function( editor, focus ) {
       if (editor.doc.body) {
          editor.open = ! editor.open;
 
          if (editor.open) this.toEditor( editor, true );
          else this.toTextarea( editor, true );
+
+              if (focus &&   editor.open) editor.iframe.contentWindow.focus();
+         else if (focus && ! editor.open) editor.element.focus();
       }
 
-      return;
+      return false;
    },
 
    toTextarea: function( editor, view ) {
-      editor.element.value = this.clean( editor.doc.body.innerHTML );
+      var doc; if (! (doc = editor.doc)) return;
+
+      editor.element.value = this.clean( doc.body.innerHTML.unescapeHTML() );
 
       if (view) {
          editor.element.removeClass( 'hidden' );
          editor.iframe.addClass( 'hidden' );
          editor.toolbar.addClass( 'disabled' );
-         editor.element.focus();
       }
-
-      return;
    }
 } );
-
-WYSIWYG.implement( new Options );
 
 function Expand_Collapse() {}
 

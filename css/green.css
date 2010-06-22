@@ -1,7 +1,9 @@
-/* @(#)$Id: green.css 986 2010-04-26 20:16:13Z pjf $ */
+/* @(#)$Id: green.css 1001 2010-06-18 00:18:39Z pjf $ */
 
 body { background: #9C9 url(background.jpg) repeat 100% 100%; }
 
+.accordion_panel_container .active { background-color: #663; color: #FFC; }
+.accordion_panel_container .inactive { background-color: #CC9; color: #000; }
 .anchor_fade { color: #000; }
 .anchor_fade:hover { background-color: #FFC; }
 .error { background-color: #FCC; color: black; }
@@ -17,6 +19,9 @@ body { background: #9C9 url(background.jpg) repeat 100% 100%; }
 .slider { background-color: #CC9 }
 .slider .knob { background-color: #9C9 }
 .split { color: #336; }
+.tabs_fade { color: #000; }
+.tabset .tab_selected { border-color: #336 #336 #FFC; }
+
 .iFrameItem .tree { background: #CC9; }
 .treeItem a.selected a.selected-inactive { color: #000; }
 .treeItem a.treeFade:hover { background-color: #FFC; }
@@ -56,7 +61,7 @@ th.table { background-color: #663; color: #FFC; }
   background: #663; color: #FFC;
 }
 .calendar .nav {
-  background: #663 url(menuarrow.gif) no-repeat 100% 100%;
+  background-color: #663;  
 }
 .calendar thead .title { /* This holds the current "month, year" */
   background: #250; color: #efa;
@@ -171,7 +176,7 @@ b.tr1 { background: #8b8b32; }
 .library_fade { color: #000; }
 .library_fade:hover { background-color: #FFC; }
 .library_header_fade { color: #000; }
-.library_subheader { color: #000; }
+.library_subheader { background-color: #9C9; color: #000; }
 div.library_header { background-color: #CC9; }
 table.grid { background-color: #CC9; }
 table.recipe td.label { background-color: #CC9; }

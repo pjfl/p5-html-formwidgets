@@ -1,19 +1,35 @@
 /* $Id$ */
 
 var State = new Class( {
+   Implements: [ Events, Options ],
+
+   options           : {
+      config         : { calendars  : {},
+                         tabSwappers: { options: { smooth    : true,
+                                                   smoothSize: true } },
+                         sliders    : {},
+                         submit     : {} },
+      formName       : null,
+      onStateComplete: $empty,
+      popup          : false,
+      sessionPath    : '/',
+      sessionPrefix  : 'behaviour',
+      url            : null
+   },
+
    initialize: function( options ) {
-      this.assets          = options.assets;
-      this.cookies         = new Cookies( { path  : options.path,
-                                            prefix: options.prefix } );
-      this.onStateComplete = options.onStateComplete;
-      this.popup           = options.popup;
+      this.setOptions( options ); var opt = this.options;
+
+      this.config  = $merge( opt.config );
+      this.cookies = new Cookies( { path  : opt.sessionPath,
+                                    prefix: opt.sessionPrefix } );
    },
 
    resize: function( changed ) {
-      var append, buttons, content, elWidth, footer, foot_height = 0;
+      var append, content, footer, foot_height = 0;
       var height = 5, h = window.getHeight(), w = window.getWidth();
 
-      if (! this.popup) {
+      if (! this.options.popup) {
          this.cookies.set( 'width',  w );
          this.cookies.set( 'height', h );
          window.defaultStatus = 'w: ' + w + ' h: ' + h;
@@ -35,154 +51,140 @@ var State = new Class( {
 
       content.setStyle( 'marginBottom', height + 'px' );
 
-      if (this.sidebar) elWidth = this.sidebar.resize( changed, height );
-      else elWidth = 0;
+      var width = this.sidebar ? this.sidebar.resize( changed, height ) : 0;
 
-      content.setStyle( 'marginLeft', elWidth + 'px' );
+      content.setStyle( 'marginLeft', width + 'px' );
 
-      if (buttons = $( 'buttonDisp' ))
-           elWidth = buttons.getStyle( 'width' ).toInt();
-      else elWidth = 0;
+      var buttons = $( 'buttonDisp' );
 
-      content.setStyle( 'marginRight', elWidth + 'px' );
-      return;
+      width = buttons ? buttons.getStyle( 'width' ).toInt() : 0;
+      content.setStyle( 'marginRight', width + 'px' );
    },
 
-   setState: function( first_fld ) {
-      var cookie_ref, el;
+   restoreFrom: function( cookie_str ) {
+      var cookies = cookie_str.split( '+' ), el;
+
+      for (var i = 0, il = cookies.length; i < il; i++) {
+         if (! cookies[ i ]) continue;
+
+         var pair = cookies[ i ].split( '~' );
+         var p0   = unescape( pair[ 0 ] );
+         var p1   = unescape( pair[ 1 ] );
+
+         /* Deprecated */
+         /* Restore state of any checkboxes whose ids end in Box */
+         if (el = $( p0 + 'Box' ))
+            el.checked = (p1 == 'true' ? true : false);
+
+         /* Restore the state of any elements whose ids end in Disp */
+         if (el = $( p0 + 'Disp' ))
+            el.setStyle( 'display', (p1 != 'false' ? '' : 'none') );
+
+         /* Restore the className for elements whose ids end in Icon */
+         if (el = $( p0 + 'Icon' )) { if (p1) el.className = p1; }
+
+         /* Restore the source URL for elements whose ids end in Img */
+         if (el = $( p0 + 'Img' )) { if (p1) el.src = p1; }
+      }
+   },
+
+   setState: function( firstField ) {
+      var cookies, el, options = this.options;
 
       /* Use state cookie to restore the visual state of the page */
-      if (cookie_ref = this.cookies.get()) {
-         var cookies = cookie_ref.split( '+' );
+      if (cookies = this.cookies.get()) this.restoreFrom( cookies );
 
-         for (var i = 0; i < cookies.length; i++) {
-            if (! cookies[ i ]) continue;
-
-            var pair = cookies[ i ].split( '~' );
-            var p0   = unescape( pair[ 0 ] );
-            var p1   = unescape( pair[ 1 ] );
-
-            /* Deprecated */
-            /* Restore state of any checkboxes whose ids end in Box */
-            if (el = $( p0 + 'Box' ))
-               el.checked = (p1 == 'true' ? true : false);
-
-            /* Restore the state of any elements whose ids end in Disp */
-            if (el = $( p0 + 'Disp' ))
-               el.setStyle( 'display', (p1 != 'false' ? '' : 'none') );
-
-            /* Restore the className for elements whose ids end in Icon */
-            if (el = $( p0 + 'Icon' )) { if (p1) el.className = p1; }
-
-            /* Restore the source URL for elements whose ids end in Img */
-            if (el = $( p0 + 'Img' )) { if (p1) el.src = p1; }
-         }
-      }
-
-      this.autosizer = new AutoSize();
+      this.submit      = new SubmitUtils( { config  : this.config.submit,
+                                            cookies : this.cookies,
+                                            formName: options.formName } );
+      this.autosizer   = new AutoSize();
+      this.calendars   = new Calendars( { config: this.config.calendars,
+                                          submit: this.submit } );
       this.checkboxReplacements = new CheckboxReplace();
-      this.sidebar   = new Sidebar( { state: this } );
-      this.setupScroller( 'content' );
-      this.trees     = new Trees();
-      this.wysiwyg   = new WYSIWYG();
-      this.linkFade  = new LinkFader();
-      this.tips      = new Tips( {
-         initialize: function() {
-		      this.fx  = new Fx.Style( this.toolTip, 'opacity',
-               { duration: 500, wait: false } ).set( 0 );
+      this.freeList    = new FreeList();
+      this.groupMember = new GroupMember();
+      this.sidebar     = new Sidebar( this );
+      this.sliders     = new Sliders( { config: this.config.sliders,
+                                        submit: this.submit } );
+      this.tables      = new TableUtils(
+         { formName      : options.formName,
+           onSortComplete: function() {
+               this.replaceAll() }.bind( this.checkboxReplacements ),
+           url           : options.url } );
+      this.tabSwappers = new TabSwappers( { config : this.config.tabSwappers,
+                                            cookies: this.cookies } );
+      this.trees       = new Trees( { sessionPath  : options.sessionPath,
+                                      sessionPrefix: options.sessionPrefix } );
+      this.wysiwyg     = new WYSIWYG();
+      this.linkFade    = new LinkFader();
+      this.tips        = new Tips( {
+         onHide      : function() { this.fx.start( 0 ) },
+         onInitialize: function() {
+		      this.fx    = new Fx.Tween( this.tip,
+               { duration: 500, property: 'opacity', wait: false } ).set( 0 );
          },
-	      onShow    : function( toolTip ) { this.fx.start( 1 ) },
-         onHide    : function( toolTip ) { this.fx.start( 0 ) },
-         showDelay : 666
+	      onShow      : function() { this.fx.start( 1 ) },
+         showDelay   : 666
       } );
       this.resize();
       this.columnizers = new Columnizers();
 
-      // TODO: Either make this look right or drop it
-      if ($( 'results' )) {
-         new Fx.Style( 'results', 'margin-top',
-            { duration: 1500 } ).set( -window.getHeight() ).start( 0 );
-      }
+      this.fireEvent( 'stateComplete' );
 
-      if (this.onStateComplete) this.onStateComplete.call( this );
-
-      if (first_fld && (el = $( first_fld ))) el.focus();
+      if (firstField && (el = $( firstField ))) el.focus();
    },
 
-   setupScroller: function( id ) {
-      if (! this.scroller) return;
+   toggle: function( el ) {
+      var disp = $( el.id + 'Disp' );
 
-      this.scroller = new Scroller( id, { area: 150, velocity: 1 } );
-
-      id = $( id );
-      id.setStyle( 'cursor', 'url(/static/images/openhand.cur), move' );
-
-      id.addEvent( 'mousedown', function() {
-         id.setStyle( 'cursor', 'url(/static/images/closedhand.cur), move' );
-         this.scroller.start();
-      }.bind( this ) );
-
-      id.addEvent( 'mouseup', function() {
-         id.setStyle( 'cursor', 'url(/static/images/openhand.cur), move' );
-         this.scroller.stop();
-      }.bind( this ) );
-   },
-
-   toggle: function( e ) {
-      var elem = $( e.id + 'Disp' );
-
-      if (elem.getStyle( 'display' ) != 'none') {
-         elem.setStyle( 'display', 'none' ); this.cookies.remove( e.id );
+      if (disp.getStyle( 'display' ) != 'none') {
+         disp.setStyle( 'display', 'none' ); this.cookies.remove( el.id );
       }
       else {
-         elem.setStyle( 'display', '' ); this.cookies.set( e.id, 'true' );
+         disp.setStyle( 'display', '' ); this.cookies.set( el.id, 'true' );
       }
 
       this.resize();
    },
 
    toggleState: function( id ) {
-      var elem = $( id + 'Box' );
+      var el; if (! (el = $( id + 'Box' ))) return;
 
-      this.cookies.set( id, (elem.checked ? 'true' : 'false') );
+      this.cookies.set( id, (el.checked ? 'true' : 'false') );
    },
 
-   toggleSwap: function( e, s1, s2 ) {
-      var elem;
+   toggleSwap: function( el, s1, s2 ) {
+      var disp;
 
-      if (elem = $( e.id + 'Disp' )) {
-         if (elem.getStyle( 'display' ) !=  'none') {
-            elem.setStyle( 'display', 'none' );
-            this.cookies.remove( e.id );
+      if (disp = $( el.id + 'Disp' )) {
+         if (disp.getStyle( 'display' ) != 'none') {
+            disp.setStyle( 'display', 'none' ); this.cookies.remove( el.id );
 
-            if (elem = $( e.id )) elem.setHTML( s2 );
+            if (el = $( el.id )) el.set( 'html', s2 );
          }
          else {
-            elem.setStyle( 'display', '' );
-            this.cookies.set( e.id, s2 );
+            disp.setStyle( 'display', '' ); this.cookies.set( el.id, s2 );
 
-            if (elem = $( e.id )) elem.setHTML( s1 );
+            if (el = $( el.id )) el.set( 'html', s1 );
          }
       }
 
       this.resize();
    },
 
-   toggleSwapImg: function( e, s1, s2 ) {
-      var elem;
+   toggleSwapImg: function( el, s1, s2 ) {
+      var disp;
 
-      if (elem = $( e.id + 'Disp' )) {
-         if (elem.getStyle( 'display' ) != 'none') {
-            elem.setStyle( 'display', 'none' );
-            this.cookies.remove( e.id );
+      if (disp = $( el.id + 'Disp' )) {
+         if (disp.getStyle( 'display' ) != 'none') {
+            disp.setStyle( 'display', 'none' ); this.cookies.remove( el.id );
 
-            if (elem = $( e.id + 'Img' )) elem.src = s1;
+            if (el = $( el.id + 'Img' )) el.src = s1;
          }
          else {
-            elem.setStyle( 'display', '' );
-            this.cookies.set( e.id, s2 );
+            disp.setStyle( 'display', '' ); this.cookies.set( el.id, s2 );
 
-            if (elem = $( e.id + 'Img' )) elem.src = s2;
+            if (el = $( el.id + 'Img' )) el.src = s2;
          }
       }
 
@@ -190,52 +192,45 @@ var State = new Class( {
    },
 
    toggleSwapText: function( id, cookie, s1, s2 ) {
-      var elem = $( id );
+      var el = $( id );
 
       if (this.cookies.get( cookie ) == 'true') {
          this.cookies.set( cookie, 'false' );
 
-         if (elem) elem.setHTML( s2 );
+         if (el) el.set( 'html', s2 );
 
-         if (elem = $( cookie + 'Disp' )) elem.setStyle( 'display', 'none' );
+         if (el = $( cookie + 'Disp' )) el.setStyle( 'display', 'none' );
       }
       else {
          this.cookies.set( cookie, 'true' );
 
-         if (elem) elem.setHTML( s1 );
+         if (el) el.set( 'html', s1 );
 
-         if (elem = $( cookie + 'Disp' )) elem.setStyle( 'display', '' );
+         if (el = $( cookie + 'Disp' )) el.setStyle( 'display', '' );
       }
 
       this.resize();
    }
 } );
 
-behaviour.freeList    = new FreeList(    { form  : behaviour.formName } );
-behaviour.groupMember = new GroupMember( { form  : behaviour.formName } );
-behaviour.loadMore    = new LoadMore(    { url   : behaviour.url } );
-behaviour.server      = new ServerUtils( { url   : behaviour.url } );
-behaviour.submit      = new SubmitUtils( { form  : behaviour.formName,
-                                           path  : behaviour.sessionPath,
-                                           prefix: behaviour.sessionPrefix } );
-behaviour.table       = new TableUtils(  { form  : behaviour.formName,
-                                           url   : behaviour.url } );
-behaviour.window      = new WindowUtils( { path  : behaviour.sessionPath,
-                                           prefix: behaviour.sessionPrefix,
-                                           target: behaviour.target } );
-behaviour.state       = new State
-   ( { assets         : behaviour.assetsPath,
-       onStateComplete: function() {
-         var cbr = this.checkboxReplacements;
-         behaviour.table.sortComplete = cbr.replaceAll.bind( cbr ); },
-       path           : behaviour.sessionPath,
-       popup          : behaviour.isPopup,
-       prefix         : behaviour.sessionPrefix } );
+behaviour.loadMore  = new LoadMore(    { url   : behaviour.url } );
+behaviour.server    = new ServerUtils( { url   : behaviour.url } );
+behaviour.window    = new WindowUtils( { path  : behaviour.sessionPath,
+                                         prefix: behaviour.sessionPrefix,
+                                         target: behaviour.target } );
+behaviour.state     = new State
+   ( { formName     : behaviour.formName,
+       popup        : behaviour.isPopup,
+       sessionPath  : behaviour.sessionPath,
+       sessionPrefix: behaviour.sessionPrefix,
+       url          : behaviour.url } );
 
-window.onresize = function() { this.resize( true ); }.bind( behaviour.state );
+window.onresize = function() { this.state.resize( true ) }.bind( behaviour );
+window.onload   = function() {
+   this.state.setState( this.firstField ) }.bind( behaviour );
 
 /* Local Variables:
- * mode: java
+ * mode: javacsript
  * tab-width: 3
  * End:
  */

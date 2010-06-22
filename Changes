@@ -1,6 +1,6 @@
 Revision history for HTML::FormWidgets
 
-0.6.251  2010-06-22
+0.6.253  2010-06-22
          - Added TabSwapper
          - Added clear field to date
          - Tables are now client side sortable

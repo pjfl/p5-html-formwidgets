@@ -1,4 +1,4 @@
-/* @(#)$Id: 15html-formwidgets.js 1016 2010-06-22 18:56:12Z pjf $
+/* @(#)$Id: 15html-formwidgets.js 1017 2010-06-24 23:42:29Z pjf $
 
    Portions of this code are taken from MooTools 1.2 which is:
       Copyright (c) 2006-2008 [Valerio Proietti](http://mad4milk.net/).
@@ -323,7 +323,7 @@ var AutoSize = new Class( {
 
    options     : {
       interval : 1100,       // update interval in milliseconds
-      margin   : 24,         // gap (in px) to maintain between last line
+      margin   : 30,         // gap (in px) to maintain between last line
                              // of text and bottom of textarea
       minHeight: 48,         // minimum height of textarea
       selector : '.autosize' // element class to search for
@@ -340,6 +340,7 @@ var AutoSize = new Class( {
 
       autoSizer.element = $( el );
       autoSizer.dummy = new Element( 'div', {
+         class : 'autosize_dummy',
          styles: {
             'overflow-y': 'auto',
             'position'  : 'absolute',
@@ -358,8 +359,9 @@ var AutoSize = new Class( {
    },
 
    resize: function( autoSizer ) {
-      var el   = autoSizer.element;
-      var html = el.value.replace( /\n|\r\n/g, '<br>X' ).toLowerCase();
+      var el = autoSizer.element, html = el.value;
+
+      html = html.replace( /\r\n|\n/g, '<br />' );
 
       if (autoSizer.html == html ) return;
 
@@ -370,7 +372,7 @@ var AutoSize = new Class( {
       var triggerHeight = dummyHeight + options.margin;
       var newHeight     = Math.max( autoSizer.minHeight, triggerHeight );
 
-      if (el.clientHeight != triggerHeight) {
+      if (el.clientHeight != newHeight) {
          new Fx.Tween( el, {
             duration  : 1000,
             property  : 'height',
@@ -2887,25 +2889,10 @@ var WindowUtils = new Class( {
    }
 } );
 
-/*
-Author     : luistar15, <leo020588 [at] gmail.com>
-License    : MIT License
-Class      : wysiwyg (rev.06-07-08)
-Parameters :
-   textarea: textarea dom element | default: first textarea
-   klass   : string | css class | default: 'wysiwyg'
-   src     : string | iframe src | default: 'about:blank'
-   buttons : array | list editor buttons | default: ['strong','em','u','superscript','subscript',null,'left','center','right','indent','outdent',null,'h1','h2','h3','p','ul','ol',null,'img','link','unlink',null,'clean','toggle']
-      null -> spacer
-Methods    :
-   toggleView( editor ): toggle view iframe <-> textarea and update content
-   toTextarea( editor, view ): update content from iframe to textarea
-      view : bolean | if is true, change view | default:false
-   toEditor(editor, view ): update content from textarea to iframe
-      view : bolean | if is true, change view | default:false
-   exec( editor, cmd, value ): execute command on iframe document
-   clean( html ): return valid xhtml string
-*/
+/* Author  : luistar15, <leo020588 [at] gmail.com>
+ * License : MIT License
+ * Class   : wysiwyg (rev.06-07-08)
+ */
 
 var WYSIWYG = new Class( {
    Implements: [ Events, Options ],
@@ -2981,8 +2968,9 @@ var WYSIWYG = new Class( {
       defaultClass  : 'wysiwyg_container',
       defaultState  : true,
       iconGridSize  : 30,
-      iframeMargin  : 40,
-      iframePadding : 6,
+      iconsPerRow   : 10,
+      iframeMargin  : 80,
+      iframePadding : 14,
       minWidth      : 600,
       panels        : {
          alignment  : [ 'justifyleft', 'justifycenter',
@@ -3025,15 +3013,14 @@ var WYSIWYG = new Class( {
            'indent', 'lists', 'links', 'elements', 'images' ],
          [ 'control', 'edit3', 'view',
            'style', 'format', null, 'fonts', 'alignment',
-           'indent', 'lists', 'links', 'elements', 'media',
-           null, 'tables' ]
+           'indent', 'lists', 'links', 'elements', 'media', null, 'tables' ]
       ]
    },
 
    initialize: function( options ) {
-      this.setOptions( options ); options = this.options; this.collection = [];
+      this.setOptions( options ); var opt = this.options; this.collection = [];
 
-      if (options.selector) $$( options.selector ).each( this.build, this );
+      if (opt.selector) $$( opt.selector ).each( this.build, this );
    },
 
    addButton: function( editor, b ) {
@@ -3042,11 +3029,11 @@ var WYSIWYG = new Class( {
               ? new Element( 'a', { class: b, href: '//' + b, title: but[ 1 ] })
               : new Element( 'span', { class: b, title: but[ 1 ] } );
 
-      if (b != 'toggle') this.set_icon( el, but[ 0 ] );
+      if (b != 'toggle') this.setIcon( el, but[ 0 ] );
 
       var handler = function( self, editor, b ) {
-         return function( e ) {
-            e = new Event( e ); e.stop();
+         return function( ev ) {
+            ev = new Event( ev ); ev.stop();
 
             return b == 'toggle' ? this.toggleView( editor, true )
                                  : this.exec( editor, b );
@@ -3058,12 +3045,12 @@ var WYSIWYG = new Class( {
    },
 
    build: function( el, index ) {
-      var options = this.options;
-      var editor  = {
+      var opt    = this.options;
+      var editor = {
          element: el,
          height : -1,
-         barNum : options.barNum,
-         open   : ! options.defaultState,
+         barNum : opt.barNum,
+         open   : ! opt.defaultState,
          toolbar: new Element( 'span',   { class: 'toolbar' } ),
          iframe : new Element( 'iframe', { frameborder: 0, src: 'about:blank' })
       };
@@ -3072,7 +3059,7 @@ var WYSIWYG = new Class( {
          return function() {
             editor.iframe.removeEvent( 'load', this.loader );
             editor.doc = editor.iframe.contentWindow.document;
-            this.initialiseBody( editor );
+            this.initialiseBody( editor, editor.element.value );
             editor.doc.designMode = 'on';
             this.toggleView( editor );
          }.bind( self );
@@ -3081,12 +3068,12 @@ var WYSIWYG = new Class( {
       editor.iframe.addEvent( 'load', this.loader );
 
       new Element( 'span', {
-         class: options.defaultClass
+         class: opt.defaultClass
       } ).injectBefore( el ).adopt( editor.toolbar, editor.iframe, el );
 
       this.initialiseToolbar( editor );
 
-      window.addEvent( 'unload', function() {
+      window.addEvent( 'submit', function() {
          if (editor.open) this.toTextarea( editor );
       }.bind( this ) );
 
@@ -3095,36 +3082,49 @@ var WYSIWYG = new Class( {
 
    clean: function( html ) {
       return html
+         .replace( /<[^> ]*/g, function( s ) { return s.toLowerCase() } )
+         .replace( /<[^>]*>/g, function( s ) {
+               s = s.replace( / [^=]+=/g, function( a ) {
+                     return a.toLowerCase() } ); return s } )
+         .replace( /<[^>]*>/g, function( s ) {
+               s = s.replace( /( [^=]+=)([^\"][^ >]*)/g, '$1\"$2\"' );
+               return s } )
+         .replace( /(<[^>]+) array="[^\"]*"([^>]*>)/g, '$1$2' )
+         .replace( /<span style="font-weight: normal;">(.+?)<\/span>/gm, '$1' )
+         .replace( /<span style="font-weight: bold;">(.+?)<\/span>/gm,
+                   '<strong>$1</strong>' )
+         .replace( /<span style="font-style: italic;">(.+?)<\/span>/gm,
+                   '<em>$1</em>' )
+         .replace( /<span style="(font-weight: bold; ?|font-style: italic; ?){2}">(.+?)<\/span>/gm,
+                   '<strong><em>$2</em></strong>' )
+         .replace( /<b(\s+|>)/g, '<strong$1' )
+         .replace( /<\/b(\s+|>)/g, '</strong$1' )
+         .replace( /<i(\s+|>)/g, '<em$1' )
+         .replace( /<\/i(\s+|>)/g, '</em$1' )
+         .replace( /<u>(.+?)<\/u>/gm,
+                   '<span style="text-decoration: underline;">$1</span>' )
+         .replace( /<img src="([^\">]*)">/g, '<img alt="Image" src="$1" />' )
+         .replace( /(<img [^>]+[^\/])>/g, '$1 />' )
+         .replace( /(<[^>]+)\s+>/g, '$1>' )
+         .replace( /<br>\s*<\//g, '</' )
+         .replace( /^&nbsp\;/g, ' ' )
+         .replace( /&nbsp\;$/g, ' ' )
+         .replace( /^\s+|\s+$/g, '' );
+      /*
+         .replace( /<(br|hr)>/g, '<$1 />' )
          .replace(/\s{2,}/g,' ')
-         .replace(/^\s+|\s+$/g,'')
-         .replace(/<[^> ]*/g,function(s){return s.toLowerCase()})
-         .replace(/<[^>]*>/g,function(s){s=s.replace(/ [^=]+=/g,function(a){return a.toLowerCase()});return s})
-         .replace(/<[^>]*>/g,function(s){s=s.replace(/( [^=]+=)([^\"][^ >]*)/g,"$1\"$2\"");return s})
          .replace(/<[^>]*>/g,function(s){s=s.replace(/ ([^=]+)="[^\"]*"/g,function(a,b){if(b=='alt'||b=='class'||b=='href'||b=='id'||b=='name'||b=='src'||b=='style'||b=='title'){return a}return''});return s})
-         .replace(/<b(\s+|>)/g,"<strong$1")
-         .replace(/<\/b(\s+|>)/g,"</strong$1")
-         .replace(/<i(\s+|>)/g,"<em$1")
-         .replace(/<\/i(\s+|>)/g,"</em$1")
-         .replace(/<span style="font-weight: normal;">(.+?)<\/span>/gm,'$1')
-         .replace(/<span style="font-weight: bold;">(.+?)<\/span>/gm,'<strong>$1</strong>')
-         .replace(/<span style="font-style: italic;">(.+?)<\/span>/gm,'<em>$1</em>')
-         .replace(/<span style="(font-weight: bold; ?|font-style: italic; ?){2}">(.+?)<\/span>/gm,'<strong><em>$2</em></strong>')
-         .replace(/<img src="([^\">]*)">/g,'<img alt="Image" src="$1" />')
-         .replace(/(<img [^>]+[^\/])>/g,"$1 />")
-         .replace(/<u>(.+?)<\/u>/gm,'<span style="text-decoration: underline;">$1</span>')
          .replace(/<font[^>]*?>(.+?)<\/font>/gm,'$1')
          .replace(/<font>|<\/font>/gm,'')
-         .replace(/<br(\s+\/)?>\s*<\/(h1|h2|h3|h4|h5|h6|li|p)/g,'</$1')
          .replace(/<(table|tbody|tr|td|th)[^>]*>/g,'<$1>')
          .replace(/<\?xml[^>]*>/g,'')
          .replace(/<[^ >]+:[^>]*>/g,'')
          .replace(/<\/[^ >]+:[^>]*>/g,'')
-         .replace(/(<br(\s+\/)?>)([^\n]|[^\r])/g,"$1\r$3")
-         .replace(/^&nbsp\;/g,'')
-         .replace(/&nbsp\;$/g,'')
+         .replace(/(<br(\s+\/)?>)([^\n]|[^\r])/g,"$1\r\n$3")
+         .replace(/<br(\s+\/)?>$/g, '')
+         .replace(/(<[^\/]>|<[^\/][^>]*[^\/]>)\s*<\/[^>]*>/g,'')
+      */
    },
-      //         .replace(/<br(\s+\/)?>$/g, '')
-   //         .replace(/(<[^\/]>|<[^\/][^>]*[^\/]>)\s*<\/[^>]*>/g,'')
 
    exec: function( editor, b, v ) {
       if (! editor.open) return;
@@ -3163,20 +3163,20 @@ var WYSIWYG = new Class( {
 
    fullscreen: function( editor ) {
       var height, width, iframe = editor.iframe;
-      var toolbar = editor.toolbar, options = this.options;
+      var toolbar = editor.toolbar, opt = this.options;
 
       if (editor.height == -1) {
-         var container = $( options.container );
+         var container = $( opt.container );
 
          editor.width  = iframe.getSize().x;
          editor.height = iframe.getSize().y;
-         width         = container.getSize().x - options.iframeMargin;
-         height        = container.getSize().y - options.iframeMargin
+         width         = container.getSize().x - opt.iframeMargin;
+         height        = container.getSize().y - opt.iframeMargin
                          - toolbar.getSize().y;
       }
       else { width = editor.width; height = editor.height; editor.height = -1; }
 
-      toolbar.setStyle( 'width', (width  - options.iframePadding) + 'px' );
+      toolbar.setStyle( 'width', (width  + opt.iframePadding) + 'px' );
       iframe.setStyle(  'width',  width  + 'px' );
       iframe.setStyle(  'height', height + 'px' );
    },
@@ -3188,8 +3188,8 @@ var WYSIWYG = new Class( {
    },
 
    initialiseToolbar: function( editor ) {
-      var options  = this.options;
-      var panels   = options.toolbars[ editor.barNum ];
+      var opt      = this.options;
+      var panels   = opt.toolbars[ editor.barNum ];
       var barWidth = 0;
       var rowWidth = 0;
 
@@ -3202,10 +3202,10 @@ var WYSIWYG = new Class( {
 
          var found = false;
 
-         options.panels[ p ].each( function( b ) {
+         opt.panels[ p ].each( function( b ) {
             var added = this.addButton( editor, b );
 
-            if (added) rowWidth += options.buttonWidth;
+            if (added) rowWidth += opt.buttonWidth;
 
             found = found || added;
          }, this );
@@ -3213,15 +3213,15 @@ var WYSIWYG = new Class( {
          if (found && $defined( panels[ index + 1 ] )) {
             new Element( 'span', { class: 'spacer' } ).inject( editor.toolbar );
 
-            rowWidth += options.spacerWidth;
+            rowWidth += opt.spacerWidth;
          }
 
          barWidth = Math.max( barWidth, rowWidth );
       }, this );
 
-      barWidth = Math.max( options.minWidth, barWidth );
-      editor.toolbar.setStyle( 'width', barWidth );
-      editor.iframe.setStyle( 'width', barWidth + options.iframePadding );
+      barWidth = Math.max( opt.minWidth, barWidth );
+      editor.toolbar.setStyle( 'width', barWidth + 'px' );
+      editor.iframe.setStyle( 'width', (barWidth - opt.iframePadding) + 'px' );
    },
 
    nextToolBar: function( editor ) {
@@ -3232,9 +3232,10 @@ var WYSIWYG = new Class( {
       this.initialiseToolbar( editor );
    },
 
-   set_icon: function( el, but_no ) {
-      var x = 0 - this.options.iconGridSize * (but_no % 10);
-      var y = 0 - this.options.iconGridSize * Math.floor( but_no / 10 );
+   setIcon: function( el, butNum ) {
+      var opt = this.options;
+      var x   = 0 - opt.iconGridSize * (butNum % opt.iconsPerRow);
+      var y   = 0 - opt.iconGridSize * Math.floor( butNum / opt.iconsPerRow );
 
       el.setStyle( 'background-position', x + 'px ' + y + 'px' );
    },

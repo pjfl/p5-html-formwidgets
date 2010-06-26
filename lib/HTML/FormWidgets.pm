@@ -10,7 +10,6 @@ use parent qw(Class::Accessor::Fast);
 use Class::MOP;
 use English qw(-no_match_vars);
 use HTML::Accessors;
-use Text::Markdown qw(markdown);
 use TryCatch;
 
 my $LSB   = q([);
@@ -36,8 +35,7 @@ my $ATTRS =
      sep             => undef,        space           => '&#160;' x 3,
      stepno          => undef,        swidth          => 1000,
      tabstop         => 3,            template_dir    => undef,
-     text            => $NUL,
-     text_obj        => undef,        tip             => $NUL,
+     text            => $NUL,         tip             => $NUL,
      tiptype         => q(dagger),    type            => undef, };
 
 __PACKAGE__->mk_accessors( keys %{ $ATTRS } );
@@ -215,7 +213,7 @@ sub render_container {
 
    $self->container_id and $args->{id} = $self->container_id;
 
-   return $self->hacc->span( $args, $field );
+   return $self->hacc->div( $args, $field );
 }
 
 sub render_field {
@@ -342,11 +340,6 @@ sub _init {
    # Now we can create HTML elements like we could with CGI.pm
    $self->hacc or
       $self->hacc( HTML::Accessors->new( { content_type => $content_type } ) );
-
-   # Create a Text::Markdown object for use by the msg method
-   $self->text_obj( Text::Markdown->new
-                    ( empty_element_suffix => $self->is_xml ? q( />) : q(>),
-                      tab_width            => $self->tabstop ) );
 
    # Calculate the prompt width
    my $pwidth = $self->pwidth;

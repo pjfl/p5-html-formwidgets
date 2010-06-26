@@ -7,14 +7,13 @@ use warnings;
 use version; our $VERSION = qv( sprintf '0.6.%d', q$Rev$ =~ /\d+/gmx );
 use parent qw(HTML::FormWidgets);
 
-__PACKAGE__->mk_accessors( qw(dropcap markdown) );
+__PACKAGE__->mk_accessors( qw(dropcap) );
 
 sub init {
    my ($self, $args) = @_;
 
    $self->container( 0 );
    $self->dropcap(   0 );
-   $self->markdown(  0 );
    $self->text(      q() );
    return;
 }
@@ -23,7 +22,6 @@ sub render_field {
    my ($self, $args) = @_; my $text = $self->text; my $markup;
 
    ($text ||= $self->loc( $self->name ) || q()) =~ s{ \A \n }{}msx;
-   $text and $self->markdown and $text = $self->text_obj->markdown( $text );
    $text or return;
 
    if ($self->dropcap) {

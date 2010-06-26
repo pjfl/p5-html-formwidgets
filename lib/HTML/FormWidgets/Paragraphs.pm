@@ -37,7 +37,7 @@ sub render_field {
               : $val->{text} || $self->loc( 'Text missing' );
       $class  = defined $val->{class} ? $val->{class} : $self->class;
       $args   = $class ? { class => $class } : {};
-      $paras .= $val->{markdown} ? $text : $hacc->p( $args, $text );
+      $paras .= $hacc->p( $args, $text );
    }
 
    $args = $self->column_class ? { class => $self->column_class } : {};

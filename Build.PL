@@ -26,7 +26,6 @@ my $build = Module::Build->new
         'HTML::Accessors'         => q(0.3.0),
         'Pod::Html'               => q(1.0504),
         'Syntax::Highlight::Perl' => q(1.00),
-        'Text::Markdown'          => q(1.0.20),
         'Text::ParseWords'        => q(3.22),
         'Text::Tabs'              => q(98.112801),
         'TryCatch'                => 1.002000, },

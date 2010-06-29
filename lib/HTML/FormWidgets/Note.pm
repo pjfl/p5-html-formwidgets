@@ -12,20 +12,21 @@ __PACKAGE__->mk_accessors( qw(width) );
 sub init {
    my ($self, $args) = @_;
 
-   $self->container( 0 );
-   $self->sep(       q() );
-   $self->width(     undef );
+   $self->class    ( q(note) );
+   $self->container( 0       );
+   $self->sep      ( q()     );
+   $self->width    ( undef   );
    return;
 }
 
 sub render_field {
-   my ($self, $args) = @_; my $text;
+   my ($self, $args) = @_; my $class = $self->class; my $id = $self->id;
 
-   $args           = { class => q(container note) };
-   $args->{style} .= 'text-align: '.$self->align.q(;) if ($self->align);
-   $args->{style} .= ' width: '.$self->width.q(;)     if ($self->width);
+   $args = { class => $class, id => $id };
+   $self->align and $args->{style} .= 'text-align: '.$self->align.q(;);
+   $self->width and $args->{style} .= ' width: '.$self->width.q(;);
 
-   ($text = $self->text || $self->loc( $self->name )) =~ s{ \A \n }{}msx;
+   (my $text = $self->text || $self->loc( $self->name )) =~ s{ \A \n }{}msx;
 
    return $self->hacc->div( $args, $text );
 }

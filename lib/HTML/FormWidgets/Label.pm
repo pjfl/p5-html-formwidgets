@@ -19,12 +19,14 @@ sub init {
 }
 
 sub render_field {
-   my ($self, $args) = @_; my $text = $self->text; my $markup;
+   my ($self, $args) = @_; my $text = $self->text;
 
    ($text ||= $self->loc( $self->name ) || q()) =~ s{ \A \n }{}msx;
    $text or return;
 
    if ($self->dropcap) {
+      my $markup;
+
       if ($text =~ m{ \A (\<[A-Za-z0-9]+\>) }mx) {
          $markup  = $1;
          $markup .= $self->hacc->span( { class => q(dropcap) },

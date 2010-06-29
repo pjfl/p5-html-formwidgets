@@ -412,7 +412,9 @@ sub _js_config {
    ref $config eq q(HASH) or return $NUL;
 
    while (my ($k, $v) = each %{ $config }) {
-      $list and $list .= ', '; $list .= $k.': '.$v;
+      if ($k) {
+         $list and $list .= ', '; $list .= $k.': '.($v || 'null');
+      }
    }
 
    my $text  = $self->js_obj.'.state.config.'.$element.'[ "';

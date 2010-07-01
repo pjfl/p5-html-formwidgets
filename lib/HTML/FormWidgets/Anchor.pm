@@ -45,7 +45,7 @@ sub render_field {
    $html = $hacc->a( $args, $html );
 
    if ($self->id and $self->config) {
-      $html .= $self->_js_config( 'submit', $self->id, $self->config );
+      $html .= $self->_js_config( 'anchors', $self->id, $self->config );
    }
 
    return $html;

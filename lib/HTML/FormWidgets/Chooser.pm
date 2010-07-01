@@ -31,7 +31,7 @@ sub render_field {
    $self->config->{field} = '"'.$self->field.'"';
    $self->config->{href } = '"'.$self->href.'"';
 
-   $html .= $self->_js_config( 'submit', $self->id, $self->config );
+   $html .= $self->_js_config( 'anchors', $self->id, $self->config );
 
    return $html;
 }

@@ -42,7 +42,7 @@ sub render_field {
 
       $html      .= $hacc->div( { class => $class }, "\n".$anchor )."\n";
 
-      if (not $ref->{href} and not $ref->{onclick}) {
+      if (not $ref->{href}) {
          $style   = 'display: none; width: '.$ref->{width}.'px;';
          $html   .= $hacc->div( { class => $class_pref.q(Panel),
                                   id    => $id.q(Disp),

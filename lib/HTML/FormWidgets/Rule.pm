@@ -7,7 +7,7 @@ use warnings;
 use version; our $VERSION = qv( sprintf '0.6.%d', q$Rev$ =~ /\d+/gmx );
 use parent qw(HTML::FormWidgets);
 
-__PACKAGE__->mk_accessors( qw(alt config href imgclass onclick) );
+__PACKAGE__->mk_accessors( qw(alt config href imgclass) );
 
 sub init {
    my ($self, $args) = @_;
@@ -17,7 +17,6 @@ sub init {
    $self->container( 0     );
    $self->href     ( undef );
    $self->imgclass ( undef );
-   $self->onclick  ( undef );
    return;
 }
 

@@ -26,7 +26,6 @@ sub render_field {
 
    $args  = { class => $self->header->{class}, id => $self->header->{id} };
 
-   # Add onclick handler to this el
    my $html = $hacc->div( $args, $self->header->{text} );
 
    $args  = { class => $self->class, id => $self->id };

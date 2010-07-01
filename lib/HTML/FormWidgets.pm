@@ -417,8 +417,8 @@ sub _js_config {
       }
    }
 
-   my $text  = $self->js_obj.'.state.config.'.$element.'[ "';
-      $text .= $id.'" ] = { '.$list.' };';
+   my $text  = $self->js_obj;
+      $text .= ".state.config.${element}[ '${id}' ] = { ${list} };";
 
    return $self->_wrap_script( $text );
 }

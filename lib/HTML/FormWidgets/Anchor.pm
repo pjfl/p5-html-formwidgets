@@ -7,7 +7,7 @@ use warnings;
 use version; our $VERSION = qv( sprintf '0.6.%d', q$Rev$ =~ /\d+/gmx );
 use parent qw(HTML::FormWidgets);
 
-__PACKAGE__->mk_accessors( qw(config fhelp href imgclass onclick) );
+__PACKAGE__->mk_accessors( qw(config fhelp href imgclass) );
 
 sub init {
    my ($self, $args) = @_;
@@ -18,7 +18,6 @@ sub init {
    $self->fhelp          ( q()            );
    $self->href           ( undef          );
    $self->imgclass       ( undef          );
-   $self->onclick        ( undef          );
    $self->text           ( q(link)        );
    $self->tiptype        ( q(normal)      );
    return;
@@ -35,12 +34,9 @@ sub render_field {
             : $hacc->span( { class => $self->imgclass } )
             : $self->text;
 
-   $self->href or return $html;
+   $self->href or return $html; delete $args->{name};
 
-   delete $args->{name};
-   $args->{class  } = $self->class;
-   $args->{href   } = $self->href;
-   $args->{onclick} = $self->onclick if ($self->onclick);
+   $args->{class} = $self->class; $args->{href } = $self->href;
 
    $html = $hacc->a( $args, $html );
 

@@ -35,6 +35,7 @@ sub render_field {
 
    $args  = { class => $self->panel->{class}, id => $self->panel->{id} };
    $html .= $hacc->div( $args, $text );
+   $html .= $self->_js_config( 'sidebars', $self->header->{id}, $self->config );
 
    return $html;
 }

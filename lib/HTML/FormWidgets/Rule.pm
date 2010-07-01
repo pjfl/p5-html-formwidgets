@@ -12,11 +12,11 @@ __PACKAGE__->mk_accessors( qw(alt href imgclass onclick) );
 sub init {
    my ($self, $args) = @_;
 
-   $self->alt(       undef );
-   $self->container( 0 );
-   $self->href(      undef );
-   $self->imgclass(  undef );
-   $self->onclick(   undef );
+   $self->alt      ( undef );
+   $self->container( 0     );
+   $self->href     ( undef );
+   $self->imgclass ( undef );
+   $self->onclick  ( undef );
    return;
 }
 
@@ -24,8 +24,8 @@ sub render_field {
    my ($self, $args) = @_; my ($cells, $html); my $hacc = $self->hacc;
 
    if ($self->imgclass) {
-      $html  = $hacc->hr(  { class => $self->class } );
-      $cells = $hacc->td(  { class => q(minimal) }, $html );
+      $html  = $hacc->hr( { class => $self->class } );
+      $cells = $hacc->td( { class => q(minimal) }, $html );
 
       if ($self->text) {
          $html = $hacc->img( { alt   => $self->alt,
@@ -40,7 +40,8 @@ sub render_field {
 
    if ($self->href) {
       my $ref = { href => $self->href };
-      $ref->{onclick} = $self->onclick if ($self->onclick);
+
+      $self->onclick and $ref->{onclick} = $self->onclick;
       $html = $hacc->a( $ref, $html );
    }
 

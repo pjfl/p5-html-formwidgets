@@ -27,25 +27,22 @@ sub init {
 sub render_field {
    my ($self, $args) = @_; my $hacc = $self->hacc;
 
-   if ($self->imgclass) {
-      if ($self->text) {
-         $self->text( $hacc->img( { alt   => $self->fhelp,
-                                    class => $self->imgclass,
-                                    src   => $self->text } ) );
-      }
-      else {
-         $self->text( $hacc->span( { class => $self->imgclass } ) );
-      }
-   }
+   my $html = $self->imgclass
+            ? $self->text
+            ? $hacc->img ( { alt   => $self->fhelp,
+                             class => $self->imgclass,
+                             src   => $self->text } )
+            : $hacc->span( { class => $self->imgclass } )
+            : $self->text;
 
-   $self->href or return $self->text;
+   $self->href or return $html;
 
    delete $args->{name};
    $args->{class  } = $self->class;
    $args->{href   } = $self->href;
    $args->{onclick} = $self->onclick if ($self->onclick);
 
-   my $html = $hacc->a( $args, $self->text );
+   $html = $hacc->a( $args, $html );
 
    if ($self->id and $self->config) {
       $html .= $self->_js_config( 'submit', $self->id, $self->config );

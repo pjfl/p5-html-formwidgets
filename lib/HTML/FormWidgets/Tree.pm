@@ -9,7 +9,7 @@ use parent qw(HTML::FormWidgets);
 
 use English qw(-no_match_vars);
 
-__PACKAGE__->mk_accessors( qw(base build class_prefix data node_count
+__PACKAGE__->mk_accessors( qw(base class_prefix data node_count
                               selected static) );
 
 my $NUL = q();
@@ -19,14 +19,13 @@ my $TTS = q( ~ );
 sub init {
    my ($self, $args) = @_;
 
-   $self->base        ( $NUL    );
-   $self->build       ( 0       );
-   $self->class_prefix( q(tree) );
-   $self->container   ( 1       );
-   $self->data        ( {}      );
-   $self->node_count  ( 0       );
-   $self->selected    ( undef   );
-   $self->static      ( $NUL    );
+   $self->base           ( $NUL         );
+   $self->class_prefix   ( q(tree)      );
+   $self->container_class( q(container) );
+   $self->data           ( {}           );
+   $self->node_count     ( 0            );
+   $self->selected       ( undef        );
+   $self->static         ( $NUL         );
    return;
 }
 
@@ -51,16 +50,7 @@ sub render_field {
       $html  = $hacc->span( $args, $html );
       $html .= "\n".$self->traverse( { data => $self->data, fill => $NUL } );
 
-   $self->container and $html = $hacc->div( { class => q(container) }, $html );
-
-   my $code  = $NUL; $self->container( 0 );
-
-   if ($self->build) {
-      $code  = $self->js_obj.".state.trees.build( \$('".$self->id."') );";
-      $code  = "\n".$self->_wrap_script( $code );
-   }
-
-   return $html.$code;
+   return $html;
 }
 
 sub traverse {

@@ -18,15 +18,15 @@ my $NUL   = q();
 my $SPC   = q( );
 my $TTS   = q( ~ );
 my $ATTRS =
-   { ajaxid          => undef,
-     align           => q(left),      class           => $NUL,
-     clear           => $NUL,         container       => 1,
-     container_class => undef,        container_id    => undef,
-     content_type    => q(text/html), default         => undef,
-     fields          => {},           frame_class     => $NUL,
-     hacc            => undef,        hint_title      => $NUL,
-     id              => undef,        is_xml          => 0,
-     js_obj          => q(behaviour), messages        => {},
+   { ajaxid          => undef,        align           => q(left),
+     class           => $NUL,         clear           => $NUL,
+     container       => 1,            container_class => undef,
+     container_id    => undef,        content_type    => q(text/html),
+     default         => undef,        fields          => {},
+     frame_class     => $NUL,         hacc            => undef,
+     hint_title      => $NUL,         id              => undef,
+     is_xml          => 0,            js_object       => q(html_formwidgets),
+     messages        => {},
      name            => undef,        nowrap          => 0,
      optional_js     => undef,        onblur          => undef,
      onchange        => undef,        onkeypress      => undef,
@@ -144,6 +144,7 @@ sub inflate {
 
    $args->{content_type} = $self->content_type;
    $args->{fields      } = $self->fields;
+   $args->{js_object   } = $self->js_object;
    $args->{messages    } = $self->messages;
    $args->{template_dir} = $self->template_dir;
 
@@ -197,11 +198,9 @@ sub render {
 }
 
 sub render_check_field {
-   my ($self, $field) = @_; my $hacc = $self->hacc;
+   my ($self, $field) = @_; my $hacc = $self->hacc; my $id = $self->ajaxid;
 
-   my $args = { class => q(hidden), id => $self->ajaxid.q(_ajax) };
-
-   $field .= $hacc->span( $args );
+   $field .= $hacc->span( { class => q(hidden), id => $id.q(_ajax) } );
 
    return $hacc->span( { class => q(field_group) }, $field );
 }
@@ -331,7 +330,6 @@ sub _init {
    $self->init        ( $args ); # Allow subclass to set it's own defaults
    $self->_init_fields( $skip, $args->{fields} );
    $self->_init_args  ( $skip, $args );
-   $self->_init_event_handler;   # Set the default JS event handler
 
    my $content_type = $self->content_type;
 
@@ -376,19 +374,6 @@ sub _init_args {
    return;
 }
 
-sub _init_event_handler {
-   my $self = shift; my $ajaxid = $self->ajaxid or return;
-
-   # Install default JavaScript event handler
-   unless ($self->onblur or $self->onchange or $self->onkeypress) {
-      my $method = $self->js_obj.'.server.checkField';
-
-      $self->onblur( $method.'( "'.$ajaxid.'", this.value )' );
-   }
-
-   return;
-}
-
 sub _init_fields {
    my ($self, $skip, $fields) = @_; my $id = $self->id; my $val;
 
@@ -417,7 +402,7 @@ sub _js_config {
       }
    }
 
-   my $text  = $self->js_obj;
+   my $text  = $self->js_object;
       $text .= ".state.config.${element}[ '${id}' ] = { ${list} };";
 
    return $self->_wrap_script( $text );
@@ -426,14 +411,20 @@ sub _js_config {
 sub _render {
    my $self = shift; my $args = {}; my $id = $self->id; my $name = $self->name;
 
-   $id               and $args->{id        } = $id;
-   $name             and $args->{name      } = $name;
-   $self->required   and $args->{class     } = q( required);
-   $self->default    and $args->{default   } = $self->default;
-   $self->onblur     and $args->{onblur    } = $self->onblur;
-   $self->onkeypress and $args->{onkeypress} = $self->onkeypress;
+   $id               and $args->{id        }  = $id;
+   $name             and $args->{name      }  = $name;
+   $self->ajaxid     and $args->{class     }  = q( server);
+   $self->required   and $args->{class     } .= q( required);
+   $self->default    and $args->{default   }  = $self->default;
+   $self->onblur     and $args->{onblur    }  = $self->onblur;
+   $self->onkeypress and $args->{onkeypress}  = $self->onkeypress;
 
-   return $self->render_field( $args );
+   my $html = $self->render_field( $args );
+
+   $self->ajaxid and $html .= $self->_js_config( 'server', $id, {
+      args => "[ '${id}' ]", event => "'blur'", method => "'checkField'" } );
+
+   return $html;
 }
 
 sub _set_error {

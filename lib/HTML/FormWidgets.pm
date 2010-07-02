@@ -700,6 +700,11 @@ Used by the L</Chooser> subclass
 So that the L</File> and L</Table> subclasses can store the number
 of rows added as the hidden form attribute I<nRows>
 
+=item js_object
+
+This is the name of the global Javascript variable that holds
+B<config> object. Defaults to B<html_formwidgets>
+
 =item messages
 
 Many of the subclasses use this hash to supply literal text in a
@@ -962,12 +967,6 @@ B<behaviour.sliderElement>
 
 If the I<display> attribute is false the current value is pushed onto
 this array. Defaults to B<[]>
-
-=item js_obj
-
-This is the callback method for the sliders I<onchange> event
-handler. It is passed the slider I<name> and current
-I<value>. Defaults to B<behaviour.submit.setField>
 
 =item mode
 

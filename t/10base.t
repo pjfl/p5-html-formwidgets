@@ -64,8 +64,7 @@ $widget = HTML::FormWidgets->new( id   => q(test),
                                   text => q(Test text),
                                   type => q(note) );
 
-ok( $widget->render =~ m{ class="container \s note">Test \s text</div> }mx,
-    q(Note) );
+ok( $widget->render =~ m{ >Test \s text</div> }mx, q(Note) );
 
 $widget = HTML::FormWidgets->new( id      => q(test1),
                                   subtype => q(verify),

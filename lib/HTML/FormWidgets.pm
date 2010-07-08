@@ -403,7 +403,7 @@ sub _js_config {
    }
 
    my $text  = $self->js_object;
-      $text .= ".state.config.${element}[ '${id}' ] = { ${list} };";
+      $text .= ".config.${element}[ '${id}' ] = { ${list} };";
 
    return $self->_wrap_script( $text );
 }

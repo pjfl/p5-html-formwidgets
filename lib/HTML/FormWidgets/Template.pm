@@ -16,9 +16,9 @@ sub render_field {
 
    my $path = File::Spec->catfile( $self->template_dir, $self->name.q(.tt) );
 
-   -f $path or return "Not found $path";
+   -f $path or return "Path $path not found";
 
-   my $rdr = IO::File->new( $path, q(r) ) or return "Cannot read $path";
+   my $rdr = IO::File->new( $path, q(r) ) or return "Path $path cannot read";
 
    my $content = do { local $RS = undef; <$rdr> }; $rdr->close();
    my $id      = $self->id;

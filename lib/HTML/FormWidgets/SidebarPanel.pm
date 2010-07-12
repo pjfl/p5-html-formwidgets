@@ -12,7 +12,7 @@ __PACKAGE__->mk_accessors( qw(config header panel) );
 sub init {
    my ($self, $args) = @_;
 
-   $self->class( q(sidebarContent) );
+   $self->class( q(accordion_content) );
    $self->config( {} );
    $self->container_class( q(accordion_panel_container) );
    $self->header( {} );

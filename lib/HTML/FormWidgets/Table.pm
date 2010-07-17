@@ -125,7 +125,7 @@ sub _check_box {
    my $text  = $hacc->checkbox( $args );
    my $class = q(row_select ).__column_class( $c_no );
 
-   return $hacc->td( { align => q(center), class => $class }, $text );
+   return $hacc->td( { class => $class }, $text );
 }
 
 sub _editable_cell {
@@ -149,7 +149,7 @@ sub _editable_cell {
                     ? $data->{sizes}->{ $field } : 10;
    }
 
-   return $hacc->td( { class => q(dataField) }, $hacc->$type( $args ) );
+   return $hacc->td( { class => q(data_field) }, $hacc->$type( $args ) );
 }
 
 sub _render_header {
@@ -202,12 +202,11 @@ sub _render_row {
          exists $data->{hclass}->{ $field }
             and $data->{hclass}->{ $field } eq q(hide) and next;
 
-         $args->{align} = exists $data->{align}->{ $field }
-                        ? $data->{align}->{ $field } : q(left);
-
-         my $class = $data->{class} || q(dataValue);
+         my $class = $data->{class} || q(data_value);
 
          $args->{class}  = ref $class eq q(HASH) ? $class->{ $field } : $class;
+         exists $data->{typelist}->{ $field }
+            and $args->{class   } .= q( ).$data->{typelist}->{ $field };
          $args->{class} .= q( ).__column_class( $c_no );
          exists $data->{wrap}->{ $field } or $args->{class} .= q( nowrap);
 

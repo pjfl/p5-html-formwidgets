@@ -27,8 +27,8 @@ sub render_field {
    my $hacc = $self->hacc;
 
    unless ($data = $self->data and $data->[ 0 ]) {
-      $html  = $hacc->b   ( { class => q(pad)              }, $NBSP );
-      $html .= $hacc->span( { class => q(navigationFiller) }, $NBSP );
+      $html  = $hacc->b   ( { class => q(pad)               }, $NBSP );
+      $html .= $hacc->span( { class => q(navigation_filler) }, $NBSP );
 
       return $html;
    }
@@ -38,7 +38,7 @@ sub render_field {
    for my $index (0 .. $#{ $data }) {
       if ($self->spacer and $index > 0) {
          $text  = $hacc->b   ( { class => q(pad) }, $NBSP );
-         $text .= $hacc->span( { class => q(navigationFiller) },
+         $text .= $hacc->span( { class => q(navigation_filler) },
                                $self->spacer );
          $html .= $hacc->li  ( $text );
       }

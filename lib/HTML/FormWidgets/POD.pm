@@ -14,6 +14,7 @@ __PACKAGE__->mk_accessors( qw(css src tempdir tempfile title) );
 sub init {
    my ($self, $args) = @_;
 
+   $self->container_class( q(pod) );
    $self->css     ( undef );
    $self->src     ( undef );
    $self->tempdir ( undef );
@@ -43,7 +44,9 @@ sub render_field {
       $body  = 1     if ($line =~ m{ \<body }mx);
    }
 
-   return $html;
+   my $heading = $self->hacc->h1( $self->loc( 'Index of Contents' ) );
+
+   return $heading.$html;
 }
 
 1;

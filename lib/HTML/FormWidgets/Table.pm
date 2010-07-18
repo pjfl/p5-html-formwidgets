@@ -54,9 +54,11 @@ sub render_field {
 
    $self->select eq q(right) and $cells .= $self->_render_selectbox( $c_no++ );
 
-   my $hacc = $self->hacc;
-   my $rows = $hacc->tr( { class => $self->table_class.q(_row) }, $cells );
-   my $r_no = 0;
+   my $hacc    = $self->hacc;
+   my $caption = $data->{caption}
+               ? "\n".$hacc->caption( $data->{caption} ) : $NUL;
+   my $rows    = $hacc->tr( { class => $self->table_class.q(_row) }, $cells );
+   my $r_no    = 0;
 
    $rows .= $self->_render_row( $data, $_, $r_no++ ) for (@{$data->{values}});
 
@@ -64,7 +66,7 @@ sub render_field {
    $self->edit and $rows .= $self->_add_edit_row( $data );
    $args = { class => $self->table_class, id => $self->id };
 
-   return $hacc->table( $args, "\n".$rows );
+   return $hacc->table( $args, "${caption}\n${rows}" );
 }
 
 # Private methods

@@ -36,7 +36,7 @@ sub render_field {
 
    $self->href or return $html; delete $args->{name};
 
-   $args->{class} = $self->class; $args->{href } = $self->href;
+   $args->{class} = $self->class; $args->{href} = $self->href;
 
    $html = $hacc->a( $args, $html );
 

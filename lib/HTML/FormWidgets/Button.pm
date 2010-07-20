@@ -25,26 +25,52 @@ sub init {
 }
 
 sub render_field {
-   my ($self, $args) = @_; my $html;
-
-   $args          = {};
-   $args->{class} = $self->class;
-   $args->{id   } = $self->id;
-   $args->{name } = $self->button_name;
-   $args->{value} = ucfirst $self->name;
-
-   if ($self->src) {
-      $args->{alt} = ucfirst $self->name;
-      $args->{src} = q(http:) eq (substr $self->src, 0, 5)
-                   ? $self->src : $self->assets.$self->src;
-      $html = $self->hacc->image_button( $args );
-   }
-   else { $html = $self->hacc->submit( $args ) }
+   my $self = shift;
+   my $hacc = $self->hacc;
+   my $args = { class => $self->class, id => $self->id };
+   my $html = $self->src && ref $self->src eq q(HASH)
+            ? $self->_markup_button( $args )
+            : $self->src
+            ? $self->_image_button ( $args )
+            : $self->_submit_button( $args );
 
    keys %{ $self->config } > 0
       and $html .= $self->_js_config( 'anchors', $self->id, $self->config );
 
    return $html;
+}
+
+sub _image_button {
+   my ($self, $args) = @_;
+
+   $args->{alt  } = ucfirst $self->name;
+   $args->{name } = $self->button_name;
+   $args->{value} = ucfirst $self->name;
+   $args->{src  } = q(http:) eq (substr $self->src, 0, 5)
+                  ? $self->src : $self->assets.$self->src;
+
+   return $self->hacc->image_button( $args );
+}
+
+sub _markup_button {
+   my ($self, $args) = @_; my $hacc = $self->hacc; my $html;
+
+   my $class = $self->src->{class} || q(button_replacement);
+
+   for my $char (split m{}m, $self->src->{content} || 'Button') {
+      $html .= $hacc->span( { class => $class }, $char );
+   }
+
+   return $hacc->div( $args, $html );
+}
+
+sub _submit_button {
+   my ($self, $args) = @_;
+
+   $args->{name } = $self->button_name;
+   $args->{value} = ucfirst $self->name;
+
+   return $self->hacc->submit( $args );
 }
 
 1;

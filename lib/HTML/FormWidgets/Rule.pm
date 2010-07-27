@@ -25,7 +25,7 @@ sub render_field {
 
    if ($self->imgclass) {
       $html  = $hacc->hr  ( { class => $self->class } );
-      $cells = $hacc->td  ( { class => q(minimal) }, $html );
+      $cells = $hacc->td  ( { class => q(minimal rule_section) }, $html );
       $html  = $self->text
              ? $hacc->img ( { alt   => $self->alt,
                               class => $self->imgclass,
@@ -48,7 +48,8 @@ sub render_field {
    }
 
    $html and $cells .= $hacc->td( { class => q(minimal) }, $html );
-   $cells .= $hacc->td( $hacc->hr( { class => $self->class } ) );
+   $cells .= $hacc->td( { class => q(rule_section) },
+                        $hacc->hr( { class => $self->class } ) );
 
    return $hacc->table( { class => q(rule) }, $hacc->tr( $cells ) );
 }

@@ -12,7 +12,7 @@ __PACKAGE__->mk_accessors( qw(config field href) );
 sub init {
    my ($self, $args) = @_;
 
-   $self->class  ( q(button chooser_button fade) );
+   $self->class  ( q(chooser_button fade) );
    $self->config ( { height   => 500, screen_x => 10,
                      screen_y => 10,  width    => 500 } );
    $self->default( q(Choose) );
@@ -30,8 +30,7 @@ sub render_field {
 
    $self->config->{field} = '"'.$self->field.'"';
    $self->config->{href } = '"'.$self->href.'"';
-
-   $html .= $self->_js_config( 'anchors', $self->id, $self->config );
+   $self->_js_config( 'anchors', $self->id, $self->config );
 
    return $html;
 }

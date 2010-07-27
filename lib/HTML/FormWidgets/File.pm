@@ -214,7 +214,7 @@ sub _render_logfile {
 
    # TODO: Add Prev and next links to append div
    for my $line (split m { \n }mx, $text) {
-      $line   = $hacc->escape_html( $line, 0 );
+      $line   = $hacc->escape_html( $line || q( ), 0 );
       $line   = $hacc->pre( { class => $self->subtype }, $line );
       $cells  = $hacc->td(  { class => $self->subtype }, $line );
       $rows  .= $hacc->tr(  { class => $self->subtype }, $cells )."\n";

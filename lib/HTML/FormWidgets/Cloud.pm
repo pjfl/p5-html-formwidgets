@@ -30,8 +30,11 @@ sub render_field {
       my $attrs      = { class   => $class_pref.q(_header_fade liveGrid),
                          href    => $href,
                          id      => $id };
+      if ($item->{size}) {
+         $style .= 'font-size: '.$item->{size}.'em; ';
+         $style .= 'line-height: '.$item->{size}.'em; ';
+      }
 
-      $item->{size  } and $style .= 'font-size: '.$item->{size}.'em; ';
       $item->{colour} and $style .= 'color: #'.$item->{colour}.'; ';
       $style and $attrs->{style}  = $style;
 

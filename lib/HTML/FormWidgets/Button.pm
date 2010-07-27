@@ -16,7 +16,6 @@ sub init {
 
    $self->assets     ( q()        );
    $self->button_name( q(_method) );
-   $self->class      ( q(button)  );
    $self->config     ( {}         );
    $self->container  ( 0          );
    $self->src        ( q()        );
@@ -27,7 +26,7 @@ sub init {
 sub render_field {
    my $self = shift;
    my $hacc = $self->hacc;
-   my $args = { class => $self->class, id => $self->id };
+   my $args = { id => $self->id };
    my $html = $self->src && ref $self->src eq q(HASH)
             ? $self->_markup_button( $args )
             : $self->src
@@ -35,7 +34,7 @@ sub render_field {
             : $self->_submit_button( $args );
 
    keys %{ $self->config } > 0
-      and $html .= $self->_js_config( 'anchors', $self->id, $self->config );
+      and $self->_js_config( 'anchors', $self->id, $self->config );
 
    return $html;
 }
@@ -44,6 +43,7 @@ sub _image_button {
    my ($self, $args) = @_;
 
    $args->{alt  } = ucfirst $self->name;
+   $args->{class} = q(image_button ).$self->class;
    $args->{name } = $self->button_name;
    $args->{value} = ucfirst $self->name;
    $args->{src  } = q(http:) eq (substr $self->src, 0, 5)
@@ -61,12 +61,15 @@ sub _markup_button {
       $html .= $hacc->span( { class => $class }, $char );
    }
 
+   $args->{class} = q(markup_button ).$self->class;
+
    return $hacc->div( $args, $html );
 }
 
 sub _submit_button {
    my ($self, $args) = @_;
 
+   $args->{class} = q(submit_button ).$self->class;
    $args->{name } = $self->button_name;
    $args->{value} = ucfirst $self->name;
 

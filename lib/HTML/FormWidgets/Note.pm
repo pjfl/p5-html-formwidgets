@@ -20,9 +20,9 @@ sub init {
 }
 
 sub render_field {
-   my ($self, $args) = @_; my $class = $self->class; my $id = $self->id;
+   my ($self, $args) = @_;
 
-   $args = { class => $class, id => $id };
+   $args = { class => $self->class, id => $self->id };
    $self->align and $args->{style} .= 'text-align: '.$self->align.q(;);
    $self->width and $args->{style} .= ' width: '.$self->width.q(;);
 

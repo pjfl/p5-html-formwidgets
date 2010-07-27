@@ -65,7 +65,7 @@ sub render_field {
    $self->config->{default_v} = $args->{default};
    $self->config->{name     } = '"'.$args->{name}.'"';
 
-   $html .= $self->_js_config( 'sliders', $id, $self->config );
+   $self->_js_config( 'sliders', $id, $self->config );
 
    return $html;
 }

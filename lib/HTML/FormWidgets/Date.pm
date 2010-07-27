@@ -37,16 +37,17 @@ sub render_field {
    my $hacc = $self->hacc;
    my $html = $hacc->textfield( $args );
    my $icon = $hacc->span( { class => q(calendar_icon) }, $SPC );
-   my $text = $hacc->span( { class => q(button icon tips),
+   my $text = $hacc->span( { class => q(icon_button tips),
                              id    => $self->id.q(_trigger),
                              title => $self->hint }, $icon );
 
    $icon    = $hacc->span( { class => q(clear_field_icon) }, $SPC );
-   $text   .= $hacc->span( { class => q(button icon tips),
+   $text   .= $hacc->span( { class => q(icon_button tips),
                              id    => $self->id.q(_clear),
                              title => $self->clear_hint }, $icon );
    $html   .= $hacc->span( { class => q(icon_buttons) }, $text );
-   $html   .= $self->_js_config( 'calendars', $self->id, $self->config );
+
+   $self->_js_config( 'calendars', $self->id, $self->config );
 
    return $html;
 }

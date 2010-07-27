@@ -26,7 +26,7 @@ my $ATTRS =
      frame_class     => $NUL,         hacc            => undef,
      hint_title      => $NUL,         id              => undef,
      is_xml          => 0,            js_object       => q(html_formwidgets),
-     messages        => {},
+     literal_js      => [],           messages        => {},
      name            => undef,        nowrap          => 0,
      optional_js     => undef,        onblur          => undef,
      onchange        => undef,        onkeypress      => undef,
@@ -145,7 +145,9 @@ sub inflate {
    $args->{content_type} = $self->content_type;
    $args->{fields      } = $self->fields;
    $args->{js_object   } = $self->js_object;
+   $args->{literal_js  } = $self->literal_js;
    $args->{messages    } = $self->messages;
+   $args->{optional_js } = $self->optional_js;
    $args->{template_dir} = $self->template_dir;
 
    return __PACKAGE__->new( $args )->render;
@@ -326,6 +328,7 @@ sub _ensure_class_loaded {
 sub _init {
    my ($self, $skip, $args) = @_;
 
+   $self->literal_js  ( $args->{literal_js } || [] );
    $self->optional_js ( $args->{optional_js} || [] );
    $self->init        ( $args ); # Allow subclass to set it's own defaults
    $self->_init_fields( $skip, $args->{fields} );
@@ -405,7 +408,8 @@ sub _js_config {
    my $text  = $self->js_object;
       $text .= ".config.${element}[ '${id}' ] = { ${list} };";
 
-   return $self->_wrap_script( $text );
+   push @{ $self->literal_js }, $text;
+   return;
 }
 
 sub _render {
@@ -421,7 +425,7 @@ sub _render {
 
    my $html = $self->render_field( $args );
 
-   $self->ajaxid and $html .= $self->_js_config( 'server', $id, {
+   $self->ajaxid and $self->_js_config( 'server', $id, {
       args => "[ '${id}' ]", event => "'blur'", method => "'checkField'" } );
 
    return $html;
@@ -429,13 +433,6 @@ sub _render {
 
 sub _set_error {
    my ($self, $error) = @_; return $self->text( $error );
-}
-
-sub _wrap_script {
-   my ($self, $code) = @_;
-
-   return $self->hacc->script( { type => q(text/javascript) },
-                               q(//<![CDATA[)."\n".$code."\n".q(//]]>) );
 }
 
 1;

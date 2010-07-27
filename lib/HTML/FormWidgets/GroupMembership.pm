@@ -60,14 +60,14 @@ sub render_field {
    $text      = $hacc->span( { class => q(add_item_icon) }, q( ) );
 
    my $ref    = {
-      class   => q(button icon tips add),
+      class   => q(icon_button tips add),
       id      => $self->id.q(_add),
       title   => $self->add_tip };
    my $text1  = $hacc->span( $ref, $text );
 
    $text      = $hacc->span( { class => q(remove_item_icon) }, q( ) );
    $ref       = {
-      class   => q(button icon tips remove),
+      class   => q(icon_button tips remove),
       id      => $self->id.q(_remove),
       title   => $self->remove_tip };
    $text1    .= $hacc->span( $ref, $text );

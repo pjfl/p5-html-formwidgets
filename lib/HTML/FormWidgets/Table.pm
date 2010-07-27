@@ -18,7 +18,7 @@ sub init {
    my ($self, $args) = @_; my $text;
 
    $self->assets     ( $NUL );
-   $self->class      ( q(small table) );
+   $self->class      ( q(table) );
    $self->container  ( 0 );
    $self->data       ( { flds => [], values => [] } );
    $self->edit       ( 0 );
@@ -39,9 +39,15 @@ sub init {
 }
 
 sub render_field {
-   my ($self, $args) = @_; my $c_no = 0; my $cells = $NUL;
+   my ($self, $args) = @_;
 
-   my $class = $self->prompt ? q(form) : q(std); my $data = $self->data;
+   my $c_no    = 0;
+   my $cells   = $NUL;
+   my $data    = $self->data;
+   my $hacc    = $self->hacc;
+   my $class   = $self->prompt ? q(editable) : q(std);
+   my $caption = $data->{caption}
+               ? "\n".$hacc->caption( $data->{caption} ) : $NUL;
 
    $self->table_class       or  $self->table_class( $class );
    $self->id                or  $self->id( $self->name || q(table) );
@@ -53,20 +59,22 @@ sub render_field {
    }
 
    $self->select eq q(right) and $cells .= $self->_render_selectbox( $c_no++ );
+   $args = { class => $self->table_class.q(_head) };
 
-   my $hacc    = $self->hacc;
-   my $caption = $data->{caption}
-               ? "\n".$hacc->caption( $data->{caption} ) : $NUL;
-   my $rows    = $hacc->tr( { class => $self->table_class.q(_row) }, $cells );
-   my $r_no    = 0;
+   my $thead = $hacc->thead( $hacc->tr( $args, $cells ) );
+   my $r_no  = 0;
+   my $rows;
 
-   $rows .= $self->_render_row( $data, $_, $r_no++ ) for (@{$data->{values}});
+   $rows .= $self->_render_row( $data, $_, $r_no++ ) for (@{ $data->{values} });
 
    $self->_add_row_count( $r_no );
    $self->edit and $rows .= $self->_add_edit_row( $data );
+
+   my $tbody = $hacc->tbody( $rows );
+
    $args = { class => $self->table_class, id => $self->id };
 
-   return $hacc->table( $args, "${caption}\n${rows}" );
+   return $hacc->table( $args, "${caption}\n${thead}\n${tbody}" );
 }
 
 # Private methods
@@ -84,7 +92,7 @@ sub _add_edit_row {
 
    my $text   = $hacc->span( { class => q(add_item_icon) }, q( ) );
    my $args   = {
-      class   => q(button icon tips add),
+      class   => q(icon_button tips add),
       id      => $self->id.q(_add),
       title   => $self->add_tip };
 
@@ -93,7 +101,7 @@ sub _add_edit_row {
    my $text1  = $hacc->span( { class => q(remove_item_icon) }, q( ) );
 
    $args      = {
-      class   => q(button icon tips remove),
+      class   => q(icon_button tips remove),
       id      => $self->id.q(_remove),
       title   => $self->remove_tip };
    $text     .= $hacc->span( $args, $text1 );
@@ -224,8 +232,9 @@ sub _render_row {
       $cells .= $self->_check_box( $r_no, $c_no++, $val->{id} );
    }
 
-   my $args = { class => $self->table_class.q(_row),
-                id    => $self->id.q(_row).$r_no };
+   my $class = $self->table_class.q(_row).($self->sortable
+                                       ? q( sortable_row) : $NUL);
+   my $args  = { class => $class, id => $self->id.q(_row).$r_no };
 
    return $hacc->tr( $args, "\n".$cells );
 }

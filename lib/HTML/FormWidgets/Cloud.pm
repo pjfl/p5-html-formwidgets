@@ -31,8 +31,12 @@ sub render_field {
                          href    => $href,
                          id      => $id };
       if ($item->{size}) {
+         # Assumes 1em = 12px and line height = 1.5em
+         my $mult        = 1 + int (2 * $item->{size} / 3);
+         my $line_height = int (1500 * $mult / $item->{size}) / 1000;
+
          $style .= 'font-size: '.$item->{size}.'em; ';
-         $style .= 'line-height: '.$item->{size}.'em; ';
+         $style .= 'line-height: '.$line_height.'em; ';
       }
 
       $item->{colour} and $style .= 'color: #'.$item->{colour}.'; ';

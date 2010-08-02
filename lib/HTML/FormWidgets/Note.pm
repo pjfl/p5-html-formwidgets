@@ -28,7 +28,7 @@ sub render_field {
 
    (my $text = $self->text || $self->loc( $self->name )) =~ s{ \A \n }{}msx;
 
-   return $self->hacc->div( $args, $text );
+   return $self->hacc->span( $args, $text );
 }
 
 1;

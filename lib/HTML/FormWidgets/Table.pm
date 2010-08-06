@@ -72,7 +72,7 @@ sub render_field {
 
    my $tbody = $hacc->tbody( $rows );
 
-   $args = { class => $self->table_class, id => $self->id };
+   $args = { cellspacing => 0, class => $self->table_class, id => $self->id };
 
    return $hacc->table( $args, "${caption}\n${thead}\n${tbody}" );
 }

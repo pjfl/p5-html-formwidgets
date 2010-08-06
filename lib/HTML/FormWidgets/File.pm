@@ -200,13 +200,9 @@ sub _render_html {
       and $path = $self->base.($path =~ s{ \A $pat }{/}msx);
    $path  = $path =~ m{ \A http: }msx ? $path : $self->base.$path;
 
-   my $style  = 'border: 0px; bottom: 0px; position: absolute; ';
-      $style .= 'top: 0px; width: 100%; height: 100%; '.$self->style;
-
    return $hacc->iframe( { class     => $self->subtype,
                            src       => $path,
-                           scrolling => q(auto),
-                           style     => $style }, '&#160;' );
+                           scrolling => q(auto) }, '&#160;' );
 }
 
 sub _render_logfile {

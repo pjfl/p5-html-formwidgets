@@ -28,7 +28,7 @@ sub render_field {
 
       if ($text = $val->{heading}) {
          $class  = defined $val->{hclass} ? $val->{hclass} : $self->hclass;
-         $paras .= "\n".$hacc->span( $class ? { class => $class } : {},
+         $paras .= "\n".$hacc->div( $class ? { class => $class } : {},
                                      $self->inflate( $text ) );
       }
 
@@ -42,7 +42,7 @@ sub render_field {
 
    $args = $self->column_class ? { class => $self->column_class } : {};
 
-   return "\n".$hacc->span( $args, $paras );
+   return "\n".$hacc->div( $args, $paras );
 }
 
 1;

@@ -7,18 +7,19 @@ use warnings;
 use version; our $VERSION = qv( sprintf '0.6.%d', q$Rev$ =~ /\d+/gmx );
 use parent qw(HTML::FormWidgets);
 
-__PACKAGE__->mk_accessors( qw(config fhelp href imgclass) );
+__PACKAGE__->mk_accessors( qw(config fhelp href imgclass target) );
 
 sub init {
    my ($self, $args) = @_;
 
-   $self->class          ( q(anchor_fade) );
-   $self->config         ( undef          );
-   $self->fhelp          ( q()            );
-   $self->href           ( undef          );
-   $self->imgclass       ( undef          );
-   $self->text           ( q(link)        );
-   $self->tiptype        ( q(normal)      );
+   $self->class   ( q(anchor_fade) );
+   $self->config  ( undef          );
+   $self->fhelp   ( q()            );
+   $self->href    ( undef          );
+   $self->imgclass( undef          );
+   $self->target  ( undef          );
+   $self->text    ( q(link)        );
+   $self->tiptype ( q(normal)      );
    return;
 }
 
@@ -37,12 +38,12 @@ sub render_field {
 
    $args->{class} = $self->class; $args->{href} = $self->href;
 
-   $html = $hacc->a( $args, $html );
+   defined $self->target and $args->{target} = $self->target;
 
    $self->id and $self->config
       and $self->_js_config( 'anchors', $self->id, $self->config );
 
-   return $html;
+   return $hacc->a( $args, $html );
 }
 
 1;

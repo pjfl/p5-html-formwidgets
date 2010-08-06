@@ -7,46 +7,44 @@ use warnings;
 use version; our $VERSION = qv( sprintf '0.6.%d', q$Rev$ =~ /\d+/gmx );
 use parent qw(HTML::FormWidgets);
 
-use Pod::Html;
+use Pod::Hyperlink::BounceURL;
+use Pod::Xhtml;
 
-__PACKAGE__->mk_accessors( qw(css src tempdir tempfile title) );
+__PACKAGE__->mk_accessors( qw(src title url) );
 
 sub init {
    my ($self, $args) = @_;
 
-   $self->container_class( q(pod) );
-   $self->css     ( undef );
-   $self->src     ( undef );
-   $self->tempdir ( undef );
-   $self->tempfile( undef );
-   $self->title   ( undef );
+   $self->container( 0       );
+   $self->src      ( undef   );
+   $self->title    ( undef   );
+   $self->url      ( '%s/%s' );
    return;
 }
 
 sub render_field {
-   my ($self, $args) = @_; my $line;
+   my ($self, $args) = @_;
 
-   no warnings; ## no critic
+   my $link_parser = Pod::Hyperlink::BounceURL->new;
 
-   my $body = 0; my $html = q(); my $tmp = $self->tempfile;
+   $link_parser->configure( URL => $self->url );
 
-   pod2html( '--backlink='.$self->loc( 'Back to Top' ),
-             '--cachedir='.$self->tempdir,
-             '--css='.$self->css,
-             '--infile='.$self->src,
-             '--outfile='.$tmp->pathname,
-             '--quiet',
-             '--title='.$self->title );
+   my $hacc     = $self->hacc;
+   my $heading  = $hacc->a( { id => 'podtop' } ).$hacc->h1( $self->title );
 
-   while (defined ($line = $tmp->getline) ) {
-      $body  = 0     if ($line =~ m{ \</body }mx);
-      $html .= $line if ($body);
-      $body  = 1     if ($line =~ m{ \<body }mx);
-   }
+   $args = { class => q(toplink), href => '#podtop' };
 
-   my $heading = $self->hacc->h1( $self->loc( 'Index of Contents' ) );
+   my $top_link = $hacc->a( $args, $self->loc( 'Back to Top' ) );
+   my $top_para = $hacc->p( { class => q(toplink) }, $top_link );
+   my $parser   = Pod::Xhtml->new( FragmentOnly => 1,
+                                   LinkParser   => $link_parser,
+                                   StringMode   => 1,
+                                   TopHeading   => 2,
+                                   TopLinks     => $top_para, );
 
-   return $heading.$html;
+   $parser->parse_from_file( $self->src );
+
+   return $heading.$parser->asString;
 }
 
 1;

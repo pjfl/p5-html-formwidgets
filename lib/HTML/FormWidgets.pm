@@ -480,7 +480,6 @@ HTML::FormWidgets - Create HTML form markup
       $config->{static      } = $s->{static};
       $config->{swidth      } = $s->{width} if ($s->{width});
       $config->{template_dir} = $c->config->{template_dir};
-      $config->{url         } = $c->req->path;
 
       HTML::FormWidgets->build( $config, $data );
       return $data;
@@ -720,10 +719,6 @@ so that the separator colons align vertically
 =item templatedir
 
 The path to template files used by the L</Template> subclass
-
-=item url
-
-Only used by the L</Tree> subclass to create self referential URIs
 
 =back
 

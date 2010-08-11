@@ -67,8 +67,8 @@ sub render_field {
 
    $rows .= $self->_render_row( $data, $_, $r_no++ ) for (@{ $data->{values} });
 
+   $self->edit and $rows .= $self->_add_edit_row( $data, $r_no );
    $self->_add_row_count( $r_no );
-   $self->edit and $rows .= $self->_add_edit_row( $data );
 
    my $tbody = $hacc->tbody( $rows );
 
@@ -80,14 +80,17 @@ sub render_field {
 # Private methods
 
 sub _add_edit_row {
-   my ($self, $data) = @_; my $hacc = $self->hacc; my $cells = $NUL;
+   my ($self, $data, $r_no) = @_; my $hacc = $self->hacc;
+
+   my $cells = $NUL; my $c_no = 0;
 
    for (0 .. $#{ $data->{flds} }) {
       my $args      = { id => $self->id.q(_add).$_ };
       my $field     = $data->{flds}->[ $_ ];
 
       $args->{name} = q(_).$self->id.q(_).$field;
-      $cells       .= $self->_editable_cell( $data, $field, $args );
+      $cells       .= $self->_editable_cell( $data, $field, $args, $c_no );
+      $c_no++;
    }
 
    my $text   = $hacc->span( { class => q(add_item_icon) }, q( ) );
@@ -107,8 +110,10 @@ sub _add_edit_row {
    $text     .= $hacc->span( $args, $text1 );
    $text      = $hacc->span( { class => q(table_edit_buttons) }, $text );
    $cells    .= $hacc->td( $text );
-   $args      = { class => $data->{class} || q(edit_row),
-                  id    => $self->id.q(_edit) };
+
+   my $class  = ($data->{class} || q(edit_row)).__row_class( $r_no );
+
+   $args      = { class => $class, id => $self->id.q(_edit) };
 
    return $hacc->tr( $args, $cells );
 }
@@ -133,13 +138,13 @@ sub _check_box {
    $id and $args->{value} = $id;
 
    my $text  = $hacc->checkbox( $args );
-   my $class = q(row_select ).__column_class( $c_no );
+   my $class = q(row_select).__column_class( $c_no );
 
    return $hacc->td( { class => $class }, $text );
 }
 
 sub _editable_cell {
-   my ($self, $data, $field, $args) = @_; my $hacc = $self->hacc;
+   my ($self, $data, $field, $args, $c_no) = @_; my $hacc = $self->hacc;
 
    $args->{class} = q(ifield);
 
@@ -159,7 +164,9 @@ sub _editable_cell {
                     ? $data->{sizes}->{ $field } : 10;
    }
 
-   return $hacc->td( { class => q(data_field) }, $hacc->$type( $args ) );
+   my $class = q(data_field).__column_class( $c_no );
+
+   return $hacc->td( { class => $class }, $hacc->$type( $args ) );
 }
 
 sub _render_header {
@@ -206,7 +213,7 @@ sub _render_row {
       if ($self->edit) {
          $args->{default} = $val->{ $field };
          $args->{name   } = $self->id.q(_).$r_no.q(_).$c_no;
-         $cells          .= $self->_editable_cell( $data, $field, $args );
+         $cells .= $self->_editable_cell( $data, $field, $args, $c_no );
       }
       else {
          exists $data->{hclass}->{ $field }
@@ -217,7 +224,7 @@ sub _render_row {
          $args->{class}  = ref $class eq q(HASH) ? $class->{ $field } : $class;
          exists $data->{typelist}->{ $field }
             and $args->{class   } .= q( ).$data->{typelist}->{ $field };
-         $args->{class} .= q( ).__column_class( $c_no );
+         $args->{class} .= __column_class( $c_no );
          exists $data->{wrap}->{ $field } or $args->{class} .= q( nowrap);
 
          my $fld_val = $self->inflate( $val->{ $field } ) || '&#160;';
@@ -232,8 +239,10 @@ sub _render_row {
       $cells .= $self->_check_box( $r_no, $c_no++, $val->{id} );
    }
 
-   my $class = $self->table_class.q(_row).($self->sortable
-                                       ? q( sortable_row) : $NUL);
+   my $class = $self->table_class.q(_row).__row_class( $r_no );
+
+   $self->sortable and $class .= q( sortable_row);
+
    my $args  = { class => $class, id => $self->id.q(_row).$r_no };
 
    return $hacc->tr( $args, "\n".$cells );
@@ -267,7 +276,7 @@ sub _row_number {
 
    my $args = { class => $self->class.q( lineNumber minimal) };
 
-   $args->{class} .= q( ).__column_class( $col );
+   $args->{class} .= __column_class( $col );
 
    return $self->hacc->td( $args, $row );
 }
@@ -275,7 +284,15 @@ sub _row_number {
 # Private subroutines
 
 sub __column_class {
-   return $_[ 0 ] % 2 == 0 ? q(even) : q(odd);
+   return __even_or_odd( $_[ 0 ] ).q(_col);
+}
+
+sub __even_or_odd {
+   return $_[ 0 ] % 2 == 0 ? q( even) : q( odd);
+}
+
+sub __row_class {
+   return __even_or_odd( $_[ 0 ] ).q(_row);
 }
 
 1;

@@ -94,7 +94,7 @@ sub _add_select_box {
    my $box   = $hacc->checkbox( { label => q(),
                                   name  => q(select).$r_no,
                                   value => $val } );
-   my $class = $self->subtype.q( ).__column_class( $c_no );
+   my $class = $self->subtype.__column_class( $c_no );
 
    return $hacc->td( { class => $class }, $box );
 }
@@ -110,11 +110,12 @@ sub _build_table {
       my ($ncells, $cells, $val) = $row_cells->( $hacc, $line, $r_no );
 
       if ($cells) {
-         $class = q(lineNumber ).__column_class( $c_no++ );
+         $class = q(lineNumber).__column_class( $c_no++ );
          $lead  = $hacc->td( { class => $class }, $r_no + 1 );
          $self->select >= 0
             and $lead .= $self->_add_select_box( $hacc, $r_no, $c_no++, $val );
-         $rows .= $hacc->tr( { class => $self->subtype }, $lead.$cells );
+         $class = $self->subtype.__row_class( $r_no );
+         $rows .= $hacc->tr( { class => $class }, $lead.$cells );
          $r_no++;
       }
 
@@ -159,7 +160,7 @@ sub _render_csv {
             $self->header->[ $f_no ] = $fld;
          }
          else {
-            my $class = $self->subtype.q( ).__column_class
+            my $class = $self->subtype.__column_class
                ( ($self->select < 0 ? 1 : 2) + $f_no );
 
             $cells .= $hacc->td( { class => $class }, $fld );
@@ -239,7 +240,15 @@ sub _render_source {
 # Private subroutines
 
 sub __column_class {
-   return $_[ 0 ] % 2 == 0 ? q(even) : q(odd);
+   return __even_or_odd( $_[ 0 ] ).q(_col);
+}
+
+sub __even_or_odd {
+   return $_[ 0 ] % 2 == 0 ? q( even) : q( odd);
+}
+
+sub __row_class {
+   return __even_or_odd( $_[ 0 ] ).q(_row);
 }
 
 1;

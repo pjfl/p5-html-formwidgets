@@ -27,7 +27,7 @@ sub render_field {
       my $href       = $ref->{href      } || 'javascript:Expand_Collapse()';
       my $style      = $ref->{style     };
       my $id         = $id_pref.q(_).$ref->{name};
-      my $attrs      = { class   => $class_pref.q(_header_fade liveGrid),
+      my $attrs      = { class   => $class_pref.q(_header fade live_grid),
                          href    => $href,
                          id      => $id };
       if ($item->{size}) {

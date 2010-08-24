@@ -12,7 +12,7 @@ __PACKAGE__->mk_accessors( qw(config fhelp href imgclass target) );
 sub init {
    my ($self, $args) = @_;
 
-   $self->class   ( q(anchor_fade) );
+   $self->class   ( q(anchor fade) );
    $self->config  ( undef          );
    $self->fhelp   ( q()            );
    $self->href    ( undef          );
@@ -25,6 +25,9 @@ sub init {
 
 sub render_field {
    my ($self, $args) = @_; my $hacc = $self->hacc;
+
+   $self->id and $self->config
+      and $self->_js_config( 'anchors', $self->id, $self->config );
 
    my $html = $self->imgclass
             ? $self->text
@@ -39,9 +42,6 @@ sub render_field {
    $args->{class} = $self->class; $args->{href} = $self->href;
 
    defined $self->target and $args->{target} = $self->target;
-
-   $self->id and $self->config
-      and $self->_js_config( 'anchors', $self->id, $self->config );
 
    return $hacc->a( $args, $html );
 }

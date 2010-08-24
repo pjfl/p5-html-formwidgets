@@ -68,7 +68,7 @@ sub traverse {
    $self->node_count > 0 or $attrs->{id} = $self->id;
 
    for my $key_no (0 .. $#keys) {
-      my $attrs = { class => $prefix.q(_fade) };
+      my $attrs = { class => $prefix.q(_link fade) };
       my $key   = $keys[ $key_no ];
       my $data  = $args->{data}->{ $key };
       my $last  = $key_no == $#keys;

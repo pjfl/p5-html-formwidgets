@@ -63,7 +63,7 @@ sub render_field {
       $html  .= $hacc->li( $text.$hacc->dl( $dlist ) );
    }
 
-   return $hacc->ul( { id => $args->{id} }, $html );
+   return $hacc->ul( { class => q(menu), id => $args->{id} }, $html );
 }
 
 # Private methods

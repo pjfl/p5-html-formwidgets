@@ -30,6 +30,8 @@ sub init {
 sub render_field {
    my ($self, $args) = @_;
 
+   $self->_js_config( 'calendars', $self->id, $self->config );
+
    $args->{class   } .= q( ifield calendars);
    $args->{readonly}  = q(readonly) if ($self->readonly);
    $args->{size    }  = $self->width;
@@ -46,8 +48,6 @@ sub render_field {
                              id    => $self->id.q(_clear),
                              title => $self->clear_hint }, $icon );
    $html   .= $hacc->span( { class => q(icon_buttons) }, $text );
-
-   $self->_js_config( 'calendars', $self->id, $self->config );
 
    return $html;
 }

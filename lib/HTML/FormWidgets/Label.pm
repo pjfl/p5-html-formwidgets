@@ -12,9 +12,9 @@ __PACKAGE__->mk_accessors( qw(dropcap) );
 sub init {
    my ($self, $args) = @_;
 
-   $self->container( 0 );
-   $self->dropcap(   0 );
-   $self->text(      q() );
+   $self->container( 0   );
+   $self->dropcap  ( 0   );
+   $self->text     ( q() );
    return;
 }
 

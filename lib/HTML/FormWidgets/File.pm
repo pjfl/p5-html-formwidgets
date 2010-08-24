@@ -13,10 +13,11 @@ use Syntax::Highlight::Perl;
 use Text::ParseWords;
 use Text::Tabs;
 
-__PACKAGE__->mk_accessors( qw(base header header_class hide path root
-                              scheme select style subtype) );
+__PACKAGE__->mk_accessors( qw(base header header_class hide number
+                              path root scheme select subtype) );
 
-my %SCHEME =
+my $HASH_CHAR = chr 35;
+my %SCHEME    =
    ( Variable_Scalar   => [ '<font color="#CC6600">', '</font>' ],
      Variable_Array    => [ '<font color="#FFCC00">', '</font>' ],
      Variable_Hash     => [ '<font color="#990099">', '</font>' ],
@@ -36,29 +37,29 @@ my %SCHEME =
      Builtin_Function  => [ '<font color="#000000">', '</font>' ],
      Character         => [ '<font color="#3399FF"><b>', '</b></font>' ],
      Directive         => [ '<font color="#000000"><i><b>',
-                           '</b></i></font>' ],
+                            '</b></i></font>' ],
      Label             => [ '<font color="#000000">', '</font>' ],
      Line              => [ '<font color="#000000">', '</font>' ], );
 
 sub init {
    my ($self, $args) = @_;
 
-   $self->base        ( q()            );
-   $self->container   ( 0              );
-   $self->header      ( []             );
-   $self->header_class( q(small table) );
-   $self->hide        ( []             );
-   $self->path        ( undef          );
-   $self->root        ( undef          );
-   $self->scheme      ( \%SCHEME       );
-   $self->select      ( -1             );
-   $self->style       ( q()            );
-   $self->subtype     ( q(file)        );
+   $self->base        ( q()       );
+   $self->container   ( 0         );
+   $self->header      ( []        );
+   $self->header_class( q(normal) );
+   $self->hide        ( []        );
+   $self->number      ( 1         );
+   $self->path        ( undef     );
+   $self->root        ( undef     );
+   $self->scheme      ( \%SCHEME  );
+   $self->select      ( -1        );
+   $self->subtype     ( q(file)   );
    return;
 }
 
 sub render_field {
-   # Subtypes: file, csv, html, source, and logfile
+   # Subtypes: csv, html, logfile, source, and text
    my ($self, $args) = @_; my $hacc = $self->hacc;
 
    my $path = $self->path or return 'Path not specified';
@@ -75,6 +76,14 @@ sub render_field {
 }
 
 # Private subroutines
+
+sub _add_line_number {
+   my ($self, $hacc, $r_no, $c_no) = @_;
+
+   my $class = q(first lineNumber).__column_class( $c_no );
+
+   return $hacc->td( { class => $class }, $r_no + 1 );
+}
 
 sub _add_row_count {
    my ($self, $default) = @_;
@@ -102,16 +111,16 @@ sub _add_select_box {
 sub _build_table {
    my ($self, $hacc, $text, $header_cells, $row_cells) = @_;
 
-   my ($class, $lead, $val); my $r_no = 0; my $rows = q(); my $c_max = 1;
+   my ($cells, $class, $val); my $r_no = 0; my $rows = q(); my $c_max = 1;
 
-   for my $line (split m { \n }mx, $text) {
-      my $c_no = 0; $line = $hacc->escape_html( $line, 0 );
+   for my $line (split m{ \n }mx, $text) {
+      my $c_no = 0; my $lead = q();
 
       my ($ncells, $cells, $val) = $row_cells->( $hacc, $line, $r_no );
 
       if ($cells) {
-         $class = q(lineNumber).__column_class( $c_no++ );
-         $lead  = $hacc->td( { class => $class }, $r_no + 1 );
+         $self->number
+            and $lead  = $self->_add_line_number( $hacc, $r_no, $c_no++ );
          $self->select >= 0
             and $lead .= $self->_add_select_box( $hacc, $r_no, $c_no++, $val );
          $class = $self->subtype.__row_class( $r_no );
@@ -123,15 +132,15 @@ sub _build_table {
    }
 
    $class = $self->header_class.q( minimal);
-
-   my $cells = $hacc->th( { class => $class }, chr 35 );
-
-   $self->select >= 0 and $cells .= $hacc->th( { class => $class }, 'M' );
+   $self->number
+      and $cells = $hacc->th( { class => $class }, $self->loc( $HASH_CHAR ) );
+   $self->select >= 0
+      and $cells .= $hacc->th( { class => $class }, $self->loc( 'M' ) );
    $cells .= $header_cells->( $hacc, $c_max, $self->select < 0 ? 1 : 2 );
    $rows   = $hacc->tr( $cells ).$rows;
    $self->_add_row_count( $r_no );
 
-   return $hacc->table( { class => $self->subtype }, $rows );
+   return $hacc->table( { cellspacing => 0, class => $self->subtype }, $rows );
 }
 
 sub _render_csv {
@@ -154,7 +163,7 @@ sub _render_csv {
 
       my $cells = q(); my $f_no = 0; my $val = q();
 
-      for my $fld (parse_line( q(,), 0, $line )) {
+      for my $fld (parse_line( q(,), 0, $hacc->escape_html( $line, 0 ) )) {
          if ($r_no == 0 and $line =~ m{ \A \# }mx) {
             $f_no == 0 and $fld = substr $fld, 1;
             $self->header->[ $f_no ] = $fld;
@@ -170,25 +179,6 @@ sub _render_csv {
       }
 
       return ($f_no, $cells, $val);
-   };
-
-   return $self->_build_table( $hacc, $text, $header_cells, $row_cells );
-}
-
-sub _render_file {
-   my ($self, $hacc, $text) = @_;
-
-   my $header_cells = sub {
-      my ($hacc, $c_max, $c_no) = @_;
-
-      return $hacc->th( { class => $self->header_class }, 'Lines' );
-   };
-   my $row_cells = sub {
-      my ($hacc, $line, $r_no) = @_;
-
-      my $cells = $hacc->td( { class => $self->subtype }, $line );
-
-      return (1, $cells, $line);
    };
 
    return $self->_build_table( $hacc, $text, $header_cells, $row_cells );
@@ -210,18 +200,21 @@ sub _render_logfile {
    my ($self, $hacc, $text) = @_; my $r_no = 0; my $rows = q(); my $cells;
 
    # TODO: Add Prev and next links to append div
-   for my $line (split m { \n }mx, $text) {
-      $line   = $hacc->escape_html( $line || q( ), 0 );
-      $line   = $hacc->pre( { class => $self->subtype }, $line );
-      $cells  = $hacc->td(  { class => $self->subtype }, $line );
-      $rows  .= $hacc->tr(  { class => $self->subtype }, $cells )."\n";
-      $r_no++;
-   }
+   my $header_cells = sub {
+      my ($hacc, $c_max, $c_no) = @_; my $text = $self->loc( 'Logfile' );
 
-   $self->_add_row_count( $r_no );
+      return $hacc->th( { class => $self->header_class }, $text );
+   };
+   my $row_cells = sub {
+      my ($hacc, $line, $r_no) = @_; $line = $hacc->escape_html( $line, 0 );
 
-   return $hacc->table( { cellpadding => 0, cellspacing => 0,
-                          class       => $self->subtype }, $rows );
+      my $class = $self->subtype.__column_class( 1 );
+      my $cells = $hacc->td( { class => $class }, $line );
+
+      return (1, $cells, $line);
+   };
+
+   return $self->_build_table( $hacc, $text, $header_cells, $row_cells );
 }
 
 sub _render_source {
@@ -234,7 +227,29 @@ sub _render_source {
    $tabstop = $self->tabstop; # Text::Tabs
    $text    = $fmt->format_string( expand( $text ) );
 
-   return $hacc->pre( { class => $self->subtype }, $text );
+   my $header_cells = sub {
+      my ($hacc, $c_max, $c_no) = @_; my $text = $self->loc( 'Source Code' );
+
+      return $hacc->th( { class => $self->header_class }, $text );
+   };
+   my $row_cells = sub {
+      my ($hacc, $line, $r_no) = @_;
+
+      my $class = $self->subtype.__column_class( 1 );
+      my $cells = $hacc->td( { class => $class }, $line );
+
+      return (1, $cells, $line);
+   };
+
+   return $self->_build_table( $hacc, $text, $header_cells, $row_cells );
+}
+
+sub _render_text {
+   my ($self, $hacc, $text) = @_;
+
+   $self->container( 1 ); $self->container_class( q(container textfile) );
+
+   return $hacc->pre( $hacc->escape_html( $text, 0 ) );
 }
 
 # Private subroutines
@@ -244,7 +259,7 @@ sub __column_class {
 }
 
 sub __even_or_odd {
-   return $_[ 0 ] % 2 == 0 ? q( even) : q( odd);
+   return ($_[ 0 ] + 1) % 2 == 0 ? q( even) : q( odd);
 }
 
 sub __row_class {

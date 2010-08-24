@@ -11,14 +11,15 @@ __PACKAGE__->mk_accessors( qw(add_tip assets data edit hide
                               number_rows remove_tip select
                               sort_tip sortable table_class) );
 
-my $NUL = q();
-my $TTS = q( ~ );
+my $HASH_CHAR = chr 35;
+my $NUL       = q();
+my $TTS       = q( ~ );
 
 sub init {
    my ($self, $args) = @_; my $text;
 
    $self->assets     ( $NUL );
-   $self->class      ( q(table) );
+   $self->class      ( q(normal) );
    $self->container  ( 0 );
    $self->data       ( { flds => [], values => [] } );
    $self->edit       ( 0 );
@@ -258,7 +259,7 @@ sub _render_row_header {
       $args->{class} .= q( sort tips); $args->{title} = $self->sort_tip;
    }
 
-   return $self->hacc->th( $args, '#' );
+   return $self->hacc->th( $args, $HASH_CHAR );
 }
 
 sub _render_selectbox {
@@ -288,7 +289,7 @@ sub __column_class {
 }
 
 sub __even_or_odd {
-   return $_[ 0 ] % 2 == 0 ? q( even) : q( odd);
+   return ($_[ 0 ] + 1) % 2 == 0 ? q( even) : q( odd);
 }
 
 sub __row_class {

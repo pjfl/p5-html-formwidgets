@@ -29,9 +29,8 @@ sub render_field {
    my $label = exists $self->labels->{ $self->value }
                     ? $self->labels->{ $self->value } : undef;
 
-   if ($label) {
-      $html .= $self->hacc->span( { class => $self->label_class }, $label );
-   }
+   $label
+      and $html .= $self->hacc->span( { class => $self->label_class }, $label );
 
    return $html;
 }

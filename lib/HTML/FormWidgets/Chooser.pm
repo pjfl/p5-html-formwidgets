@@ -23,16 +23,15 @@ sub init {
 
 sub render_field {
    my $self = shift;
-   my $html = $self->hacc->submit( { class => $self->class,
-                                     id    => $self->id,
-                                     name  => q(_method),
-                                     value => $self->default } );
 
    $self->config->{field} = '"'.$self->field.'"';
    $self->config->{href } = '"'.$self->href.'"';
    $self->_js_config( 'anchors', $self->id, $self->config );
 
-   return $html;
+   return $self->hacc->submit( { class => $self->class,
+                                 id    => $self->id,
+                                 name  => q(_method),
+                                 value => $self->default } );
 }
 
 1;

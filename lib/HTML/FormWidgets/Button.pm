@@ -16,7 +16,7 @@ sub init {
 
    $self->assets     ( q()        );
    $self->button_name( q(_method) );
-   $self->config     ( {}         );
+   $self->config     ( undef      );
    $self->container  ( 0          );
    $self->src        ( q()        );
    $self->tiptype    ( q(normal)  );
@@ -24,19 +24,16 @@ sub init {
 }
 
 sub render_field {
-   my $self = shift;
-   my $hacc = $self->hacc;
-   my $args = { id => $self->id };
-   my $html = $self->src && ref $self->src eq q(HASH)
-            ? $self->_markup_button( $args )
-            : $self->src
-            ? $self->_image_button ( $args )
-            : $self->_submit_button( $args );
+   my $self = shift; my $hacc = $self->hacc; my $args = { id => $self->id };
 
-   keys %{ $self->config } > 0
+   $self->id and $self->config
       and $self->_js_config( 'anchors', $self->id, $self->config );
 
-   return $html;
+   return $self->src && ref $self->src eq q(HASH)
+        ? $self->_markup_button( $args )
+        : $self->src
+        ? $self->_image_button ( $args )
+        : $self->_submit_button( $args );
 }
 
 sub _image_button {

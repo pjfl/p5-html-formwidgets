@@ -38,7 +38,7 @@ sub render_field {
    my $hacc = $self->hacc;
    my @root = grep { ! m{ \A _ }mx } keys %{ $self->data };
 
-   defined $root[1] and return $hacc->span
+   defined $root[ 1 ] and return $hacc->span
       ( { class => q(error) }, 'Your tree has more than one root' );
 
    $self->hint_title
@@ -63,7 +63,8 @@ sub traverse {
    $keys[ 0 ] or return $NUL;
 
    my $hacc  = $self->hacc; my $prefix = $self->class_prefix; my $html;
-   my $attrs = { class => $prefix.($self->node_count > 0 ? q(_branch) : $NUL) };
+   my $class = $prefix.($self->node_count > 0 ? q(_branch) : $SPC.$self->class);
+   my $attrs = { class => $class };
 
    $self->node_count > 0 or $attrs->{id} = $self->id;
 

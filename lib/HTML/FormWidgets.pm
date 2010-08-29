@@ -345,9 +345,8 @@ sub _init {
    # Calculate the prompt width
    my $pwidth = $self->pwidth;
 
-   if ($pwidth and $pwidth =~ m{ \A \d+ \z }mx) {
-      $self->pwidth( (int $pwidth * $self->swidth / 100).q(px) );
-   }
+   $pwidth and $pwidth =~ m{ \A \d+ \z }mx
+      and $self->pwidth( (int $pwidth * $self->swidth / 100).q(px) );
 
    my $sep = $self->sep;
 
@@ -366,54 +365,42 @@ sub _init {
 }
 
 sub _init_args {
-   my ($self, $skip, $args) = @_; my $val;
+   my ($self, $skip, $args) = @_; my $v;
 
    for (grep { not $skip->{ $_ } } keys %{ $args }) {
-      if (exists $self->{ $_ } and defined ($val = $args->{ $_ })) {
-         $self->{ $_ } = $val;
-      }
+      exists $self->{ $_ } and defined ($v = $args->{ $_ })
+         and $self->{ $_ } = $v;
    }
 
    return;
 }
 
 sub _init_fields {
-   my ($self, $skip, $fields) = @_; my $id = $self->id; my $val;
+   my ($self, $skip, $fields) = @_; my $id = $self->id;
 
-   if ($id and $fields and exists $fields->{ $id }) {
-      my $field = $fields->{ $id };
-
-      for (grep { not $skip->{ $_ } } keys %{ $field }) {
-         if (exists $self->{ $_ } and defined ($val = $field->{ $_ })) {
-            $self->{ $_ } = $val;
-         }
-      }
-   }
+   $id and $fields and exists $fields->{ $id }
+       and $self->_init_args( $skip, $fields->{ $id } );
 
    return;
 }
 
 sub _js_config {
-   my ($self, $element, $id, $config) = @_; my $list = $NUL;
+   my ($self, $group, $id, $config) = @_; my $list = $NUL;
 
-   ($element and $id and $config) or return $NUL;
-   ref $config eq q(HASH) or return $NUL;
+   ($group and $id and $config and ref $config eq q(HASH)) or return;
 
    while (my ($k, $v) = each %{ $config }) {
-      if ($k) {
-         $list and $list .= ', '; $list .= $k.': '.($v || 'null');
-      }
+      if ($k) { $list and $list .= ', '; $list .= $k.': '.($v || 'null') }
    }
 
-   my $text  = $self->js_object;
-      $text .= ".config.${element}[ '${id}' ] = { ${list} };";
+   my $text = $self->js_object.".config.${group}[ '${id}' ] = { ${list} };";
 
    push @{ $self->literal_js }, $text;
    return;
 }
 
 sub _render {
-   my $self = shift; my $args = {}; my $id = $self->id; my $name = $self->name;
+   my $self = shift; my $id = $self->id; my $name = $self->name; my $args = {};
 
    $id               and $args->{id        }  = $id;
    $name             and $args->{name      }  = $name;

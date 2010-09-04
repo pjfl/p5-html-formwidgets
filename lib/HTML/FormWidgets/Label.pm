@@ -12,6 +12,7 @@ __PACKAGE__->mk_accessors( qw(dropcap) );
 sub init {
    my ($self, $args) = @_;
 
+   $self->class    ( q(label_text) );
    $self->container( 0   );
    $self->dropcap  ( 0   );
    $self->text     ( q() );
@@ -42,9 +43,9 @@ sub render_field {
       $text = $markup;
    }
 
-   $self->class or return $text;
+   $args = { class => $self->class, id => $self->id };
 
-   return $self->hacc->span( { class => $self->class }, $text );
+   return $self->hacc->span( $args, $text );
 }
 
 1;

@@ -228,7 +228,10 @@ sub render_field {
 sub render_prompt {
    my $self = shift; my $args = { class => q(prompt) };
 
-   $self->id     and $args->{for  }  = $self->id;
+   if ($self->id) {
+      $args->{for} = $self->id; $args->{id} = $self->id.q(_label);
+   }
+
    $self->palign and $args->{style} .= 'text-align: '.$self->palign.'; ';
    $self->nowrap and $args->{style} .= 'white-space: nowrap; ';
    $self->pwidth and $args->{style} .= 'width: '.$self->pwidth.q(;);

@@ -9,15 +9,21 @@ use parent qw(HTML::FormWidgets);
 
 __PACKAGE__->mk_accessors( qw(config) );
 
-my $SPC = q( );
 my $TTS = q( ~ );
 
 sub init {
    my ($self, $args) = @_;
 
+   my $prefix  = $self->loc( 'Scroll to' ).$TTS;
+   my $default = $self->loc( 'an anchor on the page' );
+
    $self->class( q(pintray) );
-   $self->config( { pins   => q({ '.pintarget': { icon: 'scrollpin_icon' } }),
-                    target => "'content'" } );
+   $self->config( {
+      pins   => "{ '.pintarget': { icon: 'scrollpin_icon tips' } }",
+      title  => "function( el ) {
+         var id = \$( el.id + '_label' );
+         return '${prefix}' + (id ? id.textContent : '${default}'); }",
+      target => "'content'" } );
    $self->container( 0 );
    return;
 }
@@ -26,9 +32,8 @@ sub render_field {
    my ($self, $args) = @_;
 
    $self->_js_config( 'scrollPins', $self->id, $self->config );
-   $args = { class => $self->class, id => $self-> id };
 
-   return $self->hacc->ul( $args );
+   return $self->hacc->ul( { class => $self->class, id => $self->id } );
 }
 
 1;

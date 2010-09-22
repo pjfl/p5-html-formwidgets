@@ -13,7 +13,7 @@ use HTML::Accessors;
 use TryCatch;
 
 my $LSB   = q([);
-my $NB    = '&#160;&dagger;';
+my $NB    = '&#160;&#8224;';
 my $NUL   = q();
 my $SPC   = q( );
 my $TTS   = q( ~ );

@@ -54,7 +54,7 @@ sub init {
    $self->root        ( undef     );
    $self->scheme      ( \%SCHEME  );
    $self->select      ( -1        );
-   $self->subtype     ( q(file)   );
+   $self->subtype     ( q(text)   );
    return;
 }
 
@@ -64,13 +64,14 @@ sub render_field {
 
    my $path = $self->path or return 'Path not specified';
 
+   $self->subtype or return 'Subtype not specified';
    $self->subtype eq q(html) and return $self->_render_html( $hacc, $path );
 
    -f $path or return "Path $path not found";
 
    my $rdr    = IO::File->new( $path, q(r) ) or return "Path $path cannot read";
    my $text   = do { local $RS = undef; <$rdr> }; $rdr->close;
-   my $method = q(_render_).($self->subtype || q(file));
+   my $method = q(_render_).$self->subtype;
 
    return $self->$method( $hacc, $text );
 }

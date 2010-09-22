@@ -1,6 +1,8 @@
 Revision history for HTML::FormWidgets
 
-0.6.253  2010-06-22
+0.6
+         - Added ScrollPin
+         - Added SidebarPanel
          - Added TabSwapper
          - Added clear field to date
          - Tables are now client side sortable

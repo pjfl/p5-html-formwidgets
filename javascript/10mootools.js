@@ -5820,7 +5820,7 @@ Fx.Reveal = new Class({
 	cancel: function(){
 		this.parent.apply(this, arguments);
 		this.element.style.cssText = this.cssText;
-		this.hidding = false;
+		this.hiding = false;
 		this.showing = false;
 	}
 

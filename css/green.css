@@ -1,79 +1,89 @@
-/* @(#)$Id: green.css 1001 2010-06-18 00:18:39Z pjf $ */
+/* @(#)$Id: green.css 1068 2010-08-29 00:17:21Z pjf $ */
 
-body { background: #9C9 url(background.jpg) repeat 100% 100%; }
+body { background: #9c9 url(background.gif) repeat 100% 100%; color: black; }
 
-.accordion_panel_container .active { background-color: #663; color: #FFC; }
-.accordion_panel_container .inactive { background-color: #CC9; color: #000; }
-.anchor_fade { color: #000; }
-.anchor_fade:hover { background-color: #FFC; }
-.error { background-color: #FCC; color: black; }
-.even { background: #CC9; }
-.even:hover { background: #FFC; }
-.header_fade { color: #336; }
-.header_title { color: #FFC; }
-.navigation_fade { color: #000; }
-.navigation_fade:hover { background-color: #FFC; }
-.odd { background: #9C9; }
-.odd:hover { background: #FFC; }
-.sidebarContent .tree { background-color: #FFC; }
-.slider { background-color: #CC9 }
-.slider .knob { background-color: #9C9 }
-.split { color: #336; }
-.tabs_fade { color: #000; }
-.tabset .tab_selected { border-color: #336 #336 #FFC; }
+abbr, acronym, fieldset, ins { border-color: #336; }
+ins { color: #f00; }
+hr { border-color: #336 transparent transparent; }
 
-.iFrameItem .tree { background: #CC9; }
-.treeItem a.selected a.selected-inactive { color: #000; }
-.treeItem a.treeFade:hover { background-color: #FFC; }
+.accordion_content .tree, .anchor:hover, .even_col:hover,
+.navigation:hover, .odd_col:hover { background-color: #ffc; }
+.accordion_header { border-color: #cc9 #336 #336 #336; }
+.accordion_header_first { border-top-color: #336; }
+.accordion_panel { border-color: transparent #336 #336 #336; }
+.accordion_panel_container .active { background-color: #663; color: #ffc; }
+.accordion_panel_container .inactive, .sdata_item .tree,
+.slider { background-color: #cc9; }
+.accordion_panel_container .inactive, .error, .navigation,
+.tabs, .tree a.selected a.selected-inactive { color: #000; }
+.anchor, .button, .tick, .tree, .navigation:hover, .pod h2,
+.pod p.toplink, .results legend, .sdata_item legend, .sdata_item input.button,
+.slider, .slider .knob, .tabset .panel_content,
+.tabset .tab { border-color: #336; }
+.anchor, .header_link, .search, .tree_link { color: #336; }
+.button_item input.button:hover, .slider .knob,
+.tree_link:hover { background-color: #9c9; }
+.cut_here { background-color: transparent; border-top-color: #f00; }
+.error { background-color: #fcc; }
+.even_row { background-color: #c1d9a9; }
+.header_title { color: #336; }
+.info { color: #8b8b32; }
+.navigation { border-color: transparent; }
+.odd_row { background-color: #cc9; }
+.split { color: #ffc; }
+.tabset .tab_selected { border-color: #336 #336 #ffc; }
+.vertical.button {
+   background-color: #cc9; background-image: none; border-color: #336;
+}
+.vertical.button:hover { background-color: #9c9; }
+.warning { background: Yellow; }
 
-a.toolWidget:hover { background-color: #FFC; }
-hr.footer { background-color: transparent; }
 input.ifield, password.ifield, select.ifield, textarea.ifield {
-   background-color: #CC9; color: #336;
+   background-color: #cc9; border-color: #336; color: #336;
 }
 input:focus, password:focus, select:focus, textarea:focus {
-   background-color: #9C9; color: #000;
+   background-color: #9c9; color: #000;
 }
-span.title { background: #663; color: #FFC; }
-th.table { background-color: #663; color: #FFC; }
+input.required, password.required, select.required, textarea.required {
+   border-right-color: #f00;
+}
 
-#bookmark { background-color: #663; }
-#content { background-color: #FFC; }
-#conversionPanel { background-color: #FFC; }
-#footerDisp { background-color: transparent; }
-#headerTop { background: #663 url(header.png) repeat-x; color: #FFC; }
-#informationPanel { background-color: #FFC; }
-#companyLogo { background-color: #663; }
-#navigation_sidebarPanel { background-color: #FFC; }
-#overviewPanel { background-color: #FFC; }
-#searchPanel { background-color: #FFC; }
-#toolTip { background-color: #9CC; }
+span.error { border-color: #336; }
+span.title { background: #663; color: #ffc; }
+table.editable td.row_select { background-color: #c1d9a9; border-color: #336; }
+table.editable th { border-color: #336; }
+table.editable .even_row, table.editable .odd_row { background-color: #ffc; }
+table.source .even_row { background-color: #cc9; }
+table.grid { background-color: #cc9; }
+td.first { border-right-color: #336; }
+th.grid_header { border-bottom-color: #336; }
+th.normal { background-color: #663; color: #ffc; }
 
 /* The main calendar widget.  DIV containing a table. */
 
 .calendar, .calendar table {
-  color: #000; background: #efe;
+  background: #efe; border-color: #336; color: #000;
 }
 
 /* Header part -- contains navigation buttons and day names. */
 
 .calendar .button { /* "<<", "<", ">", ">>" buttons have this class */
-  background: #663; color: #FFC;
+  background: #663; color: #ffc;
 }
 .calendar .nav {
-  background-color: #663;  
+  background-color: #663;
 }
 .calendar thead .title { /* This holds the current "month, year" */
   background: #250; color: #efa;
 }
 .calendar thead .name { /* Cells <TD> containing the day names */
-  color: #000;
+  border-color: #336; color: #000;
 }
 .calendar thead .weekend { /* How a weekend day name shows in header */
   color: #a66;
 }
 .calendar thead .hilite { /* How do the buttons in header appear when hover */
-  background-color: #afa; color: #000;
+  border-color: #336; background-color: #afa; color: #000;
 }
 .calendar thead .active { /* Active (pressed) buttons in header */
   background-color: #7c7;
@@ -89,17 +99,17 @@ th.table { background-color: #663; color: #FFC; }
 }
 .calendar tbody .day.othermonth { color: #bbb; }
 .calendar tbody .day.othermonth.oweekend { color: #fbb; }
-.calendar table .wn { background: #dfb; }
+.calendar table .wn { border-color: #336; background: #dfb; }
 .calendar tbody .rowhilite td { background: #dfd; }
 .calendar tbody .rowhilite td.wn { background: #efe; }
 .calendar tbody td.hilite { /* Hovered cells <TD> */
-  background: #efd;
+  border-color: #bbb; background: #efd;
 }
 .calendar tbody td.active { /* Active (pressed) cells <TD> */
   background: #dec;
 }
 .calendar tbody td.selected { /* Cell showing today date */
-  background: #f8fff8; color: #000;
+  border-color: #000; background: #f8fff8; color: #000;
 }
 .calendar tbody td.weekend { /* Cells showing weekend days */
   color: #a66;
@@ -116,7 +126,7 @@ th.table { background-color: #663; color: #FFC; }
   background: #250; color: #efa;
 }
 .calendar tfoot .hilite { /* Hover style for buttons in footer */
-  background: #afa; color: #000;
+  border-color: #084; background: #afa; color: #000;
 }
 .calendar tfoot .active { /* Active (pressed) style for buttons in footer */
   background: #7c7;
@@ -124,12 +134,12 @@ th.table { background-color: #663; color: #FFC; }
 
 /* Combo boxes (menus that display months/years for direct selection) */
 
-.calendar .combo { background: #efd; color: #000; }
+.calendar .combo { border-color: #336; background: #efd; color: #000; }
 .calendar .combo .hilite { background: #af8; }
-.calendar .combo .active { background: #efe; }
-.calendar td.time { background-color: #dfb; }
+.calendar .combo .active { border-color: #6a4; background: #efe; }
+.calendar td.time { border-color: #336; background-color: #dfb; }
 .calendar td.time .hour, .calendar td.time .minute, .calendar td.time .ampm {
-   background-color: #FFC;
+   border-color: #336; background-color: #ffc;
 }
 .calendar td.time span.hilite {
    border-color: #000; background-color: #686; color: #fff;
@@ -138,46 +148,94 @@ th.table { background-color: #663; color: #FFC; }
    border-color: #f00; background-color: #000; color: #0f0;
 }
 
-/* Navigation menu and tools menu */
-
-#sidebarCap { background-color: #CC9; }
-#sidebarCap:hover { background-color: #FFC; }
-span.menu_top_middle_filler { background-color: #336; }
-span.navigationFiller { background-color: #CC9; }
-#menu dd { background: transparent; }
-#menu li a.menu_title_fade { background-color: #CC9; color: #000; }
-#menu li a.menu_title_fade:hover { background-color: #FFC; }
-#menu li a.menu_selected_fade { color: #000; }
-#menu li a.menu_selected_fade:hover { background-color: #FFC; }
-#menu li a.menu_link_fade { background-color: #CC9; color: #000; }
-#menu li a.menu_link_fade:hover { background-color: #FFC; }
-#tools dd { background: transparent; }
-#tools li a.tools_selected_fade { color: #000; }
-#tools li a.tools_selected_fade:hover { background-color: #FFC; }
-#tools li a.tools_title_fade { background-color: #CC9; color: #000; }
-#tools li a.tools_title_fade:hover { background-color: #FFC; }
-#tools li a.tools_link_fade { background-color: #CC9; color: #000; }
-#tools li a.tools_link_fade:hover { background-color: #FFC; }
-
 /* Rounded corners in menu */
 
 b.pad { background-color: #8b8b32; }
 b.bottom { background-color: transparent; }
 b.top { background-color: transparent; }
-b.b2, b.b3, b.b4 { background: #CC9; }
-b.tl2, b.tl3, b.tl4 { background: #8b8b32; }
-b.tr2, b.tr3, b.tr4 { background: #8b8b32; }
+b.b2, b.b3, b.b4 { border-color: #336; background: #cc9; }
+b.tl2, b.tl3, b.tl4 { border-color: #336; background: #8b8b32; }
+b.tr2, b.tr3, b.tr4 { border-color: #336; background: #8b8b32; }
 b.b1 { background: #336; }
-b.tl1 { background: #8b8b32; }
-b.tr1 { background: #8b8b32; }
+b.tl1 { border-color: #336; background: #8b8b32; }
+b.tr1 { border-color: #336; background: #8b8b32; }
+
+/* Flyover tool tips */
+
+div.tool-tip { color: #fff; }
+td.tool-tip-topLeft span, td.tool-tip-topRight span { color: #9FD4FF; }
+
+/* WYSIWYG */
+
+.wysiwyg_container iframe { background-color: #cc9; border-color: #336; }
+.wysiwyg_container .toolbar { background-color: #663; }
+.wysiwyg_container .toolbar * { background-color: #ffc; }
+.wysiwyg_container .toolbar *:hover { background-color: #9c9; }
+.wysiwyg_container .toolbar.disabled *:hover {
+   background-color: transparent; border-color: #663;
+}
+.wysiwyg_container .toolbar .spacer { background-color: #663; border-color: #ffc; }
+
+/* Navigation menu and tools menu */
+
+#sidebarCap { background-color: #cc9; }
+#sidebarCap:hover { background-color: #ffc; }
+span.menu_top_middle_filler { background-color: #336; }
+span.navigation_filler {
+   border-bottom-color: #336; border-top-color: transparent; background-color: #cc9;
+}
+#menu dd { background: transparent; }
+#menu li a.menu_title {
+   background-color: #cc9; border-color: transparent transparent #336 transparent;  color: #000;
+}
+#menu li a.menu_title:hover { background-color: #ffc; }
+#menu li a.menu_selected {
+   border-color: transparent #336 transparent #336; color: #000;
+}
+#menu li a.menu_selected:hover { background-color: #ffc; }
+#menu li a.menu_link {
+   background-color: #cc9; border-color: transparent #336 transparent #336; color: #000;
+}
+#menu li a.menu_link:hover { background-color: #ffc; }
+#tools dd { background: transparent; }
+#tools li a.tools_selected {
+   border-color: transparent #336 transparent #336; color: #000;
+}
+#tools li a.tools_selected:hover { background-color: #ffc; }
+#tools li a.tools_title {
+   background-color: #cc9; border-color: transparent; color: #000;
+}
+#tools li a.tools_title:hover { background-color: #ffc; }
+#tools li a.tools_link {
+   background-color: #cc9; border-color: transparent #336 transparent #336; color: #000;
+}
+#tools li a.tools_link:hover { background-color: #ffc; }
+
+/* Identifird elements */
+
+#bookmark { background-color: #663; }
+#companyLogo { border-bottom-color: #336; }
+#content { border-color: #336; background-color: #ffc; }
+#conversionPanel { background-color: #ffc; }
+#footerDisp { background-color: transparent; }
+#headerTop { background: #663 url(header.png) repeat-x; color: #ffc; }
+#informationPanel { background-color: #ffc; }
+#companyLogo { background-color: #663; }
+#navigation_sidebarPanel { background-color: #ffc; }
+#overviewPanel { background-color: #ffc; }
+#searchPanel { background-color: #ffc; }
+#sidebarCap { border-top-color: #8b8b32; border-bottom-color: #336; }
+#sidebarDisp { border-color: #336; }
+#sidebarFill { border-color: #cc9; }
+#toolTip { background-color: #9CC; }
 
 /* Application specific */
 
-.library_fade { color: #000; }
-.library_fade:hover { background-color: #FFC; }
-.library_header_fade { color: #000; }
-.library_subheader { background-color: #9C9; color: #000; }
-div.library_header { background-color: #CC9; }
-table.grid { background-color: #CC9; }
-table.recipe td.label { background-color: #CC9; }
-th.grid_header { background-color: #663; color: #FFC; }
+.library { color: #000; }
+.library:hover { background-color: #ffc; border-color: #336; }
+.library_subheader { background-color: #9c9; color: #000; }
+.libraryPanel { border-color: #336; }
+a.library_header { color: #000; }
+div.library_header { border-color: #336; background-color: #cc9; }
+table.recipe td.label { background-color: #cc9; }
+th.grid_header { background-color: #663; color: #ffc; }

@@ -264,8 +264,10 @@
 
 				for ( var attr in attrs ) {
                // Fuck knows where the forEach attrs are comming from
+               // and now the array attr has appeared, how weird
                if (attrs[ attr ].name.length > 0
-                   && attrs[ attr ].name != "forEach") {
+                   && attrs[ attr ].name != "forEach"
+                   && attrs[ attr ].name != "array") {
                   elem.setAttribute( attrs[ attr ].name, attrs[ attr ].value );
                }
             }

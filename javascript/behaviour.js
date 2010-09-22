@@ -1,35 +1,133 @@
 /* $Id$ */
 
-var State = new Class( {
+var Behaviour = new Class( {
    Implements: [ Events, Options ],
 
-   options           : {
-      config         : { calendars  : {},
-                         tabSwappers: { options: { smooth    : true,
-                                                   smoothSize: true } },
-                         sliders    : {},
-                         submit     : {} },
-      formName       : null,
-      onStateComplete: $empty,
-      popup          : false,
-      sessionPath    : '/',
-      sessionPrefix  : 'behaviour',
-      url            : null
+   options            : {
+      config          : {
+         anchors      : {},
+         calendars    : {},
+         scrollPins   : { fadeInDuration: 1500,  showDelay: 1000,
+                          trayPadding   : 0 },
+         server       : {},
+         sidebars     : {},
+         sliders      : {},
+         tabSwappers  : {
+            defaults  : { smooth        : true,  smoothSize: true } },
+         tips         : { fadeInDuration: 500,   showDelay : 666  } },
+      cookiePath      : '/',
+      cookiePrefix    : 'behaviour',
+      formName        : null,
+      minContentHeight: 5,
+      onStateComplete : $empty,
+      popup           : false,
+      target          : null,
+      url             : null
    },
 
    initialize: function( options ) {
       this.setOptions( options ); var opt = this.options;
 
       this.config  = $merge( opt.config );
-      this.cookies = new Cookies( { path  : opt.sessionPath,
-                                    prefix: opt.sessionPrefix } );
+      this.cookies = new Cookies( { path  : opt.cookiePath,
+                                    prefix: opt.cookiePrefix } );
+
+      window.addEvent( 'load',   function() {
+         this.load( options.firstField ) }.bind( this ) );
+      window.addEvent( 'resize', function() {
+         this.resize( true ) }.bind( this ) );
+   },
+
+   load: function( firstField ) {
+      var cfg = this.config, el, opt = this.options;
+
+      this.stylesheet  = new PersistantStyleSheet( { cookies: this.cookies } );
+      this._restoreFromCookie();
+      this.checkboxReplacements = new CheckboxReplace();
+
+      var f_replace_boxes = function() {
+         this.build() }.bind( this.checkboxReplacements );
+
+      this.submit      = new SubmitUtils( {
+         config        : cfg.anchors,
+         formName      : opt.formName,
+         cookiePath    : opt.cookiePath,
+         cookiePrefix  : opt.cookiePrefix } );
+      this.window      = new WindowUtils( {
+         config        : cfg.anchors,
+         path          : opt.cookiePath,
+         prefix        : opt.cookiePrefix,
+         target        : opt.target } );
+
+      this.autosizer   = new AutoSize();
+      this.calendars   = new Calendars( {
+         config        : cfg.calendars,
+         submit        : this.submit } );
+      this.freeList    = new FreeList();
+      this.groupMember = new GroupMember();
+      this.loadMore    = new LoadMore( this, opt.url );
+      this.server      = new ServerUtils( {
+            config     : cfg.server,
+            url        : opt.url } );
+      this.sidebar     = new Sidebar ( this, { config: cfg.sidebars } );
+      this.sliders     = new Sliders( {
+         config        : cfg.sliders,
+         submit        : this.submit } );
+      this.tables      = new TableUtils( {
+         formName      : opt.formName,
+         onRowAdded    : f_replace_boxes,
+         onSortComplete: f_replace_boxes,
+         url           : opt.url } );
+      this.tabSwappers = new TabSwappers( {
+         config        : cfg.tabSwappers,
+         cookiePath    : opt.cookiePath,
+         cookiePrefix  : opt.cookiePrefix } );
+      this.togglers    = new Togglers( this, { config: cfg.anchors } );
+      this.trees       = new Trees( {
+         cookiePath    : opt.cookiePath,
+         cookiePrefix  : opt.cookiePrefix } );
+      this.wysiwyg     = new WYSIWYG();
+      this.linkFade    = new LinkFader();
+
+      this.resize();
+
+      this.columnizers = new Columnizers();
+      this.scrollPins  = new ScrollPins( {
+         config        : cfg.scrollPins,
+         debug         : true,
+         log           : this.window.log,
+         onAttach      : function( el ) {
+            this.addEvent( 'build', function() {
+               this.set( 'opacity', 0 )
+                   .set( 'tween', { duration: cfg.scrollPins.fadeInDuration } );
+            }.bind( el.pin.markup ) );
+
+            this.addEvent( 'show', function() {
+               this.tween( 'opacity', 1 ) }.bind( el.pin.markup ) );
+         },
+         onInitialize  : function() {
+            this.fireEvent.delay( cfg.scrollPins.showDelay, this, [ 'show' ] ) }
+      } );
+      this.tips        = new Tips( {
+         onHide        : function() { this.fx.start( 0 ) },
+         onInitialize  : function() {
+            this.fx    = new Fx.Tween( this.tip, {
+               duration: cfg.tips.fadeInDuration,
+               property: 'opacity' } ).set( 0 ); },
+         onShow        : function() { this.fx.start( 1 ) },
+         showDelay     : cfg.tips.showDelay } );
+
+      this.fireEvent( 'load' );
+
+      if (firstField && (el = $( firstField ))) el.focus();
    },
 
    resize: function( changed ) {
-      var append, content, footer, foot_height = 0;
-      var height = 5, h = window.getHeight(), w = window.getWidth();
+      var append, content, footer, foot_height = 0, opt = this.options;
+      var h = window.getHeight(), w = window.getWidth();
+      var height = opt.minContentHeight;
 
-      if (! this.options.popup) {
+      if (! opt.popup) {
          this.cookies.set( 'width',  w );
          this.cookies.set( 'height', h );
          window.defaultStatus = 'w: ' + w + ' h: ' + h;
@@ -59,12 +157,16 @@ var State = new Class( {
 
       width = buttons ? buttons.getStyle( 'width' ).toInt() : 0;
       content.setStyle( 'marginRight', width + 'px' );
+      content.fireEvent( 'resize' );
    },
 
-   restoreFrom: function( cookie_str ) {
+   _restoreFromCookie: function() {
+      /* Use state cookie to restore the visual state of the page */
+      var cookie_str; if (! (cookie_str = this.cookies.get())) return;
+
       var cookies = cookie_str.split( '+' ), el;
 
-      for (var i = 0, il = cookies.length; i < il; i++) {
+      for (var i = 0, cl = cookies.length; i < cl; i++) {
          if (! cookies[ i ]) continue;
 
          var pair = cookies[ i ].split( '~' );
@@ -73,8 +175,7 @@ var State = new Class( {
 
          /* Deprecated */
          /* Restore state of any checkboxes whose ids end in Box */
-         if (el = $( p0 + 'Box' ))
-            el.checked = (p1 == 'true' ? true : false);
+         if (el = $( p0 + 'Box' )) el.checked = (p1 == 'true' ? true : false);
 
          /* Restore the state of any elements whose ids end in Disp */
          if (el = $( p0 + 'Disp' ))
@@ -86,151 +187,11 @@ var State = new Class( {
          /* Restore the source URL for elements whose ids end in Img */
          if (el = $( p0 + 'Img' )) { if (p1) el.src = p1; }
       }
-   },
-
-   setState: function( firstField ) {
-      var cookies, el, options = this.options;
-
-      /* Use state cookie to restore the visual state of the page */
-      if (cookies = this.cookies.get()) this.restoreFrom( cookies );
-
-      this.submit      = new SubmitUtils( { config  : this.config.submit,
-                                            cookies : this.cookies,
-                                            formName: options.formName } );
-      this.autosizer   = new AutoSize();
-      this.calendars   = new Calendars( { config: this.config.calendars,
-                                          submit: this.submit } );
-      this.checkboxReplacements = new CheckboxReplace();
-      this.freeList    = new FreeList();
-      this.groupMember = new GroupMember();
-      this.sidebar     = new Sidebar( this );
-      this.sliders     = new Sliders( { config: this.config.sliders,
-                                        submit: this.submit } );
-      this.tables      = new TableUtils(
-         { formName      : options.formName,
-           onSortComplete: function() {
-               this.replaceAll() }.bind( this.checkboxReplacements ),
-           url           : options.url } );
-      this.tabSwappers = new TabSwappers( { config : this.config.tabSwappers,
-                                            cookies: this.cookies } );
-      this.trees       = new Trees( { sessionPath  : options.sessionPath,
-                                      sessionPrefix: options.sessionPrefix } );
-      this.wysiwyg     = new WYSIWYG();
-      this.linkFade    = new LinkFader();
-      this.tips        = new Tips( {
-         onHide      : function() { this.fx.start( 0 ) },
-         onInitialize: function() {
-		      this.fx    = new Fx.Tween( this.tip,
-               { duration: 500, property: 'opacity', wait: false } ).set( 0 );
-         },
-	      onShow      : function() { this.fx.start( 1 ) },
-         showDelay   : 666
-      } );
-      this.resize();
-      this.columnizers = new Columnizers();
-
-      this.fireEvent( 'stateComplete' );
-
-      if (firstField && (el = $( firstField ))) el.focus();
-   },
-
-   toggle: function( el ) {
-      var disp = $( el.id + 'Disp' );
-
-      if (disp.getStyle( 'display' ) != 'none') {
-         disp.setStyle( 'display', 'none' ); this.cookies.remove( el.id );
-      }
-      else {
-         disp.setStyle( 'display', '' ); this.cookies.set( el.id, 'true' );
-      }
-
-      this.resize();
-   },
-
-   toggleState: function( id ) {
-      var el; if (! (el = $( id + 'Box' ))) return;
-
-      this.cookies.set( id, (el.checked ? 'true' : 'false') );
-   },
-
-   toggleSwap: function( el, s1, s2 ) {
-      var disp;
-
-      if (disp = $( el.id + 'Disp' )) {
-         if (disp.getStyle( 'display' ) != 'none') {
-            disp.setStyle( 'display', 'none' ); this.cookies.remove( el.id );
-
-            if (el = $( el.id )) el.set( 'html', s2 );
-         }
-         else {
-            disp.setStyle( 'display', '' ); this.cookies.set( el.id, s2 );
-
-            if (el = $( el.id )) el.set( 'html', s1 );
-         }
-      }
-
-      this.resize();
-   },
-
-   toggleSwapImg: function( el, s1, s2 ) {
-      var disp;
-
-      if (disp = $( el.id + 'Disp' )) {
-         if (disp.getStyle( 'display' ) != 'none') {
-            disp.setStyle( 'display', 'none' ); this.cookies.remove( el.id );
-
-            if (el = $( el.id + 'Img' )) el.src = s1;
-         }
-         else {
-            disp.setStyle( 'display', '' ); this.cookies.set( el.id, s2 );
-
-            if (el = $( el.id + 'Img' )) el.src = s2;
-         }
-      }
-
-      this.resize();
-   },
-
-   toggleSwapText: function( id, cookie, s1, s2 ) {
-      var el = $( id );
-
-      if (this.cookies.get( cookie ) == 'true') {
-         this.cookies.set( cookie, 'false' );
-
-         if (el) el.set( 'html', s2 );
-
-         if (el = $( cookie + 'Disp' )) el.setStyle( 'display', 'none' );
-      }
-      else {
-         this.cookies.set( cookie, 'true' );
-
-         if (el) el.set( 'html', s1 );
-
-         if (el = $( cookie + 'Disp' )) el.setStyle( 'display', '' );
-      }
-
-      this.resize();
    }
 } );
 
-behaviour.loadMore  = new LoadMore(    { url   : behaviour.url } );
-behaviour.server    = new ServerUtils( { url   : behaviour.url } );
-behaviour.window    = new WindowUtils( { path  : behaviour.sessionPath,
-                                         prefix: behaviour.sessionPrefix,
-                                         target: behaviour.target } );
-behaviour.state     = new State
-   ( { formName     : behaviour.formName,
-       popup        : behaviour.isPopup,
-       sessionPath  : behaviour.sessionPath,
-       sessionPrefix: behaviour.sessionPrefix,
-       url          : behaviour.url } );
-
-window.onresize = function() { this.state.resize( true ) }.bind( behaviour );
-window.onload   = function() {
-   this.state.setState( this.firstField ) }.bind( behaviour );
-
 /* Local Variables:
- * mode: javacsript
+ * mode: javascript
  * tab-width: 3
  * End:
  */

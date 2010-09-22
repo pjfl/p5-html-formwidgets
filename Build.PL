@@ -6,7 +6,7 @@ use version; our $VERSION = qv( sprintf '0.6.%d', q$Rev$ =~ /\d+/gmx );
 
 use Module::Build;
 
-my $build = Module::Build->new
+Module::Build->new
    ( add_to_cleanup     => [ q(Debian_CPANTS.txt), q(HTML-FormWidgets-*),
                              map { ( '*/' x $_ ) . '*~' } 0..5 ],
      build_requires     => { 'Test::More' => q(0.74) },
@@ -28,10 +28,8 @@ my $build = Module::Build->new
         'Syntax::Highlight::Perl' => q(1.00),
         'Text::ParseWords'        => q(3.22),
         'Text::Tabs'              => q(98.112801),
-        'TryCatch'                => 1.002000, },
-     sign               => 1, );
-
-$build->create_build_script;
+        'Try::Tiny'               => q(0.06), },
+     sign               => 1, )->create_build_script;
 
 # Local Variables:
 # mode: perl

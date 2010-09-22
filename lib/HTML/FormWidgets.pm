@@ -10,7 +10,7 @@ use parent qw(Class::Accessor::Fast);
 use Class::MOP;
 use English qw(-no_match_vars);
 use HTML::Accessors;
-use TryCatch;
+use Try::Tiny;
 
 my $LSB   = q([);
 my $NB    = '&#160;&#8224;';
@@ -316,8 +316,8 @@ sub _bootstrap {
 sub _ensure_class_loaded {
    my ($self, $class) = @_;
 
-   try        { Class::MOP::load_class( $class ) }
-   catch ($e) { $self->_set_error( $e ); return 0 }
+   try   { Class::MOP::load_class( $class ) }
+   catch { $self->_set_error( $_ ); return 0 }
 
    if (Class::MOP::is_class_loaded( $class )) {
       bless $self, $class;
@@ -1028,7 +1028,7 @@ None
 
 =item L<Text::Tabs>
 
-=item L<TryCatch>
+=item L<Try::Tiny>
 
 =back
 

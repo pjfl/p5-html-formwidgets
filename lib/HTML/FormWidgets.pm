@@ -317,7 +317,7 @@ sub _ensure_class_loaded {
    my ($self, $class) = @_;
 
    try   { Class::MOP::load_class( $class ) }
-   catch { $self->_set_error( $_ ); return 0 }
+   catch { $self->_set_error( $_ ); return 0 };
 
    if (Class::MOP::is_class_loaded( $class )) {
       bless $self, $class;

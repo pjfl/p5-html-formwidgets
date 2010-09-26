@@ -4,7 +4,14 @@ use strict;
 use warnings;
 use version; our $VERSION = qv( sprintf '0.6.%d', q$Rev$ =~ /\d+/gmx );
 
+use English qw( -no_match_vars );
 use Module::Build;
+
+sub whimper { my $text = shift; print {*STDOUT} $text."\n"; exit 0 }
+
+BEGIN {
+   eval { require 5.008; }; $EVAL_ERROR and whimper 'Perl minimum 5.8';
+}
 
 Module::Build->new
    ( add_to_cleanup     => [ q(Debian_CPANTS.txt), q(HTML-FormWidgets-*),

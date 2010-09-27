@@ -10,6 +10,7 @@ use parent qw(Class::Accessor::Fast);
 use Class::MOP;
 use English qw(-no_match_vars);
 use HTML::Accessors;
+use Scalar::Util qw(blessed);
 use Try::Tiny;
 
 my $LSB   = q([);
@@ -68,21 +69,27 @@ sub build {
 sub __build_widget {
    my ($class, $config, $item, $stack) = @_; $item or return;
 
-   return $item unless (ref $item and ref $item->{content} eq q(HASH));
+   (ref $item and ref $item->{content} eq q(HASH)) or return $item;
 
    if ($item->{content}->{group}) {
-      return if ($config->{skip_groups});
+      $config->{skip_groups} and return;
 
-      my $class = delete $item->{content}->{frame_class};
+      my $class = delete $item->{content}->{frame_class}
+         and $item->{class} = $class;
 
       $item->{content} = __group_fields( $config->{hacc}, $item, $stack );
-      $item->{class  } = $class if ($class);
    }
-   elsif ($item->{content}->{widget}) {
-      my $widget = $class->new( __merge_hashes( $config, $item ) );
+   else {
+      my $widget = blessed $item->{content}
+                 ? $item->{content}
+                 : $item->{content}->{widget}
+                 ? $class->new( __merge_hashes( $config, $item->{content} ) )
+                 : undef;
 
-      $item->{content} = $widget->render;
-      $item->{class  } = $widget->frame_class if ($widget->frame_class);
+      if ($widget) {
+         $widget->frame_class and $item->{class} = $widget->frame_class;
+         $item->{content} = $widget->render;
+      }
    }
 
    return $item;
@@ -126,13 +133,13 @@ sub new {
 }
 
 sub __arg_list {
-   my (@rest) = @_; $rest[0] or return {};
+   my (@rest) = @_; $rest[ 0 ] or return {};
 
-   return ref $rest[0] eq q(HASH) ? $rest[0] : { @rest };
+   return ref $rest[ 0 ] eq q(HASH) ? $rest[ 0 ] : { @rest };
 }
 
 sub __merge_hashes {
-   my ($config, $item) = @_; return { %{ $config }, %{ $item->{content} } };
+   return { %{ $_[ 0 ] }, %{ $_[ 1 ] } };
 }
 
 # Public object methods
@@ -644,7 +651,7 @@ Wraps the top I<nitems> number of widgets on the build stack in a C<<
 
 =head2 __merge_hashes
 
-   $widget = $class->new( __merge_hashes( $config, $item ) );
+   $widget = $class->new( __merge_hashes( $config, $item->{content} ) );
 
 Does a simple merging of the two hash refs that are passed as
 arguments. The second argument takes precedence over the first

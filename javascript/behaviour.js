@@ -22,7 +22,7 @@ var Behaviour = new Class( {
       onStateComplete : $empty,
       popup           : false,
       target          : null,
-      url             : null
+      defaultURL      : null
    },
 
    initialize: function( options ) {
@@ -38,10 +38,10 @@ var Behaviour = new Class( {
          this.resize( true ) }.bind( this ) );
    },
 
-   load: function( firstField ) {
+   load: function( first_field ) {
       var cfg = this.config, el, opt = this.options;
 
-      this.stylesheet  = new PersistantStyleSheet( { cookies: this.cookies } );
+      this.stylesheet = new PersistantStyleSheet( { cookies: this.cookies } );
       this._restoreFromCookie();
       this.checkboxReplacements = new CheckboxReplace();
 
@@ -65,10 +65,10 @@ var Behaviour = new Class( {
          submit        : this.submit } );
       this.freeList    = new FreeList();
       this.groupMember = new GroupMember();
-      this.loadMore    = new LoadMore( this, opt.url );
+      this.loadMore    = new LoadMore( this, opt.defaultURL );
       this.server      = new ServerUtils( {
             config     : cfg.server,
-            url        : opt.url } );
+            url        : opt.defaultURL } );
       this.sidebar     = new Sidebar ( this, { config: cfg.sidebars } );
       this.sliders     = new Sliders( {
          config        : cfg.sliders,
@@ -77,7 +77,7 @@ var Behaviour = new Class( {
          formName      : opt.formName,
          onRowAdded    : f_replace_boxes,
          onSortComplete: f_replace_boxes,
-         url           : opt.url } );
+         url           : opt.defaultURL } );
       this.tabSwappers = new TabSwappers( {
          config        : cfg.tabSwappers,
          cookiePath    : opt.cookiePath,
@@ -119,7 +119,7 @@ var Behaviour = new Class( {
 
       this.fireEvent( 'load' );
 
-      if (firstField && (el = $( firstField ))) el.focus();
+      if (first_field && (el = $( first_field ))) el.focus();
    },
 
    resize: function( changed ) {

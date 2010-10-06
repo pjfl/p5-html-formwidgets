@@ -1,6 +1,6 @@
 Revision history for HTML::FormWidgets
 
-0.6
+0.6.290  2010-10-06
          - Added ScrollPin
          - Added SidebarPanel
          - Added TabSwapper

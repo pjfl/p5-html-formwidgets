@@ -1,4 +1,4 @@
-/* @(#)$Id: presentation.css 1069 2010-09-04 22:23:22Z pjf $ */
+/* @(#)$Id: presentation.css 1072 2010-09-23 00:59:47Z pjf $ */
 /*  Elements - Reset styling */
 
 a, abbr, acronym, address, article, aside, audio, b, big, blockquote,
@@ -866,6 +866,11 @@ span.navigation_filler {
    display: block; font-size: 0.857em; padding: 3px; text-decoration: none;
 }
 /* ).librarySubject { display: inline-block; line-height: 1.5em; width: auto; } */
+.recipe {
+   border-collapse: separate; border-spacing: 3px; clear: left; margin-top: 0;
+}
+.recipe td { padding: 1px 6px 2px; vertical-align: baseline; }
+.recipe td.label { font-weight: bold; width: 1%; }
 
 a.library_header {
    display: block; font-size: 1em; text-align: center; text-decoration: none;
@@ -877,8 +882,3 @@ div.library_header {
 img.library_header {
    height: 20px; position: absolute; right: 0; width: 20px;
 }
-table.recipe {
-   border-collapse: separate; border-spacing: 3px; clear: left; margin-top: 0;
-}
-table.recipe td { padding: 1px 6px 2px; vertical-align: baseline; }
-table.recipe td.label { width: 1%; }

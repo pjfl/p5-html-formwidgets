@@ -27,7 +27,8 @@ sub render_field {
 
    return $html unless ($self->subtype && $self->subtype eq q(verify));
 
-   $html .= $self->loc( q(vPasswordPrompt) );
+   $html .= $self->hacc->span( { class => q(prompt) },
+                               $self->loc( q(vPasswordPrompt) ) );
    $args->{name} =~ s{ 1 }{2}mx; $args->{id} =~ s{ 1 }{2}mx;
    $html .= $self->hacc->password_field( $args );
    return $html;

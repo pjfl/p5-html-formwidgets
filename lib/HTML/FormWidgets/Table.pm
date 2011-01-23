@@ -52,30 +52,38 @@ sub render_field {
 
    $self->table_class       or  $self->table_class( $class );
    $self->id                or  $self->id( $self->name || q(table) );
-   $self->number_rows       and $cells .= $self->_render_row_header( $c_no++ );
-   $self->select eq q(left) and $cells .= $self->_render_selectbox ( $c_no++ );
+   $self->number_rows       and $cells .= $self->_number_header( $c_no++ );
+   $self->edit   eq q(left) and $cells .= $self->_drag_header  ( $c_no++ );
+   $self->select eq q(left) and $cells .= $self->_select_header( $c_no++ );
 
    for (@{ $data->{flds} }) {
-      $cells .= $self->_render_header( $data, $_, $c_no++ );
+      $cells .= $self->_field_header( $data, $_, $c_no++ );
    }
 
-   $self->select eq q(right) and $cells .= $self->_render_selectbox( $c_no++ );
+   $self->select eq q(right) and $cells .= $self->_select_header( $c_no++ );
+   $self->edit   eq q(right) and $cells .= $self->_drag_header  ( $c_no++ );
    $args = { class => $self->table_class.q(_head) };
 
    my $thead = $hacc->thead( $hacc->tr( $args, $cells ) );
-   my $r_no  = 0;
-   my $rows;
+
+   my $r_no  = 0; my $rows;
 
    $rows .= $self->_render_row( $data, $_, $r_no++ ) for (@{ $data->{values} });
 
-   $self->edit and $rows .= $self->_add_edit_row( $data, $r_no );
-   $self->_add_row_count( $r_no );
+   my $tbody = $hacc->tbody( $rows ); $self->_add_row_count( $r_no );
 
-   my $tbody = $hacc->tbody( $rows );
+   my $tfoot = q();
+
+   $self->edit
+      and $tfoot = $hacc->tfoot( $self->_add_edit_row( $data, $r_no ) );
+
+   $args = { editSide   => '"'.$self->edit.'"',
+             selectSide => '"'.$self->select.'"' };
+   $self->_js_config( 'tables', $self->id, $args );
 
    $args = { cellspacing => 0, class => $self->table_class, id => $self->id };
 
-   return $hacc->table( $args, "${caption}\n${thead}\n${tbody}" );
+   return $hacc->table( $args, "${caption}\n${thead}\n${tbody}\n${tfoot}" );
 }
 
 # Private methods
@@ -144,6 +152,23 @@ sub _check_box {
    return $hacc->td( { class => $class }, $text );
 }
 
+sub _drag_handle {
+   my ($self, $c_no) = @_; my $hacc = $self->hacc;
+
+   my $span  = $hacc->span( { class => q(drag_handle) } );
+   my $class = q(row_drag).__column_class( $c_no );
+
+   return $hacc->td( { class => $class }, $span );
+}
+
+sub _drag_header {
+   my ($self, $c_no) = @_; my $name = q(col).$c_no;
+
+   my $args = { class => $self->class.q( minimal), id => $self->id.q(_).$name };
+
+   return $self->hacc->th( $args, $self->loc( 'Drag' ) );
+}
+
 sub _editable_cell {
    my ($self, $data, $field, $args, $c_no) = @_; my $hacc = $self->hacc;
 
@@ -170,7 +195,7 @@ sub _editable_cell {
    return $hacc->td( { class => $class }, $hacc->$type( $args ) );
 }
 
-sub _render_header {
+sub _field_header {
    my ($self, $data, $field, $c_no) = @_; my $name = q(col).$c_no;
 
    my $args = { class => $self->class };
@@ -197,12 +222,29 @@ sub _render_header {
    return $self->hacc->th( $args, $data->{labels}->{ $field } );
 }
 
+sub _number_header {
+   my ($self, $c_no) = @_; my $name = q(col).$c_no;
+
+   my $args = { class => $self->class.q( minimal),
+                id    => $self->id.q(.).$name.q(.numeric) };
+
+   if ($self->sortable) {
+      $args->{class} .= q( sort tips); $args->{title} = $self->sort_tip;
+   }
+
+   return $self->hacc->th( $args, $HASH_CHAR );
+}
+
 sub _render_row {
    my ($self, $data, $val, $r_no) = @_;
 
    my $c_no = 0; my $cells = $NUL; my $hacc = $self->hacc;
 
    $self->number_rows and $cells .= $self->_row_number( $r_no + 1, $c_no++ );
+
+   if ($self->edit eq q(left) and $data->{values}->[0]) {
+      $cells .= $self->_drag_handle( $c_no++ );
+   }
 
    if ($self->select eq q(left) and $data->{values}->[0]) {
       $cells .= $self->_check_box( $r_no, $c_no++, $val->{id} );
@@ -240,6 +282,10 @@ sub _render_row {
       $cells .= $self->_check_box( $r_no, $c_no++, $val->{id} );
    }
 
+   if ($self->edit eq q(right) and $data->{values}->[0]) {
+      $cells .= $self->_drag_handle( $c_no++ );
+   }
+
    my $class = $self->table_class.q(_row).__row_class( $r_no );
 
    $self->sortable and $class .= q( sortable_row);
@@ -247,29 +293,6 @@ sub _render_row {
    my $args  = { class => $class, id => $self->id.q(_row).$r_no };
 
    return $hacc->tr( $args, "\n".$cells );
-}
-
-sub _render_row_header {
-   my ($self, $c_no) = @_; my $name = q(col).$c_no;
-
-   my $args = { class => $self->class.q( minimal),
-                id    => $self->id.q(.).$name.q(.numeric) };
-
-   if ($self->sortable) {
-      $args->{class} .= q( sort tips); $args->{title} = $self->sort_tip;
-   }
-
-   return $self->hacc->th( $args, $HASH_CHAR );
-}
-
-sub _render_selectbox {
-   my ($self, $c_no) = @_; my $name = q(col).$c_no;
-
-   my $args = { class => $self->class, id => $self->id.q(_).$name };
-
-   $args->{class} .= $self->edit ? q( select) : q( minimal);
-
-   return $self->hacc->th( $args, 'Select' );
 }
 
 sub _row_number {
@@ -280,6 +303,16 @@ sub _row_number {
    $args->{class} .= __column_class( $col );
 
    return $self->hacc->td( $args, $row );
+}
+
+sub _select_header {
+   my ($self, $c_no) = @_; my $name = q(col).$c_no;
+
+   my $args = { class => $self->class, id => $self->id.q(_).$name };
+
+   $args->{class} .= $self->edit ? q( select) : q( minimal);
+
+   return $self->hacc->th( $args, $self->loc( 'Select' ) );
 }
 
 # Private subroutines

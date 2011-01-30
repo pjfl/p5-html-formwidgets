@@ -12,6 +12,7 @@ __PACKAGE__->mk_accessors( qw(add_tip assets data edit hide
                               sort_tip sortable table_class) );
 
 my $HASH_CHAR = chr 35;
+my $NBSP      = '&#160;';
 my $NUL       = q();
 my $TTS       = q( ~ );
 
@@ -152,10 +153,10 @@ sub _check_box {
    return $hacc->td( { class => $class }, $text );
 }
 
-sub _drag_handle {
+sub _drag_icon {
    my ($self, $c_no) = @_; my $hacc = $self->hacc;
 
-   my $span  = $hacc->span( { class => q(drag_handle) } );
+   my $span  = $hacc->span( { class => q(drag_icon) } );
    my $class = q(row_drag).__column_class( $c_no );
 
    return $hacc->td( { class => $class }, $span );
@@ -236,19 +237,17 @@ sub _number_header {
 }
 
 sub _render_row {
-   my ($self, $data, $val, $r_no) = @_;
+   my ($self, $data, $val, $r_no) = @_; my $hacc = $self->hacc;
 
-   my $c_no = 0; my $cells = $NUL; my $hacc = $self->hacc;
+   my $c_no = 0; my $cells = $NUL; my $first_value = $data->{values}->[ 0 ];
 
    $self->number_rows and $cells .= $self->_row_number( $r_no + 1, $c_no++ );
 
-   if ($self->edit eq q(left) and $data->{values}->[0]) {
-      $cells .= $self->_drag_handle( $c_no++ );
-   }
+   $self->edit eq q(left) and $first_value
+      and $cells .= $self->_drag_icon( $c_no++ );
 
-   if ($self->select eq q(left) and $data->{values}->[0]) {
-      $cells .= $self->_check_box( $r_no, $c_no++, $val->{id} );
-   }
+   $self->select eq q(left) and $first_value
+      and $cells .= $self->_check_box( $r_no, $c_no++, $val->{id} );
 
    for my $field (@{ $data->{flds} }) {
       my $args = {};
@@ -270,7 +269,7 @@ sub _render_row {
          $args->{class} .= __column_class( $c_no );
          exists $data->{wrap}->{ $field } or $args->{class} .= q( nowrap);
 
-         my $fld_val = $self->inflate( $val->{ $field } ) || '&#160;';
+         my $fld_val = $self->inflate( $val->{ $field } ) || $NBSP;
 
          $cells .= $hacc->td( $args, $fld_val );
       }
@@ -278,13 +277,11 @@ sub _render_row {
       $c_no++;
    }
 
-   if ($self->select eq q(right) and $data->{values}->[0]) {
-      $cells .= $self->_check_box( $r_no, $c_no++, $val->{id} );
-   }
+   $self->select eq q(right) and $first_value
+      and $cells .= $self->_check_box( $r_no, $c_no++, $val->{id} );
 
-   if ($self->edit eq q(right) and $data->{values}->[0]) {
-      $cells .= $self->_drag_handle( $c_no++ );
-   }
+   $self->edit eq q(right) and $first_value
+      and $cells .= $self->_drag_icon( $c_no++ );
 
    my $class = $self->table_class.q(_row).__row_class( $r_no );
 

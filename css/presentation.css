@@ -1,4 +1,4 @@
-/* @(#)$Id: presentation.css 1072 2010-09-23 00:59:47Z pjf $ */
+/* @(#)$Id: presentation.css 1111 2011-02-14 04:29:07Z pjf $ */
 /*  Elements - Reset styling */
 
 a, abbr, acronym, address, article, aside, audio, b, big, blockquote,
@@ -31,7 +31,7 @@ table { border-collapse: collapse; border-spacing: 0; }
 /*  Elements - Base styling */
 
 abbr, acronym {
-   border-bottom: 1px dotted; font-size: 0.857em; font-variant: normal;
+   border-bottom: 1px dotted; font-variant: normal;
    letter-spacing: 1px; text-transform: uppercase;
 }
 address, blockquote, cite, dfn, em, i, q, var { font-style: italic; }
@@ -39,12 +39,13 @@ article, aside, dialog, footer, header, hgroup, menu, nav, section {
    float: left;
 }
 b, caption, dt, legend, strong, th, thead { font-weight: bold; }
-big { font-size: 1.25em; }
+big { font-size: 1.8em; line-height: 1em; }
 blockquote { padding: 18px; }
 body {
+   /* background: url(background.gif); */
    font-family: "Lucida Sans", verdana, arial, sans-serif;
-   font-size: 14px; font-weight: normal; height: 100%; line-height: 1.5em;
-   max-height: 100%; width: 100%;
+   font-size: 62.5%; font-weight: normal; height: 100%; line-height: 1.8em;
+   max-height: 100%; width: 100%; /* 10 18 */
 }
 br { clear: left; }
 button, input, select { cursor: pointer; }
@@ -58,12 +59,12 @@ dl, ol, ul { margin-bottom: 18px; }
 fieldset { border: 1px solid; margin-bottom: 18px; padding: 0.5em; }
 form { overflow: auto; }
 h1, h2, h3, h4, h5, h6 { font-family: "Helvetiker", arial, sans-serif; }
-h1 { font-size: 2.666em; line-height: 1.125em; margin: 0.563em 0; } /* 32 36 */
-h2 { font-size: 2.333em; line-height: 1.286em; margin: 0.643em 0; } /* 28 36 */
-h3 { font-size: 2em;     line-height: 1.5em;   margin: 0.75em  0; } /* 24 36 */
-h4 { font-size: 1.666em; line-height: 1.8em;   margin: 0.9em   0; } /* 20 36 */
-h5 { font-size: 1.333em; line-height: 1.125em; margin: 1.125em 0; } /* 16 18 */
-h6 { font-size: 1em;     line-height: 1.5em;   margin: 1.5em   0; } /* 12 18 */
+h1 { font-size: 3.6em; line-height: 1em;     margin: 0.5em    0; } /* 36 36 */
+h2 { font-size: 3.2em; line-height: 1.125em; margin: 0.5625em 0; } /* 32 36 */
+h3 { font-size: 2.8em; line-height: 1.286em; margin: 0.6428em 0; } /* 28 36 */
+h4 { font-size: 2.4em; line-height: 1.5em;   margin: 0.75em   0; } /* 24 36 */
+h5 { font-size: 2.0em; line-height: 1.8em;   margin: 0.9em    0; } /* 20 36 */
+h6 { font-size: 1.6em; line-height: 1.125em; margin: 0.5em    0; } /* 16 18 */
 hr {
    border-bottom: 1px solid; border-top: 1px solid; height: 0;
    margin: 0; padding-top: 8px; width: 100%;
@@ -73,11 +74,11 @@ ins { border-bottom: 3px double; }
 ol, ul { margin-left: 18px; }
 ol { list-style-position: inside; list-style-type: decimal; }
 option { margin: 3px 0; padding: 0 3px; }
-p { margin: 1.5em 0; }
+p { font-size: 1.4em; line-height: 1.2857em; margin: 1.2857em 0; } /* 14 18 */
 pre { white-space: pre; }
 select { margin: 0; padding: 3px; }
-small, sub, sup { font-size: 0.857em; }
-sub, sup { line-height: 0; }
+small { font-size: 1em; line-height: 1.8em; }
+sub, sup { font-size: 0.9em; line-height: 0; }
 sub { vertical-align: sub; }
 sup { vertical-align: super; }
 table { height: auto; width: 100%; }
@@ -93,8 +94,8 @@ ul { list-style-position: inside; list-style-type: disc; }
 .accordion_content .tree { border: 0; margin: 0; }
 .accordion_header {
    border-left: 1px solid; border-right: 1px solid;
-   border-top: 1px solid; font-size: 1em; height: 28px;
-   overflow: hidden; padding-left: 6px;
+   border-top: 1px solid; font-size: 1.4em; height: 28px;
+   line-height: 28px; overflow: hidden; padding-left: 6px;
    position: relative; z-index: 1;
 }
 .accordion_header:hover { cursor: pointer; }
@@ -115,8 +116,8 @@ ul { list-style-position: inside; list-style-type: disc; }
 }
 .anchor {
    background: url(form.png) repeat-x center left; border: 1px solid;
-   display: block; font-weight: bold; padding: 2px 6px;
-   text-decoration: none;
+   display: block; font-size: 1.2em; font-weight: bold; line-height: 1.5em;
+   padding: 2px 6px; text-decoration: none;
 }
 .anchor:active { position: relative; top: 1px; }
 .anchor:hover { background-position: top left; }
@@ -133,21 +134,20 @@ ul { list-style-position: inside; list-style-type: disc; }
    background: url(icons.png) no-repeat -30px -300px;
    display: inline-block; height: 18px; overflow: hidden; width: 18px;
 }
-.centre { text-align: center; }
 .checkbox {
    background: url(icons.png) -90px -300px no-repeat; cursor: pointer;
    display: inline-block; height: 16px; padding: 1px; width: 16px;
    vertical-align: middle;
 }
 .checkbox_label {
-   font-size: 0.857em; font-weight: bold; line-height: 2em; padding: 1px;
+   font-size: 1.2em; line-height: 1.5em; font-weight: bold; padding: 1px;
 }
 .checked  { background: url(icons.png) -120px -300px no-repeat transparent; }
 .chooser { clear: left; }
 .chooser_button {
    background: url(form.png) repeat-x center left; border: 1px solid;
-   cursor: pointer; display: inline-block; font-size: 1em;
-   font-weight: bold; padding: 2px 6px;
+   cursor: pointer; display: inline-block; font-size: 1.2em;
+   line-height: 1.5em; font-weight: bold; padding: 2px 6px;
 }
 .chooser_button:active { position: relative; top: 1px; }
 .chooser_button:hover  { background-position: top; }
@@ -158,7 +158,7 @@ ul { list-style-position: inside; list-style-type: disc; }
 .clearLeft { clear: left; }
 .collapse { background-position: -150px -210px; }
 .container {
-   display: block; float: left; margin: 6px 0; position: relative;
+   display: block; float: left; margin: 0.9em 0; position: relative;
 }
 .cut_here { border-bottom: 0; border-top: 2px dashed; }
 .data_field { padding: 0; }
@@ -167,8 +167,13 @@ ul { list-style-position: inside; list-style-type: disc; }
    display: inline-block; height: 24px; margin-top: -20px;
    overflow: hidden; width: 24px;
 }
+.drag_icon {
+   background: url(icons.png) no-repeat -30px -330px;
+   display: inline-block; height: 20px; overflow: hidden;
+   vertical-align: middle; width: 30px;
+}
 .dropcap {
-   float: left; font-size: 3em; line-height: 1em;
+   float: left; font-size: 3.6em; line-height: 1em;
    margin-right: 6px; vertical-align: top; width: auto;
 }
 .error { padding: 3px; }
@@ -218,7 +223,7 @@ ul { list-style-position: inside; list-style-type: disc; }
 .icon_button {
    background: url(form.png) repeat-x center left; border: 1px solid;
    cursor: pointer; display: inline-block; height: 18px;
-   line-height: 1em; padding: 2px 4px 2px;
+   padding: 2px;
 }
 .icon_button:active { position: relative; top: 1px; }
 .icon_button:hover  { background-position: top; }
@@ -226,7 +231,8 @@ ul { list-style-position: inside; list-style-type: disc; }
    display: inline-block; padding-left: 3px; vertical-align: bottom;
 }
 .ifield {
-   font-size: 1em; font-weight: bold; padding: 3px 3px; text-align: left;
+   font-size: 1.2em; line-height: 1.5em; font-weight: bold;
+   padding: 3px 3px; text-align: left;
 }
 .info { font-style: italic; }
 .instructions { float: left; padding-top: 12px; text-align: left; }
@@ -256,16 +262,19 @@ ul { list-style-position: inside; list-style-type: disc; }
 }
 .most { width: 98%; }
 .multiColumn {
-   float: left; position: relative; right: 50%; width: auto;
+   float: left; position: relative; right: 50%;
+   text-align: center; width: auto;
 }
-.narrow { display: block; margin-left: 48px; margin-right: 48px; }
 .navigation {
-   border: 1px solid; display: block; padding: 3px 6px;
-   text-decoration: none; white-space: nowrap;
+   border: 1px solid; display: block; font-size: 1.2em; line-height: 1.5em;
+   padding: 3px 6px; text-decoration: none; white-space: nowrap;
 }
 .navigation:active { position: relative; top: 1px; }
 .navigation:hover { border: 1px solid; }
-.note { float: left; font-size: 0.857em; font-style: italic; margin: 9px 0; }
+.note {
+   float: left; font-size: 1.2em; font-style: italic; line-height: 1.5em;
+   margin: 9px 0;
+}
 .nowrap { white-space: nowrap; }
 .nudge-right { padding-left: 6px; }
 .numeric { text-align: right; }
@@ -274,14 +283,19 @@ ul { list-style-position: inside; list-style-type: disc; }
    position: relative; right: 50%; width: auto;
 }
 .paragraphs {
-   clear: left; float: left; position: relative; left: 50%;
+   clear: left; float: left; position: relative; left: 50%; text-align: center;
 }
 .paragraphs p { text-align: justify; }
-.pintray { bottom: 0; position: fixed; right: 1px; top: 0; z-index: 200; }
+.pintray {
+   bottom: 0; list-style-position: outside; list-style-type: none;
+   position: fixed; right: 1px; top: 0; z-index: 200;
+}
 .pintray > li { cursor: pointer; position: absolute; right: 0; top: 0; }
-.pod { padding-bottom: 1.5em; }
+.pod { padding-bottom: 1.2857em; }
+.pod li a { font-size: 1.4em; line-height: 1.2857em; }
 .pod div { clear: left; }
 .pod dl { margin-bottom: 0; margin-top: 1.5em; }
+.pod dt { font-size: 1.4em; line-height: 1.2875em; margin-top: 1.2875em; }
 .pod h2 {
    border-top: 1px solid; clear: left; float: left;
    margin-bottom: 0; padding-top: 18px; width: 80%;
@@ -292,9 +306,10 @@ ul { list-style-position: inside; list-style-type: disc; }
    border-top: 1px solid; float: right; padding-top: 9px;
    text-align: right; width: 20%;
 }
-.pod pre { margin-top: 1.5em; }
+.pod pre { font-size: 1.4em; line-height: 1.2857em; margin-top: 1.5em; }
 .pod ul { list-style-type: none; }
-.prominent { clear: left; width: 100%; }
+.prominent { clear: left; padding: 1.5em 0; width: 100%; }
+.prominent p { font-size: 1.6em; line-height: 1.125em; margin: 1.125em 0; }
 .pushedpin_icon {
    background: url(icons.png) no-repeat -270px -270px;
    display: inline-block; height: 17px; overflow: hidden;
@@ -310,10 +325,10 @@ ul { list-style-position: inside; list-style-type: disc; }
    background: url(icons.png) no-repeat -180px -300px;
    display: inline-block; height: 16px; overflow: hidden; width: 16px;
 }
-.results { line-height: 1em; }
 .results legend, .sdata_item legend {
    background: url(form.png) repeat-x center left;
-   border: 1px solid; padding: 8px;
+   border: 1px solid; font-size: 1.4em; line-height: 1.2857em;
+   padding: 0.3219em;
 }
 .right { float: right; }
 .row_select { text-align: center; }
@@ -328,29 +343,31 @@ ul { list-style-position: inside; list-style-type: disc; }
    display: inline-block; height: 30px; overflow: hidden; width: 30px;
 }
 .sdata_heading { font-weight: bold; text-align: center; }
-.sdata_item dd, .sdata_item dt { margin-bottom: 18px; }
 .sdata_item input.button  {
    background: url(form.png) repeat-x center left;
    border: 1px solid; padding: 3px 3px;
 }
 .sdata_item input.button:hover { background-position: top left; }
 .sdata_panel {
-   float:left;margin-left: 36px; margin-right: 36px;
-   overflow: hidden; position:relative; text-align: center;
+   float: left; margin-left: 2.5%; margin-right: 2.5%;
+   overflow: hidden; position: relative;
 }
-.search {
-   font-size: 0.857em; font-weight: bold; padding: 0 6px;
-   text-decoration: none;
-}
+.sdata_panel dd { font-size: 1.4em; line-height: 1.2857em; margin: 1.2857em 0; }
+.sdata_panel dt { font-size: 1.6em; line-height: 1.125em;  margin: 0.5em    0; }
+.search { font-weight: bold; padding: 0 6px; text-decoration: none; }
 .search:active { position: relative; top: 1px; }
-.label_text, .separator { float: left; width: auto; margin: 9px 0; }
+.label_text, .separator {
+    float: left; font-size: 1.2em; line-height: 1.5em;
+    margin: 0.75em 0; width: auto;
+}
+.label_text { margin: 0.75em 0.5em; }
 .slider {
    border: 1px solid; display: block; height: 8px; left: 5px;
    position: absolute; top: 0; width: 222px;
 }
 .slider_group { position: relative; }
 .slider .knob {
-   border: 1px solid; display: block; height: 18px;
+   border: 1px solid; cursor: ew-resize; display: block; height: 18px;
    margin-top: -2px; width: 18px;
 }
 .some { width: 5%; }
@@ -362,7 +379,7 @@ ul { list-style-position: inside; list-style-type: disc; }
 .step_number {
    display: block; float: left;
    font-family: "Andale Mono", monaco, "Courier New", courier, monospace;
-   font-size: 0.857em; margin: 9px 12px 9px 0;
+   font-size: 1em; margin: 0.9em 12px 0.9em 0;
    text-align: right; width: 36px;
 }
 .subtype_html { overflow: hidden; padding: 0; }
@@ -390,6 +407,7 @@ ul { list-style-position: inside; list-style-type: disc; }
 .tabswapper { float: left; left: 50%; position: relative; }
 .textarea { float: right; width: auto; }
 .textfile { margin-top: 12px; }
+.textfile pre { font-size: 1.2em; line-height: 1.5em; }
 .tick {
    border-right: 1px solid; height: 8px; position: absolute;
    top: 9px; width: 19px;
@@ -404,9 +422,8 @@ ul { list-style-position: inside; list-style-type: disc; }
    border: 1px solid; display: block; min-width: 200px;
    padding: 3px 3px; position: relative;
 }
-.tree dt { margin-bottom: 0; }
-.tree_container { line-height: 1em; white-space: nowrap; }
-.tree_controls { display: block; position: absolute; right: 0; z-index: 1; }
+.tree dd { margin: 0; }
+.tree_controls { display: block; position: absolute; right: 10px; z-index: 1; }
 .up_point_icon {
    background: url(icons.png) no-repeat -270px -300px;
    display: inline-block; float: right; height: 24px;  margin-top: -20px;
@@ -426,13 +443,13 @@ ul { list-style-position: inside; list-style-type: disc; }
 /* Spans */
 
 span.error {
-   border: 1px solid; clear: left; display: block; font-size: 0.857em;
-   white-space: nowrap;
+   border: 1px solid; clear: left; display: block; white-space: nowrap;
 }
 span.label { display: block; float: left; margin-bottom: 18px; width: auto; }
+span.prompt { font-size: 1.2em; line-height: 1.5em; }
 span.title {
-   float: left; min-width: 96px; padding: 3px 3px;
-   white-space: nowrap; width: 95%;
+   float: left; font-size: 1.2em; font-weight: bold; line-height: 1.5em;
+   min-width: 114px; padding: 3px 0 3px 6px; white-space: nowrap; width: 90%;
 }
 
 /* Form elements */
@@ -446,17 +463,17 @@ input.required, password.required, select.required, textarea.required {
 }
 label.prompt {
    cursor: pointer; display: block; float: left;
-   margin: 9px 0; text-align: right; width: auto;
+   font-size: 1.2em; line-height: 1.5em; margin: 0.75em 0;
+   text-align: right; width: auto;
 }
-label.radio_group {
-   font-size: 0.857em; font-weight: bold; line-height: 2em; padding: 1px;
-}
+label.radio_group { font-weight: bold; padding: 1px; }
 select.freelist { clear: left; float: left; width: 180px; }
 select.group { clear: left; float: left; min-width: 120px; width: auto; }
 textarea.autosize { overflow: hidden; width: 102%; }
 textarea.ifield {
    font-family: "Lucida Sans", verdana, arial, sans-serif;
-   border: 1px solid; line-height: 150%; margin-bottom: 6px; margin-right: 2px;
+   border: 1px solid; line-height: 1.5em; margin-bottom: 6px;
+   margin-right: 2px;
 }
 
 /* Tables */
@@ -470,22 +487,23 @@ table.editable {
 table.grid   td.first, table.logfile td.first,
 table.source td.first { border-right: 1px solid; }
 table.logfile  { margin-top: 13px; width: auto; }
-table.editable td.row_select { border: 1px solid; }
+table.editable td.row_select, table.editable td.row_drag { border: 1px solid; }
 table.editable th  { border: 1px solid; line-height: 1.333em; }
 
 td.csv, td.data_value,
-td.mono         { padding: 3px; }
+td.mono         { font-size: 1.2em; line-height: 1.5em; padding: 3px; }
 td.first        { width: 1%; }
 td.fixed        { width: 20px; }
 td.grid_cell    { height: 25px; white-space: nowrap; }
 td.lineNumber   { padding-right: 3px; }
 td.logfile, td.source { padding-left: 3px; }
 td.row_select a { display: block; text-align: center; vertical-align: middle; }
+td.source       { font-size: 1.4em; line-height: 1.2857em; }
 
 th.first        { text-align: center; width: 1%; }
 th.grid_header  { border-bottom: 1px solid; text-align: left; }
 th.sort         { cursor: pointer; }
-th.normal       { text-align: center; }
+th.normal       { font-size: 1.2em; text-align: center; }
 
 /* Calendar widget */
 
@@ -493,7 +511,7 @@ div.calendar { margin-left: -30px; position: relative; z-index: 50; }
 .calendar, .calendar table {
    border: 1px solid; border-collapse: collapse; cursor: default;
    font-family: "Lucida Sans", verdana, arial, sans-serif;
-   font-size: 1em; line-height: 1.5em; margin: 0;
+   font-size: 1.2em; line-height: 1.5em; margin: 0;
 }
 
 /* Header part -- contains navigation buttons and day names. */
@@ -501,7 +519,6 @@ div.calendar { margin-left: -30px; position: relative; z-index: 50; }
 .calendar .button { /* "<<", "<", ">", ">>" buttons have this class */
    text-align: center;    /* They are the navigation buttons */
    padding: 2px;          /* Make the buttons seem like they're pressing */
-   font-size: 0.857em;
 }
 .calendar .button div { text-align: center; }
 .calendar thead .title { /* This holds the current "month, year" */
@@ -524,9 +541,6 @@ div.calendar { margin-left: -30px; position: relative; z-index: 50; }
 
 .calendar tbody .day { /* Cells <TD> containing month days dates */
    width: 24px; text-align: right; padding: 2px 4px 2px 2px;
-}
-.calendar tbody .day.othermonth {
-   font-size: 0.857em;
 }
 .calendar table .wn {
    padding: 2px 3px 2px 2px; border-right: 1px solid;
@@ -565,8 +579,7 @@ div.calendar { margin-left: -30px; position: relative; z-index: 50; }
 
 .calendar .combo {
    position: absolute; display: none; top: 0; left: 0; width: 48px;
-   cursor: default; border: 1px solid; font-size: 0.857em;
-   z-index: 100;
+   cursor: default; border: 1px solid; z-index: 100;
 }
 .calendar .combo .label, .calendar .combo .label-IEfix {
    text-align: center; padding: 1px;
@@ -618,25 +631,23 @@ b.tr4 { margin-left: 3px; height: 2px; }
 /* Flyover tool tips */
 
 div.tool-tip { text-align: center; z-index: 13000; }
-div.tool-tip table { border-collapse: collapse; line-height: 1.5em; }
+div.tool-tip table { border-collapse: collapse; }
 td.tool-tip-topLeft { background: url(bubble.png) top left; }
 td.tool-tip-topLeft span {
-   display: block; font-weight: bold; font-size: 1.166em;
-   padding: 8px 0 4px 16px;
+   display: block; font-weight: bold; font-size: 1.6em;
+   line-height: 1.125em; padding: 8px 0 4px 16px;
 }
 td.tool-tip-topRight { background: url(bubble.png) top right; }
 td.tool-tip-topRight span {
-   display: block; font-weight: bold; font-size: 1.166em;
-   padding: 8px 8px 4px 8px;
+   display: block; padding: 8px 8px 4px 8px;
 }
 td.tool-tip-bottomLeft { background: url(bubble.png) bottom left; }
 td.tool-tip-bottomLeft span {
-   display: block; font-size: 1em; padding: 4px 0 16px 16px;
+   display: block; font-size: 1.2em; line-height: 1.5em;
+   padding: 4px 0 16px 16px;
 }
 td.tool-tip-bottomRight { background: url(bubble.png) bottom right; }
-td.tool-tip-bottomRight span {
-   display: block; font-size: 1em; padding: 4px 8px 16px 8px;
-}
+td.tool-tip-bottomRight span { display: block; padding: 4px 8px 16px 8px; }
 
 /*  Tree Definitions */
 
@@ -644,7 +655,10 @@ dd.tree_node_closed { display: none; margin-bottom: 0; }
 dd.tree_node_last_closed { display: none; margin-bottom: 0; }
 dd.tree_node_open { display: block; margin-bottom: 0; }
 dd.tree_node_last_open { display: block; margin-bottom: 0; }
-dl.tree a { padding: 3px; text-decoration: none; white-space: nowrap; }
+dl.tree a {
+   font-size: 1.2em; line-height: 1.5em; padding: 3px;
+   text-decoration: none; white-space: nowrap;
+}
 dl.tree a.tree_selected { text-decoration: underline; }
 dl.tree span { vertical-align: middle; }
 dl.tree_branch { margin-bottom: 0; }
@@ -691,7 +705,7 @@ span.tree_last_fill {
 span.tree_leaf_icon {
    background: transparent url(icons.png) no-repeat -150px -240px;
    display: inline-block; height: 30px; overflow: hidden;
-   vertical-align: middle; width: 16px;
+   width: 16px;
 }
 span.tree_node_ctrl { cursor: pointer; }
 
@@ -707,10 +721,8 @@ span.tree_node_ctrl { cursor: pointer; }
    margin: 0 2px 2px 0; padding: 0; width: 22px;
 } * html .toolbar * { height: 24px; width: 24px; }
 .toolbar br { margin: 0; padding: 0; }
-.toolbar.disabled * { opacity: 0.3; -moz-opacity: 0.3; }
-.toolbar.disabled .toggle {
-   background-position: -90px -210px; opacity: 1; -moz-opacity: 1;
-}
+.toolbar.disabled * { opacity: 0.3; }
+.toolbar.disabled .toggle { background-position: -90px -210px; opacity: 1; }
 .toolbar .spacer {
    border: none; border-right: 2px solid; margin: 0 5px 0 3px; width: 0;
 }
@@ -734,7 +746,8 @@ span.menu_top_middle_filler {
 }
 span.navigation_filler {
    border-bottom: 1px solid; border-top: 1px solid; display: block;
-   font-size: 1.2em; height: 24px; line-height: 1.5em; margin: 0; padding: 0;
+   font-size: 1.2em; height: 24px; line-height: 24px;
+   margin: 0; padding: 0 3px;
 }
 #navigation {
    display: table-row; height: 31px; left: 32px; position: absolute; right: 0;
@@ -745,19 +758,19 @@ span.navigation_filler {
 #menu dd { clear: left; display: none; }
 #menu li:hover dd, #menu li a:hover dd { display: block; }
 #menu li a.menu_title {
-   border: 1px solid; display: block; font-size: 1em; height: 24px;
-   line-height: 1.286em; padding: 0 1em; text-align: center;
+   border: 1px solid; display: block; font-size: 1.2em; height: 24px;
+   line-height: 24px; padding: 0 1em; text-align: center;
    text-decoration: none; white-space: nowrap;
 }
 #menu li a.menu_selected {
-   border: 1px solid; display: block; font-size: 1em; font-weight: bold;
-   height: 24px; line-height: 1.286em; padding: 0 1em; text-align: center;
+   border: 1px solid; display: block; font-size: 1.2em; font-weight: bold;
+   height: 24px; line-height: 24px; padding: 0 1em; text-align: center;
    text-decoration: none; white-space: nowrap;
 }
 #menu li a.menu_link {
-   border: 1px solid; display: block; font-size: 1em; height: 24px;
-   padding: 0 1em; text-align: center; text-decoration: none;
-   white-space: nowrap;
+   border: 1px solid; display: block; font-size: 1.2em; height: 24px;
+   line-height: 24px; padding: 0 1em; text-align: center;
+   text-decoration: none; white-space: nowrap;
 }
 #tools { display: table-row; }
 #tools li { display: table-cell; }
@@ -765,20 +778,19 @@ span.navigation_filler {
 #tools dl { position: absolute; top: 30px; }
 #tools dd { background: transparent; clear: left; display: none; }
 #tools li a.tools_selected {
-   border: 1px solid; display: block; font-size: 0.857em; height: 20px;
+   border: 1px solid; display: block; height: 20px;
    line-height: 20px; padding: 0 3px 4px; text-align: center;
    text-decoration: none; white-space: nowrap;
 }
 #tools li a.tools_selected:hover { display: block; }
 #tools li a.tools_title {
-   display: block; height: 25px; line-height: 17px; padding: 0 6px;
-   text-align: center; text-decoration: none;
-   white-space: nowrap;
+   display: block; height: 18px; line-height: 18px; padding: 0 6px 7px;
+   text-align: center; text-decoration: none; white-space: nowrap;
 }
 #tools li a.tools_title:hover { display: block; }
 #tools li a.tools_link {
-   border: 1px solid; clear: left; display: block;
-   height: 19px; padding: 1px 12px 4px; text-align: center;
+   border: 1px solid; clear: left; display: block; font-size: 1.2em;
+   height: 19px; line-height: 19px; padding: 1px 12px 4px; text-align: center;
    text-decoration: none; white-space: nowrap;
 }
 #tools li a.tools_link:hover { display: block; }
@@ -786,7 +798,7 @@ span.navigation_filler {
 /* Identified elements */
 
 #appendDisp {
-   bottom: 0; font-size: 0.857em; left: 10px; position: fixed; z-index: 4;
+   bottom: 0; left: 10px; position: fixed; z-index: 4;
 }
 #buttonDisp {
    bottom: 55px; padding-right: 3px; position: fixed;
@@ -805,8 +817,8 @@ span.navigation_filler {
    position: absolute; right: 10px; top: 82px; z-index: 3;
 }
 #footerDisp {
-   bottom: 0; display: inherit; font-size: 0.857em; height: 60px;
-   left: 0; position: fixed; right: 0; vertical-align: top; z-index: 2;
+   bottom: 0; display: inherit; height: 60px; left: 0; position: fixed;
+   right: 0; vertical-align: top; z-index: 2;
 }
 #headerBottom {
    height: 31px; left: 0; position: absolute; right: 0; top: 46px;
@@ -815,21 +827,27 @@ span.navigation_filler {
    height: 77px; left: 0; position: fixed; right: 0; top: 0; z-index: 10;
 }
 #headerQuickLinks {
-   bottom: 0; font-size: 1.2em; padding-right: 5px; padding-top: 1px;
-   position: absolute; right: 100px; text-align: right;
+   bottom: 0; padding-right: 5px; position: absolute; right: 100px;
 }
+#headerQuickLinks a { font-size: 1.2em; line-height: 1.5em; text-align: right; }
 #headerSubTitle {
-   font-size: 1.25em; padding-top: 1px; position: absolute;
-   padding-right: 5px; right: 100px; text-align: right; top: 0;
+   padding-top: 1px; padding-right: 5px; position: absolute;
+   right: 100px; top: 0;
+}
+#headerSubTitle a {
+   font-size: 1.6em; font-weight: bold; line-height: 1.125; text-align: right;
 }
 #headerTop {
    height: 46px; left: 0px; overflow: hidden; position: absolute; top: 0;
    right: 0;
 }
-#headerTitle { font-size: 2em; margin: 10px 0 0 10px; }
-#results { line-height: 1.5em; margin-bottom: 18px; text-align: center; }
+#headerTitle { font-size: 2em; line-height: 1.8em; margin-left: 10px; }
+#results {
+   font-size: 1.2em; line-height: 1.5em; margin-bottom: 18px;
+   text-align: center;
+}
 #sidebar {
-   display: block; height: 25px; line-height: 17px; padding: 0 0 0 10px;
+   display: block; height: 17px; line-height: 17px; padding: 0 0 8px 10px;
 }
 #sidebar:hover { cursor: pointer; }
 #sidebarCap {
@@ -857,26 +875,28 @@ span.navigation_filler {
 /* Application specific */
 
 .library {
-   border: transparent 1px solid; display: block; padding: 4px;
-   text-decoration: none; white-space: nowrap;
+   border: transparent 1px solid; display: block; font-size: 1.4em;
+   line-height: 1.2857em; padding: 4px; text-decoration: none;
+   white-space: nowrap;
 }
 .library:hover { border: 1px outset; }
 .libraryPanel { border: 1px solid; clear: left; margin-left: 6px; }
 .library_subheader {
-   display: block; font-size: 0.857em; padding: 3px; text-decoration: none;
+   display: block; padding: 3px; text-decoration: none;
 }
-/* ).librarySubject { display: inline-block; line-height: 1.5em; width: auto; } */
+/* ).librarySubject { display: inline-block; font-size: 1.2em; line-height: 1.5em; width: auto; } */
 .recipe {
    border-collapse: separate; border-spacing: 3px; clear: left; margin-top: 0;
 }
-.recipe td { padding: 1px 6px 2px; vertical-align: baseline; }
+.recipe td {
+   font-size: 1.2em; line-height: 1.5em; padding: 1px 6px 2px;
+   vertical-align: baseline;
+}
 .recipe td.label { font-weight: bold; width: 1%; }
 
-a.library_header {
-   display: block; font-size: 1em; text-align: center; text-decoration: none;
-}
+a.library_header { display: block; text-align: center; text-decoration: none; }
 div.library_header {
-   border: 1px solid; display: inline-block; margin: 3px; padding: 3px;
+   border: 1px solid; display: inline-block; margin: 3px; padding: 0.333em;
    text-align: center; vertical-align: text-bottom;
 }
 img.library_header {

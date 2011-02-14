@@ -1,6 +1,6 @@
-/* @(#)$Id: green.css 1068 2010-08-29 00:17:21Z pjf $ */
+/* @(#)$Id: green.css 1110 2011-01-30 23:43:36Z pjf $ */
 
-body { background: #9c9 url(background.gif) repeat 100% 100%; color: black; }
+body { background: #9c9 repeat 100% 100%; color: black; }
 
 abbr, acronym, fieldset, ins { border-color: #336; }
 ins { color: #f00; }
@@ -23,10 +23,12 @@ hr { border-color: #336 transparent transparent; }
 .anchor, .header_link, .search, .tree_link { color: #336; }
 .button_item input.button:hover, .slider .knob,
 .tree_link:hover { background-color: #9c9; }
+.chooser_button { border-color: #336; color: #336; }
 .cut_here { background-color: transparent; border-top-color: #f00; }
 .error { background-color: #fcc; }
 .even_row { background-color: #c1d9a9; }
 .header_title { color: #336; }
+.icon_button { border-color: #336; }
 .info { color: #8b8b32; }
 .navigation { border-color: transparent; }
 .odd_row { background-color: #cc9; }
@@ -50,7 +52,8 @@ input.required, password.required, select.required, textarea.required {
 
 span.error { border-color: #336; }
 span.title { background: #663; color: #ffc; }
-table.editable td.row_select { background-color: #c1d9a9; border-color: #336; }
+table.editable td.row_select,
+table.editable td.row_drag { background-color: #c1d9a9; border-color: #336; }
 table.editable th { border-color: #336; }
 table.editable .even_row, table.editable .odd_row { background-color: #ffc; }
 table.source .even_row { background-color: #cc9; }

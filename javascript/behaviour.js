@@ -3,39 +3,41 @@
 var Behaviour = new Class( {
    Implements: [ Events, Options ],
 
-   options            : {
-      config          : {
-         anchors      : {},
-         calendars    : {},
-         scrollPins   : { fadeInDuration: 1500,  showDelay: 1000,
-                          trayPadding   : 0 },
-         server       : {},
-         sidebars     : {},
-         sliders      : {},
-         tabSwappers  : {
-            defaults  : { smooth        : true,  smoothSize: true } },
-         tips         : { fadeInDuration: 500,   showDelay : 666  } },
-      cookiePath      : '/',
-      cookiePrefix    : 'behaviour',
-      formName        : null,
-      minContentHeight: 5,
-      onStateComplete : $empty,
-      popup           : false,
-      target          : null,
-      defaultURL      : null
+   options           : {
+      config         : {
+         anchors     : {},
+         calendars   : {},
+         scrollPins  : { fadeInDuration: 1500, showDelay: 1000,
+                         trayPadding   : 0 },
+         server      : {},
+         sidebars    : {},
+         sliders     : {},
+         tables      : {},
+         tabSwappers : {
+            defaults : { smooth        : true, smoothSize: true } },
+         tips        : { fadeInDuration: 500,  showDelay : 666  } },
+      cookieDomain   : '',
+      cookiePath     : '/',
+      cookiePrefix   : 'behaviour',
+      formName       : null,
+      minMarginBottom: 5,
+      onStateComplete: function() {},
+      popup          : false,
+      target         : null,
+      defaultURL     : null
    },
 
    initialize: function( options ) {
       this.setOptions( options ); var opt = this.options;
 
-      this.config  = $merge( opt.config );
-      this.cookies = new Cookies( { path  : opt.cookiePath,
+      this.config  = Object.merge( opt.config );
+      this.cookies = new Cookies( { domain: opt.cookieDomain,
+                                    path  : opt.cookiePath,
                                     prefix: opt.cookiePrefix } );
 
       window.addEvent( 'load',   function() {
          this.load( options.firstField ) }.bind( this ) );
-      window.addEvent( 'resize', function() {
-         this.resize( true ) }.bind( this ) );
+      window.addEvent( 'resize', function() { this.resize() }.bind( this ) );
    },
 
    load: function( first_field ) {
@@ -50,13 +52,13 @@ var Behaviour = new Class( {
 
       this.submit      = new SubmitUtils( {
          config        : cfg.anchors,
-         formName      : opt.formName,
-         cookiePath    : opt.cookiePath,
-         cookiePrefix  : opt.cookiePrefix } );
+         cookies       : this.cookies,
+         formName      : opt.formName } );
       this.window      = new WindowUtils( {
          config        : cfg.anchors,
-         path          : opt.cookiePath,
-         prefix        : opt.cookiePrefix,
+         cookieDomain  : opt.cookieDomain,
+         cookiePath    : opt.cookiePath,
+         cookiePrefix  : opt.cookiePrefix,
          target        : opt.target } );
 
       this.autosizer   = new AutoSize();
@@ -74,16 +76,17 @@ var Behaviour = new Class( {
          config        : cfg.sliders,
          submit        : this.submit } );
       this.tables      = new TableUtils( {
+         config        : cfg.tables,
          formName      : opt.formName,
          onRowAdded    : f_replace_boxes,
          onSortComplete: f_replace_boxes,
          url           : opt.defaultURL } );
       this.tabSwappers = new TabSwappers( {
          config        : cfg.tabSwappers,
-         cookiePath    : opt.cookiePath,
-         cookiePrefix  : opt.cookiePrefix } );
+         cookies       : this.cookies } );
       this.togglers    = new Togglers( this, { config: cfg.anchors } );
       this.trees       = new Trees( {
+         cookieDomain  : opt.cookieDomain,
          cookiePath    : opt.cookiePath,
          cookiePrefix  : opt.cookiePrefix } );
       this.wysiwyg     = new WYSIWYG();
@@ -94,7 +97,6 @@ var Behaviour = new Class( {
       this.columnizers = new Columnizers();
       this.scrollPins  = new ScrollPins( {
          config        : cfg.scrollPins,
-         debug         : true,
          log           : this.window.log,
          onAttach      : function( el ) {
             this.addEvent( 'build', function() {
@@ -117,15 +119,13 @@ var Behaviour = new Class( {
          onShow        : function() { this.fx.start( 1 ) },
          showDelay     : cfg.tips.showDelay } );
 
-      this.fireEvent( 'load' );
-
       if (first_field && (el = $( first_field ))) el.focus();
    },
 
-   resize: function( changed ) {
+   resize: function() {
       var append, content, footer, foot_height = 0, opt = this.options;
       var h = window.getHeight(), w = window.getWidth();
-      var height = opt.minContentHeight;
+      var margin_bottom = opt.minMarginBottom;
 
       if (! opt.popup) {
          this.cookies.set( 'width',  w );
@@ -138,18 +138,18 @@ var Behaviour = new Class( {
       if (footer = $( 'footerDisp' )) {
          foot_height = footer.getStyle( 'display' ) != 'none'
                      ? footer.getStyle( 'height' ).toInt() : 0;
-         height += foot_height;
+         margin_bottom += foot_height;
       }
 
       if (append = $( 'appendDisp' )) {
-         height += append.getStyle( 'height' ).toInt();
+         margin_bottom += append.getStyle( 'height' ).toInt();
 
          if (footer) append.setStyle( 'marginBottom', foot_height + 'px' );
       }
 
-      content.setStyle( 'marginBottom', height + 'px' );
+      content.setStyle( 'marginBottom', margin_bottom + 'px' );
 
-      var width = this.sidebar ? this.sidebar.resize( changed, height ) : 0;
+      var width = this.sidebar ? this.sidebar.resize( margin_bottom ) : 0;
 
       content.setStyle( 'marginLeft', width + 'px' );
 

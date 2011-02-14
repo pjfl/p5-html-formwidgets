@@ -1,49 +1,49 @@
-/* @(#)$Id: 15html-formwidgets.js 1072 2010-09-23 00:59:47Z pjf $
+/* @(#)$Id: 15html-formwidgets.js 1111 2011-02-14 04:29:07Z pjf $
 
-   Portions of this code are taken from MooTools 1.2 which is:
-   Copyright (c) 2006-2008 [Valerio Proietti](http://mad4milk.net/).
+   Portions of this code are taken from MooTools 1.3 which is:
+   Copyright (c) 2006-2010 [Valerio Proietti](http://mad4milk.net/).
 */
 
 Options.implement( {
-   build: function() {
-      var selector = this.options.selector;
+    build: function() {
+        var selector = this.options.selector;
 
-      if (selector) $$( selector ).each( function( el ) {
-         if (! this.collection.contains( el )) {
-            this.collection.include( el );
-            this.attach( el );
-         }
-      }, this );
-   },
+        if (selector) $$( selector ).each( function( el ) {
+            if (! this.collection.contains( el )) {
+                this.collection.include( el );
+                this.attach( el );
+            }
+        }, this );
+    },
 
-   setBuildOptions: function( options ) {
-      options         = options || {};
-      this.debug      = options.debug || false;  delete options[ 'debug' ];
-      this.log        = options.log   || $empty; delete options[ 'log'   ];
-      this.collection = [];
+    setBuildOptions: function( options ) {
+        options    = options || {};
+        this.debug = options.debug || false;  delete options[ 'debug' ];
+        this.log   = options.log   || function(){}; delete options[ 'log' ];
+        this.collection = [];
 
-      return this.setOptions( options );
-   },
+        return this.setOptions( options );
+    },
 } );
 
 String.implement( {
-   escapeHTML: function() {
-      var text = this;
-      text = text.replace( /\</g, '&lt;'   );
-      text = text.replace( /\>/g, '&gt;'   );
-      text = text.replace( /\"/g, '&quot;' );
-      text = text.replace( /\&/g, '&amp;'  );
-      return text;
-   },
+    escapeHTML: function() {
+        var text = this;
+        text = text.replace( /\</g, '&lt;'   );
+        text = text.replace( /\>/g, '&gt;'   );
+        text = text.replace( /\"/g, '&quot;' );
+        text = text.replace( /\&/g, '&amp;'  );
+        return text;
+    },
 
-   unescapeHTML: function() {
-      var text = this;
-      text = text.replace( /\&lt\;/g,   '<' );
-      text = text.replace( /\&gt\;/g,   '>' );
-      text = text.replace( /\&quot\;/g, '"' );
-      text = text.replace( /\&amp\;/g,  '&' );
-      return text;
-   }
+    unescapeHTML: function() {
+        var text = this;
+        text = text.replace( /\&lt\;/g,   '<' );
+        text = text.replace( /\&gt\;/g,   '>' );
+        text = text.replace( /\&quot\;/g, '"' );
+        text = text.replace( /\&amp\;/g,  '&' );
+        return text;
+    }
 } );
 
 /*
@@ -51,278 +51,212 @@ String.implement( {
 Description: An Fx.Elements extension which allows you to easily
              create accordion type controls.
 
-License: MIT-style license.
+License: MIT-style license
 
 Authors: Valerio Proietti, Peter Flanigan
 
-Class: Accordion
-   The Accordion class creates a group of elements that
-   are toggled when their handles are clicked. When one elements
-   toggles in, the others toggles back.  Inherits methods, properties,
-   options and events from <Fx.Elements>.
-
-Arguments:
-   togglers - required, a collection of elements, the elements handlers
-              that will be clickable.
-   elements - required, a collection of elements the transitions will
-              be applied to.
-   options  - optional, see options below, and <Fx.Base> options and events.
-
-Options:
-   show - integer, the Index of the element to show at start.
-   display - integer, the Index of the element to show at start (with
-             a transition). defaults to 0.
-   fixedHeight - integer, if you want the elements to have a fixed
-                 height. defaults to false.
-   fixedWidth - integer, if you want the elements to have a fixed
-                width. defaults to false.
-   height - boolean, will add a height transition to the accordion if
-            true. defaults to true.
-   opacity - boolean, will add an opacity transition to the accordion
-             if true. defaults to true.
-   width - boolean, will add a width transition to the accordion if
-           true. defaults to false, css mastery is required to make this work!
-   alwaysHide - boolean, will allow to hide all elements if true,
-                instead of always keeping one element shown. defaults to false.
-Events:
-   onActive - function to execute when an element starts to show
-   onBackground - function to execute when an element starts to hide
 */
 
 Fx.Accordion = new Class( {
-   Extends: Fx.Elements,
+    Extends: Fx.Elements,
 
-   options              : {
-      alwaysHide        : false,
-      display           : 0,
-      fixedHeight       : false,
-      fixedWidth        : false,
-      height            : true,
-      initialDisplayFx  : true,
-      onActive          : Class.empty,
-      onBackground      : Class.empty,
-      opacity           : true,
-      returnHeightToAuto: true,
-      show              : false,
-      trigger           : 'click',
-      wait              : false,
-      width             : false
-   },
+    options               : {
+        alwaysHide        : false,
+        display           : 0,
+        fixedHeight       : false,
+        fixedWidth        : false,
+        height            : true,
+        initialDisplayFx  : true,
+/*      onActive          : function( togglers, index, section ) {}, */
+/*      onBackground      : function( togglers, index, section ) {}, */
+        opacity           : true,
+        returnHeightToAuto: true,
+        show              : false,
+        trigger           : 'click',
+        wait              : false,
+        width             : false
+    },
 
-   initialize: function() {
-      var params = Array.link( arguments, {
-         'container': Element.type,
-         'options'  : Object.type,
-         'togglers' : $defined,
-         'elements' : $defined
-      } );
+    initialize: function() {
+        var defined = function( obj ) { return obj != null };
+        var params  = Array.link( arguments, {
+            'options'  : Type.isObject,
+            'togglers' : defined,
+            'elements' : defined
+        } );
 
-      this.parent( params.elements, params.options );
-      this.togglers      = $$( params.togglers );
-      this.container     = params.container;
-      this.internalChain = new Chain();
-      this.previous      = -1;
-      this.effects       = {};
+        this.parent( params.elements, params.options );
+        this.togglers      = $$( params.togglers );
+        this.internalChain = new Chain();
+        this.previous      = -1;
+        this.effects       = {};
 
-      var opt = this.options;
+        var opt = this.options;
 
-      if (opt.alwaysHide) opt.wait = true;
+        if (opt.alwaysHide) opt.wait = true;
 
-      if ($chk( opt.show )) {
-         opt.display = false; this.previous = opt.show;
-      }
+        if (opt.show || opt.show === 0) {
+            opt.display = false; this.previous = opt.show;
+        }
 
-      if (opt.start) { opt.display = false; opt.show = false; }
+        if (opt.opacity) this.effects.opacity = 'fullOpacity';
 
-      if (opt.opacity) this.effects.opacity = 'fullOpacity';
+        if (opt.width) this.effects.width = opt.fixedWidth ? 'fullWidth'
+                                                           : 'offsetWidth';
 
-      if (opt.width) {
-         this.effects.width = opt.fixedWidth ? 'fullWidth' : 'offsetWidth';
-      }
+        if (opt.height) this.effects.height = opt.fixedHeight ? 'fullHeight'
+                                                              : 'scrollHeight';
 
-      if (opt.height) {
-         this.effects.height = opt.fixedHeight ? 'fullHeight' : 'scrollHeight';
-      }
+        for (var i = 0, l = this.togglers.length; i < l; i++) {
+            var toggler = this.togglers[ i ];
 
-      for (var i = 0, l = this.togglers.length; i < l; i++) {
-         var toggler = this.togglers[ i ];
+            if (i == 0) toggler.addClass( 'accordion_header_first' );
 
-         if (i == 0) toggler.addClass( 'accordion_header_first' );
+            this.addSection( toggler, this.elements[ i ] );
+        }
 
-         this.addSection( toggler, this.elements[ i ] );
-      }
-
-      this.elements.each( function( el, i ) {
-         if (opt.show === i) {
-            this.fireEvent( 'active', [ this.togglers, i , el ] );
-         } else {
-            for (var fx in this.effects) el.setStyle( fx, 0 );
-         }
-      }, this );
-
-      if ($chk( opt.display ) || opt.initialDisplayFx === false)
-         this.display( opt.display, opt.initialDisplayFx );
-
-      if (opt.fixedHeight !== false) opt.returnHeightToAuto = false;
-
-      this.addEvent( 'complete',
-                     this.internalChain.callChain.bind( this.internalChain ) );
-   },
-
-   /*
-   Property: addSection
-      Dynamically adds a new section into the accordion at the
-      specified position.
-
-   Arguments:
-      toggler - (dom element) the element that toggles the accordion
-                section open.
-      element - (dom element) the element that stretches open when the
-                toggler is clicked.
-      pos     - (integer) the index where these objects are to be inserted
-                within the accordion.
-   */
-
-   addSection: function( toggler, el, pos ) {
-      toggler = $( toggler ); el = $( el );
-
-      var test = this.togglers.contains( toggler );
-      var len  = this.togglers.length;
-
-      if (len && (! test || pos)) {
-         pos = $pick( pos, len - 1 );
-
-         toggler.injectBefore( this.togglers[ pos ] );
-         el.injectAfter( toggler );
-      }
-      else if (this.container && ! test){
-         toggler.inject( this.container ); el.inject( this.container );
-      }
-
-      this.togglers.include( toggler ); this.elements.include( el );
-
-      var idx       = this.togglers.indexOf( toggler );
-      var displayer = this.display.bind( this, idx );
-      var opt       = this.options;
-
-      toggler.store( 'accordion:display', displayer );
-      toggler.addEvent( opt.trigger, displayer );
-
-      if (opt.height) el.setStyles( { 'padding-top': 0, 'padding-bottom': 0 } );
-
-      if (opt.width) el.setStyles( { 'padding-left': 0, 'padding-right': 0 } );
-
-      if (opt.fixedWidth) {
-         el.fullWidth = opt.fixedWidth; el.setStyle( 'overflow-x', 'auto' );
-      }
-      else { el.setStyle( 'overflow-x', 'hidden' ) }
-
-      if (opt.fixedHeight) {
-         el.fullHeight = opt.fixedHeight; el.setStyle( 'overflow-y', 'auto' );
-      }
-      else { el.setStyle( 'overflow-y', 'hidden' ) }
-
-      if (! test) {
-         for (var fx in this.effects) el.setStyle( fx, 0 );
-      }
-
-      el.fullOpacity = 1;
-      return this;
-   },
-
-   detach: function() {
-      this.togglers.each( function( toggler ) {
-         toggler.removeEvent( this.options.trigger,
-                              toggler.retrieve( 'accordion:display' ) );
-      }, this );
-   },
-
-   /*
-   Property: display
-      Shows a specific section and hides all others. Useful when
-      triggering an accordion from outside.
-
-   Arguments:
-      index - integer, the index of the item to show, or the actual
-              element to show.
-   */
-
-   display: function( index, useFx ) {
-      if (! this.check( index, useFx ) ) return this;
-
-      useFx = $pick( useFx, true ); var obj = {}, opt = this.options;
-
-      if (opt.returnHeightToAuto) {
-         var prev = this.elements[ this.previous ];
-
-         if (prev && ! this.selfHidden) {
-            for (var fx in this.effects) {
-               prev.setStyle( fx, prev[ this.effects[ fx ] ] );
+        this.elements.each( function( el, i ) {
+            if (opt.show === i) {
+                this.fireEvent( 'active', [ this.togglers, i, el ] );
             }
-         }
-      }
+            else {
+                for (var fx in this.effects) el.setStyle( fx, 0 );
+            }
+        }, this );
 
-      index = $type( index ) == 'element'
-            ? this.elements.indexOf( index ) : index;
+        if (opt.display || opt.display === 0)
+            this.display( opt.display, opt.initialDisplayFx );
 
-      if (index >= this.elements.length) index = 0;
+        this.addEvent( 'complete',
+                       this.internalChain.callChain.bind( this.internalChain ));
+    },
 
-      if ((this.timer && opt.wait)
-          || (index === this.previous && ! opt.alwaysHide)) return this;
+    addSection: function( toggler, el ) {
+        toggler = document.id( toggler ); el = document.id( el );
 
-      this.previous = index;
+        var test = this.togglers.contains( toggler );
 
-      this.elements.each( function( el, i ) {
-         var hide = false; obj[ i ] = {};
+        this.togglers.include( toggler ); this.elements.include( el );
 
-         if (i != index) {
-            hide = true;
-         } else if (opt.alwaysHide
-                    && ((el.offsetHeight > 0 && opt.height)
-                      || el.offsetWidth  > 0 && opt.width)) {
-            hide = this.selfHidden = true;
-         }
+        var opt       = this.options;
+        var index     = this.togglers.indexOf( toggler );
+        var displayer = this.display.pass( [ index, true ], this );
 
-         this.fireEvent( hide ? 'background' : 'active',
-                         [ this.togglers, i,  el ] );
+        toggler.addEvent( opt.trigger, displayer );
+        toggler.store( 'accordion:display', displayer );
+        el.setStyle( 'overflow-y', opt.fixedHeight ? 'auto' : 'hidden' );
+        el.setStyle( 'overflow-x', opt.fixedWidth  ? 'auto' : 'hidden' );
+        el.fullOpacity = 1;
 
-         for (var fx in this.effects)
-            obj[ i ][ fx ] = hide ? 0 : el[ this.effects[ fx ] ];
-      }, this );
+        if (! test) { for (var fx in this.effects) el.setStyle( fx, 0 ); }
 
-      this.internalChain.chain( function() {
-         if (opt.returnHeightToAuto && ! this.selfHidden) {
-            var el = this.elements[ index ];
+        this.internalChain.chain( function() {
+            if (! opt.fixedHeight && opt.returnHeightToAuto
+                && ! this.selfHidden) {
+                if (this.now == index) el.setStyle( 'height', 'auto' );
+            };
+        }.bind( this ) );
 
-            if (el) el.setStyle( 'height', 'auto' );
-         };
-      }.bind(this) );
+        return this;
+    },
 
-      return useFx ? this.start( obj ) : this.set( obj );
-   },
+    detach: function( toggler ) {
+        var remove = function( toggler ) {
+            toggler.removeEvent( this.options.trigger,
+                                 toggler.retrieve( 'accordion:display' ) );
+        }.bind( this );
 
-   redisplay: function( useFx ) {
-      var index = this.previous; this.previous = -1;
+        if (! toggler) this.togglers.each( remove );
+        else remove( toggler );
 
-      return this.display( index, useFx );
-   },
+        return this;
+    },
 
-   reload: function( index ) {
-      if (! index || index >= this.togglers.length) index = 0;
+    display: function( index, useFx ) {
+        if (! this.check( index, useFx )) return this;
 
-      var toggler = this.togglers[ index ];
+        var els = this.elements, opt = this.options;
 
-      if ($defined( toggler )) toggler.fireEvent( this.options.trigger );
-   },
+        index = (typeOf( index ) == 'element') ? els.indexOf( index )
+                                               : index;
+        index = index >= els.length ? els.length - 1 : index;
+        useFx = useFx != null ? useFx : true;
 
-   resize: function( height, width ) {
-      this.elements.each( function( el ) {
-         if (height) el.fullHeight = this.options.fixedHeight = height;
-         if (width)  el.fullWidth  = this.options.fixedWidth  = width;
-      }, this );
+        if (! opt.fixedHeight && opt.returnHeightToAuto) {
+            var prev = this.previous > -1 ? els[ this.previous ] : false;
 
-      return this.redisplay();
-   }
+            if (prev && ! this.selfHidden) {
+                for (var fx in this.effects) {
+                    prev.setStyle( fx, prev[ this.effects[ fx ] ] );
+                }
+            }
+        }
+
+        if (this.timer && opt.wait) return this;
+
+        this.previous = this.now != undefined ? this.now : -1;
+        this.now      = index;
+
+        var obj = this._element_iterator( function( el, i, hide ) {
+            this.fireEvent( hide ? 'background' : 'active',
+                            [ this.togglers, i, el ] );
+        }.bind( this ) );
+
+        return useFx ? this.start( obj ) : this.set( obj );
+    },
+
+    _element_iterator: function( f ) {
+        var obj = {}, opt = this.options;
+
+        this.elements.each( function( el, i ) {
+            var hide = false; obj[ i ] = {};
+
+            if (i != this.now) { hide = true }
+            else if (opt.alwaysHide && ((el.offsetHeight > 0 && opt.height)
+                                      || el.offsetWidth  > 0 && opt.width)) {
+                hide = this.selfHidden = true;
+            }
+
+            f( el, i, hide );
+
+            for (var fx in this.effects)
+                obj[ i ][ fx ] = hide ? 0 : el[ this.effects[ fx ] ];
+        }, this );
+
+        return obj;
+    },
+
+    removeSection: function( toggler, displayIndex ) {
+        var index   = this.togglers.indexOf( toggler );
+        var el      = this.elements[ index ];
+        var remover = function() {
+            this.togglers.erase( toggler );
+            this.elements.erase( el );
+            this.detach( toggler );
+        }.bind( this );
+
+        if (this.now == index || displayIndex != null){
+            this.display( displayIndex != null ? displayIndex
+                          : (index - 1 >= 0 ? index - 1 : 0) ).chain( remover );
+        }
+        else { remover() }
+
+        return this;
+    },
+
+    resize: function() {
+        var opt    = this.options;
+        var height = typeOf( opt.fixedHeight ) == 'function'
+                   ? opt.fixedHeight.call() : opt.fixedHeight;
+        var width  = typeOf( opt.fixedWidth  ) == 'function'
+                   ? opt.fixedWidth.call()  : opt.fixedWidth;
+        var obj    = this._element_iterator( function( el, i, hide ) {
+            if (height) el.fullHeight = height;
+            if (width)  el.fullWidth  = width;
+        }.bind( this ) );
+
+        this.set( obj );
+    }
 } );
 
 var AutoSize = new Class( {
@@ -336,8 +270,8 @@ var AutoSize = new Class( {
                               // of text and bottom of textarea
       max_y     : 1000,       // maximum height of textarea
       min_y     : 48,         // minimum height of textarea
-/*    onResize  : $emtpy,   */// fire this event when resize method called
-/*    onComplete: $empty,   */// fire this event when animation complete
+/*    onResize  : function(){}, */// fire this event when resize method called
+/*    onComplete: function(){}, */// fire this event when animation complete
       selector  : '.autosize' // element class to search for
    },
 
@@ -389,30 +323,30 @@ var AutoSize = new Class( {
 } );
 
 var Calendars = new Class( {
-   Implements: [ Options ],
+    Implements: [ Options ],
 
-   options    : {
-      config  : {},
-      selector: '.calendars',
-      submit  : $empty
-   },
+    options     : {
+        config  : {},
+        selector: '.calendars',
+        submit  : function(){}
+    },
 
-   initialize: function( options ) {
-      this.setBuildOptions( options ); this.build();
-   },
+    initialize: function( options ) {
+        this.setBuildOptions( options ); this.build();
+    },
 
-   attach: function( el ) {
-      var button, cfg, opt = this.options, submit = opt.submit;
+    attach: function( el ) {
+        var button, cfg, opt = this.options, submit = opt.submit;
 
-      if (! (cfg = opt.config[ el.id ])) return;
+        if (! (cfg = opt.config[ el.id ])) return;
 
-      if (submit && (button = $( el.id + '_clear' )))
-         button.addEvent( 'click', function() {
-            submit.clearField( el.id ) } );
+        if (submit && (button = $( el.id + '_clear' )))
+            button.addEvent( 'click', function() {
+                submit.clearField( el.id ) } );
 
-      Calendar.setup( $extend( cfg, {
-         inputField: el.id, button: el.id + '_trigger' } ) );
-   }
+        Calendar.setup( Object.append( cfg, {
+            inputField: el.id, button: el.id + '_trigger' } ) );
+    }
 } );
 
 var CheckboxReplace = new Class( {
@@ -498,53 +432,57 @@ var CheckboxReplace = new Class( {
 var Columnizer = new Class( {
    Implements: [ Events, Options ],
 
-   options     : {
-      accuracy : false,
+   options         : {
+      accuracy     : false,
       // true to build columns once regardless of window resize
       // false to rebuild when content box changes bounds
-      buildOnce : false,
+      buildOnce    : false,
       // Percentage left + right padding in CSS for column class
-      columnPadding : 1.5,
+      columnPadding: 1.5,
       // optional # of columns instead of width
-      columns : false,
+      columns      : false,
       // this function is called after content is columnized
       // should columns float left or right
-      float : 'left',
-      height : false,
+      float        : 'left',
+      height       : false,
       // re-columnizing when images reload might make things
       // run slow. so flip this to true if it's causing delays
-      ignoreImageLoading : true,
+      ignoreImageLoading: true,
       // ensure the last column is never the tallest column
-      lastNeverTallest : false,
+      lastNeverTallest  : false,
       // an object with options if the text should overflow
       // it's container if it can't fit within a specified height
-      overflow : false,
+      lineHeight   : 18,
+      maxLoops     : 3,
+      overflow     : false,
       // if the content should be columnized into a
       // container node other than it's own node
-      target : false,
+      target       : false,
       // default width of columnx
-      width : 400
+      width        : 400
    },
 
    initialize: function( el, options ) {
       el = $( el );
 
-      if (options.columns && $type( options.columns ) != 'number')
+      if (options.columns && typeOf( options.columns ) != 'number')
          options.columns = null;
 
       this.setOptions( options ); var opt = this.options;
       // this is where we'll put the real content
       this.cache = new Element( 'div' );
-      this.cache.adopt( el.getChildren().clone() );
       this.node  = $( opt.target || el );
 
-      if (! this.node.data) this.node.data = new Hash( { lastWidth: 0 } );
+      if (! this.node.data) this.node.data = {
+          lastWidth: 0, size: this.node.getSize() };
+
+      this.cache.adopt( this.node.getChildren().clone() );
 
       // images loading after dom load can screw up the column heights,
       // so recolumnize after images load
       if (! opt.ignoreImageLoading && ! opt.target) {
-         if (! this.node.data.get( 'imageLoaded' )) {
-            this.node.data.set( 'imageLoaded', true );
+         if (! this.node.data.imageLoaded) {
+            this.node.data.imageLoaded = true;
 
             var images = el.getElements( 'img' );
 
@@ -552,8 +490,8 @@ var Columnizer = new Class( {
                // only bother if there are actually images...
                var func = function( obj, el, images ) {
                   return function() {
-                     if (! this.node.data.get( 'firstImageLoaded' )) {
-                        this.node.data.set( 'firstImageLoaded', true );
+                     if (! this.node.data.firstImageLoaded) {
+                        this.node.data.firstImageLoaded = true;
                         new Columnizer( el, this.options ); // Recurse
                         images.removeEvent( 'abort', func );
                         images.removeEvent( 'load',  func );
@@ -574,171 +512,189 @@ var Columnizer = new Class( {
    },
 
    build: function() {
-      var data = this.node.data, size = this.node.getSize();
+      var opt        = this.options;
+      var data       = this.node.data;
+      var num_cols   = opt.columns ? opt.columns
+                                   : Math.round( data.size.x / opt.width );
+      var padding    = opt.columnPadding;
+      var width      = (100 - (2 * padding * num_cols)) / num_cols;
 
-      if (data.get( 'lastWidth' ) == size.x || data.get( 'columnizing' ))
-         return;
+      if (data.columnizing || data.lastWidth == width) return;
 
-      data.set( 'lastWidth', size.x ); data.set( 'columnizing', true );
+      data.columnizing = true; data.lastWidth = width;
 
-      var options = this.options;
-      var numCols = options.columns
-                  ? options.columns : Math.round( size.x / options.width );
+      if (num_cols <= 1) return this.singleColumnize();
 
-      if (numCols <= 1) return this.singleColumnize();
+      var style      = { float  : opt.float,
+                         padding: '0px ' + padding + '%',
+                         width  : Math.floor( width ) + '%' };
 
-      var maxLoops     = 3;
-      var horizontal   = false;
-      var padding      = options.columnPadding;
-      var width        = (100 - (2 * padding * numCols)) / numCols;
-      var style        = { float  : options.float,
-                           padding: '0px ' + padding + '% 0px ' + padding + '%',
-                           width  : Math.floor( width ) + '%' };
-      var targetHeight = size.y / numCols;
+      this.node.setStyles( style );
+      this.cache.getChildren().each( function( el ) {
+         this.node.grab( el.clone() ) }.bind( this ) );
 
-      if (options.overflow) {
-         maxLoops     = 1;
-         targetHeight = options.overflow.height;
+      var tgt_height = Math.floor( this.node.getSize().y / num_cols );
+
+      this.node.removeProperty( 'style' );
+
+      var horizontal = false, max_loops = opt.maxLoops;
+
+      if (opt.overflow) {
+         max_loops = 1; tgt_height = opt.overflow.height;
       }
-      else if (options.height && options.width) {
-         maxLoops     = 1;
-         horizontal   = true;
-         targetHeight = options.height;
-      }
-
-      for (var loopCount = 0; loopCount < maxLoops; loopCount++) {
-         var destroyable = this.cache.clone();
-
-         this.node.empty(); destroyable.setOpacity( 0 ); // Hide
-
-         // create the columns
-         for (var i = 0; i < numCols; i++) {
-            var className = (i == 0) ? 'column first' : 'column';
-            var className = (i == numCols - 1)
-                          ? (className + ' last') : className;
-            var el = new Element( 'div', { class: className, styles: style } );
-
-            el.injectInside( this.node );
-         }
-
-         // fill all but the last column (unless overflowing)
-         var i = 0;
-
-         while (i < numCols - (options.overflow ? 0 : 1)
-                || horizontal && destroyable.childNodes.length) {
-            if (this.node.childNodes.length <= i) {
-               // we ran out of columns, make another
-               var el = new Element( 'div',
-                                     { class: className, styles: style } );
-
-               el.injectInside( this.node );
-            }
-
-            var col = $( this.node.childNodes[ i ] );
-
-            this.columnize( col, destroyable, col, targetHeight );
-
-            // make sure that the last item in the column isn't a 'dontend'
-            if (! $( destroyable.firstChild ).hasClass( 'dontend' ))
-               this.split( col, destroyable, col, targetHeight );
-
-            while (this.checkDontEndColumn( col.lastChild )) {
-               var para = $( col.lastChild );
-
-               para.dispose(); para.injectTop( destroyable );
-            }
-
-            i++;
-         }
-
-         var columns = this.node.getChildren();
-
-         if (options.overflow && ! horizontal) {
-            var overflow = $( options.overflow.id );
-            var kids     = destroyable.getChildren();
-
-            overflow.empty().adopt( kids.clone() );
-         }
-         else if (! horizontal) {
-            // the last column in the series
-            var col = columns.getLast();
-
-            while (destroyable.childNodes.length ) {
-               col.appendChild( destroyable.childNodes[ 0 ] );
-            }
-
-            var lastIsMax = false;
-            var max       = 0;
-            var min       = 10000000;
-            var totalH    = 0;
-
-            columns.each( function( col ) {
-               var h = col.getSize().y; lastIsMax = false; totalH += h;
-
-               if (h > max) { max = h; lastIsMax = true; }
-               if (h < min) { min = h; }
-            } );
-
-            var avgH = totalH / numCols;
-
-            if (options.lastNeverTallest && lastIsMax) {
-               // the last column is the tallest so allow columns
-               // to be taller and retry
-               targetHeight += 30;
-
-               if (loopCount == maxLoops - 1) maxLoops++;
-            }
-            else if (max - min > 30) {
-               targetHeight = avgH + 30; // too much variation, try again
-            }
-            else if (Math.abs( avgH - targetHeight ) > 20) {
-               targetHeight = avgH; // too much variation, try again
-            }
-            else {
-               loopCount = maxLoops; // solid, we're done
-            }
-         }
-         else {
-            // it's scrolling horizontally, fix width/classes of the columns
-            columns.each( function( col, i ) {
-               col.width( this.options.width + 'px' );
-
-               if (i == 0) {
-                  col.addClass( 'first' );
-               }
-               else if (i == this.node.childNodes.length - 1) {
-                  col.addClass( 'last' );
-               }
-               else {
-                  col.removeClass( 'first' );
-                  col.removeClass( 'last' );
-               }
-            }.bind( this ) );
-
-            this.node.width( (columns.length * options.width) + 'px' );
-         }
-
-         var el = new Element( 'br', { styles: { clear: 'both' }  } );
-
-         el.injectInside( this.node );
+      else if (opt.height && opt.width) {
+         max_loops = 1; tgt_height = opt.height; horizontal = true;
       }
 
-      this.node.data.set( 'columnizing', false );
+      this.state = [ 0, max_loops, tgt_height ];
 
-      if (options.overflow) options.overflow.fireEvent( 'complete' );
+      while (this.state[ 0 ] < this.state[ 1 ]) {
+         var destroyable
+              = this._buildDestroyable( style, num_cols, horizontal );
+
+         this._buildColumns( destroyable, num_cols, horizontal );
+
+         this.state[ 0 ]++;
+      }
+
+      data.columnizing = false;
+
+      if (opt.overflow) opt.overflow.fireEvent( 'complete' );
 
       this.fireEvent( 'complete' );
    },
 
-   checkDontEndColumn: function( el ) {
+   _buildColumns: function( destroyable, num_cols, horizontal ) {
+      var columns = this.node.getChildren(), opt = this.options;
+
+      if (opt.overflow && ! horizontal) {
+         var overflow = $( opt.overflow.id );
+         var kids     = destroyable.getChildren();
+
+         overflow.empty().adopt( kids.clone() );
+      }
+      else if (! horizontal) {
+         // the last column in the series
+         var col = columns.getLast();
+
+         while (destroyable.childNodes.length ) {
+            col.appendChild( destroyable.childNodes[ 0 ] );
+         }
+
+         this._buildNewState( columns, num_cols );
+      }
+      else {
+         // it's scrolling horizontally, fix width/classes of the columns
+         columns.each( function( col, i ) {
+            col.width( this.options.width + 'px' );
+
+            if (i == 0) {
+               col.addClass( 'first' );
+            }
+            else if (i == this.node.childNodes.length - 1) {
+               col.addClass( 'last' );
+            }
+            else {
+               col.removeClass( 'first' ); col.removeClass( 'last' );
+            }
+         }.bind( this ) );
+
+         this.node.width( (columns.length * opt.width) + 'px' );
+      }
+   },
+
+   _buildDestroyable: function( style, num_cols, horizontal ) {
+      var destroyable = this.cache.clone(), opt = this.options;
+
+      this.node.empty(); destroyable.setOpacity( 0 ); // Hide
+
+      // create the columns
+      for (var i = 0; i < num_cols; i++) {
+         var className = (i == 0) ? 'column first' : 'column';
+         var className = (i == num_cols - 1)
+                       ? (className + ' last') : className;
+         var el = new Element( 'div', { class: className, styles: style } );
+
+         el.inject( this.node, 'inside' );
+      }
+
+      // fill all but the last column (unless overflowing)
+      var i = 0;
+
+      while (i < num_cols - (opt.overflow ? 0 : 1)
+             || horizontal && destroyable.childNodes.length) {
+         if (this.node.childNodes.length <= i) {
+            // we ran out of columns, make another
+            var el = new Element( 'div', { class: className, styles: style } );
+
+            el.inject( this.node, 'inside' );
+         }
+
+         var col = $( this.node.childNodes[ i ] );
+
+         this.columnize( col, destroyable, col, this.state[ 2 ] );
+
+         // make sure that the last item in the column isn't a 'dontend'
+         if (destroyable.firstChild
+             && ! $( destroyable.firstChild ).hasClass( 'dontend' ))
+            this.split( col, destroyable, col, this.state[ 2 ] );
+
+         while (this._checkDontEndColumn( col.lastChild )) {
+            var para = $( col.lastChild );
+
+            para.dispose(); para.inject( destroyable, 'top' );
+         }
+
+         i++;
+      }
+
+      return destroyable;
+   },
+
+   _buildNewState: function( columns, num_cols ) {
+      var opt       = this.options;
+      var lastIsMax = false;
+      var max       = 0;
+      var min       = 10000000;
+      var totalH    = 0;
+
+      columns.each( function( col ) {
+         var h = col.getSize().y; lastIsMax = false; totalH += h;
+
+         if (h > max) { max = h; lastIsMax = true; }
+         if (h < min) { min = h; }
+      } );
+
+      var avgH = Math.floor( totalH / num_cols );
+
+      if (opt.lastNeverTallest && lastIsMax) {
+         // the last column is the tallest so allow columns
+         // to be taller and retry
+         this.state[ 2 ] += opt.lineHeight;
+
+         if (this.state[ 0 ] == this.state[ 1 ] - 1) this.state[ 1 ]++;
+      }
+      else if (max - min > 2 * opt.lineHeight) {
+         // too much variation, try again
+          this.state[ 2 ] = avgH + opt.lineHeight;
+      }
+      else if (Math.abs( avgH - this.state[ 2 ] ) > opt.lineHeight) {
+         this.state[ 2 ] = avgH; // too much variation, try again
+      }
+      else {
+         this.state[ 0 ] = this.state[ 1 ]; // solid, we're done
+      }
+   },
+
+   _checkDontEndColumn: function( el ) {
       el = $( el );
 
-      if (! $defined( el ))          return false;
-      if ($type( el ) != 'element')  return false;
+      if (el == undefined)           return false;
+      if (typeOf( el ) != 'element') return false;
       if (el.hasClass( 'dontend' ))  return true;
       if (el.childNodes.length == 0) return false;
 
-      return this.checkDontEndColumn( el.lastChild );
+      return this._checkDontEndColumn( el.lastChild );
    },
 
    columnize: function( putInHere, pullOutHere, parentColumn, height ) {
@@ -754,8 +710,8 @@ var Columnizer = new Class( {
 
       putInHere.removeChild( kid );
 
-      var is_textnode = $type( kid ) == 'textnode'
-                     || $type( kid ) == 'whitespace';
+      var is_textnode = typeOf( kid ) == 'textnode'
+                     || typeOf( kid ) == 'whitespace';
 
       if (is_textnode) {
          // it's a text node, split it up
@@ -800,37 +756,37 @@ var Columnizer = new Class( {
       var options = this.options;
       var style   = { float: options.float, padding: '0px 1.5%', width: '97%' };
       var col     = new Element( 'div', { class : 'column first last',
-                                           styles: style } );
+                                          styles: style } );
 
-      this.node.empty(); col.injectInside( this.node );
+      this.node.empty(); col.inject( this.node, 'inside' );
 
       if (options.overflow) {
          var destroyable  = this.cache.clone();
-         var targetHeight = options.overflow.height;
+         var tgt_height = options.overflow.height;
 
-         this.columnize( col, destroyable, col, targetHeight );
+         this.columnize( col, destroyable, col, tgt_height );
 
          // make sure that the last item in the column isn't a 'dontend'
          if (! $( destroyable.firstChild ).hasClass( 'dontend' ))
-            this.split( col, destroyable, col, targetHeight );
+            this.split( col, destroyable, col, tgt_height );
 
-         while (this.checkDontEndColumn( col.lastChild )) {
+         while (this._checkDontEndColumn( col.lastChild )) {
             var para = $( col.lastChild );
 
-            para.dispose(); para.injectTop( destroyable );
+            para.dispose(); para.inject( destroyable, 'top' );
          }
 
          var overflow = $( options.overflow.id ).empty();
 
-         while ($defined( destroyable.firstChild )) {
+         while (destroyable.firstChild != undefined) {
             var para = $( destroyable.firstChild );
 
-            para.dispose(); para.injectInside( overflow );
+            para.dispose(); para.inject( overflow, 'inside' );
          }
       }
-      else this.cache.injectInside( col );
+      else this.cache.inject( col, 'inside' );
 
-      this.node.data.set( 'columnizing', false );
+      this.node.data.columnizing = false;
 
       if (options.overflow) options.overflow.fireEvent( 'complete' );
 
@@ -840,18 +796,19 @@ var Columnizer = new Class( {
    split: function( putInHere, pullOutHere, parentColumn, height ) {
       if (! pullOutHere.childNodes.length) return;
 
+      var opt     = this.options;
       var cloneMe = pullOutHere.firstChild, clone = cloneMe.clone();
 
-      if (! $type( clone ) == 'element' || clone.hasClass( 'dontend' )) return;
+      if (! typeOf( clone ) == 'element' || clone.hasClass( 'dontend' )) return;
 
-      clone.injectInside( putInHere );
+      clone.inject( putInHere, 'inside' );
 
       if (clone.tag == 'img'
-          && parentColumn.getSize().y < height + 20) {
+          && parentColumn.getSize().y < height + opt.lineHeight) {
          cloneMe.dispose();
       }
       else if (! cloneMe.hasClass( 'dontsplit' )
-               && parentColumn.getSize().y < height + 20) {
+               && parentColumn.getSize().y < height + opt.lineHeight) {
          cloneMe.dispose();
       }
       else if (clone.tag == 'img' || cloneMe.hasClass( 'dontsplit' )) {
@@ -870,8 +827,6 @@ var Columnizer = new Class( {
             clone.dispose();
          }
       }
-
-      return;
    }
 } );
 
@@ -894,7 +849,7 @@ var Columnizers = new Class( {
       var opt   = this.options,
           klass = el.getProperty( 'class' ).split( ' ' )[ 0 ],
           cols  = opt.classNames.indexOf( klass ),
-          cfg   = $merge( opt.config, { columns: cols } );
+          cfg   = Object.merge( opt.config, { columns: cols } );
 
       el.columnizer = new Columnizer( el, cfg );
    }
@@ -1015,7 +970,7 @@ var FreeList = new Class( {
 
       new Element( 'input', {
          name: id, type: 'hidden', value: el.value
-      } ).injectAfter( list );
+      } ).inject( list, 'after' );
 
       options[ options.length ] = new Option( el.value );
       el.value = null;
@@ -1079,7 +1034,7 @@ var GroupMember = new Class( {
 
             new Element( 'input', {
                name: name, type: 'hidden', value: value
-            } ).injectAfter( members );
+            } ).inject( members, 'after' );
          }
 
          members.options[ members.length ] = all.options[ i ];
@@ -1113,7 +1068,7 @@ var GroupMember = new Class( {
 
             new Element( 'input', {
                name: name, type: 'hidden', value: value
-            } ).injectAfter( members );
+            } ).inject( members, 'after' );
          }
 
          all.options[ all.length ] = members.options[ i ];
@@ -1146,7 +1101,7 @@ var LinkFader = new Class( {
    },
 
    clearFade: function( el ) {
-      if (el.timer) $clear( el.timer );
+      if (el.timer) clearInterval( el.timer );
 
       el.timer = this.fade.periodical( this.options.speed, this, [ el, 0 ] );
    },
@@ -1175,7 +1130,7 @@ var LinkFader = new Class( {
                          : [ 0, 0, 0 ];
 
       if (tc[ 0 ] == cc[ 0 ] && tc[ 1 ] == cc[ 1 ] && tc[ 2 ] == cc[ 2 ]) {
-         return el.timer = $clear( el.timer );
+         clearInterval( el.timer ); return el.timer = null;
       }
 
       el.setStyle( 'color', this.nextColour( tc, cc, d ) );
@@ -1208,7 +1163,7 @@ var LinkFader = new Class( {
 
    startFade: function( el ) {
       if (el.timer) {
-         el.timer = $clear( el.timer );
+         clearInterval( el.timer ); el.timer = null;
 
          if (el.colour) el.setStyle( 'color', el.colour.hexToRgb() );
       }
@@ -1247,7 +1202,7 @@ var LiveGrid = new Class( {
    },
 
    ajaxUpdate: function( text, xml ) {
-      this.timeoutHandler = $clear( this.timeoutHandler );
+      clearTimeout( this.timeoutHandler ); this.timeoutHandler = null;
 
       try {
          var totalrows =  xml.documentElement.getAttribute( 'totalcount' );
@@ -1479,13 +1434,12 @@ var LiveGridScroller = new Class( {
             position: 'relative',
             width   : '19px' }
       } );
-      this.scrollerDiv.setStyle( 'left',
-                                 Browser.Engine.trident ? '-6px' : '-4px' );
+      this.scrollerDiv.setStyle( 'left', Browser.ie ? '-6px' : '-4px' );
       this.scrollerDiv.appendChild( this.heightDiv );
-      this.scrollerDiv.injectAfter( table.parentNode );
+      this.scrollerDiv.inject( table.parentNode, 'after' );
       this.plugin();
 
-      if (Browser.Engine.trident) {
+      if (Browser.ie) {
          table.onmousewheel = function( evt ) {
             this.scrollerDiv.scrollTop
                += (event.wheelDelta >= 0 < 0 ? -1 : 1) * this.lineHeight;
@@ -1504,7 +1458,9 @@ var LiveGridScroller = new Class( {
    },
 
    handleScroll: function( skiptimeout ) {
-      if (this.scrollTimeout) this.scrollTimeout = $clear( this.scrollTimeout );
+      if (this.scrollTimeout) {
+         clearTimeout( this.scrollTimeout ); this.scrollTimeout = null;
+      }
 
       var contentOffset = parseInt( this.scrollerDiv.scrollTop
                 * this.metaData.getTotalRows() / this.heightDiv.offsetHeight );
@@ -1531,7 +1487,9 @@ var LiveGridScroller = new Class( {
    },
 
    scrollIdle: function() {
-      if (this.scrollTimeout) this.scrollTimeout = $clear( this.scrollTimeout );
+      if (this.scrollTimeout) {
+         clearTimeout( this.scrollTimeout ); this.scrollTimeout = null;
+      }
 
       // this.adjustScrollTop();
       var contentOffset = parseInt( this.scrollerDiv.scrollTop *
@@ -1572,7 +1530,7 @@ var LoadMore = new Class( {
    _success: function( text, xml ) {
       var doc = xml.documentElement, html = '';
 
-      $each( doc.getElementsByTagName( 'items' ), function( item ) {
+      $$( doc.getElementsByTagName( 'items' ) ).each( function( item ) {
          for (var i = 0, il = item.childNodes.length; i < il; i++) {
             html += item.childNodes[ i ].nodeValue;
          }
@@ -1586,7 +1544,7 @@ var LoadMore = new Class( {
 
 var PersistantStyleSheet = new Class( {
    initialize: function( options ) {
-      var opt = options || {}; this.cookies = opt.cookies || $empty;
+      var opt = options || {}; this.cookies = opt.cookies || function(){};
 
       this.setActive( this.cookies.get( 'stylesheet' ) || this.getPreferred() );
 
@@ -1680,13 +1638,14 @@ var ScrollPins = new Class( {
       var opt = this.options;
 
       if (opt.selector) $$( opt.selector ).each( function( pintray ) {
-         var cfg = $merge( opt, opt.config, (opt.config[ pintray.id ] || {}) );
+         var cfg = Object.merge( opt, opt.config,
+                                 (opt.config[ pintray.id ] || {}) );
 
-         if ($type( cfg.target ) != 'window') cfg.target = $( cfg.target );
+         if (typeOf( cfg.target ) != 'window') cfg.target = $( cfg.target );
 
          pintray.cfg = cfg; pintray.pins = pintray.pins || [];
 
-         Hash.each( cfg.pins || {}, function( value, key ) {
+         Object.each( cfg.pins || {}, function( value, key ) {
             this.createMarkup( pintray, key, value );
          }, this );
 
@@ -1709,7 +1668,7 @@ var ScrollPins = new Class( {
       var cfg      = el.pin.pintray.cfg,
           margin   = el.getStyle( 'margin-top' ).toInt(),
           position = el.getPosition( cfg.target ),
-          padding  = $type( cfg.target ) != 'window'
+          padding  = typeOf( cfg.target ) != 'window'
                    ? cfg.target.getStyle( 'padding-top' ).toInt() : 0;
 
       if (this.debug)
@@ -1761,8 +1720,8 @@ var ScrollPins = new Class( {
 
       pintray.pins.each( function( el ) {
          var cfg         = el.pin.pintray.cfg,
-             padding_bot = $pick( cfg.trayPaddingBottom, cfg.trayPadding ),
-             padding_top = $pick( cfg.trayPaddingTop,    cfg.trayPadding ),
+             padding_bot = [ cfg.trayPaddingBottom, cfg.trayPadding ].pick(),
+             padding_top = [ cfg.trayPaddingTop,    cfg.trayPadding ].pick(),
              real_height = cfg.target.getScrollHeight(),
              view_height = cfg.target.getHeight(),
              pin_height  = el.pin.getHeight(),
@@ -1785,7 +1744,7 @@ var ScrollPins = new Class( {
    _resizePintray: function( pintray ) {
       var cfg = pintray.cfg, target = cfg.target;
 
-      if ($type( target ) == 'window') return;
+      if (typeOf( target ) == 'window') return;
 
       var margin_right = target.getStyle( 'margin-right' ).toInt(),
           right        = target.getStyle( 'right' ).toInt() + margin_right,
@@ -1844,8 +1803,9 @@ var Sidebar = new Class( {
       panelClass          : '.accordion_panel',
       prefix              : 'sidebar',
       togglerClass        : '.accordion_header',
-      togglerHeight       : 29,
-      togglersMarginHeight: 15,
+      togglerHeight       : 30,
+      togglersMarginHeight: 12,
+      togglersMinMargin   : 5,
       width               : 250
    },
 
@@ -1874,16 +1834,11 @@ var Sidebar = new Class( {
             /* When the effect is complete toggle the state */
             if (this.cookies.get( prefix )) {
                if (sb_icon) sb_icon.className = 'pushedpin_icon';
-
-               var panel = this.cookies.get( prefix + 'Panel' );
-
-               this.accordion.reload( panel );
-               this.accordion.display( panel );
             }
             else {
-               if (sb_icon) sb_icon.className = 'pushpin_icon';
-
                this.behaviour.resize();
+
+               if (sb_icon) sb_icon.className = 'pushpin_icon';
             }
          }.bind( this ),
          transition: Fx.Transitions.Circ.easeInOut
@@ -1897,8 +1852,12 @@ var Sidebar = new Class( {
             this.cookies.remove( prefix ); this.slider.slideOut();
          }
          else {
+            var panel = this.cookies.get( prefix + 'Panel' );
+
             this.cookies.set( prefix, 'pushedpin_icon' );
-            this.behaviour.resize(); this.slider.slideIn();
+            this.behaviour.resize();
+            this.accordion.display( panel, false );
+            this.slider.slideIn();
          }
 
          return false;
@@ -1909,90 +1868,78 @@ var Sidebar = new Class( {
          handle   : $( prefix + 'Grippy' ),
          limit    : { x: [ 150, 450 ] },
          modifiers: { x: 'width', y: false },
-         onDrag   : function() { this.resize( true ) }.bind( this.behaviour )
+         onDrag   : function() {
+             var sb_width = sb.getStyle( 'width' ).toInt();
+
+             this.cookies.set( prefix + 'Width',  sb_width );
+             this.slider.wrapper.setStyle( 'width', sb_width + 'px' );
+             this.behaviour.resize() }.bind( this )
       } );
 
-      var toggler_class = opt.togglerClass;
+      var togglers  = $$( opt.togglerClass ), panels = $$( opt.panelClass );
+      var getHeight = this.getHeight.pass( [ sb, togglers ], this );
 
       /* Create an Accordion widget in the side bar */
-      this.accordion = new Fx.Accordion( $( opt.accordion ), {
-         fixedHeight : this.getAccordionHeight( sb, $$( toggler_class ) ),
-         opacity     : false,
-         onActive    : function( togglers, index, element ) {
-            var prefix = this.options.prefix, toggler = togglers[ index ];
+      this.accordion = new Fx.Accordion( togglers, panels, {
+         display         : sb_state ? sb_panel : -1,
+         fixedHeight     : getHeight,
+         initialDisplayFx: false,
+         opacity         : false,
+         onActive        : function( togglers, index, el ) {
+            var toggler = togglers[ index ];
 
             toggler.swapClass( 'inactive', 'active' );
-            this.cookies.set( prefix + 'Panel', togglers.indexOf( toggler ));
-         }.bind( this ),
-         onBackground: function( togglers, index, element ) {
-            togglers[ index ].swapClass( 'active', 'inactive' );
-         }
-      }, toggler_class, opt.panelClass );
+            this.cookies.set( prefix + 'Panel', index );
 
-      /* Add event handler to sidebar panel headers */
-      $$( toggler_class ).each( function( el ) {
-         var cfg; if (! (cfg = this.options.config[ el.id ])) return;
+            var cfg; if (! (cfg = opt.config[ toggler.id ])) return;
 
-         el.addEvent( 'click', function() {
             if (cfg.action && cfg.name) {
                this.loadMore.request( cfg.action, cfg.name,
                                       cfg.value,  cfg.onComplete );
             }
+         }.bind( this ),
+         onBackground    : function( togglers, index, el ) {
+            togglers[ index ].swapClass( 'active', 'inactive' );
+         }
+      } );
 
-            return false;
-         }.bind( this ) )
-      }, this );
-
-      /* Redisplay and reload the last accordion side bar panel */
-      if (sb_state) this.accordion.reload( sb_panel );
-
-      this.accordion.display( sb_panel, false );
       return;
    },
 
-   getAccordionHeight: function( el, togglers ) {
-      var opt = this.options;
-      var height  = (opt.togglerHeight * togglers.length)
-                   + opt.togglersMarginHeight;
+   getHeight: function( sb, togglers ) {
+      var opt    = this.options,
+          styles = { styles: [ 'padding', 'border', 'margin' ] },
+          size   = sb.getComputedSize( styles ),
+          height = (opt.togglerHeight * togglers.length)
+                 + opt.togglersMarginHeight,
+          margin = Math.max( opt.togglersMinMargin,
+                             sb.getStyle( 'marginBottom' ).toInt() );
 
-      return Math.max( 1, el.getSize().y - height );
+      return Math.max( 1, size.totalHeight - (height + margin) );
    },
 
-   resize: function( changed, height ) {
-      var elWidth, prefix = this.options.prefix, sb, sb_state;
+   resize: function( margin_bottom ) {
+      var prefix = this.options.prefix;
+      var state  = this.cookies.get( prefix ) ? true : false;
 
-      if (! (sb = $( prefix + 'Disp' ))) return 0;
+      var sb; if (! (sb = $( prefix + 'Disp' ))) return 0;
 
-      if (sb_state = this.cookies.get( prefix )) sb.setStyle( 'display', '' );
-
-      sb.setStyle( 'marginBottom', height + 'px' );
+      sb.setStyle( 'display', state ? '' : 'none' );
+      sb.setStyle( 'marginBottom', margin_bottom + 'px' );
 
       // Calculate and set vertical offset for side bar grippy
       var sb_height     = sb.getSize().y;
       var grippy_height = $( prefix + 'Grippy' ).getSize().y;
       var offset        = Math.max( 1, Math.round( sb_height / 2 )
-                                       - Math.round( grippy_height / 2 ) );
+                                     - Math.round( grippy_height / 2 ) );
 
       $( prefix + 'Grippy' ).setStyle( 'marginTop', offset + 'px' );
 
-      if (this.accordion) {
-         var ah = this.getAccordionHeight( sb, this.accordion.togglers );
+      var sb_width = state ? this.cookies.get( prefix + 'Width' ) : 0;
 
-         this.accordion.resize( ah, null );
-      }
-
-      if (sb_state) {
-         if (changed) {
-            elWidth = sb.getStyle( 'width' ).toInt();
-            this.cookies.set( prefix + 'Width',  elWidth );
-            this.slider.wrapper.setStyle( 'width', elWidth + 'px' );
-         }
-         else elWidth = this.cookies.get( prefix + 'Width' );
-      }
-      else elWidth = 0;
-
-      sb.setStyle( 'width', elWidth + 'px' );
-      return elWidth;
+      sb.setStyle( 'width', sb_width + 'px' );
+      this.accordion.resize();
+      return sb_width;
    }
 } );
 
@@ -2002,7 +1949,7 @@ var Sliders = new Class( {
    options    : {
       config  : {},
       selector: '.slider',
-      submit  : $empty
+      submit  : function(){}
    },
 
    initialize: function( options ) {
@@ -2019,7 +1966,7 @@ var Sliders = new Class( {
       var knob_class = cfg.knob_class; delete cfg[ 'knob_class' ];
       var knob       = el.getElement( knob_class );
 
-      cfg = $extend( cfg, {
+      cfg = Object.append( cfg, {
          onChange: function( value ) {
             submit.setField.call( submit, name, value ) }
       } );
@@ -2034,8 +1981,6 @@ var SubmitUtils = new Class( {
    options          : {
       chooseSelector: '.chooser_button',
       config        : {},
-      cookiePath    : '/',
-      cookiePrefix  : 'html_formwidgets',
       formName      : null,
       submitSelector: '.submit'
    },
@@ -2043,9 +1988,9 @@ var SubmitUtils = new Class( {
    initialize: function( options ) {
       this.setBuildOptions( options ); var opt = this.options;
 
-      this.cookies = new Cookies( { path  : opt.cookiePath,
-                                    prefix: opt.cookiePrefix } );
-      this.form    = document.forms ? document.forms[ opt.formName ] : $empty;
+      this.cookies = options.cookies || function(){};
+      this.form    = document.forms ? document.forms[ opt.formName ]
+                                    : function(){};
       this.build();
    },
 
@@ -2149,8 +2094,8 @@ var SubmitUtils = new Class( {
 
    submitForm: function( button ) {
       new Element( 'input', {
-         name: '_method', type: 'hidden', value: button }
-      ).injectAfter( $( 'top' ) );
+          name: '_method', type: 'hidden', value: button
+      } ).inject( $( 'top' ), 'after' );
 
       this.form.submit();
       return true;
@@ -2172,6 +2117,7 @@ var TableUtils = new Class( {
    Implements: [ Events, Options ],
 
    options           : {
+      config         : {},
       editRowClass   : 'editable_row',
       editSelector   : 'table.editable',
       formName       : null,
@@ -2180,12 +2126,14 @@ var TableUtils = new Class( {
       gridToggle     : true,
       iconClasses    : [ 'a', 'b' ],
       inputCellClass : 'data_field',
-/*    onRowAdded     : $empty, */
-/*    onRowsRemoved  : $empty, */
-/*    onSortComplete : $empty, */
+/*    onRowAdded     : function(){}, */
+/*    onRowsRemoved  : function(){}, */
+/*    onSortComplete : function(){}, */
       sortableOptions: {
+         clone       : function( ev, el, list ) {
+             return new Element( 'div' ).inject(document.body); },
          constrain   : true,
-         handle      : 'td.row_select',
+         handle      : 'td.row_drag',
          revert      : { duration: 500, transition: 'elastic:out' } },
       sortRowClass   : 'sortable_row',
       sortSelector   : 'th.sort',
@@ -2196,8 +2144,8 @@ var TableUtils = new Class( {
    initialize: function( options ) {
       this.setBuildOptions( options );
       this.form      = document.forms
-                     ? document.forms[ this.options.formName ] : $empty;
-      this.sortables = new Hash();
+                     ? document.forms[ this.options.formName ] : function(){};
+      this.sortables = {};
       this.build();
    },
 
@@ -2213,7 +2161,7 @@ var TableUtils = new Class( {
                                        opt.sortableOptions );
 
          $( el.id + '_add' ).addEvent( 'click', function( ev ) {
-            ev = new Event( ev ); ev.stop(); return this.addRow( el, true );
+             ev = new Event( ev ); ev.stop(); return this.addRow( el );
          }.bind( this ) );
 
          $( el.id + '_remove' ).addEvent( 'click', function( ev ) {
@@ -2234,62 +2182,87 @@ var TableUtils = new Class( {
       }, this );
    },
 
-   addRow: function( table, edit ) {
-      var cNo    = 0, el, opt = this.options;
-      var row    = new Element( 'tr', {
-         class: opt.editRowClass + ' ' + opt.sortRowClass } );
-      var new_id = $uid( row );
+   addRow: function( table ) {
+      var cNo     = 0, el,
+          opt     = this.options,
+          cfg     = opt.config[ table.id ] || {}
+          edit    = cfg.editSide   || 'left',
+          select  = cfg.selectSide || 'left',
+          klass   = opt.inputCellClass,
+          rows    = table.getElements( 'tr.' + opt.editRowClass ),
+          nrows   = rows ? rows.length : 0,
+          row     = new Element( 'tr', {
+             id   : table.id + '_row' + nrows,
+             class: opt.editRowClass + ' ' + opt.sortRowClass } ),
+          new_id  = $uid( row );
+
+      if (edit == 'left') row.appendChild( this._add_drag( cNo++ ) );
+
+      if (select == 'left')
+         row.appendChild( this._add_select( table, new_id, cNo++ ) );
 
       while (el = $( table.id + '_add' + cNo )) {
-         var cell = new Element( 'td' );
+         var cell  = new Element( 'td' ),
+             type  = el.tag == 'textarea' ? 'textarea' : 'input',
+             input = new Element( type, {
+                class: 'ifield',
+                name : table.id + '_' + new_id + '_' + cNo,
+                value: el.value
+             } );
 
-         if (edit) {
-            var type  = el.tag == 'textarea' ? 'textarea' : 'input';
-            var input = new Element( type, {
-               class: 'ifield',
-               name : table.id + '_' + new_id + '_' + cNo,
-               value: el.value
-            } );
+         if (el.cols)      input.set( 'cols',      el.cols );
+         if (el.rows)      input.set( 'rows',      el.rows );
+         if (el.size)      input.set( 'size',      el.size );
+         if (el.maxlength) input.set( 'maxlength', el.maxlength );
 
-            if (el.cols)      input.set( 'cols',      el.cols );
-            if (el.rows)      input.set( 'rows',      el.rows );
-            if (el.size)      input.set( 'size',      el.size );
-            if (el.maxlength) input.set( 'maxlength', el.maxlength );
-
-            cell.appendChild( input ); cell.set( 'class', opt.inputCellClass );
-         }
-         else {
-            cell.appendText( el.value ); cell.set( 'class', opt.textCellClass );
-         }
-
-         row.appendChild( cell ); el.value = ''; cNo++;
+         cell.appendChild( input );
+         cell.set( 'class', klass + this._col_class( cNo++ ) );
+         row.appendChild( cell );
+         el.value = '';
       }
 
-      if (edit) {
-         var input = new Element( 'input', {
-            name: table.id + '_select' + new_id, type: 'checkbox'
-         } );
-         var cell  = new Element( 'td', {
-            class: 'row_select ' + (cNo % 2 == 0 ? 'even' : 'odd')
-         } );
+      if (select == 'right')
+         row.appendChild( this._add_select( table, new_id, cNo++ ) );
 
-         cell.appendChild( input ); row.appendChild( cell );
-      }
+      if (edit == 'right') row.appendChild( this._add_drag( cNo++ ) );
 
-      var rows  = table.getElements( 'tr.' + opt.editRowClass );
-      var nrows = rows ? rows.length : 0;
-
-      this.form.elements[ '_' + table.id + '_nrows' ].value = nrows;
-      row.injectBefore( $( table.id + '_edit' ) );
+      this.form.elements[ '_' + table.id + '_nrows' ].value = nrows + 1;
+      row.inject( $( table.id ).getElement( 'tbody' ) );
       table.sortables.attach();
       this.fireEvent( 'rowAdded' );
       return false;
    },
 
+   _add_drag: function( cNo ) {
+      var span = new Element( 'span', { class: 'drag_icon' } );
+      var cell = new Element( 'td', {
+         class: 'row_drag' + this._col_class( cNo )
+      } );
+
+      cell.appendChild( span );
+      return cell;
+   },
+
+   _add_select: function( table, new_id, cNo ) {
+      var input = new Element( 'input', {
+         name: table.id + '_select' + new_id, type: 'checkbox'
+      } );
+      var cell  = new Element( 'td', {
+         class: 'row_select' + this._col_class( cNo )
+      } );
+
+      cell.appendChild( input );
+      return cell;
+   },
+
+   _col_class: function( cNo ) {
+      return (cNo + 1) % 2 == 0 ? ' even_col' : ' odd_col';
+   },
+
    _createGrid: function( text, xml ) {
       var keyid  = this.gridKey + '_' + this.gridId,
           count  = parseInt( xml.documentElement.getAttribute( 'totalcount' ) ),
-          rows   = xml.documentElement.getElementsByTagName( 'items' ),
+          rows   = $$( xml.documentElement.getElementsByTagName( 'items' ) ),
           urlkey = this.options.url + this.gridKey + '_grid_rows',
           html   = '',
           opts   = {
@@ -2300,7 +2273,7 @@ var TableUtils = new Class( {
              onFirstContent: this._updateHeader.bind( this, 0 ),
              totalRows     : count };
 
-      $each( rows, function( row ) { html += row.childNodes[ 0 ].nodeValue } );
+      rows.each( function( row ) { html += row.childNodes[ 0 ].nodeValue } );
 
       $( keyid + 'Disp' ).set( 'html', html.unescapeHTML() );
 
@@ -2331,7 +2304,7 @@ var TableUtils = new Class( {
    },
 
    _get_sort_order: function( table_id, default_column, column_id ) {
-      var sortable = this.sortables.get( table_id )
+      var sortable = this.sortables[ table_id ]
                   || { sort_column: default_column, reverse: 0 };
       var reverse  = sortable.reverse;
 
@@ -2339,7 +2312,7 @@ var TableUtils = new Class( {
       else reverse = 0;
 
       sortable.reverse = reverse; sortable.sort_column = column_id;
-      this.sortables.set( table_id, sortable );
+      this.sortables[ table_id ] = sortable;
       return reverse ? [ 1, -1 ] : [ -1, 1 ];
    },
 
@@ -2484,16 +2457,14 @@ var TabSwapper = new Class( {
    options           : {
       clickers       : 'a',
       cookieName     : 'tabswapper_',
-      cookiePath     : '/',
-      cookiePrefix   : 'html_formwidgets',
       deselectedClass: 'off',
       effectOptions  : { duration: 500 },
       initPanel      : 0,
       maxSize        : null,
       mouseoverClass : 'tab_over',
-//    onActive       : $empty,
-//    onActiveAfterFx: $empty,
-//    onBackground   : $empty
+//    onActive       : function(){},
+//    onActiveAfterFx: function(){},
+//    onBackground   : function(){},
       rearrangeDOM   : true,
       sections       : 'dd.panel',
       selectedClass  : 'tab_selected',
@@ -2509,8 +2480,7 @@ var TabSwapper = new Class( {
       this.setOptions( options ); var opt = this.options;
 
       this.cookieName = opt.cookieName + el.id;
-      this.cookies    = new Cookies( { path  : opt.cookiePath,
-                                       prefix: opt.cookiePrefix } );
+      this.cookies    = options.cookies || function(){};
 
       var sections = el.getElements( opt.sections );
 
@@ -2528,7 +2498,7 @@ var TabSwapper = new Class( {
       var opt = this.options, clicker = tab.getElement( opt.clickers ) || tab;
 
       // If the index isn't specified, put the tab at the end
-      if (! $defined( index )) index = this.tabs.length;
+      if (index == undefined) index = this.tabs.length;
 
       // If the tab is already in the interface, just move it
       if (this.tabs.indexOf( tab ) >= 0 && tab.retrieve( 'tabbered' )
@@ -2623,7 +2593,7 @@ var TabSwapper = new Class( {
    },
 
    show: function( i ) {
-      if (! $chk( this.now )) {
+      if (! (this.now || this.now === 0)) {
          this.tabs.each( function( tab, idx ) {
             if (i != idx) this.hideSection( idx );
          }, this );
@@ -2634,7 +2604,7 @@ var TabSwapper = new Class( {
    },
 
    showSection: function( idx ) {
-      var opt = this.options, smoothOk = opt.smooth && !Browser.Engine.trident4;
+      var opt = this.options, smoothOk = opt.smooth && !Browser.ie;
 
       var tab; if (! (tab = this.tabs[ idx ])) return this;
 
@@ -2660,14 +2630,15 @@ var TabSwapper = new Class( {
          if (opt.smoothSize) {
             var size = section.getDimensions().height;
 
-            if ($chk( opt.maxSize ) && opt.maxSize < size) size = opt.maxSize;
+            if ((opt.maxSize || opt.maxSize === 0) && opt.maxSize < size)
+                size = opt.maxSize;
 
             if (! effect) effect = {};
 
             effect.height = size;
          }
 
-         if ($chk( this.now )) this.hideSection( this.now );
+         if (this.now || this.now === 0) this.hideSection( this.now );
 
          if (opt.smoothSize && this.lastHeight) start.height = this.lastHeight;
 
@@ -2702,8 +2673,7 @@ var TabSwappers = new Class( {
 
    options          : {
       config        : {},
-      cookiePath    : '/',
-      cookiePrefix  : 'html_formwidgets',
+      cookies       : function(){},
       selector      : '.tabswapper',
       usePersistance: true
    },
@@ -2711,9 +2681,9 @@ var TabSwappers = new Class( {
    initialize: function( options ) {
       this.setBuildOptions( options );
 
-      this.config = $merge( this.options.config.defaults );
+      this.config = Object.merge( this.options.config.defaults );
 
-      var attrs = [ 'cookiePath', 'cookiePrefix', 'usePersistance' ];
+      var attrs = [ 'cookies', 'usePersistance' ];
 
       attrs.each( function( attr ) {
          this.config[ attr ] = this.options[ attr ] }, this );
@@ -2721,7 +2691,7 @@ var TabSwappers = new Class( {
    },
 
    attach: function( el ) {
-      var cfg = $merge( this.config, this.options.config[ el.id ] );
+      var cfg = Object.merge( this.config, this.options.config[ el.id ] );
 
       el.tabSwapper = new TabSwapper( el, cfg );
    }
@@ -2734,195 +2704,252 @@ Description: Class for creating nice tips that follow the mouse cursor
 
 License: MIT-style license
 
-Authors: Valerio Proietti, Christoph Pojer, Peter Flanigan
+Authors: Valerio Proietti, Christoph Pojer, Luis Merino
 
 */
 
-var Tips = new Class( {
-   Implements: [ Events, Options ],
+(function() {
 
-   options         : {
-      className    : 'tool',
-      fixed        : false,
-      hellip       : '\u2026',
-      hideDelay    : 100,
-      maxTitleChars: 40,
-      offsets      : { 'x': 20, 'y': 20 },
-      onHide       : function( tip ) { tip.setStyle( 'visibility', 'hidden'  )},
-      onShow       : function( tip ) { tip.setStyle( 'visibility', 'visible' )},
-      selector     : '.tips',
-      separator    : '~',
-      showDelay    : 100,
-      spacer       : '\u00a0\u00a0\u00a0',
-      text         : function( el ) {
-         return (el.get( 'rel' )
-                 || el.get( 'href' ) || '').replace( 'http://', '' );
-      },
-      timeout      : 30000,
-      title        : 'title'
-   },
+var read = function( opt, el ) {
+    return opt ? (typeOf( opt ) == 'function' ? opt( el )
+                                              : el.get( opt ))
+                                              : '';
+};
 
-   initialize: function( options ) {
-      this.setBuildOptions( options ); this.tip = this.createMarkup();
+var storeTitleAndText = function( opt, el ) {
+    if (el.retrieve( 'tip:title' )) return;
 
-      this.build(); this.fireEvent( 'initialize' );
-   },
+    var title = read( opt.title, el ), text = read( opt.text,  el );
 
-   attach: function( el ) {
-      this.storeTitleAndText( el );
+    if (title) {
+        el.store( 'tip:native', title );
 
-      var events = [ 'enter', 'leave' ];
+        var pair = title.split( opt.separator );
 
-      if (! this.options.fixed) events.push( 'move' );
+        if (pair.length > 1) {
+            title = pair[ 0 ].trim();
+            text  = (pair[ 1 ] + ' ' + text).trim();
+        }
+    }
+    else title = opt.hellip;
 
-      events.each( function( value ) {
-         var key = 'tip:' + value, method = 'element' + value.capitalize();
-         var handler;
+    if (title.length > opt.maxTitleChars)
+        title = title.substr( 0, opt.maxTitleChars - 1 ) + opt.hellip;
 
-         if (! (handler = el.retrieve( key )))
-            handler = this[ method ].bindWithEvent( this, el );
+    el.store( 'tip:title', title );
+    el.store( 'tip:text',  text  );
+    el.erase( 'title' );
+};
 
-         el.store( key, handler ).addEvent( 'mouse' + value, handler );
-      }, this );
-   },
+this.Tips = new Class( {
+    Implements: [ Events, Options ],
 
-   createMarkup: function() {
-      var klass  = this.options.className;
-      var spacer = this.options.spacer;
-      var div    = new Element( 'div', {
-         'class' : klass + '-tip',
-         'styles': { 'left'      : 0,
-                     'position'  : 'absolute',
-                     'top'       : 0,
-                     'visibility': 'hidden' } } ).inject( document.body );
-      var table  = new Element( 'table', {
-         'cellpadding': 0, 'cellspacing': 0 } ).inject( div );
-      var row    = new Element( 'tr' ).inject( table );
+    options          : {
+        className    : 'tool',
+        fixed        : false,
+        hellip       : '\u2026',
+        hideDelay    : 100,
+        maxTitleChars: 40,
+        offsets      : { x: 20, y: 20 },
+/*      onAttach     : function( el ) {}, */
+/*      onBound      : function( coords ) {}, */
+/*      onDetach     : function( el) {}, */
+        onHide       : function( tip, el ) {
+            tip.setStyle( 'visibility', 'hidden'  ) },
+        onShow       : function( tip, el ) {
+            tip.setStyle( 'visibility', 'visible' ) },
+        selector     : '.tips',
+        separator    : '~',
+        showDelay    : 100,
+        spacer       : '\u00a0\u00a0\u00a0',
+        text         : function( el ) {
+            return (el.get( 'rel' ) || el.get( 'href' )
+                    || '').replace( 'http://', '' );
+        },
+        timeout      : 30000,
+        title        : 'title',
+        windowPadding: { x: 0, y: 0 }
+    },
 
-      this.titleCell = new Element( 'td', {
-         'class' : klass + '-tip-topLeft' } ).inject( row );
-      this.title = new Element( 'span' ).inject( this.titleCell );
+    initialize: function( options ) {
+        this.setBuildOptions( options ); this.tip = this.createMarkup();
 
-      var cell   = new Element( 'td', {
-         'class' : klass + '-tip-topRight' } ).inject( row );
+        this.build(); this.fireEvent( 'initialize' );
+    },
 
-      new Element( 'span' ).appendText( spacer ).inject( cell );
+    attach: function( el ) {
+        var events = [ 'enter', 'leave' ], opt = this.options;
 
-      row = new Element( 'tr' ).inject( table );
-      this.textCell = new Element( 'td', {
-         'class' : klass + '-tip-bottomLeft' } ).inject( row );
-      this.text = new Element( 'span' ).inject( this.textCell );
+        storeTitleAndText( opt, el );
 
-      cell = new Element( 'td', {
-         'class' : klass + '-tip-bottomRight' } ).inject( row );
-      new Element( 'span' ).appendText( spacer ).inject( cell );
+        if (! opt.fixed) events.push( 'move' );
 
-      return div;
-   },
+        events.each( function( value ) {
+            var key    = 'tip:' + value;
+            var method = 'element' + value.capitalize();
+            var handler;
 
-   elementEnter: function( ev, el ) {
-      $clear( this.timer );
-      this.timer = this.show.delay( this.options.showDelay, this, el );
-      this.setup( el ); this.position( ev, el );
-   },
+            if (! (handler = el.retrieve( key ))) {
+                handler = function( ev ) {
+                    return this[ method ].apply( this, [ ev, el ] );
+                }.bind( this );
+                el.store( key, handler );
+            }
 
-   elementLeave: function( ev, el ) {
-      $clear( this.timer );
+            el.addEvent( 'mouse' + value, handler );
+        }, this );
 
-      var opt = this.options, delay = Math.max( opt.showDelay, opt.hideDelay );
+        this.fireEvent( 'attach', [ el ] );
+    },
 
-      this.timer = this.hide.delay( delay, this, el );
-   },
+    createMarkup: function() {
+        var klass  = this.options.className;
+        var spacer = this.options.spacer;
+        var div    = new Element( 'div', {
+            'class' : klass + '-tip',
+            'styles': { 'left'      : 0,
+                        'position'  : 'absolute',
+                        'top'       : 0,
+                        'visibility': 'hidden' } } ).inject( document.body );
+        var table  = new Element( 'table', {
+            'cellpadding': 0, 'cellspacing': 0 } ).inject( div );
+        var row    = new Element( 'tr' ).inject( table );
 
-   elementMove: function( ev, el ) {
-      this.position( ev, el );
-   },
+        this.titleCell = new Element( 'td', {
+            'class' : klass + '-tip-topLeft' } ).inject( row );
+        this.title = new Element( 'span' ).inject( this.titleCell );
 
-   hide: function( el ) {
-      this.fireEvent( 'hide', [ this.tip, el ] );
-   },
+        var cell   = new Element( 'td', {
+            'class' : klass + '-tip-topRight' } ).inject( row );
 
-   position: function( ev, el ) {
-      var options = this.options, offsets = options.offsets;
+        new Element( 'span' ).appendText( spacer ).inject( cell );
 
-      if (options.fixed) {
-         var pos = el.getPosition();
+        row = new Element( 'tr' ).inject( table );
+        this.textCell = new Element( 'td', {
+            'class' : klass + '-tip-bottomLeft' } ).inject( row );
+        this.text = new Element( 'span' ).inject( this.textCell );
 
-         this.tip.setStyles( {
-            'left': pos.x + offsets.x, 'top': pos.y + offsets.y
-         } );
+        cell = new Element( 'td', {
+            'class' : klass + '-tip-bottomRight' } ).inject( row );
+        new Element( 'span' ).appendText( spacer ).inject( cell );
 
-         return;
-      }
+        return div;
+    },
 
-      var win    = { 'x': window.getWidth(),      'y': window.getHeight()    };
-      var scroll = { 'x': window.getScrollLeft(), 'y': window.getScrollTop() };
-      var tip    = { 'x': this.tip.offsetWidth,   'y': this.tip.offsetHeight };
-      var prop   = { 'x': 'left',                 'y': 'top'                 };
+    detach: function() {
+        this.collection.each( function( el ) {
+            [ 'enter', 'leave', 'move' ].each( function( value ) {
+                var key = 'tip:' + value;
 
-      for (var z in prop) {
-         var pos = ev.page[ z ] + offsets[ z ];
+                el.removeEvent( 'mouse' + value,
+                                el.retrieve( key ) ).eliminate( key );
+            } );
 
-         if (pos + tip[ z ] > scroll[ z ] + win[ z ])
-            pos = ev.page[ z ] - offsets[ z ] - tip[ z ];
+            this.fireEvent( 'detach', [ el ] );
 
-         this.tip.setStyle( prop[ z ], pos );
-      }
+            if (this.options.title == 'title') {
+                // This is necessary to check if we can revert the title
+                var original = el.retrieve( 'tip:native' );
 
-      return;
-   },
+                if (original) el.set( 'title', original );
+            }
+        }, this );
 
-   _read: function( option, el ) {
-      return option ? ($type( option ) == 'function'
-                       ? option( el ) : el.get( option )) : '';
-   },
+        return this;
+    },
 
-   setup: function( el ) {
-      var max   = Math.floor( window.getWidth() / 4 ),
-          text  = el.retrieve( 'tip:text'  ) || '',
-          title = el.retrieve( 'tip:title' ) || '',
-          w     = 10 * Math.max( title.length, text.length );
+    elementEnter: function( ev, el ) {
+        clearTimeout( this.timer );
+        this.timer = this.show.delay( this.options.showDelay, this, el );
+        this.setup( el ); this.position( ev, el );
+    },
 
-      w = w < 100 ? 100 : w > max ? max : w;
+    elementLeave: function( ev, el ) {
+        clearTimeout( this.timer );
 
-      this.titleCell.setStyle( 'width', parseInt( w ) + 'px' );
-      this.title.empty().appendText( title || this.options.spacer );
-      this.textCell.setStyle( 'width', parseInt( w ) + 'px' );
-      this.text.empty().appendText( text || this.options.spacer );
-   },
+        var opt   = this.options,
+            delay = Math.max( opt.showDelay, opt.hideDelay );
 
-   show: function( el ) {
-      if (this.options.timeout)
-         this.timer = this.hide.delay( this.options.timeout, this );
+        this.timer = this.hide.delay( delay, this, el );
+        this.fireForParent( ev, el );
+    },
 
-      this.fireEvent( 'show', [ this.tip, el ] );
-   },
+    elementMove: function( ev, el ) {
+        this.position( ev, el );
+    },
 
-   storeTitleAndText: function( el ) {
-      if (el.retrieve( 'tip:title' )) return;
+    fireForParent: function( ev, el ) {
+        el = el.getParent();
 
-      var options = this.options,
-          title   = this._read( options.title, el ),
-          text    = this._read( options.text,  el );
+        if (! el || el == document.body) return;
 
-      if (title) {
-         var pair = title.split( options.separator );
+        this.fireForParent( ev, el );
+    },
 
-         if (pair.length > 1) {
-            title = pair[ 0 ].trim(); text = (pair[ 1 ] + ' ' + text).trim();
-         }
-      }
-      else title = options.hellip;
+    hide: function( el ) {
+        this.fireEvent( 'hide', [ this.tip, el ] );
+    },
 
-      if (title.length > options.maxTitleChars) {
-         title = title.substr( 0, options.maxTitleChars - 1 ) + options.hellip;
-      }
+    position: function( ev, el ) {
+        var opt = this.options, offsets = opt.offsets;
 
-      el.store( 'tip:title', title );
-      el.store( 'tip:text',  text  );
-      el.erase( 'title' );
-   }
+        if (opt.fixed) {
+            var pos = el.getPosition();
+
+            this.tip.setStyles( {
+                left: pos.x + offsets.x, top: pos.y + offsets.y
+            } );
+
+            return;
+        }
+
+        var prop    = { x: 'left',                 y: 'top'                 };
+        var scroll  = { x: window.getScrollLeft(), y: window.getScrollTop() };
+        var tip     = { x: this.tip.offsetWidth,   y: this.tip.offsetHeight };
+        var win     = { x: window.getWidth(),      y: window.getHeight()    };
+        var bounds  = { x: false, x2: false,       y: false, y2: false      };
+        var padding = opt.windowPadding;
+
+        for (var z in prop) {
+            var pos = ev.page[ z ] + offsets[ z ];
+
+            if (pos < 0) bounds[ z ] = true;
+
+            if (pos + tip[ z ] > scroll[ z ] + win[ z ] - padding[ z ]) {
+                pos = ev.page[ z ] - offsets[ z ] - tip[ z ];
+                bounds[ z + '2' ] = true;
+            }
+
+            this.tip.setStyle( prop[ z ], pos );
+        }
+
+        this.fireEvent( 'bound', bounds );
+        return;
+    },
+
+    setup: function( el ) {
+        var max   = Math.floor( window.getWidth() / 4 ),
+            text  = el.retrieve( 'tip:text'  ) || '',
+            title = el.retrieve( 'tip:title' ) || '',
+            w     = 10 * Math.max( title.length, text.length );
+
+        w = w < 100 ? 100 : w > max ? max : w;
+
+        this.titleCell.setStyle( 'width', parseInt( w ) + 'px' );
+        this.title.empty().appendText( title || this.options.spacer );
+        this.textCell.setStyle( 'width', parseInt( w ) + 'px' );
+        this.text.empty().appendText( text || this.options.spacer );
+    },
+
+    show: function( el ) {
+        var opt = this.options;
+
+        if (opt.timeout) this.timer = this.hide.delay( opt.timeout, this );
+
+        this.fireEvent( 'show', [ this.tip, el ] );
+    }
 } );
+} )();
 
 var Togglers = new Class( {
    Implements: [ Options ],
@@ -3028,6 +3055,7 @@ var Trees = new Class( {
 
    options          : {
       classPrefix   : 'tree',
+      cookieDomain  : '',
       cookiePath    : '/',
       cookiePrefix  : 'html_formwidgets',
       cookieSuffix  : 'tree',
@@ -3041,7 +3069,8 @@ var Trees = new Class( {
       if (opt.usePersistance) {
          var prefix = opt.cookiePrefix + '_' + opt.cookieSuffix;
 
-         this.cookies = new Cookies( { path  : opt.cookiePath,
+         this.cookies = new Cookies( { domain: opt.cookieDomain,
+                                       path  : opt.cookiePath,
                                        prefix: prefix } );
       }
 
@@ -3231,11 +3260,11 @@ var WindowUtils = new Class( {
 
    options        : {
       config      : {},
+      cookieDomain: null,
       cookieName  : 'session',
+      cookiePath  : '/',
+      cookiePrefix: null,
       customLogFn : false,
-      domain      : null,
-      path        : '/',
-      prefix      : null,
       quiet       : false,
       selector    : '.windows',
       target      : null,
@@ -3246,11 +3275,12 @@ var WindowUtils = new Class( {
    initialize: function( options ) {
       this.setBuildOptions( options ); var opt = this.options;
 
-      this.cookieName = (opt.prefix ? opt.prefix + '_' : '') + opt.cookieName;
-      this.cookieOpts = { path: opt.path, domain: opt.domain };
+      this.cookieName = (opt.cookiePrefix ? opt.cookiePrefix + '_' : '')
+         + opt.cookieName;
+      this.cookieOpts = { domain: opt.cookieDomain, path: opt.cookiePath };
 
       if (opt.customLogFn) {
-         if ($type( opt.customLogFn ) != 'function')
+         if (typeOf( opt.customLogFn ) != 'function')
             throw 'customLogFn is not a function';
          else this.customLogFn = opt.customLogFn;
       }
@@ -3461,7 +3491,7 @@ var WYSIWYG = new Class( {
 
       new Element( 'div', {
          class: opt.defaultClass
-      } ).injectBefore( el ).adopt( editor.toolbar, editor.iframe, el );
+      } ).inject( el, 'before' ).adopt( editor.toolbar, editor.iframe, el );
 
       this.initialiseToolbar( editor );
 
@@ -3474,7 +3504,7 @@ var WYSIWYG = new Class( {
 
    addButton: function( editor, b ) {
       var but = this.options.buttons[ b ]; if (! but) return false;
-      var el  = Browser.Engine.trident
+      var el  = Browser.ie
               ? new Element( 'a', { class: b, href: '//' + b, title: but[ 1 ] })
               : new Element( 'span', { class: b, title: but[ 1 ] } );
 
@@ -3548,7 +3578,7 @@ var WYSIWYG = new Class( {
           doc = editor.doc,
           val = v || but[ 3 ];
 
-      if (! v && $defined( but[ 4 ] )
+      if (! v && ( but[ 4 ] != undefined)
           && ! (val = prompt( but[ 3 ], but[ 4 ] ))) return;
 
       switch (b) {
@@ -3624,7 +3654,7 @@ var WYSIWYG = new Class( {
             found = found || added;
          }, this );
 
-         if (found && $defined( panels[ index + 1 ] )) {
+         if (found && ( panels[ index + 1 ] != undefined)) {
             new Element( 'span', { class: 'spacer' } ).inject( editor.toolbar );
 
             rowWidth += opt.spacerWidth;

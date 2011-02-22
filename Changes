@@ -1,5 +1,8 @@
 Revision history for HTML::FormWidgets
 
+0.6.297  2011-02-22
+         - Suppressed Konig CPAN testing again
+
 0.6.290  2010-10-06
          - Added ScrollPin
          - Added SidebarPanel

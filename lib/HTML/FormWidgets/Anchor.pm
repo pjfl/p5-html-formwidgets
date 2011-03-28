@@ -12,14 +12,14 @@ __PACKAGE__->mk_accessors( qw(config fhelp href imgclass target) );
 sub init {
    my ($self, $args) = @_;
 
-   $self->class   ( q(anchor fade) );
-   $self->config  ( undef          );
-   $self->fhelp   ( q()            );
-   $self->href    ( undef          );
-   $self->imgclass( undef          );
-   $self->target  ( undef          );
-   $self->text    ( q(link)        );
-   $self->tiptype ( q(normal)      );
+   $self->class   ( q(anchor_button fade) );
+   $self->config  ( undef     );
+   $self->fhelp   ( q()       );
+   $self->href    ( undef     );
+   $self->imgclass( undef     );
+   $self->target  ( undef     );
+   $self->text    ( q(link)   );
+   $self->tiptype ( q(normal) );
    return;
 }
 

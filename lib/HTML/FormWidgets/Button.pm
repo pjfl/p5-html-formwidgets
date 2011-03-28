@@ -37,16 +37,19 @@ sub render_field {
 }
 
 sub _image_button {
-   my ($self, $args) = @_;
+   my ($self, $args) = @_; my $hacc = $self->hacc;
 
-   $args->{alt  } = ucfirst $self->name;
-   $args->{class} = q(image_button ).$self->class;
+   my $src   = q(http:) eq (substr $self->src, 0, 5)
+             ? $self->src : $self->assets.$self->src;
+   my $image = $hacc->img( { alt   => ucfirst $self->name,
+                             class => q(button),
+                             src   => $src } );
+
+   $args->{class} = $self->class || q(image_button submit);
    $args->{name } = $self->button_name;
    $args->{value} = ucfirst $self->name;
-   $args->{src  } = q(http:) eq (substr $self->src, 0, 5)
-                  ? $self->src : $self->assets.$self->src;
 
-   return $self->hacc->image_button( $args );
+   return $hacc->button( $args, $image );
 }
 
 sub _markup_button {
@@ -58,7 +61,7 @@ sub _markup_button {
       $html .= $hacc->span( { class => $class }, $char );
    }
 
-   $args->{class} = q(markup_button ).$self->class;
+   $args->{class} = $self->class || q(markup_button submit);
 
    return $hacc->div( $args, $html );
 }
@@ -66,7 +69,7 @@ sub _markup_button {
 sub _submit_button {
    my ($self, $args) = @_;
 
-   $args->{class} = q(submit_button ).$self->class;
+   $args->{class} = $self->class || q(submit_button submit);
    $args->{name } = $self->button_name;
    $args->{value} = ucfirst $self->name;
 

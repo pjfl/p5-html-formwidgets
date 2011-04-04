@@ -32,12 +32,13 @@ my $ATTRS =
      optional_js     => undef,        onblur          => undef,
      onchange        => undef,        onkeypress      => undef,
      palign          => undef,        prompt          => $NUL,
-     pwidth          => 40,           required        => 0,
-     sep             => undef,        space           => '&#160;' x 3,
-     stepno          => undef,        swidth          => 1000,
-     tabstop         => 3,            template_dir    => undef,
-     text            => $NUL,         tip             => $NUL,
-     tiptype         => q(dagger),    type            => undef, };
+     pwidth          => 40,           readonly        => 0,
+     required        => 0,            sep             => undef,
+     space           => '&#160;' x 3, stepno          => undef,
+     swidth          => 1000,         tabstop         => 3,
+     template_dir    => undef,        text            => $NUL,
+     tip             => $NUL,         tiptype         => q(dagger),
+     type            => undef, };
 
 __PACKAGE__->mk_accessors( keys %{ $ATTRS } );
 
@@ -419,6 +420,7 @@ sub _render {
    $self->default    and $args->{default   }  = $self->default;
    $self->onblur     and $args->{onblur    }  = $self->onblur;
    $self->onkeypress and $args->{onkeypress}  = $self->onkeypress;
+   $self->readonly   and $args->{readonly  }  = q(readonly);
 
    my $html = $self->render_field( $args );
 

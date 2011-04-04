@@ -7,7 +7,7 @@ use warnings;
 use version; our $VERSION = qv( sprintf '0.6.%d', q$Rev$ =~ /\d+/gmx );
 use parent qw(HTML::FormWidgets);
 
-__PACKAGE__->mk_accessors( qw(clear_hint config hint readonly width) );
+__PACKAGE__->mk_accessors( qw(clear_hint config hint width) );
 
 my $SPC = q( );
 my $TTS = q( ~ );
@@ -32,9 +32,8 @@ sub render_field {
 
    $self->_js_config( 'calendars', $self->id, $self->config );
 
-   $args->{class   } .= q( ifield calendars);
-   $args->{readonly}  = q(readonly) if ($self->readonly);
-   $args->{size    }  = $self->width;
+   $args->{class} .= q( ifield calendars);
+   $args->{size }  = $self->width;
 
    my $hacc = $self->hacc;
    my $html = $hacc->textfield( $args );

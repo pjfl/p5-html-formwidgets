@@ -26,7 +26,8 @@ my $ATTRS =
      default         => undef,        fields          => {},
      frame_class     => $NUL,         hacc            => undef,
      hint_title      => $NUL,         id              => undef,
-     is_xml          => 0,            js_object       => q(html_formwidgets),
+     is_xml          => 0,            iterator        => undef,
+     js_object       => q(html_formwidgets),
      literal_js      => [],           messages        => {},
      name            => undef,        nowrap          => 0,
      optional_js     => undef,        onblur          => undef,
@@ -49,19 +50,21 @@ sub build {
 
    my $key  = $config->{list_key    } || q(items);
    my $type = $config->{content_type} || $ATTRS->{content_type};
+   my $step = 0;
 
-   $config->{hacc} = HTML::Accessors->new( content_type => $type );
+   $config->{hacc    } = HTML::Accessors->new( content_type => $type );
+   $config->{iterator} = sub { return ++$step };
 
    for my $list (grep { $_ and ref $_ eq q(HASH) } @{ $data }) {
-      my @tmp = ();
+      my @stack = ();
 
       for my $item (@{ $list->{ $key } }) {
-         my $built = __build_widget( $class, $config, $item, \@tmp );
+         my $built = __build_widget( $class, $config, $item, \@stack );
 
-         $built and push @tmp, $built;
+         $built and push @stack, $built;
       }
 
-      @{ $list->{ $key } } = @tmp;
+      @{ $list->{ $key } } = @stack;
    }
 
    return;
@@ -74,9 +77,6 @@ sub __build_widget {
 
    if ($item->{content}->{group}) {
       $config->{skip_groups} and return;
-
-      my $class = delete $item->{content}->{frame_class}
-         and $item->{class} = $class;
 
       $item->{content} = __group_fields( $config->{hacc}, $item, $stack );
    }
@@ -97,10 +97,12 @@ sub __build_widget {
 }
 
 sub __group_fields {
-   my ($hacc, $item, $list) = @_; my $html = $NUL; my $args;
+   my ($hacc, $item, $stack) = @_; my $html = $NUL; my $class;
+
+   $class = delete $item->{content}->{frame_class} and $item->{class} = $class;
 
    for (1 .. $item->{content}->{nitems}) {
-      $args = pop @{ $list }; $html = ($args->{content} || $NUL).$html;
+      my $args = pop @{ $stack }; $html = ($args->{content} || $NUL).$html;
    }
 
    my $legend = $hacc->legend( $item->{content}->{text} );
@@ -152,6 +154,7 @@ sub inflate {
 
    $args->{content_type} = $self->content_type;
    $args->{fields      } = $self->fields;
+   $args->{iterator    } = $self->iterator;
    $args->{js_object   } = $self->js_object;
    $args->{literal_js  } = $self->literal_js;
    $args->{messages    } = $self->messages;
@@ -361,15 +364,16 @@ sub _init {
 
    my $sep = $self->sep;
 
-   $sep = '&#160;:&#160;' if (not defined $sep and $self->prompt);
-   $sep = $self->space    if (    defined $sep and $sep eq q(space));
+   not defined $sep and $self->prompt    and $sep = '&#160;:&#160;';
+       defined $sep and $sep eq q(space) and $sep = $self->space;
 
    $self->sep( $sep );
 
    my $stepno = $self->stepno;
 
-   $stepno = $self->space if (defined $stepno and $stepno == 0);
-   $stepno = $stepno.q(.) if ($stepno and $stepno ne $self->space);
+   defined $stepno and $stepno == -1           and $stepno = $self->_next_step;
+   defined $stepno and $stepno == 0            and $stepno = $self->space;
+           $stepno and $stepno ne $self->space and $stepno = $stepno.q(.);
 
    $self->stepno( $stepno );
    return;
@@ -408,6 +412,10 @@ sub _js_config {
 
    push @{ $self->literal_js }, $text;
    return;
+}
+
+sub _next_step {
+   return $_[ 0 ]->iterator->();
 }
 
 sub _render {

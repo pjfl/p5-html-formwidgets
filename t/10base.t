@@ -29,7 +29,7 @@ ok( $widget->render =~ m{ input \s value="" \s name="test" \s type="text" }mx,
 
 $widget = HTML::FormWidgets->new( href => q(test), type => q(anchor) );
 
-ok( $widget->render =~ m{ a \s href="test" \s class="anchor \s fade" }mx,
+ok( $widget->render =~ m{ a \s href="test" \s class="anchor_button \s fade" }mx,
     q(Anchor) );
 
 $widget = HTML::FormWidgets->new( id => q(test), type => q(checkbox) );

@@ -1,5 +1,6 @@
 Revision history for HTML::FormWidgets
 
+         - Added step number iterator
          - Changed default class names for Anchor and Button
          - Moved boilerplate M::B subclass code to inc/Bob.pm
          - Suppressed Konig CPAN testing again

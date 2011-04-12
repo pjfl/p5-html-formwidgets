@@ -15,6 +15,7 @@ use Try::Tiny;
 
 my $LSB   = q([);
 my $NB    = '&#160;&#8224;';
+my $COLON = '&#160;:&#160;';
 my $NUL   = q();
 my $SPC   = q( );
 my $TTS   = q( ~ );
@@ -364,7 +365,7 @@ sub _init {
 
    my $sep = $self->sep;
 
-   not defined $sep and $self->prompt    and $sep = '&#160;:&#160;';
+   not defined $sep and $self->prompt    and $sep = $COLON;
        defined $sep and $sep eq q(space) and $sep = $self->space;
 
    $self->sep( $sep );

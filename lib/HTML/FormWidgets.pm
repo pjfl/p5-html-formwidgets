@@ -57,7 +57,7 @@ sub build {
    $config->{iterator} = sub { return ++$step };
 
    for my $list (grep { $_ and ref $_ eq q(HASH) } @{ $data }) {
-      my @stack = ();
+      my @stack = (); ref $list->{ $key } eq q(ARRAY) or next;
 
       for my $item (@{ $list->{ $key } }) {
          my $built = __build_widget( $class, $config, $item, \@stack );

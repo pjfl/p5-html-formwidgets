@@ -1,5 +1,6 @@
 Revision history for HTML::FormWidgets
 
+         - Made the build class method ignore bad input data structure
          - Suppressed dcollins CPAN testing
          - Added step number iterator
          - Changed default class names for Anchor and Button

@@ -151,18 +151,18 @@ sub __merge_hashes {
 sub inflate {
    my ($self, $args) = @_;
 
-   defined $args or return; ref $args or return $args;
+   defined $args or return; ref $args or return $args; my $config = {};
 
-   $args->{content_type} = $self->content_type;
-   $args->{fields      } = $self->fields;
-   $args->{iterator    } = $self->iterator;
-   $args->{js_object   } = $self->js_object;
-   $args->{literal_js  } = $self->literal_js;
-   $args->{messages    } = $self->messages;
-   $args->{optional_js } = $self->optional_js;
-   $args->{template_dir} = $self->template_dir;
+   $config->{content_type} = $self->content_type;
+   $config->{fields      } = $self->fields;
+   $config->{iterator    } = $self->iterator;
+   $config->{js_object   } = $self->js_object;
+   $config->{literal_js  } = $self->literal_js;
+   $config->{messages    } = $self->messages;
+   $config->{optional_js } = $self->optional_js;
+   $config->{template_dir} = $self->template_dir;
 
-   return __PACKAGE__->new( $args )->render;
+   return __PACKAGE__->new( __merge_hashes( $args, $config) )->render;
 }
 
 sub init {

@@ -1,4 +1,4 @@
-/* @(#)$Id: green.css 1110 2011-01-30 23:43:36Z pjf $ */
+/* @(#)$Id: green.css 1126 2011-03-28 04:14:47Z pjf $ */
 
 body { background: #9c9 repeat 100% 100%; color: black; }
 
@@ -6,7 +6,7 @@ abbr, acronym, fieldset, ins { border-color: #336; }
 ins { color: #f00; }
 hr { border-color: #336 transparent transparent; }
 
-.accordion_content .tree, .anchor:hover, .even_col:hover,
+.accordion_content .tree, .even_col:hover,
 .navigation:hover, .odd_col:hover { background-color: #ffc; }
 .accordion_header { border-color: #cc9 #336 #336 #336; }
 .accordion_header_first { border-top-color: #336; }
@@ -16,28 +16,24 @@ hr { border-color: #336 transparent transparent; }
 .slider { background-color: #cc9; }
 .accordion_panel_container .inactive, .error, .navigation,
 .tabs, .tree a.selected a.selected-inactive { color: #000; }
-.anchor, .button, .tick, .tree, .navigation:hover, .pod h2,
+.anchor_button, .chooser_button, .icon_button, .image_button, .markup_button,
+.submit_button { border-color: #cc9; color: #336; }
+.button, .tick, .tree, .navigation:hover, .pod h2,
 .pod p.toplink, .results legend, .sdata_item legend, .sdata_item input.button,
 .slider, .slider .knob, .tabset .panel_content,
 .tabset .tab { border-color: #336; }
-.anchor, .header_link, .search, .tree_link { color: #336; }
+.header_link, .search, .tree_link { color: #336; }
 .button_item input.button:hover, .slider .knob,
 .tree_link:hover { background-color: #9c9; }
-.chooser_button { border-color: #336; color: #336; }
 .cut_here { background-color: transparent; border-top-color: #f00; }
 .error { background-color: #fcc; }
 .even_row { background-color: #c1d9a9; }
 .header_title { color: #336; }
-.icon_button { border-color: #336; }
 .info { color: #8b8b32; }
 .navigation { border-color: transparent; }
 .odd_row { background-color: #cc9; }
 .split { color: #ffc; }
 .tabset .tab_selected { border-color: #336 #336 #ffc; }
-.vertical.button {
-   background-color: #cc9; background-image: none; border-color: #336;
-}
-.vertical.button:hover { background-color: #9c9; }
 .warning { background: Yellow; }
 
 input.ifield, password.ifield, select.ifield, textarea.ifield {

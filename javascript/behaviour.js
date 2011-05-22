@@ -3,28 +3,30 @@
 var Behaviour = new Class( {
    Implements: [ Events, Options ],
 
-   options           : {
-      config         : {
-         anchors     : {},
-         calendars   : {},
-         scrollPins  : { fadeInDuration: 1500, showDelay: 1000,
-                         trayPadding   : 0 },
-         server      : {},
-         sidebars    : {},
-         sliders     : {},
-         tables      : {},
-         tabSwappers : {
-            defaults : { smooth        : true, smoothSize: true } },
-         tips        : { fadeInDuration: 500,  showDelay : 666  } },
-      cookieDomain   : '',
-      cookiePath     : '/',
-      cookiePrefix   : 'behaviour',
-      formName       : null,
-      minMarginBottom: 5,
-      onStateComplete: function() {},
-      popup          : false,
-      target         : null,
-      defaultURL     : null
+   options             : {
+      config           : {
+         anchors       : {},
+         calendars     : {},
+         scrollPins    : { fadeInDuration: 1500, showDelay: 1000,
+                           trayPadding   : 0 },
+         server        : {},
+         sidebars      : {},
+         sliders       : {},
+         tables        : {
+            iconClasses: [ 'down_point_icon', 'up_point_icon' ] },
+         tabSwappers   : {
+            defaults   : { smooth        : true, smoothSize: true } },
+         tips          : { fadeInDuration: 500,  showDelay : 666  } },
+      cookieDomain     : '',
+      cookiePath       : '/',
+      cookiePrefix     : 'behaviour',
+      formName         : null,
+      minMarginBottom  : 5,
+      minMarginRight   : 10,
+      onStateComplete  : function() {},
+      popup            : false,
+      target           : null,
+      defaultURL       : null
    },
 
    initialize: function( options ) {
@@ -44,7 +46,9 @@ var Behaviour = new Class( {
       var cfg = this.config, el, opt = this.options;
 
       this.stylesheet = new PersistantStyleSheet( { cookies: this.cookies } );
-      this._restoreFromCookie();
+
+      this._restoreStateFromCookie();
+
       this.checkboxReplacements = new CheckboxReplace();
 
       var f_replace_boxes = function() {
@@ -149,18 +153,19 @@ var Behaviour = new Class( {
 
       content.setStyle( 'marginBottom', margin_bottom + 'px' );
 
-      var width = this.sidebar ? this.sidebar.resize( margin_bottom ) : 0;
+      var margin_left = this.sidebar ? this.sidebar.resize( margin_bottom ) : 0;
 
-      content.setStyle( 'marginLeft', width + 'px' );
+      content.setStyle( 'marginLeft', margin_left + 'px' );
 
-      var buttons = $( 'buttonDisp' );
+      var buttons = $( 'buttonDisp' ), margin_right = opt.minMarginRight;
 
-      width = buttons ? buttons.getStyle( 'width' ).toInt() : 0;
-      content.setStyle( 'marginRight', width + 'px' );
+      if (buttons) margin_right = buttons.getStyle( 'width' ).toInt();
+
+      content.setStyle( 'marginRight', margin_right + 'px' );
       content.fireEvent( 'resize' );
    },
 
-   _restoreFromCookie: function() {
+   _restoreStateFromCookie: function() {
       /* Use state cookie to restore the visual state of the page */
       var cookie_str; if (! (cookie_str = this.cookies.get())) return;
 

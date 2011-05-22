@@ -1,7 +1,9 @@
 Revision history for HTML::FormWidgets
 
+0.6.311  2011-05-22
          - Made the build class method ignore bad input data structure
          - Suppressed dcollins CPAN testing
+         - Switched to using Try::Tiny
          - Added step number iterator
          - Changed default class names for Anchor and Button
          - Moved boilerplate M::B subclass code to inc/Bob.pm

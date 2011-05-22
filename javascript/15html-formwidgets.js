@@ -1,4 +1,4 @@
-/* @(#)$Id: 15html-formwidgets.js 1111 2011-02-14 04:29:07Z pjf $
+/* @(#)$Id: 15html-formwidgets.js 1158 2011-05-09 00:12:14Z pjf $
 
    Portions of this code are taken from MooTools 1.3 which is:
    Copyright (c) 2006-2010 [Valerio Proietti](http://mad4milk.net/).
@@ -341,8 +341,8 @@ var Calendars = new Class( {
         if (! (cfg = opt.config[ el.id ])) return;
 
         if (submit && (button = $( el.id + '_clear' )))
-            button.addEvent( 'click', function() {
-                submit.clearField( el.id ) } );
+            button.addEvent( 'click', function( ev ) {
+               new Event( ev ).stop(); submit.clearField( el.id ) } );
 
         Calendar.setup( Object.append( cfg, {
             inputField: el.id, button: el.id + '_trigger' } ) );
@@ -957,11 +957,11 @@ var FreeList = new Class( {
 
    attach: function( el ) {
       $( el.id + '_add' ).addEvent( 'click', function( ev ) {
-         ev = new Event( ev ); ev.stop(); return this.addItem( el.id );
+         new Event( ev ).stop(); this.addItem( el.id );
       }.bind( this ) );
 
       $( el.id + '_remove' ).addEvent( 'click', function( ev ) {
-         ev = new Event( ev ); ev.stop(); return this.removeItem( el.id );
+         new Event( ev ).stop(); this.removeItem( el.id );
       }.bind( this ) );
    },
 
@@ -975,7 +975,6 @@ var FreeList = new Class( {
       options[ options.length ] = new Option( el.value );
       el.value = null;
       el.focus();
-      return false;
    },
 
    removeItem: function( id ) {
@@ -998,7 +997,6 @@ var FreeList = new Class( {
       }
 
       el.focus();
-      return false;
    }
 } );
 
@@ -1013,11 +1011,11 @@ var GroupMember = new Class( {
 
    attach: function( el ) {
       $( el.id + '_add' ).addEvent( 'click', function( ev ) {
-         ev = new Event( ev ); ev.stop(); return this.addItem( el.id );
+         new Event( ev ).stop(); this.addItem( el.id );
       }.bind( this ) );
 
       $( el.id + '_remove' ).addEvent( 'click', function( ev ) {
-         ev = new Event( ev ); ev.stop(); return this.removeItem( el.id );
+         new Event( ev ).stop(); this.removeItem( el.id );
       }.bind( this ) );
    },
 
@@ -1041,8 +1039,6 @@ var GroupMember = new Class( {
          // This suddenly started happening, weird but works after v0.1.657
          // all.options[ i ] = null;
       }
-
-      return false;
    },
 
    deleteHidden: function( id, value ) {
@@ -1075,8 +1071,6 @@ var GroupMember = new Class( {
          // This suddenly started happening, weird but works after v0.1.657
          // members.options[ i ] = null;
       }
-
-      return false;
    }
 } );
 
@@ -1440,16 +1434,16 @@ var LiveGridScroller = new Class( {
       this.plugin();
 
       if (Browser.ie) {
-         table.onmousewheel = function( evt ) {
+         table.onmousewheel = function( ev ) {
             this.scrollerDiv.scrollTop
-               += (event.wheelDelta >= 0 < 0 ? -1 : 1) * this.lineHeight;
+               += (ev.wheelDelta >= 0 < 0 ? -1 : 1) * this.lineHeight;
             this.handleScroll( true );
          }.bind( this );
       }
       else {
-         table.addEventListener( 'DOMMouseScroll', function( evt ) {
+         table.addEventListener( 'DOMMouseScroll', function( ev ) {
             this.scrollerDiv.scrollTop
-               += (evt.detail < 0 ? -1 : 1) * this.lineHeight;
+               += (ev.detail < 0 ? -1 : 1) * this.lineHeight;
             this.handleScroll( true );
          }.bind( this ), true );
       }
@@ -1675,7 +1669,8 @@ var ScrollPins = new Class( {
          this.log( 'ScrollPins attach: ' + position.y + ' ' + margin
                    + ' ' + padding );
 
-      el.pin.addEvent( 'click', function() {
+      el.pin.addEvent( 'click', function( ev ) {
+         new Event( ev ).stop();
          new Fx.Scroll( cfg.target, { duration: cfg.scrollDuration } )
                 .start( position.x, position.y - margin - padding );
       } );
@@ -1772,7 +1767,8 @@ var ServerUtils = new Class( {
    attach: function( el ) {
       var cfg; if (! (cfg = this.options.config[ el.id ])) return;
 
-      el.addEvent( cfg.event || 'click', function() {
+      el.addEvent( cfg.event || 'click', function( ev ) {
+         new Event( ev ).stop();
          return this[ cfg.method ].apply( this, cfg.args );
       }.bind( this ) );
    },
@@ -1806,7 +1802,7 @@ var Sidebar = new Class( {
       togglerHeight       : 30,
       togglersMarginHeight: 12,
       togglersMinMargin   : 5,
-      width               : 250
+      width               : 38
    },
 
    initialize: function( behaviour, options ) {
@@ -1821,7 +1817,8 @@ var Sidebar = new Class( {
 
       var sb_state = this.cookies.get( prefix ) ? true : false;
       var sb_panel = this.cookies.get( prefix + 'Panel' ) || opt.panel;
-      var sb_width = this.cookies.get( prefix + 'Width' ) || opt.width;
+      var sb_width = this.cookies.get( prefix + 'Width' )
+                  || parseInt( opt.width * window.getWidth() / 100 );
 
       this.cookies.set( prefix + 'Width', sb_width );
 
@@ -1846,7 +1843,7 @@ var Sidebar = new Class( {
 
       /* Setup the event handler to turn the side bar on/off */
       $( prefix ).addEvent( 'click', function( ev ) {
-         ev = new Event( ev ); ev.stop();
+         new Event( ev ).stop();
 
          if (this.cookies.get( prefix )) {
             this.cookies.remove( prefix ); this.slider.slideOut();
@@ -1975,6 +1972,134 @@ var Sliders = new Class( {
    }
 } );
 
+var Storage = new Class( {
+    Implements: [ Options ],
+
+    options              : {
+        document         : window.document,
+        driver           : JSON,
+        globalStorageName: 'globalStorage',
+        localStorageName : 'localStorage',
+        namespace        : '__storejs__',
+        window           : window
+    },
+
+    initialize: function( options ) {
+        this.setOptions( options );
+
+        var opt = this.options, win = opt.window, doc = opt.document, storage;
+
+        if (this._isLocalStorageSupported()) {
+            storage      = win[ opt.localStorageName ];
+            this.clear   = function() { storage.clear() };
+            this.get     = function( key ) {
+                return this.deserialize( storage.getItem( key ) );
+            }.bind( this );
+            this.remove  = function( key ) { storage.removeItem( key ) };
+            this.set     = function( key, val ) {
+                storage.setItem( key, this.serialize( val ) ) }.bind( this );
+        }
+        else if (this._isGlobalStorageSupported()) {
+            storage      = win[ opt.globalStorageName ][ win.location.hostname];
+            this.clear   = function() {
+                for (var key in storage) delete storage[ key ]; };
+            this.get     = function( key ) {
+                return this.deserialize( storage[ key ] && storage[ key ].value)
+            }.bind( this );
+            this.remove  = function( key ) { delete storage[ key ] };
+            this.set     = function( key, val ) {
+                storage[ key ] = this.serialize( val ) }.bind( this );
+        }
+        else if (doc.documentElement.addBehavior) {
+            storage      = doc.createElement( 'div' );
+            this.clear   = this._ieStorage( storage, function( storage ) {
+                var attrs = storage.XMLDocument.documentElement.attributes;
+
+                storage.load( opt.localStorageName );
+
+                for (var i = 0, attr; attr = attrs[ i ]; i++)
+                    storage.removeAttribute( attr.name );
+
+                storage.save( opt.localStorageName );
+            } );
+            this.get     = this._ieStorage( storage, function( storage, key ) {
+                return this.deserialize( storage.getAttribute( key ) );
+            }.bind( this ) );
+            this.remove  = this._ieStorage( storage, function( storage, key ) {
+                storage.removeAttribute( key );
+                storage.save( opt.localStorageName );
+            } );
+            this.set = this._ieStorage( storage, function( storage, key, val ) {
+                storage.setAttribute( key, this.serialize( val ) );
+                storage.save( opt.localStorageName );
+            }.bind( this ) );
+        }
+        else {
+            this.clear   = function() {};
+            this.get     = function( key ) {};
+            this.remove  = function( key ) {};
+            this.set     = function( key, value ) {};
+        }
+
+        this.deserialize = function( value ) {
+            return this.decode( value ) }.bind( opt.driver );
+        this.serialize   = function( value ) {
+            return this.encode( value ) }.bind( opt.driver );
+        this.transact    = function( key, callback ) {
+            var val = this.get( key ); if (typeof val == 'undefined') val = {};
+
+            callback( val ); this.set( key, val );
+        }.bind( this );
+        this.disabled    = false;
+
+        try {
+            this.set( opt.namespace, opt.namespace );
+
+            if (this.get( opt.namespace ) != opt.namespace)
+                this.disabled = true;
+
+            this.remove( opt.namespace );
+        }
+        catch (e) { this.disabled = true }
+    },
+
+    _ieStorage: function( storage, storeFn ) {
+        var opt = this.options, doc = opt.document;
+
+        return function() {
+            var args = Array.prototype.slice.call( arguments, 0 );
+
+            args.unshift( storage );
+            doc.body.appendChild( storage );
+            storage.addBehavior( '#default#userData' );
+            storage.load( opt.localStorageName );
+
+            var result = storeFn.apply( this, args );
+
+            doc.body.removeChild( storage );
+            return result;
+        }.bind( this );
+    },
+
+    _isLocalStorageSupported: function() {
+        var opt = this.options, win = opt.window;
+
+        try {
+            return (opt.localStorageName in win && win[ opt.localStorageName ] )
+        }
+        catch (e) { return false }
+    },
+
+    _isGlobalStorageSupported: function() {
+        var opt = this.options, win = opt.window;
+
+        try {
+            return (opt.globalStorageName in win && win[ opt.globalStorageName ]
+                    && win[ opt.globalStorageName ][ win.location.hostname ] ) }
+        catch (e) { return false }
+    }
+} );
+
 var SubmitUtils = new Class( {
    Implements: [ Options ],
 
@@ -2012,8 +2137,9 @@ var SubmitUtils = new Class( {
           win_prefs += cfg.screen_y + ', dependent=yes, titlebar=no, ';
           win_prefs += 'scrollbars=yes';
 
-      el.addEvent( 'click', function() {
-         return this.chooser( el.value, cfg.field, cfg.href, win_prefs );
+      el.addEvent( 'click', function( ev ) {
+         new Event( ev ).stop();
+         this.chooser( el.value, cfg.field, cfg.href, win_prefs );
       }.bind( this ) );
    },
 
@@ -2036,8 +2162,6 @@ var SubmitUtils = new Class( {
          top.chooser = window.open( uri, 'chooser', win_prefs );
          top.chooser.opener = top;
       }
-
-      return false;
    },
 
    clearField: function( name ) {
@@ -2046,7 +2170,7 @@ var SubmitUtils = new Class( {
 
    confirmSubmit: function( button, text ) {
       if (text.length < 1 || window.confirm( text )) {
-         $$( 'input[name=_method]' ).some( function( el ) {
+         $$( '*[name=_method]' ).some( function( el ) {
             return (el.value == button) ? true : false;
          } ) ? this.form.submit() : this.submitForm( button );
 
@@ -2061,7 +2185,7 @@ var SubmitUtils = new Class( {
    },
 
    postData: function( url, data ) {
-      new Request().post( url, data );
+      new Request( { url: url } ).post( data );
    },
 
    refresh: function( name, value ) {
@@ -2117,14 +2241,13 @@ var TableUtils = new Class( {
    Implements: [ Events, Options ],
 
    options           : {
-      config         : {},
+      config         : { iconClasses: [ 'a', 'b' ] },
       editRowClass   : 'editable_row',
       editSelector   : 'table.editable',
       formName       : null,
       gridSelector   : '.live_grid',
       gridSize       : 10,
       gridToggle     : true,
-      iconClasses    : [ 'a', 'b' ],
       inputCellClass : 'data_field',
 /*    onRowAdded     : function(){}, */
 /*    onRowsRemoved  : function(){}, */
@@ -2161,23 +2284,23 @@ var TableUtils = new Class( {
                                        opt.sortableOptions );
 
          $( el.id + '_add' ).addEvent( 'click', function( ev ) {
-             ev = new Event( ev ); ev.stop(); return this.addRow( el );
+             new Event( ev ).stop(); return this.addRow( el );
          }.bind( this ) );
 
          $( el.id + '_remove' ).addEvent( 'click', function( ev ) {
-            ev = new Event( ev ); ev.stop(); return this.removeRows( el );
+            new Event( ev ).stop(); return this.removeRows( el );
          }.bind( this ) );
       }, this );
 
       if (opt.gridSelector) $$( opt.gridSelector ).each( function( el ) {
          el.addEvent( 'click', function( ev ) {
-            ev = new Event( ev ); ev.stop(); return this.liveGrid( el );
+            new Event( ev ).stop(); return this.liveGrid( el );
          }.bind( this ) );
       }, this );
 
       if (opt.sortSelector) $$( opt.sortSelector ).each( function( el ) {
          el.addEvent( 'click', function( ev ) {
-            ev = new Event( ev ); ev.stop(); return this.sortRows( el );
+            new Event( ev ).stop(); return this.sortRows( el );
          }.bind( this ) );
       }, this );
    },
@@ -2321,12 +2444,12 @@ var TableUtils = new Class( {
 
       if (! key || ! id || ! (el = $( anchor.id + 'Disp' ))) return;
 
-      var opt = this.options;
+      var opt = this.options, cfg = opt.config;
 
       if (opt.gridToggle && el.getStyle( 'display' ) != 'none') {
          el.setStyle( 'display', 'none' );
 
-         if (el = $( anchor.id + 'Icon' )) el.className = opt.iconClasses[ 0 ];
+         if (el = $( anchor.id + 'Icon' )) el.className = cfg.iconClasses[ 0 ];
 
          this.gridKey = null; this.gridId = null; this.gridObj = null;
          return;
@@ -2336,14 +2459,14 @@ var TableUtils = new Class( {
          var keyid = this.gridKey + '_' + this.gridId, prev;
 
          if (prev = $( keyid + 'Disp' )) prev.setStyle( 'display', 'none' );
-         if (prev = $( keyid + 'Icon' )) prev.className = opt.iconClasses[ 0 ];
+         if (prev = $( keyid + 'Icon' )) prev.className = cfg.iconClasses[ 0 ];
 
          this.gridKey = null; this.gridId = null; this.gridObj = null;
       }
 
       el.setStyle( 'display', '' ); this.gridKey = key; this.gridId = id;
 
-      if (el = $( anchor.id + 'Icon' )) el.className = opt.iconClasses[ 1 ];
+      if (el = $( anchor.id + 'Icon' )) el.className = cfg.iconClasses[ 1 ];
 
       new Request( {
          onSuccess: this._createGrid.bind( this ),
@@ -2525,7 +2648,7 @@ var TabSwapper = new Class( {
       } );
 
       clicker.addEvent( 'click', function( ev ) {
-         ev.preventDefault(); this.show( index );
+         new Event( ev ).stop(); this.show( index );
       }.bind( this ) );
 
       tab.store( 'tabbered', true    );
@@ -2924,7 +3047,6 @@ this.Tips = new Class( {
         }
 
         this.fireEvent( 'bound', bounds );
-        return;
     },
 
     setup: function( el ) {
@@ -2966,8 +3088,8 @@ var Togglers = new Class( {
    attach: function( el ) {
       var cfg; if (! (cfg = this.options.config[ el.id ])) return;
 
-      el.addEvent( cfg.event || 'click', function() {
-         return this[ cfg.method ].apply( this, cfg.args );
+      el.addEvent( cfg.event || 'click', function( ev ) {
+         new Event( ev ).stop(); this[ cfg.method ].apply( this, cfg.args );
       }.bind( this ) );
    },
 
@@ -3110,7 +3232,7 @@ var Trees = new Class( {
    attachToggler: function( dt, dd, klass, event ) {
       $$( '#' + dt.id + ' span.' + klass ).each( function( el ) {
          el.addEvent( event, function( ev ) {
-            ev = new Event( ev ); ev.stop(); return this.toggle( dt, dd );
+            new Event( ev ).stop(); return this.toggle( dt, dd );
          }.bind( this ) );
       }, this );
    },
@@ -3275,10 +3397,6 @@ var WindowUtils = new Class( {
    initialize: function( options ) {
       this.setBuildOptions( options ); var opt = this.options;
 
-      this.cookieName = (opt.cookiePrefix ? opt.cookiePrefix + '_' : '')
-         + opt.cookieName;
-      this.cookieOpts = { domain: opt.cookieDomain, path: opt.cookiePath };
-
       if (opt.customLogFn) {
          if (typeOf( opt.customLogFn ) != 'function')
             throw 'customLogFn is not a function';
@@ -3293,7 +3411,8 @@ var WindowUtils = new Class( {
    attach: function( el ) {
       var cfg; if (! (cfg = this.options.config[ el.id ])) return;
 
-      el.addEvent( cfg.event || 'click', function() {
+      el.addEvent( cfg.event || 'click', function( ev ) {
+         new Event( ev ).stop();
          return this[ cfg.method ].apply( this, cfg.args );
       }.bind( this ) );
    },
@@ -3316,7 +3435,6 @@ var WindowUtils = new Class( {
       options.width  = options.width  || opt.windowWidth;
 
       new Browser.Popup( href, options );
-      return false;
    },
 
    placeOnTop: function() {
@@ -3327,7 +3445,11 @@ var WindowUtils = new Class( {
    },
 
    wayOut: function( href ) {
-      Cookie.dispose( this.cookieName, this.cookieOpts );
+      var copt, name, opt = this.options;
+
+      name = (opt.cookiePrefix ? opt.cookiePrefix + '_' : '') + opt.cookieName;
+
+      new Cookie( name, { path: opt.cookiePath } ).dispose();
 
       if (document.images) top.location.replace( href );
       else top.location.href = href;
@@ -3467,8 +3589,8 @@ var WYSIWYG = new Class( {
    },
 
    attach: function( el ) {
-      var opt    = this.options,
-          editor = {
+      var opt   = this.options,
+         editor = {
          element: el,
          height : -1,
          barNum : opt.barNum,
@@ -3512,7 +3634,7 @@ var WYSIWYG = new Class( {
 
       var handler = function( self, editor, b ) {
          return function( ev ) {
-            ev = new Event( ev ); ev.stop();
+            new Event( ev ).stop();
 
             return b == 'toggle' ? this.toggleView( editor, true )
                                  : this.exec( editor, b );
@@ -3628,7 +3750,8 @@ var WYSIWYG = new Class( {
    initialiseBody: function( editor, html ) {
       html = html && html.length > 0
            ? html.replace( /&nbsp;/g, '\u00a0' ) : this.options.defaultBody;
-      $( editor.doc.body ).set( 'html', html );
+//      $( editor.doc.body ).set( 'html', html );
+       editor.doc.body.innerHTML = html;
    },
 
    initialiseToolbar: function( editor ) {

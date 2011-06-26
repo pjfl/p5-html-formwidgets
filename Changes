@@ -1,5 +1,8 @@
 Revision history for HTML::FormWidgets
 
+0.7.312  2011-06-26
+         - Stepno can be a hash ref which will get inflated
+
 0.6.311  2011-05-22
          - Made the build class method ignore bad input data structure
          - Suppressed dcollins CPAN testing

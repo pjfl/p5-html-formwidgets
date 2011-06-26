@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 use inc::Bob; # Module::Build subclass
-use version; our $VERSION = qv( sprintf '0.6.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.7.%d', q$Rev$ =~ /\d+/gmx );
 
 Bob->new( {
    stop_tests => 1,
@@ -16,7 +16,7 @@ Bob->new( {
       'version'                 => q(0.74),
       'Class::Accessor::Fast'   => q(0.31),
       'Class::MOP'              => q(0.84),
-      'HTML::Accessors'         => q(0.4.0),
+      'HTML::Accessors'         => q(0.5.0),
       'Pod::Xhtml'              => q(1.61),
       'Scalar::Util'            => q(1.23),
       'Syntax::Highlight::Perl' => q(1.00),

@@ -1,6 +1,6 @@
-/* @(#)$Id: green.css 1126 2011-03-28 04:14:47Z pjf $ */
+/* @(#)$Id: green.css 1188 2011-06-06 17:46:42Z pjf $ */
 
-body { background: #9c9 repeat 100% 100%; color: black; }
+body { background: url(background.png) #9c9 repeat 100% 100%; color: black; }
 
 abbr, acronym, fieldset, ins { border-color: #336; }
 ins { color: #f00; }

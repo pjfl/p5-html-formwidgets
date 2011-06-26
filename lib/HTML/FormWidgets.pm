@@ -4,7 +4,7 @@ package HTML::FormWidgets;
 
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.6.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.7.%d', q$Rev$ =~ /\d+/gmx );
 use parent qw(Class::Accessor::Fast);
 
 use Class::MOP;
@@ -149,9 +149,9 @@ sub __merge_hashes {
 # Public object methods
 
 sub inflate {
-   my ($self, $args) = @_;
+   my ($self, $args) = @_; my $config = {};
 
-   defined $args or return; ref $args or return $args; my $config = {};
+   (defined $args and ref $args eq q(HASH)) or return $args;
 
    $config->{content_type} = $self->content_type;
    $config->{fields      } = $self->fields;
@@ -162,7 +162,7 @@ sub inflate {
    $config->{optional_js } = $self->optional_js;
    $config->{template_dir} = $self->template_dir;
 
-   return __PACKAGE__->new( __merge_hashes( $args, $config) )->render;
+   return __PACKAGE__->new( __merge_hashes( $args, $config ) )->render;
 }
 
 sub init {
@@ -258,9 +258,11 @@ sub render_separator {
 }
 
 sub render_stepno {
-   my $self = shift;
+   my $self = shift; my $stepno = $self->stepno;
 
-   return $self->hacc->span( { class => q(step_number) }, $self->stepno );
+   ref $stepno eq q(HASH) and return $self->inflate( $stepno );
+
+   return $self->hacc->span( { class => q(step_number) }, $stepno );
 }
 
 sub render_tip {
@@ -325,6 +327,52 @@ sub _bootstrap {
    return { qw(ajaxid 1 id 1 name 1 type 1) };
 }
 
+sub _build_hacc {
+   # Now we can create HTML elements like we could with CGI.pm
+   my $self = shift; my $hacc = $self->hacc;
+
+   $hacc or $hacc = HTML::Accessors->new
+      ( { content_type => $self->content_type } );
+
+   return $hacc
+}
+
+sub _build_is_xml {
+   my $content_type = $_[ 0 ]->content_type;
+
+   return $content_type =~ m{ / (.*) xml \z }mx ? 1 : 0;
+}
+
+sub _build_pwidth {
+   # Calculate the prompt width
+   my $self = shift; my $pwidth = $self->pwidth;
+
+   $pwidth and $pwidth =~ m{ \A \d+ \z }mx
+      and $pwidth = (int $pwidth * $self->swidth / 100).q(px);
+
+   return $pwidth;
+}
+
+sub _build_sep {
+   my $self = shift; my $sep = $self->sep;
+
+   not defined $sep and $self->prompt    and $sep = $COLON;
+       defined $sep and $sep eq q(space) and $sep = $self->space;
+
+   return $sep;
+}
+
+sub _build_stepno {
+   my $self = shift; my $stepno = $self->stepno;
+
+   defined $stepno and ref $stepno eq q(HASH)  and return $stepno;
+   defined $stepno and $stepno == -1           and $stepno = $self->_next_step;
+   defined $stepno and $stepno == 0            and $stepno = $self->space;
+           $stepno and $stepno ne $self->space and $stepno = $stepno.q(.);
+
+   return $stepno;
+}
+
 sub _ensure_class_loaded {
    my ($self, $class) = @_;
 
@@ -348,35 +396,11 @@ sub _init {
    $self->init        ( $args ); # Allow subclass to set it's own defaults
    $self->_init_fields( $skip, $args->{fields} );
    $self->_init_args  ( $skip, $args );
-
-   my $content_type = $self->content_type;
-
-   $self->is_xml( $content_type =~ m{ / (.*) xml \z }mx ? 1 : 0 );
-
-   # Now we can create HTML elements like we could with CGI.pm
-   $self->hacc or
-      $self->hacc( HTML::Accessors->new( { content_type => $content_type } ) );
-
-   # Calculate the prompt width
-   my $pwidth = $self->pwidth;
-
-   $pwidth and $pwidth =~ m{ \A \d+ \z }mx
-      and $self->pwidth( (int $pwidth * $self->swidth / 100).q(px) );
-
-   my $sep = $self->sep;
-
-   not defined $sep and $self->prompt    and $sep = $COLON;
-       defined $sep and $sep eq q(space) and $sep = $self->space;
-
-   $self->sep( $sep );
-
-   my $stepno = $self->stepno;
-
-   defined $stepno and $stepno == -1           and $stepno = $self->_next_step;
-   defined $stepno and $stepno == 0            and $stepno = $self->space;
-           $stepno and $stepno ne $self->space and $stepno = $stepno.q(.);
-
-   $self->stepno( $stepno );
+   $self->hacc        ( $self->_build_hacc );
+   $self->is_xml      ( $self->_build_is_xml );
+   $self->pwidth      ( $self->_build_pwidth );
+   $self->sep         ( $self->_build_sep );
+   $self->stepno      ( $self->_build_stepno );
    return;
 }
 
@@ -455,7 +479,7 @@ HTML::FormWidgets - Create HTML form markup
 
 =head1 Version
 
-0.6.$Rev$
+0.7.$Rev$
 
 =head1 Synopsis
 

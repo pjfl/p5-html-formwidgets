@@ -26,8 +26,7 @@ sub render_field {
 
    ($data = $self->data and $data->[ 0 ]) or return; my $js_args = {};
 
-   for (grep { exists $self->config->{ $_ } }
-        qw(direction duration nitems speed transition)) {
+   for (grep { defined $self->config->{ $_ } } keys %{ $self->config }) {
       $js_args->{ $_ } = '"'.$self->config->{ $_ }.'"';
    }
 

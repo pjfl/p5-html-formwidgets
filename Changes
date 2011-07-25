@@ -1,5 +1,7 @@
 Revision history for HTML::FormWidgets
 
+         - Added Unordered list subclass
+
 0.7.312  2011-06-26
          - Stepno can be a hash ref which will get inflated
 

@@ -21,11 +21,14 @@ sub init {
 sub render_field {
    my ($self, $args) = @_;
 
-   $args->{class }  .= q( ifield);
-   $args->{labels}   = $self->labels   if ($self->labels);
-   $args->{onchange} = $self->onchange if ($self->onchange);
-   $args->{size}     = $self->height;
-   $args->{values}   = $self->values;
+   $self->class =~ m{ chzn-select }msx
+      and push @{ $self->optional_js }, qw(chosen.js);
+
+   $args->{class   } .= q( ).($self->class || q(ifield));
+   $args->{labels  }  = $self->labels   if ($self->labels);
+   $args->{onchange}  = $self->onchange if ($self->onchange);
+   $args->{size    }  = $self->height;
+   $args->{values  }  = $self->values;
 
    return $self->hacc->scrolling_list( $args );
 }

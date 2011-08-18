@@ -12,14 +12,15 @@ __PACKAGE__->mk_accessors( qw(columns labels values) );
 sub init {
    my ($self, $args) = @_;
 
-   $self->columns( undef );
-   $self->labels(  undef );
-   $self->values(  [] );
+   $self->columns        ( undef );
+   $self->container_class( q(checkbox_container) );
+   $self->labels         ( undef );
+   $self->values         ( [] );
    return;
 }
 
 sub render_field {
-   my ($self, $args)   = @_;
+   my ($self, $args) = @_;
 
    $args->{label_class} = q(radio_group);
    $args->{columns    } = $self->columns  if ($self->columns);

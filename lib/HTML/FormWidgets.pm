@@ -17,6 +17,7 @@ my $LSB   = q([);
 my $NB    = '&#160;&#8224;';
 my $COLON = '&#160;:&#160;';
 my $NUL   = q();
+my $SPACE = '&#160;' x 3;
 my $SPC   = q( );
 my $TTS   = q( ~ );
 my $ATTRS =
@@ -36,11 +37,10 @@ my $ATTRS =
      palign          => undef,        prompt          => $NUL,
      pwidth          => 40,           readonly        => 0,
      required        => 0,            sep             => undef,
-     space           => '&#160;' x 3, stepno          => undef,
-     swidth          => 1000,         tabstop         => 3,
-     template_dir    => undef,        text            => $NUL,
-     tip             => $NUL,         tiptype         => q(dagger),
-     type            => undef, };
+     stepno          => undef,        swidth          => 1000,
+     tabstop         => 3,            template_dir    => undef,
+     text            => $NUL,         tip             => $NUL,
+     tiptype         => q(dagger),    type            => undef, };
 
 __PACKAGE__->mk_accessors( keys %{ $ATTRS } );
 
@@ -196,7 +196,7 @@ sub render {
 
    $self->type or return $self->text || $NUL;
 
-   $self->clear eq q(left) and $lead .= $self->hacc->br();
+   $self->clear eq q(left) and $lead .= $self->hacc->br;
 
    $self->stepno and $lead .= $self->render_stepno;
    $self->prompt and $lead .= $self->render_prompt;
@@ -216,7 +216,7 @@ sub render_check_field {
 
    $field .= $hacc->span( { class => q(hidden), id => $id.q(_ajax) } );
 
-   return $hacc->span( { class => q(field_group) }, $field );
+   return $hacc->div( { class => q(field_group) }, $field );
 }
 
 sub render_container {
@@ -254,6 +254,9 @@ sub render_prompt {
 sub render_separator {
    my $self = shift;
 
+   $self->sep eq q(break)
+      and return $self->hacc->div( { class => q(clearLeft) } );
+
    return $self->hacc->span( { class => q(separator) }, $self->sep );
 }
 
@@ -284,7 +287,7 @@ sub render_tip {
 
    $field .= $hacc->span( $args, $NB );
 
-   return $hacc->span( { class => q(field_group) }, $field );
+   return $hacc->div( { class => q(field_group) }, $field );
 }
 
 # Private object methods
@@ -356,8 +359,9 @@ sub _build_pwidth {
 sub _build_sep {
    my $self = shift; my $sep = $self->sep;
 
+   # TODO: Allow sep to be a break so field comes under prompt
    not defined $sep and $self->prompt    and $sep = $COLON;
-       defined $sep and $sep eq q(space) and $sep = $self->space;
+       defined $sep and $sep eq q(space) and $sep = $SPACE;
 
    return $sep;
 }
@@ -365,10 +369,10 @@ sub _build_sep {
 sub _build_stepno {
    my $self = shift; my $stepno = $self->stepno;
 
-   defined $stepno and ref $stepno eq q(HASH)  and return $stepno;
-   defined $stepno and $stepno == -1           and $stepno = $self->_next_step;
-   defined $stepno and $stepno == 0            and $stepno = $self->space;
-           $stepno and $stepno ne $self->space and $stepno = $stepno.q(.);
+   defined $stepno and ref $stepno eq q(HASH) and return $stepno;
+   defined $stepno and $stepno == -1          and $stepno = $self->_next_step;
+   defined $stepno and $stepno == 0           and $stepno = $SPACE;
+           $stepno and $stepno ne $SPACE      and $stepno = $stepno.q(.);
 
    return $stepno;
 }

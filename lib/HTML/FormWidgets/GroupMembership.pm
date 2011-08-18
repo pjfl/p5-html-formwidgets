@@ -10,7 +10,8 @@ use parent q(HTML::FormWidgets);
 __PACKAGE__->mk_accessors( qw(add_tip all assets atitle ctitle current
                               fhelp height remove_tip labels) );
 
-my $TTS = q( ~ );
+my $SPACE = '&#160;' x 3;
+my $TTS   = q( ~ );
 
 sub init {
    my ($self, $args) = @_; my $text;
@@ -25,7 +26,7 @@ sub init {
    $self->height         ( 10 );
    $self->hint_title     ( $self->loc( q(Hint) ) ) unless ($self->hint_title);
    $self->labels         ( undef );
-   $self->sep            ( $self->space ) unless ($args->{prompt});
+   $self->sep            ( $SPACE ) unless ($args->{prompt});
 
    $text = $self->loc( q(groupMembershipAddTip) );
    $self->add_tip    ( $self->hint_title.$TTS.$text );

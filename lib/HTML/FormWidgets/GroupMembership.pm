@@ -26,6 +26,7 @@ sub init {
    $self->height         ( 10 );
    $self->hint_title     ( $self->loc( q(Hint) ) ) unless ($self->hint_title);
    $self->labels         ( undef );
+   $self->pclass         ( q(instructions) );
    $self->sep            ( $SPACE ) unless ($args->{prompt});
 
    $text = $self->loc( q(groupMembershipAddTip) );
@@ -36,12 +37,10 @@ sub init {
 }
 
 sub render_field {
-   my ($self, $args)  = @_;
-   my $hacc           = $self->hacc;
-   my $fargs          = { class => q(instructions) };
-   my $html;
+   my ($self, $args) = @_; my $hacc = $self->hacc;
 
-   $self->palign and $fargs->{style} .= 'text-align: '.$self->palign.'; ';
+   my $fargs = { class => $self->pclass }; my $html;
+
    $self->pwidth and $fargs->{style} .= 'width: '.$self->pwidth.q(;);
    $self->fhelp  and $html            = $hacc->span( $fargs, $self->fhelp );
 

@@ -31,10 +31,10 @@ my $ATTRS =
      is_xml          => 0,            iterator        => undef,
      js_object       => q(html_formwidgets),
      literal_js      => [],           messages        => {},
-     name            => undef,        nowrap          => 0,
+     name            => undef,
      optional_js     => undef,        onblur          => undef,
      onchange        => undef,        onkeypress      => undef,
-     palign          => undef,        prompt          => $NUL,
+     pclass          => q(prompt),    prompt          => $NUL,
      pwidth          => 40,           readonly        => 0,
      required        => 0,            sep             => undef,
      stepno          => undef,        swidth          => 1000,
@@ -238,14 +238,10 @@ sub render_field {
 }
 
 sub render_prompt {
-   my $self = shift; my $args = { class => q(prompt) };
+   my $self = shift; my $args = { class => $self->pclass };
 
-   if ($self->id) {
-      $args->{for} = $self->id; $args->{id} = $self->id.q(_label);
-   }
+   $self->id and $args->{for} = $self->id and $args->{id} = $self->id.q(_label);
 
-   $self->palign and $args->{style} .= 'text-align: '.$self->palign.'; ';
-   $self->nowrap and $args->{style} .= 'white-space: nowrap; ';
    $self->pwidth and $args->{style} .= 'width: '.$self->pwidth.q(;);
 
    return $self->hacc->label( $args, $self->prompt );
@@ -253,9 +249,6 @@ sub render_prompt {
 
 sub render_separator {
    my $self = shift;
-
-   $self->sep eq q(break)
-      and return $self->hacc->div( { class => q(clearLeft) } );
 
    return $self->hacc->span( { class => q(separator) }, $self->sep );
 }
@@ -359,9 +352,9 @@ sub _build_pwidth {
 sub _build_sep {
    my $self = shift; my $sep = $self->sep;
 
-   # TODO: Allow sep to be a break so field comes under prompt
    not defined $sep and $self->prompt    and $sep = $COLON;
        defined $sep and $sep eq q(space) and $sep = $SPACE;
+       defined $sep and $sep eq q(none)  and $sep = $NUL;
 
    return $sep;
 }
@@ -610,13 +603,11 @@ element and appended to the return value
 
 =item prompt
 
-If true it's value is wrapped in a C<< <label class="prompt"> >>
-element and appended to the return value. The I<id> attribute is used
-to set the I<for> attribute of the C<< <label> >> element.  The
-I<palign> attribute sets the text align style for the C<< <label> >>
-element. The I<nowrap> attribute sets whitespace style to B<nowrap> in
-the C<< <label> >> element. The I<pwidth> attribute sets the width style
-attribute in the C<< <label> >> element
+If true it's value is wrapped in a C<< <label class="prompt_class"> >>
+element and appended to the return value. The prompt class is set by
+the C<pclass> attribute. The I<id> attribute is used to set the I<for>
+attribute of the C<< <label> >> element.  The I<pwidth> attribute sets
+the width style attribute in the C<< <label> >> element
 
 =item sep
 

@@ -42,7 +42,7 @@ sub render_field {
    my $fargs = { class => $self->pclass }; my $html;
 
    $self->pwidth and $fargs->{style} .= 'width: '.$self->pwidth.q(;);
-   $self->fhelp  and $html            = $hacc->span( $fargs, $self->fhelp );
+   $self->fhelp  and $html            = $hacc->div( $fargs, $self->fhelp );
 
    my $text  = $hacc->span( { class => q(title) }, $self->atitle );
    my $class = ($args->{class} || q()).q( ifield group);
@@ -56,7 +56,7 @@ sub render_field {
    $args->{values  }  = $self->all;
 
    $text     .= $hacc->scrolling_list( $args );
-   $html     .= $hacc->span( { class => q(groupmember_ifields) }, $text );
+   $html     .= $hacc->div( { class => q(groupmember_ifields) }, $text );
    $text      = $hacc->span( { class => q(add_item_icon) }, q( ) );
 
    my $ref    = {
@@ -71,7 +71,7 @@ sub render_field {
       id      => $self->id.q(_remove),
       title   => $self->remove_tip };
    $text1    .= $hacc->span( $ref, $text );
-   $html     .= $hacc->span( { class => q(groupmember_buttons) }, $text1 );
+   $html     .= $hacc->div( { class => q(groupmember_buttons) }, $text1 );
    $text      = $hacc->span( { class => q(title) }, $self->ctitle );
 
    $args->{class } = $class;
@@ -80,7 +80,7 @@ sub render_field {
    $args->{values} = $self->current;
 
    $text     .= $hacc->scrolling_list( $args );
-   $html     .= $hacc->span( { class => q(groupmember_ifields) }, $text );
+   $html     .= $hacc->div( { class => q(groupmember_ifields) }, $text );
 
    return $html;
 }

@@ -143,7 +143,7 @@ sub _add_row_count {
 sub _check_box {
    my ($self, $r_no, $c_no, $id) = @_; my $hacc = $self->hacc;
 
-   my $args = { name => $self->id.q(_select).$r_no };
+   my $args = { name => $self->id.q(.select).$r_no };
 
    $id and $args->{value} = $id;
 
@@ -165,7 +165,7 @@ sub _drag_icon {
 sub _drag_header {
    my ($self, $c_no) = @_; my $name = q(col).$c_no;
 
-   my $args = { class => $self->class.q( minimal), id => $self->id.q(_).$name };
+   my $args = { class => $self->class.q( minimal), id => $self->id.q(.).$name };
 
    return $self->hacc->th( $args, $self->loc( 'Drag' ) );
 }
@@ -287,7 +287,7 @@ sub _render_row {
 
    $self->sortable and $class .= q( sortable_row);
 
-   my $args  = { class => $class, id => $self->id.q(_row).$r_no };
+   my $args  = { class => $class, id => $self->id.q(.row).$r_no };
 
    return $hacc->tr( $args, "\n".$cells );
 }
@@ -305,7 +305,7 @@ sub _row_number {
 sub _select_header {
    my ($self, $c_no) = @_; my $name = q(col).$c_no;
 
-   my $args = { class => $self->class, id => $self->id.q(_).$name };
+   my $args = { class => $self->class, id => $self->id.q(.).$name };
 
    $args->{class} .= $self->edit ? q( select) : q( minimal);
 

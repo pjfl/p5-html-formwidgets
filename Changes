@@ -1,5 +1,6 @@
 Revision history for HTML::FormWidgets
 
+         - Tweaked row and col ids in Table
          - Added Unordered list subclass
 
 0.7.312  2011-06-26

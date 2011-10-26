@@ -192,18 +192,15 @@ sub localize {
 }
 
 sub render {
-   my $self = shift; my $lead = "\n";
+   my $self  = shift; $self->type or return $self->text || $NUL;
 
-   $self->type or return $self->text || $NUL;
+   my $field = $self->_render or return $NUL;
 
-   $self->clear eq q(left) and $lead .= $self->hacc->br;
+   my $lead  = "\n"; $self->clear eq q(left) and $lead .= $self->hacc->br;
 
-   $self->stepno and $lead .= $self->render_stepno;
-   $self->prompt and $lead .= $self->render_prompt;
-   $self->sep    and $lead .= $self->render_separator;
-
-   my $field = $self->_render or return $lead;
-
+   $self->stepno    and $lead .= $self->render_stepno;
+   $self->prompt    and $lead .= $self->render_prompt;
+   $self->sep       and $lead .= $self->render_separator;
    $self->tip       and $field = $self->render_tip        ( $field );
    $self->ajaxid    and $field = $self->render_check_field( $field );
    $self->container and $field = $self->render_container  ( $field );
@@ -912,8 +909,8 @@ I<text>.
 
 =item hclass
 
-Each paragraph can have a heading. This is the class of then C<<
-<span> >> that wraps the heading text. Defaults to null
+Each paragraph can have a heading. This is the class of the C<<
+<div> >> that wraps the heading text. Defaults to null
 
 =item max_width
 

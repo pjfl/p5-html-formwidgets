@@ -20,10 +20,9 @@ sub init {
 }
 
 sub render_field {
-   my ($self, $args) = @_; my $text = $self->text;
+   my ($self, $args) = @_; my $text = $self->text or return;
 
-   ($text ||= $self->loc( $self->name ) || q()) =~ s{ \A \n }{}msx;
-   $text or return;
+   ($text = $self->loc( $self->text )) =~ s{ \A \n }{}msx;
 
    if ($self->dropcap) {
       my $markup;

@@ -36,7 +36,7 @@ sub render_field {
    $args->{name    }  = q(_).$self->name;
    $args->{size    }  = $self->width;
 
-   my $html   = $hacc->textfield( $args );
+   my $html  = $hacc->textfield( $args );
 
    $args              = {};
    $args->{class   }  = q( ifield freelist);
@@ -56,18 +56,16 @@ sub render_field {
 
    my $text  = $hacc->span( { class => q(add_item_icon) }, q( ) );
 
-   $args     = {
-      class  => q(icon_button tips add),
-      id     => $self->id.q(_add),
-      title  => $self->add_tip };
+   $args     = { class  => q(icon_button tips add),
+                 id     => $self->id.q(_add),
+                 title  => $self->add_tip };
 
    my $text1 = $hacc->span( $args, $text );
 
    $text     = $hacc->span( { class => q(remove_item_icon) }, q( ) );
-   $args     = {
-      class  => q(icon_button tips remove),
-      id     => $self->id.q(_remove),
-      title  => $self->remove_tip };
+   $args     = { class  => q(icon_button tips remove),
+                 id     => $self->id.q(_remove),
+                 title  => $self->remove_tip };
    $text1   .= $hacc->span( $args, $text );
    $html    .= $hacc->span( { class => q(freelist_buttons) }, $text1 );
 

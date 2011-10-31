@@ -14,12 +14,14 @@ sub init {
 
    $self->class   ( q(anchor_button fade) );
    $self->config  ( undef     );
-   $self->fhelp   ( q()       );
    $self->href    ( undef     );
    $self->imgclass( undef     );
    $self->target  ( undef     );
-   $self->text    ( q(link)   );
+   $self->text    ( $self->loc( q(link) ) );
    $self->tiptype ( q(normal) );
+
+   push @{ $self->l10n_fields }, q(fhelp);
+
    return;
 }
 

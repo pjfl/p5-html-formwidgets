@@ -18,21 +18,23 @@ sub init {
 
    $self->all            ( [] );
    $self->assets         ( q() );
-   $self->atitle         ( q(All) );
    $self->container_class( q(groupmember_container) );
-   $self->ctitle         ( q(Current) );
    $self->current        ( [] );
-   $self->fhelp          ( q() );
    $self->height         ( 10 );
-   $self->hint_title     ( $self->loc( q(Hint) ) ) unless ($self->hint_title);
    $self->labels         ( undef );
    $self->pclass         ( q(instructions) );
    $self->sep            ( $SPACE ) unless ($args->{prompt});
 
+   $self->atitle     ( $self->loc( q(All) ) );
+   $self->ctitle     ( $self->loc( q(Current) ) );
+   $self->fhelp      ( q() );
+   $self->hint_title ( $self->loc( q(Hint) ) );
    $text = $self->loc( q(groupMembershipAddTip) );
    $self->add_tip    ( $self->hint_title.$TTS.$text );
    $text = $self->loc( q(groupMembershipRemoveTip) );
    $self->remove_tip ( $self->hint_title.$TTS.$text );
+
+   push @{ $self->l10n_fields }, qw(atitle ctitle fhelp);
    return;
 }
 

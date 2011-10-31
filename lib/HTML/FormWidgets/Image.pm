@@ -12,8 +12,10 @@ __PACKAGE__->mk_accessors( qw(fhelp) );
 sub init {
    my ($self, $args) = @_;
 
-   $self->fhelp(   q() );
    $self->tiptype( q(normal) );
+
+   push @{ $self->l10n_fields }, q(fhelp);
+
    return;
 }
 

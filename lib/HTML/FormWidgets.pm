@@ -30,8 +30,10 @@ my $ATTRS =
      hint_title      => $NUL,         id              => undef,
      is_xml          => 0,            iterator        => undef,
      js_object       => q(html_formwidgets),
-     literal_js      => [],           messages        => {},
-     name            => undef,
+     l10n            => undef,
+     l10n_fields     => [ qw(prompt text tip) ],
+     literal_js      => [],
+     messages        => {},           name            => undef,
      optional_js     => undef,        onblur          => undef,
      onchange        => undef,        onkeypress      => undef,
      pclass          => q(prompt),    prompt          => $NUL,
@@ -157,6 +159,7 @@ sub inflate {
    $config->{fields      } = $self->fields;
    $config->{iterator    } = $self->iterator;
    $config->{js_object   } = $self->js_object;
+   $config->{l10n        } = $self->l10n;
    $config->{literal_js  } = $self->literal_js;
    $config->{messages    } = $self->messages;
    $config->{optional_js } = $self->optional_js;
@@ -169,10 +172,10 @@ sub init {
    # Can be overridden in factory subclass
 }
 
-*loc = \&localize;
-
-sub localize {
+sub loc {
    my ($self, $key, @rest) = @_;
+
+   defined $self->l10n and return $self->l10n->( $key, @rest );
 
    $key or return; $key = $NUL.$key; # Stringify
 
@@ -312,10 +315,7 @@ sub _bootstrap {
 
    # This is the default widget type if not overidden in the config
    $type or $type = $self->type( q(textfield) );
-
-   $self->name    ( $type             ) unless ($name);
-   $self->fields  ( $args->{fields  } );
-   $self->messages( $args->{messages} );
+   $name or $self->name( $type );
 
    return { qw(ajaxid 1 id 1 name 1 type 1) };
 }
@@ -374,8 +374,7 @@ sub _ensure_class_loaded {
    catch { $self->_set_error( $_ ); return 0 };
 
    if (Class::MOP::is_class_loaded( $class )) {
-      bless $self, $class;
-      return 1;
+      bless $self, $class; return 1;
    }
 
    $self->_set_error( "Class $class loaded but package undefined" );
@@ -385,16 +384,20 @@ sub _ensure_class_loaded {
 sub _init {
    my ($self, $skip, $args) = @_;
 
-   $self->literal_js  ( $args->{literal_js } || [] );
-   $self->optional_js ( $args->{optional_js} || [] );
+   $self->fields      ( $args->{fields     } || {}  );
+   $self->l10n        ( $args->{l10n       }        );
+   $self->l10n_fields ( [ @{ $self->l10n_fields } ] );
+   $self->literal_js  ( $args->{literal_js } || []  );
+   $self->messages    ( $args->{messages   } || {}  );
+   $self->optional_js ( $args->{optional_js} || []  );
    $self->init        ( $args ); # Allow subclass to set it's own defaults
    $self->_init_fields( $skip, $args->{fields} );
-   $self->_init_args  ( $skip, $args );
-   $self->hacc        ( $self->_build_hacc );
-   $self->is_xml      ( $self->_build_is_xml );
-   $self->pwidth      ( $self->_build_pwidth );
-   $self->sep         ( $self->_build_sep );
-   $self->stepno      ( $self->_build_stepno );
+   $self->_init_args  ( $skip, $args           );
+   $self->hacc        ( $self->_build_hacc     );
+   $self->is_xml      ( $self->_build_is_xml   );
+   $self->pwidth      ( $self->_build_pwidth   );
+   $self->sep         ( $self->_build_sep      );
+   $self->stepno      ( $self->_build_stepno   );
    return;
 }
 
@@ -412,8 +415,17 @@ sub _init_args {
 sub _init_fields {
    my ($self, $skip, $fields) = @_; my $id = $self->id;
 
-   $id and $fields and exists $fields->{ $id }
-       and $self->_init_args( $skip, $fields->{ $id } );
+   if ($id and $fields and exists $fields->{ $id }) {
+      $self->_init_args( $skip, $fields->{ $id } );
+
+      if (defined $self->l10n) {
+         for my $k (@{ $self->l10n_fields }) {
+            my $v = $self->loc( "${id}.${k}", { no_default => 1 } );
+
+            $v and $self->{ $k } = $v;
+         }
+      }
+   }
 
    return;
 }

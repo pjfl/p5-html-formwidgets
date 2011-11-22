@@ -30,9 +30,7 @@ my $ATTRS =
      hint_title      => $NUL,         id              => undef,
      is_xml          => 0,            iterator        => undef,
      js_object       => q(html_formwidgets),
-     l10n            => undef,
-     l10n_fields     => [ qw(prompt text tip) ],
-     literal_js      => [],
+     l10n            => undef,        literal_js      => [],
      messages        => {},           name            => undef,
      optional_js     => undef,        onblur          => undef,
      onchange        => undef,        onkeypress      => undef,
@@ -386,7 +384,6 @@ sub _init {
 
    $self->fields      ( $args->{fields     } || {}  );
    $self->l10n        ( $args->{l10n       }        );
-   $self->l10n_fields ( [ @{ $self->l10n_fields } ] );
    $self->literal_js  ( $args->{literal_js } || []  );
    $self->messages    ( $args->{messages   } || {}  );
    $self->optional_js ( $args->{optional_js} || []  );
@@ -415,17 +412,8 @@ sub _init_args {
 sub _init_fields {
    my ($self, $skip, $fields) = @_; my $id = $self->id;
 
-   if ($id and $fields and exists $fields->{ $id }) {
-      $self->_init_args( $skip, $fields->{ $id } );
-
-      if (defined $self->l10n) {
-         for my $k (@{ $self->l10n_fields }) {
-            my $v = $self->loc( "${id}.${k}", { no_default => 1 } );
-
-            $v and $self->{ $k } = $v;
-         }
-      }
-   }
+   $id and $fields and exists $fields->{ $id }
+      and $self->_init_args( $skip, $fields->{ $id } );
 
    return;
 }

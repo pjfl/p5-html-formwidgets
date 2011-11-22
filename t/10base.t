@@ -109,11 +109,11 @@ $widget = HTML::FormWidgets->new( data   => {
                                   name   => q(table),
                                   type   => q(table) );
 
-ok( $widget->render =~ m{ tr \s class=".*" \s id="table_row0" }mx, q(Table) );
+ok( $widget->render =~ m{ tr \s class=".*" \s id="table.row0" }mx, q(Table) );
 
 $widget = HTML::FormWidgets->new( name => q(textarea), type => q(textarea) );
 
-ok( $widget->render =~ m{ id="textarea" \s class="\s ifield" \s rows="5" \s cols="60" }mx, q(Text area) );
+ok( $widget->render =~ m{ id="textarea" \s class="\s ifield" }mx, q(Text area) );
 
 $widget = HTML::FormWidgets->new( default => q(test),
                                   name    => q(textfield),

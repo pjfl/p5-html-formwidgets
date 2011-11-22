@@ -33,8 +33,6 @@ sub init {
    $self->add_tip    ( $self->hint_title.$TTS.$text );
    $text = $self->loc( q(groupMembershipRemoveTip) );
    $self->remove_tip ( $self->hint_title.$TTS.$text );
-
-   push @{ $self->l10n_fields }, qw(atitle ctitle fhelp);
    return;
 }
 

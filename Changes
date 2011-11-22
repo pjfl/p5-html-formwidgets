@@ -1,9 +1,8 @@
 Revision history for HTML::FormWidgets
 
+	 - Fields attr contains localized text strings
          - Updated inc::Bob
          - Textarea simplified
-         - Will use the L10N object to do localisation in preference
-         - to message hash
          - If render_field return null the so does render
          - Tweaked row and col ids in Table
          - Added Unordered list subclass

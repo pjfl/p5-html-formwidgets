@@ -13,9 +13,6 @@ sub init {
    my ($self, $args) = @_;
 
    $self->tiptype( q(normal) );
-
-   push @{ $self->l10n_fields }, q(fhelp);
-
    return;
 }
 

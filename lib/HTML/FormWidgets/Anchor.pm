@@ -19,9 +19,6 @@ sub init {
    $self->target  ( undef     );
    $self->text    ( $self->loc( q(link) ) );
    $self->tiptype ( q(normal) );
-
-   push @{ $self->l10n_fields }, q(fhelp);
-
    return;
 }
 

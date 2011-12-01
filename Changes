@@ -1,5 +1,6 @@
 Revision history for HTML::FormWidgets
 
+	 - Popupmenu sorts values into label order if labels are provided
 	 - Fields attr contains localized text strings
          - Updated inc::Bob
          - Textarea simplified

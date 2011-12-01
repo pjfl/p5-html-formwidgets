@@ -23,10 +23,17 @@ sub render_field {
    $self->class =~ m{ chzn-select }msx
       and push @{ $self->optional_js }, qw(chosen.js);
 
-   $args->{class   } .= q( ).($self->class || q(ifield));
-   $args->{labels  }  = $self->labels   if ($self->labels);
-   $args->{onchange}  = $self->onchange if ($self->onchange);
-   $args->{values  }  = $self->values;
+   $args->{class} .= q( ).($self->class || q(ifield));
+   $self->onchange and $args->{onchange} = $self->onchange;
+
+   if ($self->labels) {
+      my $labels = $args->{labels} = $self->labels;
+
+      $args->{values} = [ sort {
+         ($labels->{ $a } || q()) cmp ($labels->{ $b } || q()) }
+                          @{ $self->values } ];
+   }
+   else { $args->{values} = $self->values }
 
    return $self->hacc->popup_menu( $args );
 }

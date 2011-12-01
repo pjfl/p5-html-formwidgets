@@ -362,6 +362,7 @@ sub _build_stepno {
    my $self = shift; my $stepno = $self->stepno;
 
    defined $stepno and ref $stepno eq q(HASH) and return $stepno;
+   defined $stepno and $stepno eq q(none)     and return $NUL;
    defined $stepno and $stepno == -1          and $stepno = $self->_next_step;
    defined $stepno and $stepno == 0           and $stepno = $SPACE;
            $stepno and $stepno ne $SPACE      and $stepno = $stepno.q(.);

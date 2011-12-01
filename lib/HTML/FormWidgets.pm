@@ -195,7 +195,7 @@ sub loc {
 sub render {
    my $self  = shift; $self->type or return $self->text || $NUL;
 
-   my $field = $self->_render or return $NUL;
+   my $field = $self->_render_field or return $NUL;
 
    my $lead  = "\n"; $self->clear eq q(left) and $lead .= $self->hacc->br;
 
@@ -246,9 +246,13 @@ sub render_prompt {
 }
 
 sub render_separator {
-   my $self = shift;
+   my $self  = shift; my $class = q(separator);
 
-   return $self->hacc->span( { class => q(separator) }, $self->sep );
+   if ($self->sep eq q(break)) {
+      $class = q(separator_break); $self->sep( $SPACE );
+   }
+
+   return $self->hacc->span( { class => $class }, $self->sep );
 }
 
 sub render_stepno {
@@ -437,7 +441,7 @@ sub _next_step {
    return $_[ 0 ]->iterator->();
 }
 
-sub _render {
+sub _render_field {
    my $self = shift; my $id = $self->id; my $name = $self->name; my $args = {};
 
    $id               and $args->{id        }  = $id;
@@ -530,7 +534,9 @@ main use is as a form generator within a L<Catalyst> application
 
 =head1 Subroutines/Methods
 
-=head2 build
+=head2 Public Methods
+
+=head3 build
 
       $class->build( $config, $data );
 
@@ -539,7 +545,7 @@ form. One or more lists of widget definitions are processed in
 turn. New widgets are created and their rendered output replaces their
 definitions in the data structure
 
-=head2 new
+=head3 new
 
    $widget = $class->new( [{] key1 => value1, ... [}] );
 
@@ -550,7 +556,7 @@ This method takes a large number of options with each widget using
 only few of them. Each option is described in the factory subclasses
 which use that option
 
-=head2 inflate
+=head3 inflate
 
    $widget->inflate( $args );
 
@@ -558,7 +564,7 @@ Creates L<new|HTML::FormWidgets/new> objects and returns their rendered output.
 Called by the L</_render> methods in the factory subclasses to inflate
 embeded widget definitions
 
-=head2 init
+=head3 init
 
    $widget->init( $args );
 
@@ -566,9 +572,7 @@ Initialises this object with data from the passed arguments. This is
 usually overridden in the factory subclass which sets the default for
 it's own attributes and then calls this method in the base class
 
-=head2 loc
-
-=head2 localize
+=head3 loc
 
    $message_text = $widget->localize( $message_id, @args );
 
@@ -576,13 +580,13 @@ Use the supplied key to return a value from the I<messages>
 hash. This hash was passed to the constructor and should contain any
 literal text used by any of the widgets
 
-=head2 render
+=head3 render
 
    $html = $widget->render;
 
 Assemble the components of the generated widget. Each component is
 concatenated onto a scalar which is the returned value. This method
-calls L</_render> which should be defined in the factory subclass for
+calls L</render_field> which should be defined in the factory subclass for
 this widget type.
 
 This method uses these attributes:
@@ -633,50 +637,75 @@ server side validation
 
 =back
 
-=head2 _bootstrap
+=head3 render_check_field
+
+Adds markup for the Ajax field validation
+
+=head3 render_container
+
+Wraps the rendered field in a containing div
+
+=head3 render_field
+
+Should be overridden in the factory subclass. It should return the markup
+for the specified field type
+
+=head3 render_prompt
+
+Adds a label element to the generated markup
+
+=head3 render_separator
+
+Insert a spacing element between the prompt and the field
+
+=head3 render_stepno
+
+Markup containing the step number on the form if required
+
+=head3 render_tip
+
+Flyover tooltip field help text
+
+=head2 Private Methods
+
+=head3 _bootstrap
 
    $widget->_bootstrap( $args );
 
 Determine the I<id>, I<name> and I<type> attributes of the widget from
 the supplied arguments
 
-=head2 _ensure_class_loaded
+=head3 _ensure_class_loaded
 
    $widget->_ensure_class_loaded( $class );
 
 Once the factory subclass is known this method ensures that it is loaded
 and then re-blesses the self referential object into the correct class
 
-=head2 _render
-
-   $html = $widget->_render( $args );
-
-This should have been overridden in the factory subclass. If it gets
-called its probably an error so return the value of the I<text>
-attribute if set or an error message otherwise
-
-=head2 _set_error
+=head3 _set_error
 
    $widget->_set_error( $error_text );
 
 Stores the passed error message in the I<text> attribute so that it
 gets rendered in place of the widget
 
-=head2 __arg_list
+=head2 Private Subroutines
+
+=head3 __arg_list
 
    $args = __arg_list( @rest );
 
 Accepts either a single argument of a hash ref or a list of key/value
 pairs. Returns a hash ref in either case.
 
-=head2 __group_fields
+=head3 __group_fields
 
    $html = __group_fields( $hacc, $item, $stack );
 
 Wraps the top I<nitems> number of widgets on the build stack in a C<<
 <fieldset> >> element with a legend
 
-=head2 __merge_hashes
+=head3 __merge_hashes
 
    $widget = $class->new( __merge_hashes( $config, $item->{content} ) );
 

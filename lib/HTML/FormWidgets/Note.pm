@@ -23,7 +23,6 @@ sub render_field {
    my ($self, $args) = @_;
 
    $args = { class => $self->class, id => $self->id };
-   $self->align and $args->{style} .= 'text-align: '.$self->align.q(;);
    $self->width and $args->{style} .= ' width: '.$self->width.q(;);
 
    (my $text = $self->text || $self->loc( $self->name )) =~ s{ \A \n }{}msx;

@@ -10,7 +10,7 @@ use parent qw(HTML::FormWidgets);
 sub render_field {
    my ($self, $args)  = @_;
 
-   $args->{class} .= q( ifield).($self->class ? q( ).$self->class : q());
+   $args->{class} .= ($args->{class} ? q( ): q()).($self->class || q(ifield));
 
    return $self->hacc->textarea( $args );
 }

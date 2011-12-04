@@ -1,8 +1,8 @@
 Revision history for HTML::FormWidgets
 
-	 - Set separator to break to have prompt appear above input field
-	 - Popupmenu sorts values into label order if labels are provided
-	 - Fields attr contains localized text strings
+         - Set separator to break to have prompt appear above input field
+         - Popupmenu sorts values into label order if labels are provided
+         - Fields attr contains localized text strings
          - Updated inc::Bob
          - Textarea simplified
          - If render_field return null the so does render

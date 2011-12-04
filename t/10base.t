@@ -113,13 +113,14 @@ ok( $widget->render =~ m{ tr \s class=".*" \s id="table.row0" }mx, q(Table) );
 
 $widget = HTML::FormWidgets->new( name => q(textarea), type => q(textarea) );
 
-ok( $widget->render =~ m{ id="textarea" \s class="\s ifield" }mx, q(Text area) );
+ok( $widget->render =~ m{ id="textarea" \s class="ifield" }mx,
+    q(Text area) );
 
 $widget = HTML::FormWidgets->new( default => q(test),
                                   name    => q(textfield),
                                   type    => q(textfield) );
 
-ok( $widget->render =~ m{ input \s value="test" \s name="textfield" \s type="text" \s id="textfield" \s class="\s ifield" \s size="40" }mx, q(Textfield) );
+ok( $widget->render =~ m{ input \s value="test" \s name="textfield" \s type="text" \s id="textfield" \s class="ifield" \s size="40" }mx, q(Textfield) );
 
 # Local Variables:
 # mode: perl

@@ -21,9 +21,9 @@ my $SPACE = '&#160;' x 3;
 my $SPC   = q( );
 my $TTS   = q( ~ );
 my $ATTRS =
-   { ajaxid          => undef,        align           => q(left),
+   { ajaxid          => undef,
      class           => $NUL,         clear           => $NUL,
-     container       => 1,            container_class => undef,
+     container       => 1,            container_class => q(container),
      container_id    => undef,        content_type    => q(text/html),
      default         => undef,        fields          => {},
      frame_class     => $NUL,         hacc            => undef,
@@ -31,7 +31,7 @@ my $ATTRS =
      is_xml          => 0,            iterator        => undef,
      js_object       => q(html_formwidgets),
      l10n            => undef,        literal_js      => [],
-     messages        => {},           name            => undef,
+     name            => undef,
      optional_js     => undef,        onblur          => undef,
      onchange        => undef,        onkeypress      => undef,
      pclass          => q(prompt),    prompt          => $NUL,
@@ -159,7 +159,6 @@ sub inflate {
    $config->{js_object   } = $self->js_object;
    $config->{l10n        } = $self->l10n;
    $config->{literal_js  } = $self->literal_js;
-   $config->{messages    } = $self->messages;
    $config->{optional_js } = $self->optional_js;
    $config->{template_dir} = $self->template_dir;
 
@@ -171,23 +170,18 @@ sub init {
 }
 
 sub loc {
-   my ($self, $key, @rest) = @_;
+   my ($self, $text, @rest) = @_;
 
-   defined $self->l10n and return $self->l10n->( $key, @rest );
+   defined $self->l10n and return $self->l10n->( $text, @rest );
 
-   $key or return; $key = $NUL.$key; # Stringify
-
-   # Lookup the message using the supplied key
-   my $messages = $self->messages     || {};
-   my $message  = $messages->{ $key } || {};
-   my $text     = $message->{text}    || $key;  # Default msg text to the key
+   $text or return; $text = $NUL.$text; # Stringify
 
    # Expand positional parameters of the form [_<n>]
    0 > index $text, $LSB and return $text;
 
    my @args = $rest[0] && ref $rest[0] eq q(ARRAY) ? @{ $rest[0] } : @rest;
 
-   push @args, map { $NUL } 0 .. 10;
+   push @args, map { '[?]' } 0 .. 10;
    $text =~ s{ \[ _ (\d+) \] }{$args[ $1 - 1 ]}gmx;
    return $text;
 }
@@ -195,9 +189,9 @@ sub loc {
 sub render {
    my $self  = shift; $self->type or return $self->text || $NUL;
 
-   my $field = $self->_render_field or return $NUL;
+   my $field = $self->_render_field or return $NUL; my $lead  = "\n";
 
-   my $lead  = "\n"; $self->clear eq q(left) and $lead .= $self->hacc->br;
+   $self->clear eq q(left) and $lead .= $self->hacc->br;
 
    $self->stepno    and $lead .= $self->render_stepno;
    $self->prompt    and $lead .= $self->render_prompt;
@@ -218,9 +212,7 @@ sub render_check_field {
 }
 
 sub render_container {
-   my ($self, $field) = @_;
-
-   my $args = { class => $self->container_class || q(container ).$self->align };
+   my ($self, $field) = @_; my $args = { class => $self->container_class };
 
    $self->container_id and $args->{id} = $self->container_id;
 
@@ -333,9 +325,7 @@ sub _build_hacc {
 }
 
 sub _build_is_xml {
-   my $content_type = $_[ 0 ]->content_type;
-
-   return $content_type =~ m{ / (.*) xml \z }mx ? 1 : 0;
+   return $_[ 0 ]->content_type =~ m{ / (.*) xml \z }mx ? 1 : 0;
 }
 
 sub _build_pwidth {
@@ -390,7 +380,6 @@ sub _init {
    $self->fields      ( $args->{fields     } || {}  );
    $self->l10n        ( $args->{l10n       }        );
    $self->literal_js  ( $args->{literal_js } || []  );
-   $self->messages    ( $args->{messages   } || {}  );
    $self->optional_js ( $args->{optional_js} || []  );
    $self->init        ( $args ); # Allow subclass to set it's own defaults
    $self->_init_fields( $skip, $args->{fields} );
@@ -447,7 +436,7 @@ sub _render_field {
 
    $id               and $args->{id        }  = $id;
    $name             and $args->{name      }  = $name;
-   $self->ajaxid     and $args->{class     }  = q( server);
+   $self->ajaxid     and $args->{class     }  = q(server);
    $self->required   and $args->{class     } .= q( required);
    $self->default    and $args->{default   }  = $self->default;
    $self->onblur     and $args->{onblur    }  = $self->onblur;
@@ -487,33 +476,27 @@ HTML::FormWidgets - Create HTML form markup
    use parent qw(Catalyst::View CatalystX::Usul);
    use HTML::FormWidgets;
 
-   sub build_widgets {
-      my ($self, $c, $sources, $config) = @_; my $s = $c->stash; my $data = [];
+   sub _build_widgets {
+       my ($self, $c, $data, $config) = @_; my $s = $c->stash; $config ||= {};
 
-      $sources ||= []; $config ||= {};
+       $config->{assets      } = $s->{assets};
+       $config->{base        } = $c->req->base;
+       $config->{content_type} = $s->{content_type};
+       $config->{fields      } = $s->{fields} ||= {};
+       $config->{form        } = $s->{form};
+       $config->{hide        } = $s->{hidden}->{items};
+       $config->{js_object   } = $self->js_object;
+       $config->{l10n        } = sub { $self->loc( $s, @_ ) };
+       $config->{literal_js  } = $s->{literal_js} ||= [];
+       $config->{optional_js } = $s->{optional_js} ||= [];
+       $config->{pwidth      } = $s->{pwidth};
+       $config->{root        } = $c->config->{root};
+       $config->{static      } = $s->{static};
+       $config->{swidth      } = $s->{width} if ($s->{width});
+       $config->{template_dir} = $self->template_dir;
 
-      for my $part (map { $s->{ $_ } } grep { $s->{ $_ } } @{ $sources }) {
-         if (ref $part eq q(ARRAY) and $part->[ 0 ]) {
-            push @{ $data }, $_ for (@{ $part });
-         }
-         else { push @{ $data }, $part }
-      }
-
-      $config->{assets      } = $s->{assets};
-      $config->{base        } = $c->req->base;
-      $config->{content_type} = $s->{content_type};
-      $config->{fields      } = $s->{fields} || {};
-      $config->{form        } = $s->{form};
-      $config->{hide        } = $s->{hidden}->{items};
-      $config->{messages    } = $s->{messages};
-      $config->{pwidth      } = $s->{pwidth};
-      $config->{root        } = $c->config->{root};
-      $config->{static      } = $s->{static};
-      $config->{swidth      } = $s->{width} if ($s->{width});
-      $config->{template_dir} = $c->config->{template_dir};
-
-      HTML::FormWidgets->build( $config, $data );
-      return $data;
+       HTML::FormWidgets->build( $config, $data );
+       return;
    }
 
 =head1 Description
@@ -575,11 +558,12 @@ it's own attributes and then calls this method in the base class
 
 =head3 loc
 
-   $message_text = $widget->localize( $message_id, @args );
+   $message_text = $widget->loc( $message_id, @args );
 
-Use the supplied key to return a value from the I<messages>
-hash. This hash was passed to the constructor and should contain any
-literal text used by any of the widgets
+Use the supplied key to return a value from the I<l10n> object. This
+object was passed to the constructor and should localize the key to
+the required language. The C<@args> list contains parameters to substituted
+in place of the placeholders which have the fomr I<[_n]>
 
 =head3 render
 
@@ -893,10 +877,10 @@ defaulted to B<normal> (wraps the image in a span with a JS tooltip)
 
 =head2 Label
 
-Calls L</localize> with the I<name> attribute as the message key. If
-the message does not exist the value of the I<text> attribute is
-used. If I<dropcap> is true the first character of the text is wrapped
-in a C<< <span class="dropcap"> >>
+Calls L</loc> with the I<text> attribute if set otherwise returns nothing.
+If I<dropcap> is true the first character of the text is wrapped
+in a C<< <span class="dropcap"> >>. Wraps the text in a span of class
+I<class> which defaults to B<label_text>
 
 =head2 Menu
 
@@ -983,12 +967,23 @@ onchange event handler will be set to I<onchange>
 
 Generates a horizontal rule with optional clickable action
 
+=head2 ScrollPin
+
+Implements clickable navigation markers that scroll the page to given
+location. Returns an unordered list of class I<class> which defaults
+to B<pintray>. This is the default selector class for the JS C<ScrollPins>
+object
+
 =head2 ScrollingList
 
 The I<height> attribute controls the height of the scrolling
 list.  The list of options is passed in I<values> with the
 display labels in I<labels>. The onchange event handler will
 be set to I<onchange>
+
+=head2 SidebarPanel
+
+
 
 =head2 Slider
 
@@ -1041,6 +1036,10 @@ Use the mouse wheel? Defaults to B<1>
 
 =back
 
+=head2 TabSwapper
+
+
+
 =head2 Table
 
 The input data is in I<< $data->{values} >> which is an array
@@ -1068,6 +1067,10 @@ to sixty characters wide (I<width>)
 
 Implements an expanding tree of selectable objects
 
+=head2 UnorderedList
+
+
+
 =head1 Diagnostics
 
 None
@@ -1078,15 +1081,11 @@ None
 
 =item L<Class::Accessor::Fast>
 
-=item L<Class::Inspector>
-
 =item L<Class::MOP>
 
 =item L<HTML::Accessors>
 
 =item L<Syntax::Highlight::Perl>
-
-=item L<Text::Markdown>
 
 =item L<Text::ParseWords>
 

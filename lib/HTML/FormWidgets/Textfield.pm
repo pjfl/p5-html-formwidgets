@@ -19,7 +19,7 @@ sub init {
 sub render_field {
    my ($self, $args) = @_;
 
-   $args->{class} .= q( ).($self->class || q(ifield));
+   $args->{class} .= ($args->{class} ? q( ): q()).($self->class || q(ifield));
    $args->{size }  = $self->width;
 
    return $self->hacc->textfield( $args );

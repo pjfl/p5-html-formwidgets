@@ -12,6 +12,7 @@ __PACKAGE__->mk_accessors( qw(height labels values) );
 sub init {
    my ($self, $args) = @_;
 
+   $self->class ( q(ifield) );
    $self->height( 10 );
    $self->labels( undef );
    $self->values( [] );
@@ -24,7 +25,7 @@ sub render_field {
    $self->class =~ m{ chzn-select }msx
       and push @{ $self->optional_js }, qw(chosen.js);
 
-   $args->{class   } .= q( ).($self->class || q(ifield));
+   $args->{class   } .= ($args->{class} ? q( ) : q()).$self->class;
    $args->{labels  }  = $self->labels   if ($self->labels);
    $args->{onchange}  = $self->onchange if ($self->onchange);
    $args->{size    }  = $self->height;

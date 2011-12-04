@@ -21,26 +21,25 @@ my $SPACE = '&#160;' x 3;
 my $SPC   = q( );
 my $TTS   = q( ~ );
 my $ATTRS =
-   { ajaxid          => undef,
-     class           => $NUL,         clear           => $NUL,
-     container       => 1,            container_class => q(container),
-     container_id    => undef,        content_type    => q(text/html),
-     default         => undef,        fields          => {},
-     frame_class     => $NUL,         hacc            => undef,
-     hint_title      => $NUL,         id              => undef,
-     is_xml          => 0,            iterator        => undef,
+   { ajaxid          => undef,        class           => $NUL,
+     clear           => $NUL,         container       => 1,
+     container_class => q(container), container_id    => undef,
+     content_type    => q(text/html), default         => undef,
+     fields          => {},           frame_class     => $NUL,
+     hacc            => undef,        hint_title      => $NUL,
+     id              => undef,        iterator        => undef,
      js_object       => q(html_formwidgets),
      l10n            => undef,        literal_js      => [],
-     name            => undef,
-     optional_js     => undef,        onblur          => undef,
-     onchange        => undef,        onkeypress      => undef,
-     pclass          => q(prompt),    prompt          => $NUL,
-     pwidth          => 40,           readonly        => 0,
-     required        => 0,            sep             => undef,
-     stepno          => undef,        swidth          => 1000,
-     tabstop         => 3,            template_dir    => undef,
-     text            => $NUL,         tip             => $NUL,
-     tiptype         => q(dagger),    type            => undef, };
+     name            => undef,        optional_js     => undef,
+     onblur          => undef,        onchange        => undef,
+     onkeypress      => undef,        pclass          => q(prompt),
+     prompt          => $NUL,         pwidth          => 40,
+     readonly        => 0,            required        => 0,
+     sep             => undef,        stepno          => undef,
+     swidth          => 1000,         tabstop         => 3,
+     template_dir    => undef,        text            => $NUL,
+     tip             => $NUL,         tiptype         => q(dagger),
+     type            => undef, };
 
 __PACKAGE__->mk_accessors( keys %{ $ATTRS } );
 
@@ -112,10 +111,7 @@ sub __group_fields {
 }
 
 sub new {
-   my ($self, @rest) = @_;
-
-   # Coerce a hash ref of the passed args
-   my $args  = __arg_list( @rest );
+   my ($self, @rest) = @_; my $args  = __arg_list( @rest );
 
    # Start with some hard coded defaults;
    my $new   = bless { %{ $ATTRS } }, ref $self || $self;
@@ -129,9 +125,7 @@ sub new {
              ? (substr $class, 1) : __PACKAGE__.q(::).$class;
 
    $new->_ensure_class_loaded( $class );
-
-   # Complete the initialization
-   $new->_init( $skip, $args );
+   $new->_init( $skip, $args ); # Complete the initialization
 
    return $new;
 }
@@ -153,20 +147,20 @@ sub inflate {
 
    (defined $args and ref $args eq q(HASH)) or return $args;
 
-   $config->{content_type} = $self->content_type;
-   $config->{fields      } = $self->fields;
-   $config->{iterator    } = $self->iterator;
-   $config->{js_object   } = $self->js_object;
-   $config->{l10n        } = $self->l10n;
-   $config->{literal_js  } = $self->literal_js;
-   $config->{optional_js } = $self->optional_js;
-   $config->{template_dir} = $self->template_dir;
+   my @attrs = ( qw(content_type fields iterator js_object l10n literal_js
+                    optional_js template_dir) );
+
+   $config->{ $_ } = $self->$_() for (@attrs);
 
    return __PACKAGE__->new( __merge_hashes( $args, $config ) )->render;
 }
 
 sub init {
    # Can be overridden in factory subclass
+}
+
+sub is_xml {
+   return $_[ 0 ]->content_type =~ m{ / (.*) xml \z }mx ? 1 : 0;
 }
 
 sub loc {
@@ -238,7 +232,7 @@ sub render_prompt {
 }
 
 sub render_separator {
-   my $self  = shift; my $class = q(separator);
+   my $self = shift; my $class = q(separator);
 
    if ($self->sep eq q(break)) {
       $class = q(separator_break); $self->sep( $SPACE );
@@ -260,12 +254,7 @@ sub render_tip {
 
    (my $tip = $self->tip) =~ s{ \n }{ }gmx;
 
-   if ($tip !~ m{ $TTS }mx) {
-      $self->hint_title
-         or $self->hint_title( $self->loc( q(handy_hint_title) ) );
-      $tip = $self->hint_title.$TTS.$tip;
-   }
-
+   $tip !~ m{ $TTS }mx and $tip = $self->hint_title.$TTS.$tip;
    $tip =~ s{ \s+ }{ }gmx;
 
    my $args = { class => q(help tips), title => $tip };
@@ -324,8 +313,12 @@ sub _build_hacc {
    return $hacc
 }
 
-sub _build_is_xml {
-   return $_[ 0 ]->content_type =~ m{ / (.*) xml \z }mx ? 1 : 0;
+sub _build_hint_title {
+   my $self = shift;
+
+   return $self->hint_title ? $self->hint_title
+                            : $self->loc( q(handy_hint_title) );
+
 }
 
 sub _build_pwidth {
@@ -381,14 +374,14 @@ sub _init {
    $self->l10n        ( $args->{l10n       }        );
    $self->literal_js  ( $args->{literal_js } || []  );
    $self->optional_js ( $args->{optional_js} || []  );
+   $self->hint_title  ( $self->_build_hint_title );
    $self->init        ( $args ); # Allow subclass to set it's own defaults
-   $self->_init_fields( $skip, $args->{fields} );
-   $self->_init_args  ( $skip, $args           );
-   $self->hacc        ( $self->_build_hacc     );
-   $self->is_xml      ( $self->_build_is_xml   );
-   $self->pwidth      ( $self->_build_pwidth   );
-   $self->sep         ( $self->_build_sep      );
-   $self->stepno      ( $self->_build_stepno   );
+   $self->_init_fields( $skip, $args->{fields}   );
+   $self->_init_args  ( $skip, $args             );
+   $self->hacc        ( $self->_build_hacc       );
+   $self->pwidth      ( $self->_build_pwidth     );
+   $self->sep         ( $self->_build_sep        );
+   $self->stepno      ( $self->_build_stepno     );
    return;
 }
 
@@ -432,10 +425,10 @@ sub _next_step {
 }
 
 sub _render_field {
-   my $self = shift; my $id = $self->id; my $name = $self->name; my $args = {};
+   my $self = shift; my $id = $self->id; my $args = {};
 
    $id               and $args->{id        }  = $id;
-   $name             and $args->{name      }  = $name;
+   $self->name       and $args->{name      }  = $self->name;
    $self->ajaxid     and $args->{class     }  = q(server);
    $self->required   and $args->{class     } .= q( required);
    $self->default    and $args->{default   }  = $self->default;
@@ -555,6 +548,12 @@ embeded widget definitions
 Initialises this object with data from the passed arguments. This is
 usually overridden in the factory subclass which sets the default for
 it's own attributes and then calls this method in the base class
+
+=head3 is_xml
+
+   $bool = $widget->is_xml;
+
+Returns true if the content type matches I<xml>
 
 =head3 loc
 

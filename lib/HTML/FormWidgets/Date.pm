@@ -13,13 +13,13 @@ my $SPC = q( );
 my $TTS = q( ~ );
 
 sub init {
-   my ($self, $args) = @_; my $hint = $self->loc( q(Hint) );
+   my ($self, $args) = @_;
 
-   $self->clear_hint( $hint.$TTS.$self->loc( q(clearFieldTip) ) );
+   $self->clear_hint( $self->hint_title.$TTS.$self->loc( q(clearFieldTip) ) );
    $self->config    ( { align       => q("bR"),
                         ifFormat    => q("%d/%m/%Y"),
                         singleClick => q(true) } );
-   $self->hint      ( $hint.$TTS.$self->loc( q(dateWidgetTip) ) );
+   $self->hint      ( $self->hint_title.$TTS.$self->loc( q(dateWidgetTip) ) );
    $self->readonly  ( 1 );
    $self->width     ( 10 );
 

@@ -24,8 +24,9 @@ sub init {
 }
 
 sub render_field {
-   my $self = shift; my $hacc = $self->hacc; my $args = { id => $self->id };
+   my $self = shift; my $hacc = $self->hacc; my $args = {};
 
+   $self->id and $args->{id} = $self->id;
    $self->id and $self->config
       and $self->_js_config( 'anchors', $self->id, $self->config );
 

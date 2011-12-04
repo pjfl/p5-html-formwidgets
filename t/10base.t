@@ -17,7 +17,7 @@ BEGIN {
    $current and $current->notes->{stop_tests}
             and plan skip_all => $current->notes->{stop_tests};
 
-   plan tests => 16;
+   plan tests => 20;
 }
 
 use_ok q(HTML::FormWidgets);
@@ -25,22 +25,31 @@ use_ok q(HTML::FormWidgets);
 my $widget = HTML::FormWidgets->new( id => q(test) );
 
 ok( $widget->render =~ m{ input \s value="" \s name="test" \s type="text" }mx,
-    q(Default textfield) );
+    'Default textfield' );
 
 $widget = HTML::FormWidgets->new( href => q(test), type => q(anchor) );
 
 ok( $widget->render =~ m{ a \s href="test" \s class="anchor_button \s fade" }mx,
-    q(Anchor) );
+    'Anchor' );
+
+$widget = HTML::FormWidgets->new( id => q(test), type => q(button) );
+
+ok $widget->render =~
+  m{ input \s value="Test" \s name="_method" \s type="submit" \s id="test" }msx,
+   'Button';
 
 $widget = HTML::FormWidgets->new( id => q(test), type => q(checkbox) );
 
 ok( $widget->render
        =~ m{ input \s value="1" \s name="test" \s type="checkbox" }mx,
-    q(Checkbox) );
+    'Checkbox' );
+
+# Chooser
+# Cloud
 
 $widget = HTML::FormWidgets->new( id => q(test), type => q(date) );
 
-ok( $widget->render =~ m{ id="test_trigger" }mx, q(Date) );
+ok( $widget->render =~ m{ id="test_trigger" }mx, 'Date' );
 
 $widget = HTML::FormWidgets->new( hide => [],
                                   name => q(file),
@@ -48,30 +57,46 @@ $widget = HTML::FormWidgets->new( hide => [],
                                   type => q(file) );
 
 ok( $widget->render =~ m{ Path \s honestly \s not \s found }mx,
-    q(File not found) );
+    'File not found' );
 
 $widget->path( q(t/10base.t) );
 
 ok( $widget->render =~ m{ use_ok \s q\(HTML::FormWidgets\) }mx,
-    q(File found) );
+    'File found' );
+
+# Freelist
+# GroupMembership
+
+$widget = HTML::FormWidgets->new( default => q(test), type => q(hidden) );
+
+ok $widget->render =~
+   m{ input \s value="test" \s name="hidden" \s type="hidden" }msx,
+   'Hidden';
+
+# Image
 
 $widget = HTML::FormWidgets->new( id   => q(test),
                                   text => q(Test text),
                                   type => q(label) );
 
-ok( $widget->render =~ m{ Test \s text }mx, q(Label) );
+ok( $widget->render =~ m{ Test \s text }mx, 'Label' );
+
+# Menu
 
 $widget = HTML::FormWidgets->new( id   => q(test),
                                   text => q(Test text),
                                   type => q(note) );
 
-ok( $widget->render =~ m{ >Test \s text</span> }mx, q(Note) );
+ok( $widget->render =~ m{ >Test \s text</span> }mx, 'Note' );
+
+# POD
+# Paragraphs
 
 $widget = HTML::FormWidgets->new( id      => q(test1),
                                   subtype => q(verify),
                                   type    => q(password) );
 
-ok( $widget->render =~ m{ name="test2" \s type="password" }mx, q(Password) );
+ok( $widget->render =~ m{ name="test2" \s type="password" }mx, 'Password' );
 
 $widget = HTML::FormWidgets->new( id      => q(test),
                                   labels  => { 1 => q(One), 2 => q(Two) },
@@ -79,7 +104,7 @@ $widget = HTML::FormWidgets->new( id      => q(test),
                                   values  => [ 1, 2 ] );
 
 ok( $widget->render =~ m{ <option \s value="2">Two</option> }mx,
-    q(Popup menu) );
+    'Popup menu' );
 
 $widget = HTML::FormWidgets->new( columns => 3,
                                   id      => q(test),
@@ -90,11 +115,29 @@ $widget = HTML::FormWidgets->new( columns => 3,
                                   values  => [ 1, 2, 3, 4, 5, 6 ] );
 
 ok( $widget->render =~ m{ value="6" \s name="test" \s type="radio" }mx,
-    q(Radio group) );
+    'Radio group' );
+
+$widget = HTML::FormWidgets->new( class => q(test), type => q(rule) );
+
+ok $widget->render =~
+   m{ td \s class="rule_section"><hr \s class="test" }msx, 'Rule';
+
+# ScrollPin
+
+$widget = HTML::FormWidgets->new( id     => q(test),
+                                  type   => q(scrollingList),
+                                  values => [ 1, 2, 3, 4 ], );
+
+ok $widget->render =~ m{ id="test" \s multiple="multiple" }msx,
+   'Scrolling List';
+
+# SidebarPanel
 
 $widget = HTML::FormWidgets->new( id => q(test), type => q(slider) );
 
-ok( $widget->render =~ m{ class="knob" }mx, q(Slider) );
+ok( $widget->render =~ m{ class="knob" }mx, 'Slider' );
+
+# TabSwapper
 
 $widget = HTML::FormWidgets->new( data   => {
    flds   => [ qw(Field1 Field2) ],
@@ -109,18 +152,21 @@ $widget = HTML::FormWidgets->new( data   => {
                                   name   => q(table),
                                   type   => q(table) );
 
-ok( $widget->render =~ m{ tr \s class=".*" \s id="table.row0" }mx, q(Table) );
+ok( $widget->render =~ m{ tr \s class=".*" \s id="table.row0" }mx, 'Table' );
 
-$widget = HTML::FormWidgets->new( name => q(textarea), type => q(textarea) );
+# Template
 
-ok( $widget->render =~ m{ id="textarea" \s class="ifield" }mx,
-    q(Text area) );
+$widget = HTML::FormWidgets->new( default => q(test), type => q(textarea) );
 
-$widget = HTML::FormWidgets->new( default => q(test),
-                                  name    => q(textfield),
-                                  type    => q(textfield) );
+ok $widget->render =~ m{ textarea \s name="textarea" \s class="ifield">test }mx,
+   'Text area';
 
-ok( $widget->render =~ m{ input \s value="test" \s name="textfield" \s type="text" \s id="textfield" \s class="ifield" \s size="40" }mx, q(Textfield) );
+$widget = HTML::FormWidgets->new( default => q(test), type => q(textfield) );
+
+ok( $widget->render =~ m{ input \s value="test" \s name="textfield" \s type="text" \s class="ifield" \s size="40" }mx, 'Textfield' );
+
+# Tree
+# UnorderedList
 
 # Local Variables:
 # mode: perl

@@ -26,17 +26,16 @@ sub init {
    $self->edit       ( 0 );
    $self->hclass     ( q(normal) );
    $self->hide       ( [] );
-   $self->hint_title ( $self->loc( q(Hint) ) ) unless ($self->hint_title);
    $self->number_rows( 0 );
    $self->select     ( 0 );
    $self->sortable   ( 0 );
    $self->table_class( undef );
 
-   $text = $self->loc( q(Add_table_row) );
+   $text = $self->loc( q(Add_table_row)             );
    $self->add_tip    ( $self->hint_title.$TTS.$text );
-   $text = $self->loc( q(Remove_table_row) );
+   $text = $self->loc( q(Remove_table_row)          );
    $self->remove_tip ( $self->hint_title.$TTS.$text );
-   $text = $self->loc( q(Sort_table_rows) );
+   $text = $self->loc( q(Sort_table_rows)           );
    $self->sort_tip   ( $self->hint_title.$TTS.$text );
    return;
 }

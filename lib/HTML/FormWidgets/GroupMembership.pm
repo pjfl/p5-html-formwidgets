@@ -28,7 +28,6 @@ sub init {
    $self->atitle     ( $self->loc( q(All) ) );
    $self->ctitle     ( $self->loc( q(Current) ) );
    $self->fhelp      ( q() );
-   $self->hint_title ( $self->loc( q(Hint) ) );
    $text = $self->loc( q(groupMembershipAddTip) );
    $self->add_tip    ( $self->hint_title.$TTS.$text );
    $text = $self->loc( q(groupMembershipRemoveTip) );

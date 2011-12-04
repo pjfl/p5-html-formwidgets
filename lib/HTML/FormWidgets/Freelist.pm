@@ -16,7 +16,6 @@ sub init {
 
    $self->container_class( q(freelist_container) );
    $self->height         ( 5 );
-   $self->hint_title     ( $self->loc( q(Hint) ) ) unless ($self->hint_title);
    $self->values         ( [] );
    $self->width          ( 20 );
 

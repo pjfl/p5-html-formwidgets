@@ -41,9 +41,6 @@ sub render_field {
    defined $root[ 1 ] and return $hacc->span
       ( { class => q(error) }, 'Your tree has more than one root' );
 
-   $self->hint_title
-      or $self->hint_title( $self->loc( q(handy_hint_title) ) );
-
    my $html  = $self->_image_button( $hacc, q(expand),   q(Expand All)   );
       $html .= $self->_image_button( $hacc, q(collapse), q(Collapse All) );
    my $args  = { class => $self->class_prefix.q(_controls) };

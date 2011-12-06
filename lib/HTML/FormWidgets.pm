@@ -20,36 +20,39 @@ my $NUL   = q();
 my $SPACE = '&#160;' x 3;
 my $SPC   = q( );
 my $TTS   = q( ~ );
-my $ATTRS =
-   { ajaxid          => undef,        class           => $NUL,
-     clear           => $NUL,         container       => 1,
-     container_class => q(container), container_id    => undef,
-     content_type    => q(text/html), default         => undef,
-     fields          => {},           frame_class     => $NUL,
-     hacc            => undef,        hint_title      => $NUL,
-     id              => undef,        iterator        => undef,
-     js_object       => q(html_formwidgets),
-     l10n            => undef,        literal_js      => [],
-     name            => undef,        optional_js     => undef,
-     onblur          => undef,        onchange        => undef,
-     onkeypress      => undef,        pclass          => q(prompt),
-     prompt          => $NUL,         pwidth          => 40,
-     readonly        => 0,            required        => 0,
-     sep             => undef,        stepno          => undef,
-     swidth          => 1000,         tabstop         => 3,
-     template_dir    => undef,        text            => $NUL,
-     tip             => $NUL,         tiptype         => q(dagger),
-     type            => undef, };
+my $ATTRS = {
+   globals         => {
+      content_type => q(text/html),
+      hide         => [],
+      js_object    => q(html_formwidgets),
+      literal_js   => [],
+      optional_js  => [],
+      pwidth       => 30,
+      skip         => { qw(ajaxid 1 globals 1 id 1 name 1 type 1) },
+      swidth       => 1000, },
+   ajaxid          => undef,        class           => $NUL,
+   clear           => $NUL,         container       => 1,
+   container_class => q(container), container_id    => undef,
+   default         => undef,        frame_class     => $NUL,
+   hacc            => undef,        hint_title      => $NUL,
+   id              => undef,        name            => undef,
+   onblur          => undef,        onchange        => undef,
+   onkeypress      => undef,        pclass          => q(prompt),
+   pwidth          => undef,        prompt          => $NUL,
+   readonly        => 0,            required        => 0,
+   sep             => undef,        stepno          => undef,
+   text            => $NUL,         tip             => $NUL,
+   tiptype         => q(dagger),    type            => undef, };
 
 __PACKAGE__->mk_accessors( keys %{ $ATTRS } );
 
 # Class methods
 
 sub build {
-   my ($class, $config, $data) = @_;
+   my ($class, $config, $data) = @_; $config ||= {}; $data ||= {};
 
    my $key  = $config->{list_key    } || q(items);
-   my $type = $config->{content_type} || $ATTRS->{content_type};
+   my $type = $config->{content_type} || $ATTRS->{globals}->{content_type};
    my $step = 0;
 
    $config->{hacc    } = HTML::Accessors->new( content_type => $type );
@@ -84,7 +87,7 @@ sub __build_widget {
       my $widget = blessed $item->{content}
                  ? $item->{content}
                  : $item->{content}->{widget}
-                 ? $class->new( __merge_hashes( $config, $item->{content} ) )
+                 ? $class->new( __inject( $config, $item->{content} ) )
                  : undef;
 
       if ($widget) {
@@ -110,14 +113,18 @@ sub __group_fields {
    return "\n".$hacc->fieldset( "\n".$legend.$html );
 }
 
+sub __inject {
+   $_[ 1 ]->{globals} = $_[ 0 ]; return $_[ 1 ];
+}
+
 sub new {
-   my ($self, @rest) = @_; my $args  = __arg_list( @rest );
+   my ($self, @rest) = @_; my $args = __arg_list( @rest );
 
    # Start with some hard coded defaults;
-   my $new   = bless { %{ $ATTRS } }, ref $self || $self;
+   my $new = bless { %{ $ATTRS } }, ref $self || $self;
 
    # Set minimum requirements from the supplied args and the defaults
-   my $skip  = $new->_bootstrap( $args );
+   $new->_bootstrap( $args );
 
    # Your basic factory method trick
    my $class = ucfirst $new->type;
@@ -125,7 +132,7 @@ sub new {
              ? (substr $class, 1) : __PACKAGE__.q(::).$class;
 
    $new->_ensure_class_loaded( $class );
-   $new->_init( $skip, $args ); # Complete the initialization
+   $new->_init( $args ); # Complete the initialization
 
    return $new;
 }
@@ -136,23 +143,47 @@ sub __arg_list {
    return ref $rest[ 0 ] eq q(HASH) ? $rest[ 0 ] : { @rest };
 }
 
-sub __merge_hashes {
-   return { %{ $_[ 0 ] }, %{ $_[ 1 ] } };
-}
-
 # Public object methods
 
+sub add_hidden {
+   my ($self, $name, $value) = @_;
+
+   push @{ $self->globals->{hide} }, {
+      content => $self->hacc->input( {
+         name => $name, type => q(hidden), value => $value } ) };
+
+   return;
+}
+
+sub add_literal_js {
+   my ($self, $js_class, $id, $config) = @_; my $list = $NUL;
+
+   ($js_class and $id and $config and ref $config eq q(HASH)) or return;
+
+   while (my ($k, $v) = each %{ $config }) {
+      if ($k) { $list and $list .= ', '; $list .= $k.': '.($v || 'null') }
+   }
+
+   my $text  = $self->globals->{js_object};
+      $text .= ".config.${js_class}[ '${id}' ] = { ${list} };";
+
+   push @{ $self->globals->{literal_js} }, $text;
+   return;
+}
+
+sub add_optional_js {
+   my ($self, @rest) = @_;
+
+   push @{ $self->globals->{optional_js} }, @rest;
+   return;
+}
+
 sub inflate {
-   my ($self, $args) = @_; my $config = {};
+   my ($self, $args) = @_;
 
    (defined $args and ref $args eq q(HASH)) or return $args;
 
-   my @attrs = ( qw(content_type fields iterator js_object l10n literal_js
-                    optional_js template_dir) );
-
-   $config->{ $_ } = $self->$_() for (@attrs);
-
-   return __PACKAGE__->new( __merge_hashes( $args, $config ) )->render;
+   return __PACKAGE__->new( __inject( $self->globals, $args ) )->render;
 }
 
 sub init {
@@ -160,13 +191,13 @@ sub init {
 }
 
 sub is_xml {
-   return $_[ 0 ]->content_type =~ m{ / (.*) xml \z }mx ? 1 : 0;
+   return $_[ 0 ]->globals->{content_type} =~ m{ / (.*) xml \z }mx ? 1 : 0;
 }
 
 sub loc {
-   my ($self, $text, @rest) = @_;
+   my ($self, $text, @rest) = @_; my $l10n = $self->globals->{l10n};
 
-   defined $self->l10n and return $self->l10n->( $text, @rest );
+   defined $l10n and return $l10n->( $text, @rest );
 
    $text or return; $text = $NUL.$text; # Stringify
 
@@ -286,11 +317,11 @@ sub _bootstrap {
                                             : (reverse split m{ _ }mx, $id)[0]);
    }
 
-   not $id and $name and $id = $self->id( $name );
+   not $id and $name and $id = $self->id( $name ); $args->{globals} ||= {};
 
    # We can get the widget type from the config file
-   if (not $type and $id and exists $args->{fields}) {
-      my $fields = $args->{fields};
+   if (not $type and $id and exists $args->{globals}->{fields}) {
+      my $fields = $args->{globals}->{fields};
 
       exists $fields->{ $id } and exists $fields->{ $id }->{type}
          and $type = $self->type( $fields->{ $id }->{type} );
@@ -299,16 +330,15 @@ sub _bootstrap {
    # This is the default widget type if not overidden in the config
    $type or $type = $self->type( q(textfield) );
    $name or $self->name( $type );
-
-   return { qw(ajaxid 1 id 1 name 1 type 1) };
+   return;
 }
 
 sub _build_hacc {
    # Now we can create HTML elements like we could with CGI.pm
-   my $self = shift; my $hacc = $self->hacc;
+   my $self = shift; my $hacc = $self->globals->{hacc};
 
    $hacc or $hacc = HTML::Accessors->new
-      ( { content_type => $self->content_type } );
+      ( { content_type => $self->globals->{content_type} } );
 
    return $hacc
 }
@@ -316,17 +346,17 @@ sub _build_hacc {
 sub _build_hint_title {
    my $self = shift;
 
-   return $self->hint_title ? $self->hint_title
-                            : $self->loc( q(handy_hint_title) );
-
+   return $self->hint_title || $self->loc( q(form_hint_title) );
 }
 
 sub _build_pwidth {
    # Calculate the prompt width
-   my $self = shift; my $pwidth = $self->pwidth;
+   my $self   = shift;
+   my $pwidth = defined $self->pwidth
+              ? $self->pwidth : $self->globals->{pwidth};
 
    $pwidth and $pwidth =~ m{ \A \d+ \z }mx
-      and $pwidth = (int $pwidth * $self->swidth / 100).q(px);
+      and $pwidth = (int $pwidth * $self->globals->{swidth} / 100).q(px);
 
    return $pwidth;
 }
@@ -368,25 +398,22 @@ sub _ensure_class_loaded {
 }
 
 sub _init {
-   my ($self, $skip, $args) = @_;
+   my ($self, $args) = @_;
 
-   $self->fields      ( $args->{fields     } || {}  );
-   $self->l10n        ( $args->{l10n       }        );
-   $self->literal_js  ( $args->{literal_js } || []  );
-   $self->optional_js ( $args->{optional_js} || []  );
-   $self->hint_title  ( $self->_build_hint_title );
-   $self->init        ( $args ); # Allow subclass to set it's own defaults
-   $self->_init_fields( $skip, $args->{fields}   );
-   $self->_init_args  ( $skip, $args             );
-   $self->hacc        ( $self->_build_hacc       );
-   $self->pwidth      ( $self->_build_pwidth     );
-   $self->sep         ( $self->_build_sep        );
-   $self->stepno      ( $self->_build_stepno     );
+   $self->_init_globals( $args );
+   $self->init         ( $args ); # Allow subclass to set it's own defaults
+   $self->_init_fields ( $args );
+   $self->_init_args   ( $args );
+   $self->hacc         ( $self->_build_hacc       );
+   $self->hint_title   ( $self->_build_hint_title );
+   $self->pwidth       ( $self->_build_pwidth     );
+   $self->sep          ( $self->_build_sep        );
+   $self->stepno       ( $self->_build_stepno     );
    return;
 }
 
 sub _init_args {
-   my ($self, $skip, $args) = @_; my $v;
+   my ($self, $args) = @_; my $skip = $self->globals->{skip}; my $v;
 
    for (grep { not $skip->{ $_ } } keys %{ $args }) {
       exists $self->{ $_ } and defined ($v = $args->{ $_ })
@@ -396,32 +423,25 @@ sub _init_args {
    return;
 }
 
-sub _init_fields {
-   my ($self, $skip, $fields) = @_; my $id = $self->id;
+sub _init_globals {
+   my ($self, $args) = @_; my $globals = $args->{globals} || {};
 
-   $id and $fields and exists $fields->{ $id }
-      and $self->_init_args( $skip, $fields->{ $id } );
+   $self->globals->{ $_ } = $globals->{ $_ } for (keys %{ $globals });
 
    return;
 }
 
-sub _js_config {
-   my ($self, $group, $id, $config) = @_; my $list = $NUL;
+sub _init_fields {
+   my ($self, $args) = @_; my $fields = $args->{globals}->{fields}; my $id;
 
-   ($group and $id and $config and ref $config eq q(HASH)) or return;
+   $fields and $id = $self->id and exists $fields->{ $id }
+      and $self->_init_args( $fields->{ $id } );
 
-   while (my ($k, $v) = each %{ $config }) {
-      if ($k) { $list and $list .= ', '; $list .= $k.': '.($v || 'null') }
-   }
-
-   my $text = $self->js_object.".config.${group}[ '${id}' ] = { ${list} };";
-
-   push @{ $self->literal_js }, $text;
    return;
 }
 
 sub _next_step {
-   return $_[ 0 ]->iterator->();
+   return $_[ 0 ]->globals->{iterator}->();
 }
 
 sub _render_field {
@@ -438,7 +458,7 @@ sub _render_field {
 
    my $html = $self->render_field( $args );
 
-   $self->ajaxid and $self->_js_config( 'server', $id, {
+   $self->ajaxid and $self->add_literal_js( 'server', $id, {
       args => "[ '${id}' ]", event => "'blur'", method => "'checkField'" } );
 
    return $html;
@@ -464,33 +484,14 @@ HTML::FormWidgets - Create HTML form markup
 
 =head1 Synopsis
 
-   package CatalystX::Usul::View;
-
-   use parent qw(Catalyst::View CatalystX::Usul);
    use HTML::FormWidgets;
 
-   sub _build_widgets {
-       my ($self, $c, $data, $config) = @_; my $s = $c->stash; $config ||= {};
+   my $widget = HTML::FormWidgets->new( id => q(test) );
 
-       $config->{assets      } = $s->{assets};
-       $config->{base        } = $c->req->base;
-       $config->{content_type} = $s->{content_type};
-       $config->{fields      } = $s->{fields} ||= {};
-       $config->{form        } = $s->{form};
-       $config->{hide        } = $s->{hidden}->{items};
-       $config->{js_object   } = $self->js_object;
-       $config->{l10n        } = sub { $self->loc( $s, @_ ) };
-       $config->{literal_js  } = $s->{literal_js} ||= [];
-       $config->{optional_js } = $s->{optional_js} ||= [];
-       $config->{pwidth      } = $s->{pwidth};
-       $config->{root        } = $c->config->{root};
-       $config->{static      } = $s->{static};
-       $config->{swidth      } = $s->{width} if ($s->{width});
-       $config->{template_dir} = $self->template_dir;
-
-       HTML::FormWidgets->build( $config, $data );
-       return;
-   }
+   print $widget->render;
+   # <div class="container">
+   # <input value="" name="test" type="text" id="test" class="ifield" size="40">
+   # </div>
 
 =head1 Description
 
@@ -532,6 +533,27 @@ requires the factory subclass for the widget type.
 This method takes a large number of options with each widget using
 only few of them. Each option is described in the factory subclasses
 which use that option
+
+=head3 add_hidden
+
+   $widget->add_hidden( $key, $value );
+
+The key / value pair are added to list of hidden input elements that will
+be included in the page
+
+=head3 add_literal_js
+
+   $widet->add_literal_js( $js_class_name, $id, $config );
+
+The config hash will be serialised and added to the literal Javascript on
+the page
+
+=head3 add_optional_js
+
+   $widget->add_optional_js( @filenames );
+
+The list of Javascript filenames (with extension, without path) are added
+to the list of files which will be included on the page
 
 =head3 inflate
 
@@ -688,13 +710,6 @@ pairs. Returns a hash ref in either case.
 
 Wraps the top I<nitems> number of widgets on the build stack in a C<<
 <fieldset> >> element with a legend
-
-=head3 __merge_hashes
-
-   $widget = $class->new( __merge_hashes( $config, $item->{content} ) );
-
-Does a simple merging of the two hash refs that are passed as
-arguments. The second argument takes precedence over the first
 
 =head1 Configuration and Environment
 

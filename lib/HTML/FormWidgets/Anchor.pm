@@ -14,6 +14,7 @@ sub init {
 
    $self->class   ( q(anchor_button fade) );
    $self->config  ( undef     );
+   $self->fhelp   ( ''        );
    $self->href    ( undef     );
    $self->imgclass( undef     );
    $self->target  ( undef     );
@@ -26,7 +27,7 @@ sub render_field {
    my ($self, $args) = @_; my $hacc = $self->hacc;
 
    $self->id and $self->config
-      and $self->_js_config( 'anchors', $self->id, $self->config );
+      and $self->add_literal_js( 'anchors', $self->id, $self->config );
 
    my $html = $self->imgclass
             ? $self->text

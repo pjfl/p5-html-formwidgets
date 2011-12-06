@@ -7,14 +7,13 @@ use warnings;
 use version; our $VERSION = qv( sprintf '0.7.%d', q$Rev$ =~ /\d+/gmx );
 use parent qw(HTML::FormWidgets);
 
-__PACKAGE__->mk_accessors( qw(assets button_name config src) );
+__PACKAGE__->mk_accessors( qw(button_name config src) );
 
 my $TTS = q( ~ );
 
 sub init {
    my ($self, $args) = @_;
 
-   $self->assets     ( q()        );
    $self->button_name( q(_method) );
    $self->config     ( undef      );
    $self->container  ( 0          );
@@ -26,9 +25,8 @@ sub init {
 sub render_field {
    my $self = shift; my $hacc = $self->hacc; my $args = {};
 
-   $self->id and $args->{id} = $self->id;
-   $self->id and $self->config
-      and $self->_js_config( 'anchors', $self->id, $self->config );
+   $self->id and $args->{id} = $self->id and $self->config
+      and $self->add_literal_js( 'anchors', $self->id, $self->config );
 
    return $self->src && ref $self->src eq q(HASH)
         ? $self->_markup_button( $args )
@@ -41,7 +39,7 @@ sub _image_button {
    my ($self, $args) = @_; my $hacc = $self->hacc;
 
    my $src   = q(http:) eq (substr $self->src, 0, 5)
-             ? $self->src : $self->assets.$self->src;
+             ? $self->src : $self->globals->{assets}.$self->src;
    my $image = $hacc->img( { alt   => ucfirst $self->name,
                              class => q(button),
                              src   => $src } );

@@ -14,7 +14,8 @@ use IO::File;
 sub render_field {
    my ($self, $args) = @_;
 
-   my $path = File::Spec->catfile( $self->template_dir, $self->name.q(.tt) );
+   my $path = File::Spec->catfile( $self->globals->{template_dir},
+                                   $self->name.q(.tt) );
 
    -f $path or return "Path $path not found";
 
@@ -23,7 +24,7 @@ sub render_field {
    my $content = do { local $RS = undef; <$rdr> }; $rdr->close();
    my $id      = $self->id;
 
-   return "[% ref = template_data.${id}; %]\n$content";
+   return "[% ref = template_data.${id}; %]\n${content}";
 }
 
 1;

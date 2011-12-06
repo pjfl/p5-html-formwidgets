@@ -7,8 +7,7 @@ use warnings;
 use version; our $VERSION = qv( sprintf '0.7.%d', q$Rev$ =~ /\d+/gmx );
 use parent q(HTML::FormWidgets);
 
-__PACKAGE__->mk_accessors( qw(add_tip all assets atitle ctitle current
-                              fhelp height remove_tip labels) );
+__PACKAGE__->mk_accessors( qw(all current fhelp height labels) );
 
 my $SPACE = '&#160;' x 3;
 my $TTS   = q( ~ );
@@ -17,33 +16,27 @@ sub init {
    my ($self, $args) = @_; my $text;
 
    $self->all            ( [] );
-   $self->assets         ( q() );
    $self->container_class( q(groupmember_container) );
    $self->current        ( [] );
+   $self->fhelp          ( q() );
    $self->height         ( 10 );
    $self->labels         ( undef );
    $self->pclass         ( q(instructions) );
    $self->sep            ( $SPACE ) unless ($args->{prompt});
-
-   $self->atitle     ( $self->loc( q(All) ) );
-   $self->ctitle     ( $self->loc( q(Current) ) );
-   $self->fhelp      ( q() );
-   $text = $self->loc( q(groupMembershipAddTip) );
-   $self->add_tip    ( $self->hint_title.$TTS.$text );
-   $text = $self->loc( q(groupMembershipRemoveTip) );
-   $self->remove_tip ( $self->hint_title.$TTS.$text );
    return;
 }
 
 sub render_field {
-   my ($self, $args) = @_; my $hacc = $self->hacc;
+   my ($self, $args) = @_; my $hacc = $self->hacc; my $html;
 
-   my $fargs = { class => $self->pclass }; my $html;
+   my $add_tip = $self->hint_title.$TTS.$self->loc( q(groupMembershipAddTip) );
+   my $rm_tip = $self->hint_title.$TTS.$self->loc( q(groupMembershipRemoveTip));
+   my $fargs   = { class => $self->pclass };
 
    $self->pwidth and $fargs->{style} .= 'width: '.$self->pwidth.q(;);
    $self->fhelp  and $html            = $hacc->div( $fargs, $self->fhelp );
 
-   my $text  = $hacc->span( { class => q(title) }, $self->atitle );
+   my $text  = $hacc->span( { class => q(title) }, $self->loc( q(All) ) );
    my $class = ($args->{class} || q()).q( ifield group);
 
    $args->{class   }  = $class.q( groupmembers);
@@ -61,17 +54,17 @@ sub render_field {
    my $ref    = {
       class   => q(icon_button tips add),
       id      => $self->id.q(_add),
-      title   => $self->add_tip };
+      title   => $add_tip };
    my $text1  = $hacc->span( $ref, $text );
 
    $text      = $hacc->span( { class => q(remove_item_icon) }, q( ) );
    $ref       = {
       class   => q(icon_button tips remove),
       id      => $self->id.q(_remove),
-      title   => $self->remove_tip };
+      title   => $rm_tip };
    $text1    .= $hacc->span( $ref, $text );
    $html     .= $hacc->div( { class => q(groupmember_buttons) }, $text1 );
-   $text      = $hacc->span( { class => q(title) }, $self->ctitle );
+   $text      = $hacc->span( { class => q(title) }, $self->loc( q(Current) ) );
 
    $args->{class } = $class;
    $args->{id    } = $self->id.q(_current);

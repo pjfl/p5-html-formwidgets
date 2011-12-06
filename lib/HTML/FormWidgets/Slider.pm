@@ -9,7 +9,7 @@ use parent qw(HTML::FormWidgets);
 
 my $NUL = q();
 
-__PACKAGE__->mk_accessors( qw(config display hide) );
+__PACKAGE__->mk_accessors( qw(config display) );
 
 sub init {
    my ($self, $args) = @_;
@@ -23,7 +23,6 @@ sub init {
                      wheel      => q(true), } );
    $self->default( 50 );
    $self->display( 1  );
-   $self->hide   ( [] );
 
    return;
 }
@@ -44,12 +43,7 @@ sub render_field {
                                    size     => $size,
                                    value    => $args->{default} } );
    }
-   else {
-      push @{ $self->hide }, {
-         content => $hacc->input( { name  => $args->{name},
-                                    type  => q(hidden),
-                                    value => $args->{default} } ) };
-   }
+   else { $self->add_hidden( $args->{name}, $args->{default} ) }
 
    $text  = $hacc->span( { class => q(knob) } );
    $text  = $hacc->span( { class => q(slider), id => $id }, $text );
@@ -65,7 +59,7 @@ sub render_field {
    $self->config->{default_v} = $args->{default};
    $self->config->{name     } = '"'.$args->{name}.'"';
 
-   $self->_js_config( 'sliders', $id, $self->config );
+   $self->add_literal_js( 'sliders', $id, $self->config );
 
    return $html;
 }

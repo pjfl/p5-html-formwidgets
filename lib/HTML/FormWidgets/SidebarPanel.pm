@@ -22,20 +22,20 @@ sub init {
 }
 
 sub render_field {
-   my ($self, $args) = @_; my $hacc = $self->hacc;
+   my ($self, $args) = @_; my $hacc = $self->hacc; my $header = $self->header;
 
-   $args  = { class => $self->header->{class}, id => $self->header->{id} };
+   $self->add_literal_js( 'sidebars', $header->{id}, $self->config );
 
-   my $html = $hacc->div( $args, $self->header->{text} );
+   $args    = { class => $header->{class}, id => $header->{id} };
 
-   $args  = { class => $self->class, id => $self->id };
+   my $html = $hacc->div( $args, $header->{text} );
+
+   $args    = { class => $self->class, id => $self->id };
 
    my $text = $hacc->div( $args, $self->text );
 
-   $args  = { class => $self->panel->{class}, id => $self->panel->{id} };
-   $html .= $hacc->div( $args, $text );
-
-   $self->_js_config( 'sidebars', $self->header->{id}, $self->config );
+   $args    = { class => $self->panel->{class}, id => $self->panel->{id} };
+   $html   .= $hacc->div( $args, $text );
 
    return $html;
 }

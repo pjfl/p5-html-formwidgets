@@ -23,7 +23,7 @@ sub render_field {
    my ($self, $args) = @_;
 
    $self->class =~ m{ chzn-select }msx
-      and push @{ $self->optional_js }, qw(chosen.js);
+      and $self->add_optional_js( q(chosen.js) );
 
    $args->{class   } .= ($args->{class} ? q( ) : q()).$self->class;
    $args->{labels  }  = $self->labels   if ($self->labels);

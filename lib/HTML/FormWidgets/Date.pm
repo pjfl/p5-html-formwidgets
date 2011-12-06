@@ -7,7 +7,7 @@ use warnings;
 use version; our $VERSION = qv( sprintf '0.7.%d', q$Rev$ =~ /\d+/gmx );
 use parent qw(HTML::FormWidgets);
 
-__PACKAGE__->mk_accessors( qw(clear_hint config hint width) );
+__PACKAGE__->mk_accessors( qw(config width) );
 
 my $SPC = q( );
 my $TTS = q( ~ );
@@ -15,37 +15,37 @@ my $TTS = q( ~ );
 sub init {
    my ($self, $args) = @_;
 
-   $self->clear_hint( $self->hint_title.$TTS.$self->loc( q(clearFieldTip) ) );
-   $self->config    ( { align       => q("bR"),
-                        ifFormat    => q("%d/%m/%Y"),
-                        singleClick => q(true) } );
-   $self->hint      ( $self->hint_title.$TTS.$self->loc( q(dateWidgetTip) ) );
-   $self->readonly  ( 1 );
-   $self->width     ( 10 );
-
-   push @{ $self->optional_js }, qw(calendar.js calendar-setup.js);
+   $self->config  ( { align       => q("bR"),
+                      ifFormat    => q("%d/%m/%Y"),
+                      singleClick => q(true) } );
+   $self->readonly( 1  );
+   $self->width   ( 10 );
    return;
 }
 
 sub render_field {
    my ($self, $args) = @_;
 
-   $self->_js_config( 'calendars', $self->id, $self->config );
+   $self->add_optional_js( qw(calendar.js calendar-setup.js) );
+   $self->add_literal_js ( 'calendars', $self->id, $self->config );
 
-   $args->{class} .= q( ifield calendars);
+   $args->{class} .= ($args->{class} ? q( ) : q()).q(ifield calendars);
    $args->{size }  = $self->width;
 
    my $hacc = $self->hacc;
    my $html = $hacc->textfield( $args );
    my $icon = $hacc->span( { class => q(calendar_icon) }, $SPC );
+   my $hint = $self->hint_title.$TTS.$self->loc( q(dateWidgetTip) );
    my $text = $hacc->span( { class => q(icon_button tips),
                              id    => $self->id.q(_trigger),
-                             title => $self->hint }, $icon );
+                             title => $hint }, $icon );
+   my $clear_hint = $self->hint_title.$TTS.$self->loc( q(clearFieldTip) );
+
 
    $icon    = $hacc->span( { class => q(clear_field_icon) }, $SPC );
    $text   .= $hacc->span( { class => q(icon_button tips),
                              id    => $self->id.q(_clear),
-                             title => $self->clear_hint }, $icon );
+                             title => $clear_hint }, $icon );
    $html   .= $hacc->span( { class => q(icon_buttons) }, $text );
 
    return $html;

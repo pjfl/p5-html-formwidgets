@@ -31,7 +31,7 @@ sub init {
 sub render_field {
    my ($self, $args) = @_;
 
-   $self->_js_config( 'scrollPins', $self->id, $self->config );
+   $self->add_literal_js( 'scrollPins', $self->id, $self->config );
 
    return $self->hacc->ul( { class => $self->class, id => $self->id } );
 }

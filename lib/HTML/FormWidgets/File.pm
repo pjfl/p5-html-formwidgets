@@ -13,8 +13,8 @@ use Syntax::Highlight::Perl;
 use Text::ParseWords;
 use Text::Tabs;
 
-__PACKAGE__->mk_accessors( qw(base header header_class hide number
-                              path root scheme select subtype) );
+__PACKAGE__->mk_accessors( qw(header header_class number
+                              path scheme select subtype tabstop) );
 
 my $HASH_CHAR = chr 35;
 my %SCHEME    =
@@ -44,28 +44,26 @@ my %SCHEME    =
 sub init {
    my ($self, $args) = @_;
 
-   $self->base        ( q()       );
    $self->container   ( 0         );
    $self->header      ( []        );
    $self->header_class( q(normal) );
-   $self->hide        ( []        );
    $self->number      ( 1         );
    $self->path        ( undef     );
-   $self->root        ( undef     );
    $self->scheme      ( \%SCHEME  );
    $self->select      ( -1        );
    $self->subtype     ( q(text)   );
+   $self->tabstop     ( 3         );
    return;
 }
 
 sub render_field {
    # Subtypes: csv, html, logfile, source, and text
-   my ($self, $args) = @_; my $hacc = $self->hacc;
+   my ($self, $args) = @_;
 
    my $path = $self->path or return 'Path not specified';
 
    $self->subtype or return 'Subtype not specified';
-   $self->subtype eq q(html) and return $self->_render_html( $hacc, $path );
+   $self->subtype eq q(html) and return $self->_render_html( $path );
 
    -f $path or return "Path $path not found";
 
@@ -73,33 +71,27 @@ sub render_field {
    my $text   = do { local $RS = undef; <$rdr> }; $rdr->close;
    my $method = q(_render_).$self->subtype;
 
-   return $self->$method( $hacc, $text );
+   return $self->$method( $text );
 }
 
 # Private subroutines
 
 sub _add_line_number {
-   my ($self, $hacc, $r_no, $c_no) = @_;
+   my ($self, $r_no, $c_no) = @_;
 
    my $class = q(first lineNumber).__column_class( $c_no );
 
-   return $hacc->td( { class => $class }, $r_no + 1 );
+   return $self->hacc->td( { class => $class }, $r_no + 1 );
 }
 
 sub _add_row_count {
-   my ($self, $default) = @_;
+   my ($self, $n_rows) = @_;
 
-   my $content = $self->inflate( { name    => q(_).($self->id || q()).q(_nrows),
-                                   default => $default,
-                                   type    => q(hidden),
-                                   widget  => 1 } );
-
-   push @{ $self->hide }, { content => $content };
-   return;
+   return $self->add_hidden( q(_).($self->id || q()).q(_nrows), $n_rows );
 }
 
 sub _add_select_box {
-   my ($self, $hacc, $r_no, $c_no, $val) = @_;
+   my ($self, $r_no, $c_no, $val) = @_; my $hacc = $self->hacc;
 
    my $box   = $hacc->checkbox( { label => q(),
                                   name  => q(select).$r_no,
@@ -110,20 +102,19 @@ sub _add_select_box {
 }
 
 sub _build_table {
-   my ($self, $hacc, $text, $header_cells, $row_cells) = @_;
+   my ($self, $text, $header_cells, $row_cells) = @_; my $hacc = $self->hacc;
 
    my ($cells, $class, $val); my $r_no = 0; my $rows = q(); my $c_max = 1;
 
    for my $line (split m{ \n }mx, $text) {
       my $c_no = 0; my $lead = q();
 
-      my ($ncells, $cells, $val) = $row_cells->( $hacc, $line, $r_no );
+      my ($ncells, $cells, $val) = $row_cells->( $line, $r_no );
 
       if ($cells) {
-         $self->number
-            and $lead  = $self->_add_line_number( $hacc, $r_no, $c_no++ );
+         $self->number and $lead = $self->_add_line_number( $r_no, $c_no++ );
          $self->select >= 0
-            and $lead .= $self->_add_select_box( $hacc, $r_no, $c_no++, $val );
+            and $lead .= $self->_add_select_box( $r_no, $c_no++, $val );
          $class = $self->subtype.__row_class( $r_no );
          $rows .= $hacc->tr( { class => $class }, $lead.$cells );
          $r_no++;
@@ -137,7 +128,7 @@ sub _build_table {
       and $cells = $hacc->th( { class => $class }, $self->loc( $HASH_CHAR ) );
    $self->select >= 0
       and $cells .= $hacc->th( { class => $class }, $self->loc( 'M' ) );
-   $cells .= $header_cells->( $hacc, $c_max, $self->select < 0 ? 1 : 2 );
+   $cells .= $header_cells->( $c_max, $self->select < 0 ? 1 : 2 );
    $rows   = $hacc->tr( $cells ).$rows;
    $self->_add_row_count( $r_no );
 
@@ -145,10 +136,10 @@ sub _build_table {
 }
 
 sub _render_csv {
-   my ($self, $hacc, $text) = @_;
+   my ($self, $text) = @_; my $hacc = $self->hacc;
 
    my $header_cells = sub {
-      my ($hacc, $c_max, $c_no) = @_; my $cells = q();
+      my ($c_max, $c_no) = @_; my $cells = q();
 
       my @headers = $self->header->[0] ? @{ $self->header } : ('A' .. 'Z');
 
@@ -160,7 +151,7 @@ sub _render_csv {
       return $cells;
    };
    my $row_cells = sub {
-      my ($hacc, $line, $r_no) = @_;
+      my ($line, $r_no) = @_;
 
       my $cells = q(); my $f_no = 0; my $val = q();
 
@@ -182,15 +173,17 @@ sub _render_csv {
       return ($f_no, $cells, $val);
    };
 
-   return $self->_build_table( $hacc, $text, $header_cells, $row_cells );
+   return $self->_build_table( $text, $header_cells, $row_cells );
 }
 
 sub _render_html {
-   my ($self, $hacc, $path) = @_; my $pat = $self->root;
+   my ($self, $path) = @_;  my $hacc = $self->hacc;
+
+   my $pat = $self->globals->{root};
 
    $path  =~ m{ \A $pat }msx
-      and $path = $self->base.($path =~ s{ \A $pat }{/}msx);
-   $path  = $path =~ m{ \A http: }msx ? $path : $self->base.$path;
+      and $path = $self->globals->{base}.($path =~ s{ \A $pat }{/}msx);
+   $path  = $path =~ m{ \A http: }msx ? $path : $self->globals->{base}.$path;
 
    return $hacc->iframe( { class     => $self->subtype,
                            src       => $path,
@@ -198,16 +191,18 @@ sub _render_html {
 }
 
 sub _render_logfile {
-   my ($self, $hacc, $text) = @_; my $r_no = 0; my $rows = q(); my $cells;
+   my ($self, $text) = @_; my $hacc = $self->hacc;
+
+   my $r_no = 0; my $rows = q(); my $cells;
 
    # TODO: Add Prev and next links to append div
    my $header_cells = sub {
-      my ($hacc, $c_max, $c_no) = @_; my $text = $self->loc( 'Logfile' );
+      my ($c_max, $c_no) = @_; my $text = $self->loc( 'Logfile' );
 
       return $hacc->th( { class => $self->header_class }, $text );
    };
    my $row_cells = sub {
-      my ($hacc, $line, $r_no) = @_; $line = $hacc->escape_html( $line, 0 );
+      my ($line, $r_no) = @_; $line = $hacc->escape_html( $line, 0 );
 
       my $class = $self->subtype.__column_class( 1 );
       my $cells = $hacc->td( { class => $class }, $line );
@@ -215,11 +210,13 @@ sub _render_logfile {
       return (1, $cells, $line);
    };
 
-   return $self->_build_table( $hacc, $text, $header_cells, $row_cells );
+   return $self->_build_table( $text, $header_cells, $row_cells );
 }
 
 sub _render_source {
-   my ($self, $hacc, $text) = @_; my $fmt = Syntax::Highlight::Perl->new();
+   my ($self, $text) = @_; my $hacc = $self->hacc;
+
+   my $fmt = Syntax::Highlight::Perl->new();
 
    $fmt->set_format( $self->scheme );
    $fmt->define_substitution( q(<) => q(&lt;),
@@ -229,12 +226,12 @@ sub _render_source {
    $text    = $fmt->format_string( expand( $text ) );
 
    my $header_cells = sub {
-      my ($hacc, $c_max, $c_no) = @_; my $text = $self->loc( 'Source Code' );
+      my ($c_max, $c_no) = @_; my $text = $self->loc( 'Source Code' );
 
       return $hacc->th( { class => $self->header_class }, $text );
    };
    my $row_cells = sub {
-      my ($hacc, $line, $r_no) = @_;
+      my ($line, $r_no) = @_;
 
       my $class = $self->subtype.__column_class( 1 );
       my $cells = $hacc->td( { class => $class }, $line );
@@ -242,11 +239,11 @@ sub _render_source {
       return (1, $cells, $line);
    };
 
-   return $self->_build_table( $hacc, $text, $header_cells, $row_cells );
+   return $self->_build_table( $text, $header_cells, $row_cells );
 }
 
 sub _render_text {
-   my ($self, $hacc, $text) = @_;
+   my ($self, $text) = @_; my $hacc = $self->hacc;
 
    $self->container( 1 ); $self->container_class( q(container textfile) );
 

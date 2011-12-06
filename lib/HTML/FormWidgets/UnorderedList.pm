@@ -30,7 +30,7 @@ sub render_field {
       $js_args->{ $_ } = '"'.$self->config->{ $_ }.'"';
    }
 
-   $self->_js_config( q(lists), $args->{id}, $js_args );
+   $self->add_literal_js( q(lists), $args->{id}, $js_args );
 
    my $item_args = $self->item_class ? { class => $self->item_class } : {} ;
 

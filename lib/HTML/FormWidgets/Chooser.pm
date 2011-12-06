@@ -26,7 +26,7 @@ sub render_field {
 
    $self->config->{field} = '"'.$self->field.'"';
    $self->config->{href } = '"'.$self->href.'"';
-   $self->_js_config( 'anchors', $self->id, $self->config );
+   $self->add_literal_js( 'anchors', $self->id, $self->config );
 
    return $self->hacc->submit( { class => $self->class,
                                  id    => $self->id,

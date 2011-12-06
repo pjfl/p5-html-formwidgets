@@ -7,9 +7,8 @@ use warnings;
 use version; our $VERSION = qv( sprintf '0.7.%d', q$Rev$ =~ /\d+/gmx );
 use parent qw(HTML::FormWidgets);
 
-__PACKAGE__->mk_accessors( qw(add_tip assets data edit hclass hide
-                              number_rows remove_tip select
-                              sort_tip sortable table_class) );
+__PACKAGE__->mk_accessors( qw(data edit hclass number_rows
+                              select sortable table_class) );
 
 my $HASH_CHAR = chr 35;
 my $NBSP      = '&#160;';
@@ -17,26 +16,17 @@ my $NUL       = q();
 my $TTS       = q( ~ );
 
 sub init {
-   my ($self, $args) = @_; my $text;
+   my ($self, $args) = @_;
 
-   $self->assets     ( $NUL );
    $self->class      ( q(ifield) );
    $self->container  ( 0 );
    $self->data       ( { flds => [], values => [] } );
    $self->edit       ( 0 );
    $self->hclass     ( q(normal) );
-   $self->hide       ( [] );
    $self->number_rows( 0 );
    $self->select     ( 0 );
    $self->sortable   ( 0 );
    $self->table_class( undef );
-
-   $text = $self->loc( q(Add_table_row)             );
-   $self->add_tip    ( $self->hint_title.$TTS.$text );
-   $text = $self->loc( q(Remove_table_row)          );
-   $self->remove_tip ( $self->hint_title.$TTS.$text );
-   $text = $self->loc( q(Sort_table_rows)           );
-   $self->sort_tip   ( $self->hint_title.$TTS.$text );
    return;
 }
 
@@ -78,9 +68,8 @@ sub render_field {
    $self->edit
       and $tfoot = $hacc->tfoot( $self->_add_edit_row( $data, $r_no ) );
 
-   $args = { editSide   => '"'.$self->edit.'"',
-             selectSide => '"'.$self->select.'"' };
-   $self->_js_config( 'tables', $self->id, $args );
+   $self->add_literal_js( 'tables', $self->id, {
+      editSide => '"'.$self->edit.'"', selectSide => '"'.$self->select.'"' } );
 
    $args = { cellspacing => 0, class => $self->table_class, id => $self->id };
 
@@ -103,39 +92,35 @@ sub _add_edit_row {
       $c_no++;
    }
 
-   my $text   = $hacc->span( { class => q(add_item_icon) }, q( ) );
-   my $args   = { class   => q(icon_button tips add),
-                  id      => $self->id.q(_add),
-                  title   => $self->add_tip };
+   my $add_tip = $self->hint_title.$TTS.$self->loc( q(Add_table_row) );
+   my $text    = $hacc->span( { class => q(add_item_icon) }, q( ) );
+   my $args    = { class   => q(icon_button tips add),
+                   id      => $self->id.q(_add),
+                   title   => $add_tip };
 
-   $text      = $hacc->span( $args, $text );
+   $text       = $hacc->span( $args, $text );
 
-   my $text1  = $hacc->span( { class => q(remove_item_icon) }, q( ) );
+   my $rm_tip  = $self->hint_title.$TTS.$self->loc( q(Remove_table_row) );
+   my $text1   = $hacc->span( { class => q(remove_item_icon) }, q( ) );
 
-   $args      = { class   => q(icon_button tips remove),
-                  id      => $self->id.q(_remove),
-                  title   => $self->remove_tip };
-   $text     .= $hacc->span( $args, $text1 );
-   $text      = $hacc->span( { class => q(table_edit_buttons) }, $text );
-   $cells    .= $hacc->td( $text );
+   $args       = { class   => q(icon_button tips remove),
+                   id      => $self->id.q(_remove),
+                   title   => $rm_tip };
+   $text      .= $hacc->span( $args, $text1 );
+   $text       = $hacc->span( { class => q(table_edit_buttons) }, $text );
+   $cells     .= $hacc->td( $text );
 
-   my $class  = ($data->{class} || q(edit_row)).__row_class( $r_no );
+   my $class   = ($data->{class} || q(edit_row)).__row_class( $r_no );
 
-   $args      = { class => $class, id => $self->id.q(_edit) };
+   $args       = { class => $class, id => $self->id.q(_edit) };
 
    return $hacc->tr( $args, $cells );
 }
 
 sub _add_row_count {
-   my ($self, $default) = @_;
+   my ($self, $n_rows) = @_;
 
-   my $content = $self->inflate( { name    => q(_).$self->id.q(_nrows),
-                                   default => $default,
-                                   type    => q(hidden),
-                                   widget  => 1 } );
-
-   push @{ $self->hide }, { content => $content };
-   return;
+   return $self->add_hidden( q(_).($self->id || q()).q(_nrows), $n_rows );
 }
 
 sub _check_box {
@@ -216,7 +201,7 @@ sub _field_header {
    $args->{id} = $self->id.q(.).$name.($type ? q(.).$type : $NUL);
 
    if ($self->sortable) {
-      $args->{class} .= q( sort tips); $args->{title} = $self->sort_tip;
+      $args->{class} .= q( sort tips); $args->{title} = $self->_sort_tip;
    }
 
    return $self->hacc->th( $args, $data->{labels}->{ $field } );
@@ -229,7 +214,7 @@ sub _number_header {
                 id    => $self->id.q(.).$name.q(.numeric) };
 
    if ($self->sortable) {
-      $args->{class} .= q( sort tips); $args->{title} = $self->sort_tip;
+      $args->{class} .= q( sort tips); $args->{title} = $self->_sort_tip;
    }
 
    return $self->hacc->th( $args, $HASH_CHAR );
@@ -309,6 +294,12 @@ sub _select_header {
    $args->{class} .= $self->edit ? q( select) : q( minimal);
 
    return $self->hacc->th( $args, $self->loc( 'Select' ) );
+}
+
+sub _sort_tip {
+   my $self = shift;
+
+   return $self->hint_title.$TTS.$self->loc( q(Sort_table_rows) );
 }
 
 # Private subroutines

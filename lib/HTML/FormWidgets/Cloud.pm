@@ -46,19 +46,19 @@ sub render_field {
       $item->{colour} and $style .= 'color: '.$item->{colour}.'; ';
       $style and $attrs->{style}  = $style;
 
-      my $text    = $ref->{labels}->{ $ref->{name} };
-         $text   .= '('.$ref->{total}.')' if exists $ref->{total};
-      my $anchor  = $hacc->a( $attrs, "\n".$text );
-      my $class   = $class_pref.q(_header).q( ).$class_pref.q(Subject);
+      my $text   = $ref->{labels}->{ $ref->{name} };
+         $text  .= '('.$ref->{total}.')' if exists $ref->{total};
+      my $anchor = $hacc->a( $attrs, "\n".$text );
 
-      $html      .= $hacc->div( { class => $class }, "\n".$anchor )."\n";
+      $attrs     = { class => $class_pref.q(_header) };
+      $html     .= $hacc->div( $attrs, "\n".$anchor )."\n";
 
-      if (not $ref->{href}) {
-         $style   = 'display: none; width: '.$ref->{width}.'px;';
-         $html   .= $hacc->div( { class => $class_pref.q(Panel),
-                                  id    => $id.q(Disp),
-                                  style => $style }, 'Loading...' );
-      }
+      $ref->{href} and next;
+
+      $style     = 'display: none; width: '.$ref->{width}.'px;';
+      $html     .= $hacc->div( { class => $class_pref.q(_panel),
+                                 id    => $id.q(Disp),
+                                 style => $style }, 'Loading...' );
    }
 
    return $html;

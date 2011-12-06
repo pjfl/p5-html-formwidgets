@@ -49,20 +49,20 @@ __PACKAGE__->mk_accessors( keys %{ $ATTRS } );
 # Class methods
 
 sub build {
-   my ($class, $config, $data) = @_; $config ||= {}; $data ||= {};
+   my ($class, $globals, $data) = @_; $globals ||= {}; $data ||= {};
 
-   my $key  = $config->{list_key    } || q(items);
-   my $type = $config->{content_type} || $ATTRS->{globals}->{content_type};
+   my $key  = $globals->{list_key    } || q(items);
+   my $type = $globals->{content_type} || $ATTRS->{globals}->{content_type};
    my $step = 0;
 
-   $config->{hacc    } = HTML::Accessors->new( content_type => $type );
-   $config->{iterator} = sub { return ++$step };
+   $globals->{hacc    } = HTML::Accessors->new( content_type => $type );
+   $globals->{iterator} = sub { return ++$step };
 
    for my $list (grep { $_ and ref $_ eq q(HASH) } @{ $data }) {
       my @stack = (); ref $list->{ $key } eq q(ARRAY) or next;
 
       for my $item (@{ $list->{ $key } }) {
-         my $built = __build_widget( $class, $config, $item, \@stack );
+         my $built = __build_widget( $class, $globals, $item, \@stack );
 
          $built and push @stack, $built;
       }
@@ -74,28 +74,26 @@ sub build {
 }
 
 sub __build_widget {
-   my ($class, $config, $item, $stack) = @_; $item or return;
+   my ($class, $globals, $item, $stack) = @_; $item or return;
 
    (ref $item and ref $item->{content} eq q(HASH)) or return $item;
 
    if ($item->{content}->{group}) {
-      $config->{skip_groups} and return;
+      $globals->{skip_groups} and return;
 
-      $item->{content} = __group_fields( $config->{hacc}, $item, $stack );
-   }
-   else {
-      my $widget = blessed $item->{content}
-                 ? $item->{content}
-                 : $item->{content}->{widget}
-                 ? $class->new( __inject( $config, $item->{content} ) )
-                 : undef;
-
-      if ($widget) {
-         $widget->frame_class and $item->{class} = $widget->frame_class;
-         $item->{content} = $widget->render;
-      }
+      $item->{content} = __group_fields( $globals->{hacc}, $item, $stack );
+      return $item;
    }
 
+   my $widget = blessed $item->{content}
+              ? $item->{content}
+              : $item->{content}->{widget}
+              ? $class->new( __inject( $globals, $item->{content} ) )
+              : undef;
+
+   $widget or return $item;
+   $widget->frame_class and $item->{class} = $widget->frame_class;
+   $item->{content} = $widget->render;
    return $item;
 }
 
@@ -390,7 +388,7 @@ sub _ensure_class_loaded {
    catch { $self->_set_error( $_ ); return 0 };
 
    if (Class::MOP::is_class_loaded( $class )) {
-      bless $self, $class; return 1;
+      bless $self, $class; return 1; # Rebless ourself as subclass
    }
 
    $self->_set_error( "Class $class loaded but package undefined" );
@@ -569,7 +567,7 @@ embeded widget definitions
 
 Initialises this object with data from the passed arguments. This is
 usually overridden in the factory subclass which sets the default for
-it's own attributes and then calls this method in the base class
+it's own attributes. In the base class this method does nothing
 
 =head3 is_xml
 
@@ -584,7 +582,7 @@ Returns true if the content type matches I<xml>
 Use the supplied key to return a value from the I<l10n> object. This
 object was passed to the constructor and should localize the key to
 the required language. The C<@args> list contains parameters to substituted
-in place of the placeholders which have the fomr I<[_n]>
+in place of the placeholders which have the form I<[_n]>
 
 =head3 render
 
@@ -752,11 +750,6 @@ of rows added as the hidden form attribute I<nRows>
 
 This is the name of the global Javascript variable that holds
 B<config> object. Defaults to B<html_formwidgets>
-
-=item messages
-
-Many of the subclasses use this hash to supply literal text in a
-language of the users choosing
 
 =item root
 
@@ -990,14 +983,26 @@ object
 
 =head2 ScrollingList
 
-The I<height> attribute controls the height of the scrolling
-list.  The list of options is passed in I<values> with the
+The I<height> attribute controls the number of options the scrolling
+list displays.  The list of options is passed in I<values> with the
 display labels in I<labels>. The onchange event handler will
 be set to I<onchange>
 
 =head2 SidebarPanel
 
+Generates the markup for a sidebar accordion panel. The
+panel contents are requested asyncronously by the browser. The
+L</SidebarPanel> widget defines these attributes:
 
+=over 3
+
+=item config
+
+=item header
+
+=item panel
+
+=back
 
 =head2 Slider
 
@@ -1052,7 +1057,8 @@ Use the mouse wheel? Defaults to B<1>
 
 =head2 TabSwapper
 
-
+A list of I<div>s is constructed that can be styled to display only one at
+a time. Clicking the tab header displays the coresponding I<div>
 
 =head2 Table
 
@@ -1083,7 +1089,7 @@ Implements an expanding tree of selectable objects
 
 =head2 UnorderedList
 
-
+Generates an unordered list of list items
 
 =head1 Diagnostics
 

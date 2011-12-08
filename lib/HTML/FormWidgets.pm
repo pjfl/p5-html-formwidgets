@@ -13,82 +13,81 @@ use HTML::Accessors;
 use Scalar::Util qw(blessed);
 use Try::Tiny;
 
-my $LSB   = q([);
-my $NB    = '&#160;&#8224;';
-my $COLON = '&#160;:&#160;';
-my $NUL   = q();
-my $SPACE = '&#160;' x 3;
-my $SPC   = q( );
-my $TTS   = q( ~ );
-my $ATTRS = {
-   globals         => {
-      content_type => q(text/html),
-      hide         => [],
-      js_object    => q(html_formwidgets),
-      literal_js   => [],
-      optional_js  => [],
-      pwidth       => 30,
-      skip         => { qw(ajaxid 1 globals 1 id 1 name 1 type 1) },
-      swidth       => 1000, },
+my $COLON   = '&#160;:&#160;';
+my $LSB     = '[';
+my $NB      = '&#160;&#8224;';
+my $NUL     = q();
+my $SPACE   = '&#160;' x 3;
+my $SPC     = q( );
+my $TTS     = q( ~ );
+my $GLOBALS = {
+   content_type    => q(text/html),
+   hidden          => {},
+   js_object       => q(html_formwidgets),
+   literal_js      => [],
+   optional_js     => [],
+   pwidth          => 30,
+   skip            => { qw(ajaxid 1 globals 1 id 1 name 1 type 1) },
+   width           => 1000, };
+my $ATTRS   = {
    ajaxid          => undef,        class           => $NUL,
    clear           => $NUL,         container       => 1,
    container_class => q(container), container_id    => undef,
    default         => undef,        frame_class     => $NUL,
-   hacc            => undef,        hint_title      => $NUL,
-   id              => undef,        name            => undef,
-   onblur          => undef,        onchange        => undef,
-   onkeypress      => undef,        pclass          => q(prompt),
-   pwidth          => undef,        prompt          => $NUL,
-   readonly        => 0,            required        => 0,
-   sep             => undef,        stepno          => undef,
-   text            => $NUL,         tip             => $NUL,
-   tiptype         => q(dagger),    type            => undef, };
+   globals         => $GLOBALS,     hacc            => undef,
+   hint_title      => $NUL,         id              => undef,
+   name            => undef,        onblur          => undef,
+   onchange        => undef,        onkeypress      => undef,
+   pclass          => q(prompt),    pwidth          => undef,
+   prompt          => $NUL,         readonly        => 0,
+   required        => 0,            sep             => undef,
+   stepno          => undef,        text            => $NUL,
+   tip             => $NUL,         tiptype         => q(dagger),
+   type            => undef, };
 
 __PACKAGE__->mk_accessors( keys %{ $ATTRS } );
 
 # Class methods
 
 sub build {
-   my ($class, $globals, $data) = @_; $globals ||= {}; $data ||= {};
+   my ($class, $attrs) = @_; $attrs ||= {}; my $step = 0;
 
-   my $key  = $globals->{list_key    } || q(items);
-   my $type = $globals->{content_type} || $ATTRS->{globals}->{content_type};
-   my $step = 0;
+   my $data = $attrs->{data        } ||= [];
+   my $key  = $attrs->{list_key    } ||= q(items);
+   my $type = $attrs->{content_type} ||= $ATTRS->{globals}->{content_type};
 
-   $globals->{hacc    } = HTML::Accessors->new( content_type => $type );
-   $globals->{iterator} = sub { return ++$step };
+   $attrs->{hacc    } ||= HTML::Accessors->new( content_type => $type );
+   $attrs->{iterator} ||= sub { return ++$step };
 
    for my $list (grep { $_ and ref $_ eq q(HASH) } @{ $data }) {
-      my @stack = (); ref $list->{ $key } eq q(ARRAY) or next;
+      ref $list->{ $key } eq q(ARRAY) or next; my @stack = ();
 
       for my $item (@{ $list->{ $key } }) {
-         my $built = __build_widget( $class, $globals, $item, \@stack );
+         my $built = __build_widget( $class, $attrs, $item, \@stack );
 
          $built and push @stack, $built;
       }
 
-      @{ $list->{ $key } } = @stack;
+      $list->{ $key } = \@stack;
    }
 
    return;
 }
 
 sub __build_widget {
-   my ($class, $globals, $item, $stack) = @_; $item or return;
+   my ($class, $attrs, $item, $stack) = @_; $item or return;
 
    (ref $item and ref $item->{content} eq q(HASH)) or return $item;
 
    if ($item->{content}->{group}) {
-      $globals->{skip_groups} and return;
-
-      $item->{content} = __group_fields( $globals->{hacc}, $item, $stack );
-      return $item;
+      $attrs->{skip_groups} and return;
+      return __group_fields( $attrs, $item, $stack );
    }
 
    my $widget = blessed $item->{content}
               ? $item->{content}
               : $item->{content}->{widget}
-              ? $class->new( __inject( $globals, $item->{content} ) )
+              ? $class->new( __inject( $attrs, $item->{content} ) )
               : undef;
 
    $widget or return $item;
@@ -98,7 +97,9 @@ sub __build_widget {
 }
 
 sub __group_fields {
-   my ($hacc, $item, $stack) = @_; my $html = $NUL; my $class;
+   my ($attrs, $item, $stack) = @_;
+
+   my $hacc = $attrs->{hacc}; my $html = $NUL; my $class;
 
    $class = delete $item->{content}->{frame_class} and $item->{class} = $class;
 
@@ -108,11 +109,9 @@ sub __group_fields {
 
    my $legend = $hacc->legend( $item->{content}->{text} );
 
-   return "\n".$hacc->fieldset( "\n".$legend.$html );
-}
+   $item->{content} = "\n".$hacc->fieldset( "\n".$legend.$html );
 
-sub __inject {
-   $_[ 1 ]->{globals} = $_[ 0 ]; return $_[ 1 ];
+   return $item;
 }
 
 sub new {
@@ -141,13 +140,20 @@ sub __arg_list {
    return ref $rest[ 0 ] eq q(HASH) ? $rest[ 0 ] : { @rest };
 }
 
+sub __inject {
+   $_[ 1 ]->{globals} = $_[ 0 ]; return $_[ 1 ];
+}
+
 # Public object methods
 
 sub add_hidden {
    my ($self, $name, $value) = @_;
 
-   push @{ $self->globals->{hide} }, {
-      content => $self->hacc->input( {
+   my $key    = $self->globals->{list_key} || q(items);
+   my $hidden = $self->globals->{hidden  } || {}; $hidden->{ $key } ||= [];
+
+   push @{ $hidden->{ $key } }, {
+      content => "\n".$self->hacc->input( {
          name => $name, type => q(hidden), value => $value } ) };
 
    return;
@@ -165,12 +171,14 @@ sub add_literal_js {
    my $text  = $self->globals->{js_object};
       $text .= ".config.${js_class}[ '${id}' ] = { ${list} };";
 
+   $self->globals->{literal_js} ||= [];
+
    push @{ $self->globals->{literal_js} }, $text;
    return;
 }
 
 sub add_optional_js {
-   my ($self, @rest) = @_;
+   my ($self, @rest) = @_; $self->globals->{optional_js} ||= [];
 
    push @{ $self->globals->{optional_js} }, @rest;
    return;
@@ -288,11 +296,11 @@ sub render_tip {
 
    my $args = { class => q(help tips), title => $tip };
 
-   $self->tiptype eq q(dagger) or return $hacc->span( $args, $field );
+   $self->tiptype eq q(dagger) or return $hacc->span( $args, "\n".$field );
 
    $field .= $hacc->span( $args, $NB );
 
-   return $hacc->div( { class => q(field_group) }, $field );
+   return $hacc->div( { class => q(field_group) }, "\n".$field );
 }
 
 # Private object methods
@@ -324,6 +332,7 @@ sub _bootstrap {
       exists $fields->{ $id } and exists $fields->{ $id }->{type}
          and $type = $self->type( $fields->{ $id }->{type} );
    }
+   else { $args->{globals}->{fields} ||= {} }
 
    # This is the default widget type if not overidden in the config
    $type or $type = $self->type( q(textfield) );
@@ -350,11 +359,11 @@ sub _build_hint_title {
 sub _build_pwidth {
    # Calculate the prompt width
    my $self   = shift;
-   my $pwidth = defined $self->pwidth
-              ? $self->pwidth : $self->globals->{pwidth};
+   my $pwidth = defined $self->pwidth ? $self->pwidth
+                                      : $self->globals->{pwidth};
 
    $pwidth and $pwidth =~ m{ \A \d+ \z }mx
-      and $pwidth = (int $pwidth * $self->globals->{swidth} / 100).q(px);
+      and $pwidth = (int $pwidth * $self->globals->{width} / 100).q(px);
 
    return $pwidth;
 }
@@ -385,14 +394,15 @@ sub _ensure_class_loaded {
    my ($self, $class) = @_;
 
    try   { Class::MOP::load_class( $class ) }
-   catch { $self->_set_error( $_ ); return 0 };
+   catch { $self->_set_error( $_ ); return  } or return 0;
 
-   if (Class::MOP::is_class_loaded( $class )) {
-      bless $self, $class; return 1; # Rebless ourself as subclass
+   unless (Class::MOP::is_class_loaded( $class )) {
+      $self->_set_error( "Class ${class} loaded but package undefined" );
+      return 0;
    }
 
-   $self->_set_error( "Class $class loaded but package undefined" );
-   return 0;
+   bless $self, $class; # Rebless ourself as subclass
+   return 1;
 }
 
 sub _init {
@@ -474,7 +484,7 @@ __END__
 
 =head1 Name
 
-HTML::FormWidgets - Create HTML form markup
+HTML::FormWidgets - Create HTML user interface components
 
 =head1 Version
 
@@ -508,13 +518,69 @@ library to modify default browser behaviour
 This module is used by L<CatalystX::Usul::View> and as such its
 main use is as a form generator within a L<Catalyst> application
 
+=head1 Configuration and Environment
+
+The following are passed to L</build> in the I<config> hash (they
+reflect this modules primary use within a L<Catalyst> application):
+
+=over 3
+
+=item assets
+
+Some of the widgets require image files. This attribute is used to
+create the URI for those images
+
+=item base
+
+This is the prefix for our URI
+
+=item content_type
+
+Either B<application/xhtml+xml> which generates XHTML 1.1 or
+B<text/html> which generates HTML 4.01 and is the default
+
+=item fields
+
+This hash ref contains the fields definitions. Static parameters for
+each widget can be stored in configuration files. This reduces the
+number of attributes that have to be passed in the call to the
+constructor
+
+=item hidden
+
+So that the L</File> and L</Table> subclasses can store the number
+of rows added as the hidden form attribute I<nRows>
+
+=item js_object
+
+This is the name of the global Javascript variable that holds
+B<config> object. Defaults to B<html_formwidgets>
+
+=item root
+
+The path to the document root for this application
+
+=item width
+
+Width in pixels of the browser window. This is used to calculate the
+width of the field prompt. The field prompt needs to be a fixed length
+so that the separator colons align vertically
+
+=item templatedir
+
+The path to template files used by the L</Template> subclass
+
+=back
+
+Sensible defaults are provided by C<new> if any of the above are undefined
+
 =head1 Subroutines/Methods
 
 =head2 Public Methods
 
 =head3 build
 
-      $class->build( $config, $data );
+      HTML::FormWidgets->build( $config_hash );
 
 The L</build> method iterates over a data structure that represents the
 form. One or more lists of widget definitions are processed in
@@ -523,7 +589,7 @@ definitions in the data structure
 
 =head3 new
 
-   $widget = $class->new( [{] key1 => value1, ... [}] );
+   $widget = HTML::FormWidgets->new( [{] key1 => value1, ... [}] );
 
 Construct a widget. Mostly this is called by the L</build> method. It
 requires the factory subclass for the widget type.
@@ -708,66 +774,6 @@ pairs. Returns a hash ref in either case.
 
 Wraps the top I<nitems> number of widgets on the build stack in a C<<
 <fieldset> >> element with a legend
-
-=head1 Configuration and Environment
-
-The following are passed to L</build> in the I<config> hash (they
-reflect this modules primary use within a L<Catalyst> application):
-
-=over 3
-
-=item assets
-
-Some of the widgets require image files. This attribute is used to
-create the URI for those images
-
-=item base
-
-This is the prefix for our URI
-
-=item content_type
-
-Either B<application/xhtml+xml> which generates XHTML 1.1 or
-B<text/html> which generates HTML 4.01 and is the default
-
-=item fields
-
-This hash ref contains the fields definitions. Static parameters for
-each widget can be stored in configuration files. This reduces the
-number of attributes that have to be passed in the call to the
-constructor
-
-=item form
-
-Used by the L</Chooser> subclass
-
-=item hide
-
-So that the L</File> and L</Table> subclasses can store the number
-of rows added as the hidden form attribute I<nRows>
-
-=item js_object
-
-This is the name of the global Javascript variable that holds
-B<config> object. Defaults to B<html_formwidgets>
-
-=item root
-
-The path to the document root for this application
-
-=item swidth
-
-Width in pixels of the browser window. This is used to calculate the
-width of the field prompt. The field prompt needs to be a fixed length
-so that the separator colons align vertically
-
-=item templatedir
-
-The path to template files used by the L</Template> subclass
-
-=back
-
-Sensible defaults are provided by C<new> if any of the above are undefined
 
 =head1 Factory Subclasses
 
@@ -990,17 +996,24 @@ be set to I<onchange>
 
 =head2 SidebarPanel
 
-Generates the markup for a sidebar accordion panel. The
-panel contents are requested asyncronously by the browser. The
-L</SidebarPanel> widget defines these attributes:
+Generates the markup for a sidebar accordion panel (a "header" C<div>
+and a "body" C<div>). The panel contents are requested asyncronously
+by the browser. The L</SidebarPanel> widget defines these attributes:
 
 =over 3
 
 =item config
 
+A hash ref whose keys and values are written out as literal JS by
+L</add_literal_js>
+
 =item header
 
+A hash that provides the I<id>, I<class>, and I<text> for header C<div>
+
 =item panel
+
+A hash that provides the I<id> and I<class> for body C<div>
 
 =back
 

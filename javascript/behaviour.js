@@ -7,11 +7,15 @@ var Behaviour = new Class( {
       config           : {
          anchors       : {},
          calendars     : {},
+         lists         : {},
          scrollPins    : { fadeInDuration: 1500, showDelay: 1000,
                            trayPadding   : 0 },
          server        : {},
          sidebars      : {},
          sliders       : {},
+         spinners      : {
+            defaults   : { hideOnClick   : true, shadow: true,
+                           useIframeShim : false } },
          tables        : {
             iconClasses: [ 'down_point_icon', 'up_point_icon' ] },
          tabSwappers   : {
@@ -23,7 +27,6 @@ var Behaviour = new Class( {
       formName         : null,
       minMarginBottom  : 5,
       minMarginRight   : 10,
-      onStateComplete  : function() {},
       popup            : false,
       target           : null,
       defaultURL       : null
@@ -72,6 +75,7 @@ var Behaviour = new Class( {
       this.freeList    = new FreeList();
       this.groupMember = new GroupMember();
       this.loadMore    = new LoadMore( this, opt.defaultURL );
+      this.rotateList  = new RotateList( { config: cfg.lists } );
       this.server      = new ServerUtils( {
             config     : cfg.server,
             url        : opt.defaultURL } );
@@ -79,6 +83,7 @@ var Behaviour = new Class( {
       this.sliders     = new Sliders( {
          config        : cfg.sliders,
          submit        : this.submit } );
+      this.spinners    = new Spinners( { config: cfg.spinners } );
       this.tables      = new TableUtils( {
          config        : cfg.tables,
          formName      : opt.formName,
@@ -95,6 +100,8 @@ var Behaviour = new Class( {
          cookiePrefix  : opt.cookiePrefix } );
       this.wysiwyg     = new WYSIWYG();
       this.linkFade    = new LinkFader();
+
+      if (window.Chosens != undefined) this.chosens = new Chosens();
 
       this.resize();
 
@@ -177,10 +184,6 @@ var Behaviour = new Class( {
          var pair = cookies[ i ].split( '~' );
          var p0   = unescape( pair[ 0 ] );
          var p1   = unescape( pair[ 1 ] );
-
-         /* Deprecated */
-         /* Restore state of any checkboxes whose ids end in Box */
-         if (el = $( p0 + 'Box' )) el.checked = (p1 == 'true' ? true : false);
 
          /* Restore the state of any elements whose ids end in Disp */
          if (el = $( p0 + 'Disp' ))

@@ -1,37 +1,40 @@
-/* @(#)$Id: green.css 1188 2011-06-06 17:46:42Z pjf $ */
+/* @(#)$Id: green.css 1231 2011-10-06 00:28:00Z pjf $ */
 
-body { background: url(background.png) #9c9 repeat 100% 100%; color: black; }
+body { background: url(background.png) #e9f7dc repeat; color: black; }
 
 abbr, acronym, fieldset, ins { border-color: #336; }
 ins { color: #f00; }
 hr { border-color: #336 transparent transparent; }
 
 .accordion_content .tree, .even_col:hover,
-.navigation:hover, .odd_col:hover { background-color: #ffc; }
+.navigation:hover, .odd_col:hover, .spinner-fill { background-color: #ffc; }
 .accordion_header { border-color: #cc9 #336 #336 #336; }
 .accordion_header_first { border-top-color: #336; }
 .accordion_panel { border-color: transparent #336 #336 #336; }
 .accordion_panel_container .active { background-color: #663; color: #ffc; }
-.accordion_panel_container .inactive, .sdata_item .tree,
-.slider { background-color: #cc9; }
+.accordion_panel_container .inactive, .diagnostic_panel, .sdata_item .tree,
+.slider, .spinner-js { background-color: #cc9; }
 .accordion_panel_container .inactive, .error, .navigation,
 .tabs, .tree a.selected a.selected-inactive { color: #000; }
 .anchor_button, .chooser_button, .icon_button, .image_button, .markup_button,
 .submit_button { border-color: #cc9; color: #336; }
 .button, .tick, .tree, .navigation:hover, .pod h2,
 .pod p.toplink, .results legend, .sdata_item legend, .sdata_item input.button,
-.slider, .slider .knob, .tabset .panel_content,
+.slider, .slider .knob, .spinner-js, .tabset .panel_content,
 .tabset .tab { border-color: #336; }
+.groupmember_container span.title { background: #663; color: #ffc; }
 .header_link, .search, .tree_link { color: #336; }
 .button_item input.button:hover, .slider .knob,
 .tree_link:hover { background-color: #9c9; }
+.checkbox_container, .navigation { border-color: transparent; }
+.checkbox_container:hover { background-color: #9c9; border-color: #336; }
 .cut_here { background-color: transparent; border-top-color: #f00; }
 .error { background-color: #fcc; }
 .even_row { background-color: #c1d9a9; }
 .header_title { color: #336; }
 .info { color: #8b8b32; }
-.navigation { border-color: transparent; }
 .odd_row { background-color: #cc9; }
+.spinner-shadow { background-color: #000; }
 .split { color: #ffc; }
 .tabset .tab_selected { border-color: #336 #336 #ffc; }
 .warning { background: Yellow; }
@@ -47,7 +50,6 @@ input.required, password.required, select.required, textarea.required {
 }
 
 span.error { border-color: #336; }
-span.title { background: #663; color: #ffc; }
 table.editable td.row_select,
 table.editable td.row_drag { background-color: #c1d9a9; border-color: #336; }
 table.editable th { border-color: #336; }
@@ -146,6 +148,41 @@ th.normal { background-color: #663; color: #ffc; }
 .calendar td.time span.active {
    border-color: #f00; background-color: #000; color: #0f0;
 }
+
+/* Chosens - Smarter select menus */
+
+.chzn-container-single .chzn-drop, .chzn-container .chzn-drop,
+.chzn-container a.chzn-single {
+   background-color: #cc9; border-color: #336; color: #336;
+}
+.chzn-container li.search-prompt div,
+.chzn-container a.chzn-single div { border-color: #336; }
+.chzn-container ul.chzn-results li em { background-color: #abbd6b; }
+.chzn-container ul.chzn-results li.highlighted {
+   background-color: #abbd6b; color: #000;
+}
+.chzn-container ul.chzn-results li.highlighted em {
+   background-color: transparent;
+}
+.chzn-container ul.chzn-results li.no-results { background-color: #e9f7dc; }
+.chzn-container ul.chzn-results li.group-result { color: #336; }
+.chzn-container-active a.chzn-single { border-color: #336; }
+.chzn-container-active a.chzn-single-with-drop {
+   background-color: #cc9;
+   background-image: -moz-linear-gradient(center bottom, white 0%, #cc9 50%);
+/*   background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0, white), color-stop(0.5, #cc9));
+   background-image: -o-linear-gradient(bottom, white 0%, #cc9 50%); */
+   border-color: #336;
+}
+.chzn-container-active ul.chzn-choices,
+.chzn-container ul.chzn-choices {
+   background-color: #cc9; color: #336;
+}
+.chzn-container ul.chzn-choices li.search-choice,
+.chzn-container-active ul.chzn-choices li.search-choice {
+   background-color: #abbd6b;
+}
+.chzn-container .chzn-search input { background-color: #9c9; }
 
 /* Rounded corners in menu */
 

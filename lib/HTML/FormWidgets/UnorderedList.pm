@@ -26,11 +26,13 @@ sub render_field {
 
    ($data = $self->data and $data->[ 0 ]) or return; my $js_args = {};
 
-   for (grep { defined $self->config->{ $_ } } keys %{ $self->config }) {
-      $js_args->{ $_ } = '"'.$self->config->{ $_ }.'"';
-   }
+   if ($self->id) {
+      for (grep { defined $self->config->{ $_ } } keys %{ $self->config }) {
+         $js_args->{ $_ } = '"'.$self->config->{ $_ }.'"';
+      }
 
-   $self->add_literal_js( q(lists), $args->{id}, $js_args );
+      $self->add_literal_js( q(lists), $self->id, $js_args );
+   }
 
    my $item_args = $self->item_class ? { class => $self->item_class } : {} ;
 
@@ -39,7 +41,9 @@ sub render_field {
                           $self->inflate( $item->{content} || $NBSP ) );
    }
 
-   return $hacc->ul( { class => $self->class, id => $args->{id} }, $html );
+   $args = { class => $self->class }; $self->id and $args->{id} = $self->id;
+
+   return $hacc->ul( $args, $html );
 }
 
 1;

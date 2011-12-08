@@ -17,7 +17,7 @@ BEGIN {
    $current and $current->notes->{stop_tests}
             and plan skip_all => $current->notes->{stop_tests};
 
-   plan tests => 20;
+   plan tests => 22;
 }
 
 use_ok q(HTML::FormWidgets);
@@ -51,8 +51,7 @@ $widget = HTML::FormWidgets->new( id => q(test), type => q(date) );
 
 ok( $widget->render =~ m{ id="test_trigger" }mx, 'Date' );
 
-$widget = HTML::FormWidgets->new( hide => [],
-                                  name => q(file),
+$widget = HTML::FormWidgets->new( name => q(file),
                                   path => q(honestly),
                                   type => q(file) );
 
@@ -73,7 +72,13 @@ ok $widget->render =~
    m{ input \s value="test" \s name="hidden" \s type="hidden" }msx,
    'Hidden';
 
-# Image
+$widget = HTML::FormWidgets->new( fhelp => q(Help Text),
+                                  text  => q(http://localhost),
+                                  type  => q(image) );
+
+ok $widget->render =~
+   m{ img \s alt="Help \s Text" \s src="http://localhost" }msx,
+   'Image';
 
 $widget = HTML::FormWidgets->new( id   => q(test),
                                   text => q(Test text),
@@ -166,7 +171,14 @@ $widget = HTML::FormWidgets->new( default => q(test), type => q(textfield) );
 ok( $widget->render =~ m{ input \s value="test" \s name="textfield" \s type="text" \s class="ifield" \s size="40" }mx, 'Textfield' );
 
 # Tree
-# UnorderedList
+
+my $data = [ { content => { text => q(t1), type => q(label) } },
+             { content => { text => q(t2), type => q(label) } } ];
+
+$widget = HTML::FormWidgets->new( data => $data, type => q(unorderedList) );
+
+ok $widget->render =~ m{ ul \s class="plain"><li }msx,
+   'Unordered List';
 
 # Local Variables:
 # mode: perl

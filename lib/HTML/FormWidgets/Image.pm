@@ -12,6 +12,7 @@ __PACKAGE__->mk_accessors( qw(fhelp) );
 sub init {
    my ($self, $args) = @_;
 
+   $self->fhelp  ( q()       );
    $self->tiptype( q(normal) );
    return;
 }
@@ -19,9 +20,12 @@ sub init {
 sub render_field {
    my ($self, $args) = @_;
 
-   return $self->hacc->img( { alt   => $self->fhelp,
-                              class => $self->class,
-                              src   => $self->text } );
+   $args = { alt => $self->fhelp, src => $self->text };
+
+   $self->class and $args->{class} = $self->class;
+   $self->id    and $args->{id   } = $self->id;
+
+   return $self->hacc->img( $args );
 }
 
 1;

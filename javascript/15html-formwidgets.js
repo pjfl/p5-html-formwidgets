@@ -1,8 +1,6 @@
-/* @(#)$Id: 15html-formwidgets.js 1230 2011-10-02 21:41:05Z pjf $
-
-   Portions of this code are taken from MooTools 1.3 which is:
-   Copyright (c) 2006-2010 [Valerio Proietti](http://mad4milk.net/).
-*/
+/* @(#)$Id: 15html-formwidgets.js 1249 2011-11-03 03:16:26Z pjf $
+ * Portions of this code are taken from MooTools 1.3 which is:
+ * Copyright (c) 2006-2010 [Valerio Proietti](http://mad4milk.net/). */
 
 Options.implement( {
    build: function() {
@@ -52,233 +50,13 @@ String.implement( {
    }
 } );
 
-/*
-
-Description: An Fx.Elements extension which allows you to easily
-             create accordion type controls.
-
-License: MIT-style license
-
-Authors: Valerio Proietti, Peter Flanigan
-
-*/
-
-Fx.Accordion = new Class( {
-   Extends: Fx.Elements,
-
-   options               : {
-      alwaysHide        : false,
-      display           : 0,
-      fixedHeight       : false,
-      fixedWidth        : false,
-      height            : true,
-      initialDisplayFx  : true,
-/*    onActive          : function( togglers, index, section ) {}, */
-/*    onBackground      : function( togglers, index, section ) {}, */
-      opacity           : true,
-      returnHeightToAuto: true,
-      show              : false,
-      trigger           : 'click',
-      wait              : false,
-      width             : false
-   },
-
-   initialize: function() {
-      var defined = function( obj ) { return obj != null };
-      var params  = Array.link( arguments, {
-         'options'  : Type.isObject,
-         'togglers' : defined,
-         'elements' : defined
-      } );
-
-      this.parent( params.elements, params.options );
-      this.togglers      = $$( params.togglers );
-      this.internalChain = new Chain();
-      this.previous      = -1;
-      this.effects       = {};
-
-      var opt = this.options;
-
-      if (opt.alwaysHide) opt.wait = true;
-
-      if (opt.show || opt.show === 0) {
-         opt.display = false; this.previous = opt.show;
-      }
-
-      if (opt.opacity) this.effects.opacity = 'fullOpacity';
-
-      if (opt.width) this.effects.width = opt.fixedWidth ? 'fullWidth'
-                                                         : 'offsetWidth';
-
-      if (opt.height) this.effects.height = opt.fixedHeight ? 'fullHeight'
-                                                            : 'scrollHeight';
-
-      for (var i = 0, l = this.togglers.length; i < l; i++) {
-         var toggler = this.togglers[ i ];
-
-         if (i == 0) toggler.addClass( 'accordion_header_first' );
-
-         this.addSection( toggler, this.elements[ i ] );
-      }
-
-      this.elements.each( function( el, i ) {
-         if (opt.show === i) {
-            this.fireEvent( 'active', [ this.togglers, i, el ] );
-         }
-         else {
-            for (var fx in this.effects) el.setStyle( fx, 0 );
-         }
-      }, this );
-
-      if (opt.display || opt.display === 0)
-         this.display( opt.display, opt.initialDisplayFx );
-
-      this.addEvent( 'complete',
-                     this.internalChain.callChain.bind( this.internalChain ) );
-   },
-
-   addSection: function( toggler, el ) {
-      toggler = document.id( toggler ); el = document.id( el );
-
-      var test = this.togglers.contains( toggler );
-
-      this.togglers.include( toggler ); this.elements.include( el );
-
-      var opt       = this.options;
-      var index     = this.togglers.indexOf( toggler );
-      var displayer = this.display.pass( [ index, true ], this );
-
-      toggler.addEvent( opt.trigger, displayer );
-      toggler.store( 'accordion:display', displayer );
-      el.setStyle( 'overflow-y', opt.fixedHeight ? 'auto' : 'hidden' );
-      el.setStyle( 'overflow-x', opt.fixedWidth  ? 'auto' : 'hidden' );
-      el.fullOpacity = 1;
-
-      if (! test) { for (var fx in this.effects) el.setStyle( fx, 0 ); }
-
-      this.internalChain.chain( function() {
-         if (! opt.fixedHeight && opt.returnHeightToAuto
-             && ! this.selfHidden) {
-            if (this.now == index) el.setStyle( 'height', 'auto' );
-         };
-      }.bind( this ) );
-
-      return this;
-   },
-
-   detach: function( toggler ) {
-      var remove = function( toggler ) {
-         toggler.removeEvent( this.options.trigger,
-                              toggler.retrieve( 'accordion:display' ) );
-      }.bind( this );
-
-      if (! toggler) this.togglers.each( remove );
-      else remove( toggler );
-
-      return this;
-   },
-
-   display: function( index, useFx ) {
-      if (! this.check( index, useFx )) return this;
-
-      var els = this.elements, opt = this.options;
-
-      index = (typeOf( index ) == 'element') ? els.indexOf( index )
-                                             : index;
-      index = index >= els.length ? els.length - 1 : index;
-      useFx = useFx != null ? useFx : true;
-
-      if (! opt.fixedHeight && opt.returnHeightToAuto) {
-         var prev = this.previous > -1 ? els[ this.previous ] : false;
-
-         if (prev && ! this.selfHidden) {
-            for (var fx in this.effects) {
-               prev.setStyle( fx, prev[ this.effects[ fx ] ] );
-            }
-         }
-      }
-
-      if (this.timer && opt.wait) return this;
-
-      this.previous = this.now != undefined ? this.now : -1;
-      this.now      = index;
-
-      var obj = this._element_iterator( function( el, i, hide ) {
-         this.fireEvent( hide ? 'background' : 'active',
-                         [ this.togglers, i, el ] );
-      }.bind( this ) );
-
-      return useFx ? this.start( obj ) : this.set( obj );
-   },
-
-   _element_iterator: function( f ) {
-      var obj = {}, opt = this.options;
-
-      this.elements.each( function( el, i ) {
-         var hide = false; obj[ i ] = {};
-
-         if (i != this.now) { hide = true }
-         else if (opt.alwaysHide && ((el.offsetHeight > 0 && opt.height)
-                                     || el.offsetWidth  > 0 && opt.width)) {
-            hide = this.selfHidden = true;
-         }
-
-         f( el, i, hide );
-
-         for (var fx in this.effects)
-            obj[ i ][ fx ] = hide ? 0 : el[ this.effects[ fx ] ];
-      }, this );
-
-      return obj;
-   },
-
-   removeSection: function( toggler, displayIndex ) {
-      var index   = this.togglers.indexOf( toggler );
-      var el      = this.elements[ index ];
-      var remover = function() {
-         this.togglers.erase( toggler );
-         this.elements.erase( el );
-         this.detach( toggler );
-      }.bind( this );
-
-      if (this.now == index || displayIndex != null){
-         this.display( displayIndex != null ? displayIndex
-                       : (index - 1 >= 0 ? index - 1 : 0) ).chain( remover );
-      }
-      else { remover() }
-
-      return this;
-   },
-
-   resize: function() {
-      var opt    = this.options;
-      var height = typeOf( opt.fixedHeight ) == 'function'
-                 ? opt.fixedHeight.call() : opt.fixedHeight;
-      var width  = typeOf( opt.fixedWidth  ) == 'function'
-                 ? opt.fixedWidth.call()  : opt.fixedWidth;
-      var obj    = this._element_iterator( function( el, i, hide ) {
-         if (height) el.fullHeight = height;
-         if (width)  el.fullWidth  = width;
-      }.bind( this ) );
-
-      this.set( obj );
-   }
-} );
-
 var AutoSize = new Class( {
    Implements: [ Events, Options ],
 
-   options      : {
-      animate   : true,       // animate transition or just set new height
-      duration  : 1000,       // time taken to animate height change in ms
-      interval  : 1100,       // update interval in milliseconds
-      margin    : 30,         // gap (in px) to maintain between last line
-                              // of text and bottom of textarea
-      max_y     : 1000,       // maximum height of textarea
-      min_y     : 48,         // minimum height of textarea
-/*    onResize  : function(){}, */// fire this event when resize method called
-/*    onComplete: function(){}, */// fire this event when animation complete
-      selector  : '.autosize' // element class to search for
+   options           : {
+      container_class: 'expanding_area',
+      preformat_class: 'expanding_spacer',
+      selector       : '.autosize' // element class to search for
    },
 
    initialize: function( options ) {
@@ -286,45 +64,18 @@ var AutoSize = new Class( {
    },
 
    attach: function( el ) {
-      var auto_size = {}, opt = this.options, styles = el.getStyles
-      ( 'font-family', 'font-size', 'letter-spacing',
-        'line-height', 'padding',   'text-decoration', 'width' );
+      var opt  = this.options;
+      var div  = new Element( 'div', { 'class': opt.container_class } );
+      var pre  = new Element( 'pre', { 'class': opt.preformat_class }  );
+      var span = new Element( 'span' );
 
-      auto_size.clone   = new Element( 'textarea', {
-         styles         : {
-            'overflow-y': 'hidden',
-            'position'  : 'absolute',
-            'top'       : '0px',
-            'left'      : '-9999px' },
-         tabIndex       : -1
-      } ).setStyles( styles ).inject( el, 'before' );
-      auto_size.element = el;
-      auto_size.fx      = new Fx.Tween( el, {
-         duration       : opt.duration,
-         onComplete     : function() {
-            if (opt.onComplete) opt.onComplete.call( this, auto_size ); },
-         property       : 'height',
-         transition     : Fx.Transitions.linear } );
-      auto_size.min_y   = Math.max( el.getHeight(), opt.min_y );
+      div.inject( el, 'before' ); pre.inject( div ); div.grab( el );
 
-      this.resize.periodical( opt.interval, this, auto_size );
-   },
+      span.inject( pre ); new Element( 'br' ).inject( pre );
 
-   resize: function( auto_size ) {
-      var clone = auto_size.clone, el = auto_size.element;
+      el.addEvent( 'keyup', function() { span.set( 'text', el.value ) } );
 
-      clone.setStyle( 'height', 0 ).value = el.value; clone.scrollTop = 10000;
-
-      var opt = this.options, new_y = clone.getScroll().y + opt.margin;
-
-      new_y = Math.min( Math.max( new_y, auto_size.min_y ), opt.max_y );
-
-      if (el.clientHeight == new_y) return;
-
-      if (opt.animate) auto_size.fx.start( new_y );
-      else el.setStyle( 'height', new_y );
-
-      this.fireEvent( 'resize', [ auto_size ] );
+      span.set( 'text', el.value );
    }
 } );
 
@@ -432,8 +183,7 @@ var CheckboxReplace = new Class( {
 } );
 
 /* Originally created by: Adam Wulf adam.wulf@gmail.com Version 1.4.0
- * http://welcome.totheinter.net/columnizer-jquery-plugin/
- */
+ * http://welcome.totheinter.net/columnizer-jquery-plugin/ */
 
 var Columnizer = new Class( {
    Implements: [ Events, Options ],
@@ -1003,6 +753,213 @@ var FreeList = new Class( {
       }
 
       el.focus();
+   }
+} );
+
+/* Description: An Fx.Elements extension which allows you to easily
+ *              create accordion type controls.
+ * License: MIT-style license
+ * Authors: Valerio Proietti, Peter Flanigan */
+
+Fx.Accordion = new Class( {
+   Extends: Fx.Elements,
+
+   options               : {
+      alwaysHide        : false,
+      display           : 0,
+      fixedHeight       : false,
+      fixedWidth        : false,
+      height            : true,
+      initialDisplayFx  : true,
+/*    onActive          : function( togglers, index, section ) {}, */
+/*    onBackground      : function( togglers, index, section ) {}, */
+      opacity           : true,
+      returnHeightToAuto: true,
+      show              : false,
+      trigger           : 'click',
+      wait              : false,
+      width             : false
+   },
+
+   initialize: function() {
+      var defined = function( obj ) { return obj != null };
+      var params  = Array.link( arguments, {
+         'options'  : Type.isObject,
+         'togglers' : defined,
+         'elements' : defined
+      } );
+
+      this.parent( params.elements, params.options );
+      this.togglers      = $$( params.togglers );
+      this.internalChain = new Chain();
+      this.previous      = -1;
+      this.effects       = {};
+
+      var opt = this.options;
+
+      if (opt.alwaysHide) opt.wait = true;
+
+      if (opt.show || opt.show === 0) {
+         opt.display = false; this.previous = opt.show;
+      }
+
+      if (opt.opacity) this.effects.opacity = 'fullOpacity';
+
+      if (opt.width) this.effects.width = opt.fixedWidth ? 'fullWidth'
+                                                         : 'offsetWidth';
+
+      if (opt.height) this.effects.height = opt.fixedHeight ? 'fullHeight'
+                                                            : 'scrollHeight';
+
+      for (var i = 0, l = this.togglers.length; i < l; i++) {
+         var toggler = this.togglers[ i ];
+
+         if (i == 0) toggler.addClass( 'accordion_header_first' );
+
+         this.addSection( toggler, this.elements[ i ] );
+      }
+
+      this.elements.each( function( el, i ) {
+         if (opt.show === i) {
+            this.fireEvent( 'active', [ this.togglers, i, el ] );
+         }
+         else {
+            for (var fx in this.effects) el.setStyle( fx, 0 );
+         }
+      }, this );
+
+      if (opt.display || opt.display === 0)
+         this.display( opt.display, opt.initialDisplayFx );
+
+      this.addEvent( 'complete',
+                     this.internalChain.callChain.bind( this.internalChain ) );
+   },
+
+   addSection: function( toggler, el ) {
+      toggler = document.id( toggler ); el = document.id( el );
+
+      var test = this.togglers.contains( toggler );
+
+      this.togglers.include( toggler ); this.elements.include( el );
+
+      var opt       = this.options;
+      var index     = this.togglers.indexOf( toggler );
+      var displayer = this.display.pass( [ index, true ], this );
+
+      toggler.addEvent( opt.trigger, displayer );
+      toggler.store( 'accordion:display', displayer );
+      el.setStyle( 'overflow-y', opt.fixedHeight ? 'auto' : 'hidden' );
+      el.setStyle( 'overflow-x', opt.fixedWidth  ? 'auto' : 'hidden' );
+      el.fullOpacity = 1;
+
+      if (! test) { for (var fx in this.effects) el.setStyle( fx, 0 ); }
+
+      this.internalChain.chain( function() {
+         if (! opt.fixedHeight && opt.returnHeightToAuto
+             && ! this.selfHidden) {
+            if (this.now == index) el.setStyle( 'height', 'auto' );
+         };
+      }.bind( this ) );
+
+      return this;
+   },
+
+   detach: function( toggler ) {
+      var remove = function( toggler ) {
+         toggler.removeEvent( this.options.trigger,
+                              toggler.retrieve( 'accordion:display' ) );
+      }.bind( this );
+
+      if (! toggler) this.togglers.each( remove );
+      else remove( toggler );
+
+      return this;
+   },
+
+   display: function( index, useFx ) {
+      if (! this.check( index, useFx )) return this;
+
+      var els = this.elements, opt = this.options;
+
+      index = (typeOf( index ) == 'element') ? els.indexOf( index )
+                                             : index;
+      index = index >= els.length ? els.length - 1 : index;
+      useFx = useFx != null ? useFx : true;
+
+      if (! opt.fixedHeight && opt.returnHeightToAuto) {
+         var prev = this.previous > -1 ? els[ this.previous ] : false;
+
+         if (prev && ! this.selfHidden) {
+            for (var fx in this.effects) {
+               prev.setStyle( fx, prev[ this.effects[ fx ] ] );
+            }
+         }
+      }
+
+      if (this.timer && opt.wait) return this;
+
+      this.previous = this.now != undefined ? this.now : -1;
+      this.now      = index;
+
+      var obj = this._element_iterator( function( el, i, hide ) {
+         this.fireEvent( hide ? 'background' : 'active',
+                         [ this.togglers, i, el ] );
+      }.bind( this ) );
+
+      return useFx ? this.start( obj ) : this.set( obj );
+   },
+
+   _element_iterator: function( f ) {
+      var obj = {}, opt = this.options;
+
+      this.elements.each( function( el, i ) {
+         var hide = false; obj[ i ] = {};
+
+         if (i != this.now) { hide = true }
+         else if (opt.alwaysHide && ((el.offsetHeight > 0 && opt.height)
+                                     || el.offsetWidth  > 0 && opt.width)) {
+            hide = this.selfHidden = true;
+         }
+
+         f( el, i, hide );
+
+         for (var fx in this.effects)
+            obj[ i ][ fx ] = hide ? 0 : el[ this.effects[ fx ] ];
+      }, this );
+
+      return obj;
+   },
+
+   removeSection: function( toggler, displayIndex ) {
+      var index   = this.togglers.indexOf( toggler );
+      var el      = this.elements[ index ];
+      var remover = function() {
+         this.togglers.erase( toggler );
+         this.elements.erase( el );
+         this.detach( toggler );
+      }.bind( this );
+
+      if (this.now == index || displayIndex != null){
+         this.display( displayIndex != null ? displayIndex
+                       : (index - 1 >= 0 ? index - 1 : 0) ).chain( remover );
+      }
+      else { remover() }
+
+      return this;
+   },
+
+   resize: function() {
+      var opt    = this.options;
+      var height = typeOf( opt.fixedHeight ) == 'function'
+                 ? opt.fixedHeight.call() : opt.fixedHeight;
+      var width  = typeOf( opt.fixedWidth  ) == 'function'
+                 ? opt.fixedWidth.call()  : opt.fixedWidth;
+      var obj    = this._element_iterator( function( el, i, hide ) {
+         if (height) el.fullHeight = height;
+         if (width)  el.fullWidth  = width;
+      }.bind( this ) );
+
+      this.set( obj );
    }
 } );
 
@@ -1648,11 +1605,8 @@ var RotateList = new Class( {
 
 /* Adds markers to the page scrollbar to indicate the location of key
    elements on the page. Inspired by a simmilar mechanism used on MSNBC.com
-
    Was rewritten from from a Scriptaculous extension which was
-
    Copyright (c) 2010, Jarvis Badgley - chiper[at]chipersoft[dot]com
-
    Usage:
 
    var sp = new ScrollPins( { config: { Pintray: { pins: {
@@ -1671,8 +1625,7 @@ var RotateList = new Class( {
       'div.lavender': { element:document.body.getChildren()[0] },
       //remove pins created by higher up in the array
       'div.eggplant': null
-   } } } } );
- */
+   } } } } ); */
 
 var ScrollPins = new Class( {
    Implements: [ Events, Options ],
@@ -2042,8 +1995,7 @@ var Sliders = new Class( {
 
 /* Originally Copyright (c) 2011 Felix Gnass [fgnass at neteye dot de]
  * https://fgnass.github.com/spin.js
- * Licensed under the MIT license
- */
+ * Licensed under the MIT license */
 
 Spinner.JS = new Class( {
    Extends: Spinner,
@@ -2669,22 +2621,22 @@ var TableUtils = new Class( {
           klass   = opt.inputCellClass,
           rows    = table.getElements( 'tr.' + opt.editRowClass ),
           nrows   = rows ? rows.length : 0,
+          row_id  = nrows,
           row     = new Element( 'tr', {
-             id   : table.id + '_row' + nrows,
-             class: opt.editRowClass + ' ' + opt.sortRowClass } ),
-          new_id  = $uid( row );
+             id   : table.id + '_row' + row_id,
+             class: opt.editRowClass + ' ' + opt.sortRowClass } );
 
       if (edit == 'left') row.appendChild( this._add_drag( cNo++ ) );
 
       if (select == 'left')
-         row.appendChild( this._add_select( table, new_id, cNo++ ) );
+         row.appendChild( this._add_select( table, row_id, cNo++ ) );
 
       while (el = $( table.id + '_add' + cNo )) {
          var cell  = new Element( 'td' ),
-             type  = el.tag == 'textarea' ? 'textarea' : 'input',
+             type  = el.type == 'textarea' ? 'textarea' : 'input',
              input = new Element( type, {
                 class: 'ifield',
-                name : table.id + '_' + new_id + '_' + cNo,
+                name : table.id + '_' + row_id + '_' + cNo,
                 value: el.value
              } );
 
@@ -2700,7 +2652,7 @@ var TableUtils = new Class( {
       }
 
       if (select == 'right')
-         row.appendChild( this._add_select( table, new_id, cNo++ ) );
+         row.appendChild( this._add_select( table, row_id, cNo++ ) );
 
       if (edit == 'right') row.appendChild( this._add_drag( cNo++ ) );
 
@@ -2914,17 +2866,8 @@ var TableUtils = new Class( {
 } );
 
 /* Clientcide Copyright (c) 2006-2009
-
-Contents: TabSwapper
-
-name: TabSwapper.js
-description: Handles the scripting for a common UI layout; the tabbed box.
-License: http://www.clientcide.com/wiki/cnet-libraries#license
-
-requires:
- - core: Element.Event, Fx.Tween, Fx.Morph
- - more: Element.Shortcuts, Element.Dimensions, Element.Measure
-*/
+   Description: Handles the scripting for a common UI layout; the tabbed box.
+   License: http://www.clientcide.com/wiki/cnet-libraries#license */
 
 var TabSwapper = new Class( {
    Implements: [ Options, Events ],
@@ -3166,16 +3109,10 @@ var TabSwappers = new Class( {
    }
 } );
 
-/*
-
-Description: Class for creating nice tips that follow the mouse cursor
-             when hovering an element.
-
-License: MIT-style license
-
-Authors: Valerio Proietti, Christoph Pojer, Luis Merino
-
-*/
+/* Description: Class for creating nice tips that follow the mouse cursor
+                when hovering an element.
+   License: MIT-style license
+   Authors: Valerio Proietti, Christoph Pojer, Luis Merino */
 
 (function() {
 
@@ -3755,8 +3692,7 @@ var WindowUtils = new Class( {
 
 /* Author  : luistar15, <leo020588 [at] gmail.com>
  * Class   : wysiwyg (rev.06-07-08)
- * License : MIT License
- */
+ * License : MIT License */
 
 var WYSIWYG = new Class( {
    Implements: [ Events, Options ],

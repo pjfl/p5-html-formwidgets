@@ -42,7 +42,7 @@ sub render_field {
       $text = $markup;
    }
 
-   $args = { class => $self->class, id => $self->id };
+   $args = { class => $self->class }; $self->id and $args->{id} = $self->id;
 
    return $self->hacc->span( $args, $text );
 }

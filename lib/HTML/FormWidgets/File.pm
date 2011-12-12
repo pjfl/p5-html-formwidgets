@@ -4,7 +4,7 @@ package HTML::FormWidgets::File;
 
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.7.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.8.%d', q$Rev$ =~ /\d+/gmx );
 use parent qw(HTML::FormWidgets);
 
 use English qw(-no_match_vars);
@@ -179,11 +179,11 @@ sub _render_csv {
 sub _render_html {
    my ($self, $path) = @_;  my $hacc = $self->hacc;
 
-   my $pat = $self->globals->{root};
+   my $pat = $self->options->{root};
 
    $path  =~ m{ \A $pat }msx
-      and $path = $self->globals->{base}.($path =~ s{ \A $pat }{/}msx);
-   $path  = $path =~ m{ \A http: }msx ? $path : $self->globals->{base}.$path;
+      and $path = $self->options->{base}.($path =~ s{ \A $pat }{/}msx);
+   $path  = $path =~ m{ \A http: }msx ? $path : $self->options->{base}.$path;
 
    return $hacc->iframe( { class     => $self->subtype,
                            src       => $path,

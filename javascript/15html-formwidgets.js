@@ -2578,7 +2578,7 @@ var TableUtils = new Class( {
    build: function() {
       var opt = this.options;
 
-      if (opt.editSelector) $$( opt.editSelector ).each( function( el ) {
+      if (opt.editSelector)  $$( opt.editSelector ).each( function( el  ) {
          el.getElements( 'tr.' + opt.editRowClass ).each( function( row ) {
             $uid( row );
          } );
@@ -2615,7 +2615,7 @@ var TableUtils = new Class( {
    addRow: function( table ) {
       var cNo     = 0, el,
           opt     = this.options,
-          cfg     = opt.config[ table.id ] || {}
+          cfg     = opt.config[ table.id ] || {},
           edit    = cfg.editSide   || 'left',
           select  = cfg.selectSide || 'left',
           klass   = opt.inputCellClass,
@@ -2624,19 +2624,21 @@ var TableUtils = new Class( {
           row_id  = nrows,
           row     = new Element( 'tr', {
              id   : table.id + '_row' + row_id,
-             class: opt.editRowClass + ' ' + opt.sortRowClass } );
+             class: opt.editRowClass + ' ' + opt.sortRowClass } ),
+          id_a    = table.id.split( '.' ),
+          name    = id_a[ 1 ];
 
       if (edit == 'left') row.appendChild( this._add_drag( cNo++ ) );
 
       if (select == 'left')
-         row.appendChild( this._add_select( table, row_id, cNo++ ) );
+         row.appendChild( this._add_select( name, row_id, cNo++ ) );
 
       while (el = $( table.id + '_add' + cNo )) {
          var cell  = new Element( 'td' ),
              type  = el.type == 'textarea' ? 'textarea' : 'input',
              input = new Element( type, {
                 class: 'ifield',
-                name : table.id + '_' + row_id + '_' + cNo,
+                name : name + '_' + row_id + '_' + cNo,
                 value: el.value
              } );
 
@@ -2652,11 +2654,11 @@ var TableUtils = new Class( {
       }
 
       if (select == 'right')
-         row.appendChild( this._add_select( table, row_id, cNo++ ) );
+         row.appendChild( this._add_select( name, row_id, cNo++ ) );
 
       if (edit == 'right') row.appendChild( this._add_drag( cNo++ ) );
 
-      this.form.elements[ '_' + table.id + '_nrows' ].value = nrows + 1;
+      this.form.elements[ '_' + name + '_nrows' ].value = nrows + 1;
       row.inject( $( table.id ).getElement( 'tbody' ) );
       table.sortables.attach();
       this.fireEvent( 'rowAdded' );
@@ -2673,9 +2675,9 @@ var TableUtils = new Class( {
       return cell;
    },
 
-   _add_select: function( table, new_id, cNo ) {
+   _add_select: function( name, new_id, cNo ) {
       var input = new Element( 'input', {
-         name: table.id + '_select' + new_id, type: 'checkbox'
+         name: name + '.select' + new_id, type: 'checkbox'
       } );
       var cell  = new Element( 'td', {
          class: 'row_select' + this._col_class( cNo )
@@ -2783,6 +2785,8 @@ var TableUtils = new Class( {
    removeRows: function( table ) {
       var rows      = table.getElements( 'tr.' + this.options.editRowClass ),
           nrows     = rows ? rows.length : 0,
+          id_a      = table.id.split( '.' ),
+          name      = id_a[ 1 ],
           destroyed = 0;
 
       rows.map( function( row ) {
@@ -2793,7 +2797,7 @@ var TableUtils = new Class( {
          } );
       } );
 
-      this.form.elements[ '_' + table.id + '_nrows' ].value = nrows - destroyed;
+      this.form.elements[ '_' + name + '_nrows' ].value = nrows - destroyed;
 
       if (destroyed > 0) this.fireEvent( 'rowsRemoved' );
 

@@ -4,7 +4,7 @@ package HTML::FormWidgets::Template;
 
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.7.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.8.%d', q$Rev$ =~ /\d+/gmx );
 use parent q(HTML::FormWidgets);
 
 use English qw(-no_match_vars);
@@ -14,7 +14,7 @@ use IO::File;
 sub render_field {
    my ($self, $args) = @_;
 
-   my $path = File::Spec->catfile( $self->globals->{template_dir},
+   my $path = File::Spec->catfile( $self->options->{template_dir},
                                    $self->name.q(.tt) );
 
    -f $path or return "Path $path not found";

@@ -4,7 +4,7 @@ package HTML::FormWidgets::Tree;
 
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.7.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.8.%d', q$Rev$ =~ /\d+/gmx );
 use parent qw(HTML::FormWidgets);
 
 use English qw(-no_match_vars);
@@ -80,7 +80,7 @@ sub traverse {
       }
 
       if ($url) {
-         $url =~ m{ \A http: }mx or $url = $self->globals->{base}.$url;
+         $url =~ m{ \A http: }mx or $url = $self->options->{base}.$url;
          $self->selected and $url .= q(?).$self->name.q(_node=).$node;
          $attrs->{href} = $url;
       }

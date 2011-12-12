@@ -4,7 +4,7 @@ package HTML::FormWidgets::Button;
 
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.7.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.8.%d', q$Rev$ =~ /\d+/gmx );
 use parent qw(HTML::FormWidgets);
 
 __PACKAGE__->mk_accessors( qw(button_name config src) );
@@ -39,7 +39,7 @@ sub _image_button {
    my ($self, $args) = @_; my $hacc = $self->hacc;
 
    my $src   = q(http:) eq (substr $self->src, 0, 5)
-             ? $self->src : $self->globals->{assets}.$self->src;
+             ? $self->src : $self->options->{assets}.$self->src;
    my $image = $hacc->img( { alt   => ucfirst $self->name,
                              class => q(button),
                              src   => $src } );

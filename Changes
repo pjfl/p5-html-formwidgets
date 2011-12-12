@@ -1,5 +1,7 @@
 Revision history for HTML::FormWidgets
 
+0.8.334  2011-12-12
+         - Fixed input field names in Table
          - Updated pod and added more tests
          - Added globals attr to separate class wide defaults from obj defaults
          - Set separator to break to have prompt appear above input field

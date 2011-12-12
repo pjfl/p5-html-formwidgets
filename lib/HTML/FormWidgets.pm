@@ -4,7 +4,7 @@ package HTML::FormWidgets;
 
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.7.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.8.%d', q$Rev$ =~ /\d+/gmx );
 use parent qw(Class::Accessor::Fast);
 
 use Class::MOP;
@@ -20,24 +20,25 @@ my $NUL     = q();
 my $SPACE   = '&#160;' x 3;
 my $SPC     = q( );
 my $TTS     = q( ~ );
-my $GLOBALS = {
+my $OPTIONS = {
    content_type    => q(text/html),
    hidden          => {},
    js_object       => q(html_formwidgets),
+   list_key        => q(items),
    literal_js      => [],
    optional_js     => [],
    pwidth          => 30,
-   skip            => { qw(ajaxid 1 globals 1 id 1 name 1 type 1) },
+   skip            => { qw(ajaxid 1 options 1 id 1 name 1 type 1) },
    width           => 1000, };
 my $ATTRS   = {
    ajaxid          => undef,        class           => $NUL,
    clear           => $NUL,         container       => 1,
    container_class => q(container), container_id    => undef,
    default         => undef,        frame_class     => $NUL,
-   globals         => $GLOBALS,     hacc            => undef,
-   hint_title      => $NUL,         id              => undef,
-   name            => undef,        onblur          => undef,
-   onchange        => undef,        onkeypress      => undef,
+   hacc            => undef,        hint_title      => $NUL,
+   id              => undef,        name            => undef,
+   onblur          => undef,        onchange        => undef,
+   onkeypress      => undef,        options         => $OPTIONS,
    pclass          => q(prompt),    pwidth          => undef,
    prompt          => $NUL,         readonly        => 0,
    required        => 0,            sep             => undef,
@@ -50,20 +51,20 @@ __PACKAGE__->mk_accessors( keys %{ $ATTRS } );
 # Class methods
 
 sub build {
-   my ($class, $attrs) = @_; $attrs ||= {}; my $step = 0;
+   my ($class, $options) = @_; $options ||= {}; my $step = 0;
 
-   my $data = $attrs->{data        } ||= [];
-   my $key  = $attrs->{list_key    } ||= q(items);
-   my $type = $attrs->{content_type} ||= $ATTRS->{globals}->{content_type};
+   my $data = $options->{data        } ||  [];
+   my $key  = $options->{list_key    } ||= $OPTIONS->{list_key    };
+   my $type = $options->{content_type} ||= $OPTIONS->{content_type};
 
-   $attrs->{hacc    } ||= HTML::Accessors->new( content_type => $type );
-   $attrs->{iterator} ||= sub { return ++$step };
+   $options->{hacc    } ||= HTML::Accessors->new( content_type => $type );
+   $options->{iterator} ||= sub { return ++$step };
 
    for my $list (grep { $_ and ref $_ eq q(HASH) } @{ $data }) {
       ref $list->{ $key } eq q(ARRAY) or next; my @stack = ();
 
       for my $item (@{ $list->{ $key } }) {
-         my $built = __build_widget( $class, $attrs, $item, \@stack );
+         my $built = __build_widget( $class, $options, $item, \@stack );
 
          $built and push @stack, $built;
       }
@@ -75,19 +76,19 @@ sub build {
 }
 
 sub __build_widget {
-   my ($class, $attrs, $item, $stack) = @_; $item or return;
+   my ($class, $options, $item, $stack) = @_; $item or return;
 
    (ref $item and ref $item->{content} eq q(HASH)) or return $item;
 
    if ($item->{content}->{group}) {
-      $attrs->{skip_groups} and return;
-      return __group_fields( $attrs, $item, $stack );
+      $options->{skip_groups} and return;
+      return __group_fields( $options, $item, $stack );
    }
 
    my $widget = blessed $item->{content}
               ? $item->{content}
               : $item->{content}->{widget}
-              ? $class->new( __inject( $attrs, $item->{content} ) )
+              ? $class->new( __inject( $options, $item->{content} ) )
               : undef;
 
    $widget or return $item;
@@ -97,9 +98,9 @@ sub __build_widget {
 }
 
 sub __group_fields {
-   my ($attrs, $item, $stack) = @_;
+   my ($options, $item, $stack) = @_;
 
-   my $hacc = $attrs->{hacc}; my $html = $NUL; my $class;
+   my $hacc = $options->{hacc}; my $html = $NUL; my $class;
 
    $class = delete $item->{content}->{frame_class} and $item->{class} = $class;
 
@@ -141,7 +142,7 @@ sub __arg_list {
 }
 
 sub __inject {
-   $_[ 1 ]->{globals} = $_[ 0 ]; return $_[ 1 ];
+   $_[ 1 ]->{options} = $_[ 0 ]; return $_[ 1 ];
 }
 
 # Public object methods
@@ -149,8 +150,8 @@ sub __inject {
 sub add_hidden {
    my ($self, $name, $value) = @_;
 
-   my $key    = $self->globals->{list_key} || q(items);
-   my $hidden = $self->globals->{hidden  } || {}; $hidden->{ $key } ||= [];
+   my $key    = $self->options->{list_key} || q(items);
+   my $hidden = $self->options->{hidden  } || {}; $hidden->{ $key } ||= [];
 
    push @{ $hidden->{ $key } }, {
       content => "\n".$self->hacc->input( {
@@ -168,19 +169,19 @@ sub add_literal_js {
       if ($k) { $list and $list .= ', '; $list .= $k.': '.($v || 'null') }
    }
 
-   my $text  = $self->globals->{js_object};
+   my $text  = $self->options->{js_object};
       $text .= ".config.${js_class}[ '${id}' ] = { ${list} };";
 
-   $self->globals->{literal_js} ||= [];
+   $self->options->{literal_js} ||= [];
 
-   push @{ $self->globals->{literal_js} }, $text;
+   push @{ $self->options->{literal_js} }, $text;
    return;
 }
 
 sub add_optional_js {
-   my ($self, @rest) = @_; $self->globals->{optional_js} ||= [];
+   my ($self, @rest) = @_; $self->options->{optional_js} ||= [];
 
-   push @{ $self->globals->{optional_js} }, @rest;
+   push @{ $self->options->{optional_js} }, @rest;
    return;
 }
 
@@ -189,7 +190,7 @@ sub inflate {
 
    (defined $args and ref $args eq q(HASH)) or return $args;
 
-   return __PACKAGE__->new( __inject( $self->globals, $args ) )->render;
+   return __PACKAGE__->new( __inject( $self->options, $args ) )->render;
 }
 
 sub init {
@@ -197,11 +198,11 @@ sub init {
 }
 
 sub is_xml {
-   return $_[ 0 ]->globals->{content_type} =~ m{ / (.*) xml \z }mx ? 1 : 0;
+   return $_[ 0 ]->options->{content_type} =~ m{ / (.*) xml \z }mx ? 1 : 0;
 }
 
 sub loc {
-   my ($self, $text, @rest) = @_; my $l10n = $self->globals->{l10n};
+   my ($self, $text, @rest) = @_; my $l10n = $self->options->{l10n};
 
    defined $l10n and return $l10n->( $text, @rest );
 
@@ -255,7 +256,7 @@ sub render_field {
 
    my $id = $args->{id} || '*unknown id*';
 
-   return $self->_set_error( "No render_field method for field $id" );
+   return $self->_set_error( "No render_field method for field ${id}" );
 }
 
 sub render_prompt {
@@ -323,16 +324,16 @@ sub _bootstrap {
                                             : (reverse split m{ _ }mx, $id)[0]);
    }
 
-   not $id and $name and $id = $self->id( $name ); $args->{globals} ||= {};
+   not $id and $name and $id = $self->id( $name ); $args->{options} ||= {};
 
    # We can get the widget type from the config file
-   if (not $type and $id and exists $args->{globals}->{fields}) {
-      my $fields = $args->{globals}->{fields};
+   if (not $type and $id and exists $args->{options}->{fields}) {
+      my $fields = $args->{options}->{fields};
 
       exists $fields->{ $id } and exists $fields->{ $id }->{type}
          and $type = $self->type( $fields->{ $id }->{type} );
    }
-   else { $args->{globals}->{fields} ||= {} }
+   else { $args->{options}->{fields} ||= {} }
 
    # This is the default widget type if not overidden in the config
    $type or $type = $self->type( q(textfield) );
@@ -342,10 +343,10 @@ sub _bootstrap {
 
 sub _build_hacc {
    # Now we can create HTML elements like we could with CGI.pm
-   my $self = shift; my $hacc = $self->globals->{hacc};
+   my $self = shift; my $hacc = $self->options->{hacc};
 
    $hacc or $hacc = HTML::Accessors->new
-      ( { content_type => $self->globals->{content_type} } );
+      ( { content_type => $self->options->{content_type} } );
 
    return $hacc
 }
@@ -360,10 +361,10 @@ sub _build_pwidth {
    # Calculate the prompt width
    my $self   = shift;
    my $pwidth = defined $self->pwidth ? $self->pwidth
-                                      : $self->globals->{pwidth};
+                                      : $self->options->{pwidth};
 
    $pwidth and $pwidth =~ m{ \A \d+ \z }mx
-      and $pwidth = (int $pwidth * $self->globals->{width} / 100).q(px);
+      and $pwidth = (int $pwidth * $self->options->{width} / 100).q(px);
 
    return $pwidth;
 }
@@ -393,22 +394,21 @@ sub _build_stepno {
 sub _ensure_class_loaded {
    my ($self, $class) = @_;
 
-   try   { Class::MOP::load_class( $class ) }
-   catch { $self->_set_error( $_ ); return  } or return 0;
-
-   unless (Class::MOP::is_class_loaded( $class )) {
+   try {
+      Class::MOP::load_class     ( $class );
+      Class::MOP::is_class_loaded( $class )
+           and return bless $self, $class; # Rebless ourself as subclass
       $self->_set_error( "Class ${class} loaded but package undefined" );
-      return 0;
    }
+   catch { $self->_set_error( $_ ) };
 
-   bless $self, $class; # Rebless ourself as subclass
-   return 1;
+   return;
 }
 
 sub _init {
    my ($self, $args) = @_;
 
-   $self->_init_globals( $args );
+   $self->_init_options( $args );
    $self->init         ( $args ); # Allow subclass to set it's own defaults
    $self->_init_fields ( $args );
    $self->_init_args   ( $args );
@@ -421,7 +421,7 @@ sub _init {
 }
 
 sub _init_args {
-   my ($self, $args) = @_; my $skip = $self->globals->{skip}; my $v;
+   my ($self, $args) = @_; my $skip = $self->options->{skip}; my $v;
 
    for (grep { not $skip->{ $_ } } keys %{ $args }) {
       exists $self->{ $_ } and defined ($v = $args->{ $_ })
@@ -431,16 +431,8 @@ sub _init_args {
    return;
 }
 
-sub _init_globals {
-   my ($self, $args) = @_; my $globals = $args->{globals} || {};
-
-   $self->globals->{ $_ } = $globals->{ $_ } for (keys %{ $globals });
-
-   return;
-}
-
 sub _init_fields {
-   my ($self, $args) = @_; my $fields = $args->{globals}->{fields}; my $id;
+   my ($self, $args) = @_; my $fields = $args->{options}->{fields}; my $id;
 
    $fields and $id = $self->id and exists $fields->{ $id }
       and $self->_init_args( $fields->{ $id } );
@@ -448,8 +440,16 @@ sub _init_fields {
    return;
 }
 
+sub _init_options {
+   my ($self, $args) = @_; my $options = $args->{options} || {};
+
+   $self->options->{ $_ } = $options->{ $_ } for (keys %{ $options });
+
+   return;
+}
+
 sub _next_step {
-   return $_[ 0 ]->globals->{iterator}->();
+   return $_[ 0 ]->options->{iterator}->();
 }
 
 sub _render_field {
@@ -488,7 +488,7 @@ HTML::FormWidgets - Create HTML user interface components
 
 =head1 Version
 
-0.7.$Rev$
+0.8.$Rev$
 
 =head1 Synopsis
 

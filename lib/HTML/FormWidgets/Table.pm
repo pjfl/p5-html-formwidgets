@@ -4,7 +4,7 @@ package HTML::FormWidgets::Table;
 
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.7.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.8.%d', q$Rev$ =~ /\d+/gmx );
 use parent qw(HTML::FormWidgets);
 
 __PACKAGE__->mk_accessors( qw(data edit hclass number_rows
@@ -87,7 +87,7 @@ sub _add_edit_row {
       my $args      = { id => $self->id.q(_add).$_ };
       my $field     = $data->{flds}->[ $_ ];
 
-      $args->{name} = q(_).$self->id.q(_).$field;
+      $args->{name} = q(_).$self->name.q(_).$field;
       $cells       .= $self->_editable_cell( $data, $field, $args, $c_no );
       $c_no++;
    }
@@ -120,13 +120,13 @@ sub _add_edit_row {
 sub _add_row_count {
    my ($self, $n_rows) = @_;
 
-   return $self->add_hidden( q(_).($self->id || q()).q(_nrows), $n_rows );
+   return $self->add_hidden( q(_).$self->name.q(_nrows), $n_rows );
 }
 
 sub _check_box {
    my ($self, $r_no, $c_no, $id) = @_; my $hacc = $self->hacc;
 
-   my $args = { name => $self->id.q(.select).$r_no };
+   my $args = { name => $self->name.q(.select).$r_no };
 
    $id and $args->{value} = $id;
 
@@ -238,7 +238,7 @@ sub _render_row {
 
       if ($self->edit) {
          $args->{default} = $val->{ $field };
-         $args->{name   } = $self->id.q(_).$r_no.q(_).$c_no;
+         $args->{name   } = $self->name.q(_).$r_no.q(_).$c_no;
          $cells .= $self->_editable_cell( $data, $field, $args, $c_no );
       }
       else {

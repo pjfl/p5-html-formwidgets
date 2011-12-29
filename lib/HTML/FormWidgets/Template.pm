@@ -4,7 +4,7 @@ package HTML::FormWidgets::Template;
 
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.8.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.9.%d', q$Rev$ =~ /\d+/gmx );
 use parent q(HTML::FormWidgets);
 
 use English qw(-no_match_vars);
@@ -24,7 +24,7 @@ sub render_field {
    my $content = do { local $RS = undef; <$rdr> }; $rdr->close();
    my $id      = $self->id;
 
-   return "[% ref = template_data.${id}; %]\n${content}";
+   return "[% ref = template_data_${id}; %]\n${content}";
 }
 
 1;

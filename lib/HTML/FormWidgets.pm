@@ -4,7 +4,7 @@ package HTML::FormWidgets;
 
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.8.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.9.%d', q$Rev$ =~ /\d+/gmx );
 use parent qw(Class::Accessor::Fast);
 
 use Class::MOP;
@@ -169,12 +169,11 @@ sub add_literal_js {
       if ($k) { $list and $list .= ', '; $list .= $k.': '.($v || 'null') }
    }
 
-   my $text  = $self->options->{js_object};
-      $text .= ".config.${js_class}[ '${id}' ] = { ${list} };";
+   my $obj = $self->options->{js_object}; $self->options->{literal_js} ||= [];
 
-   $self->options->{literal_js} ||= [];
+   push @{ $self->options->{literal_js} },
+      "${obj}.config.${js_class}[ '${id}' ] = { ${list} };";
 
-   push @{ $self->options->{literal_js} }, $text;
    return;
 }
 
@@ -488,7 +487,7 @@ HTML::FormWidgets - Create HTML user interface components
 
 =head1 Version
 
-0.8.$Rev$
+0.9.$Rev$
 
 =head1 Synopsis
 

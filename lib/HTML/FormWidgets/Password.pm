@@ -4,7 +4,7 @@ package HTML::FormWidgets::Password;
 
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.8.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.9.%d', q$Rev$ =~ /\d+/gmx );
 use parent qw(HTML::FormWidgets);
 
 __PACKAGE__->mk_accessors( qw(subtype width) );

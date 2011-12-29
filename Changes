@@ -1,5 +1,8 @@
 Revision history for HTML::FormWidgets
 
+0.9.335  2011-12-29
+         - Added Async widget. Adds a div whose content is loaded via Ajax
+
 0.8.334  2011-12-12
          - Fixed input field names in Table
          - Updated pod and added more tests

@@ -4,7 +4,7 @@ package HTML::FormWidgets::Slider;
 
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.8.%d', q$Rev$ =~ /\d+/g );
+use version; our $VERSION = qv( sprintf '0.9.%d', q$Rev$ =~ /\d+/g );
 use parent qw(HTML::FormWidgets);
 
 my $NUL = q();

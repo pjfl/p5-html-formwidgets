@@ -32,6 +32,8 @@ $widget = HTML::FormWidgets->new( href => q(test), type => q(anchor) );
 ok( $widget->render =~ m{ a \s href="test" \s class="anchor_button \s fade" }mx,
     'Anchor' );
 
+# Async
+
 $widget = HTML::FormWidgets->new( id => q(test), type => q(button) );
 
 ok $widget->render =~

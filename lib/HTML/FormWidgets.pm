@@ -790,6 +790,13 @@ arg (which defaults to B<linkFade>). It's I<href> attribute
 set to the I<href> arg. The anchor body is set to the I<text>
 arg
 
+=head2 Async
+
+Returns a C<< <div> >> element with a class set from the I<class> arg
+(which defaults to B<server>). The div body is set to the I<text>
+arg. When the JS onload event handler fires it will asynchronously
+load the content of the div if it is visible
+
 =head2 Button
 
 Generates an image button where I<name> identifies the image

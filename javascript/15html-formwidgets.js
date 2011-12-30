@@ -1470,35 +1470,6 @@ var LiveGridScroller = new Class( {
    }
 } );
 
-var LoadMore = new Class( {
-   initialize: function( behaviour, url ) {
-      this.behaviour = behaviour;
-      this.url       = url;
-   },
-
-   request: function( action, id, val, onComplete ) {
-      if (onComplete) this.onComplete = onComplete;
-
-      new Request( { onSuccess: this._success.bind( this ),
-                     url      : this.url + action
-      } ).get( { 'content-type': 'text/xml', 'id': id, 'val': val } );
-   },
-
-   _success: function( text, xml ) {
-      var doc = xml.documentElement, html = '';
-
-      $$( doc.getElementsByTagName( 'items' ) ).each( function( item ) {
-         for (var i = 0, il = item.childNodes.length; i < il; i++) {
-            html += item.childNodes[ i ].nodeValue;
-         }
-      } );
-
-      $( doc.getAttribute( 'id' ) ).set( 'html', html.unescapeHTML() );
-
-      if (this.onComplete) this.onComplete.call( this.behaviour );
-   }
-} );
-
 var PersistantStyleSheet = new Class( {
    initialize: function( options ) {
       var opt = options || {}; this.cookies = opt.cookies || function(){};
@@ -1781,32 +1752,54 @@ var ServerUtils = new Class( {
       url     : null
    },
 
-   initialize: function( options ) {
-      this.setBuildOptions( options ); this.build();
+   initialize: function( behaviour, options ) {
+      this.setBuildOptions( options ); this.behaviour = behaviour; this.build();
    },
 
    attach: function( el ) {
       var cfg; if (! (cfg = this.options.config[ el.id ])) return;
+      var event = cfg.event || 'click';
 
-      el.addEvent( cfg.event || 'click', function( ev ) {
-         new Event( ev ).stop();
-         return this[ cfg.method ].apply( this, cfg.args );
+      if (event == 'load') {
+         this[ cfg.method ].apply( this, cfg.args ); return;
+      }
+
+      el.addEvent( event, function( ev ) {
+         new Event( ev ).stop(); this[ cfg.method ].apply( this, cfg.args );
       }.bind( this ) );
    },
 
    checkField: function( id ) {
+      this.request( 'check_field', id, $( id ).value, function( doc, res ) {
+         $( doc.getAttribute( 'id' ) ).className
+            = res ? doc.getAttribute( 'class_name' ) : 'hidden';
+      }.bind( this ) );
+   },
+
+   loadIfVisible: function( action, id, val, onComplete ) {
+      if ($( id ).getSize().y > 0) this.request( action, id, val, onComplete );
+   },
+
+   request: function( action, id, val, onComplete ) {
+      if (onComplete) this.onComplete = onComplete;
+
       new Request( { onSuccess: this._success.bind( this ),
-                     url      : this.options.url + 'check_field'
-      } ).get( { 'content-type': 'text/xml', 'id': id, 'val': $( id ).value } );
+                     url      : this.options.url + action
+      } ).get( { 'content-type': 'text/xml', 'id': id, 'val': val } );
    },
 
    _success: function( text, xml ) {
-      var doc    = xml.documentElement;
-      var el     = $( doc.getAttribute( 'id' ) );
-      var result = doc.getAttribute( 'result' );
+      var doc = xml.documentElement, html = '';
 
-      el.set( 'html', result );
-      el.className = result ? doc.getAttribute( 'class_name' ) : 'hidden';
+      $$( doc.getElementsByTagName( 'items' ) ).each( function( item ) {
+         for (var i = 0, il = item.childNodes.length; i < il; i++) {
+            html += item.childNodes[ i ].nodeValue;
+         }
+      } );
+
+      $( doc.getAttribute( 'id' ) ).set( 'html', html.unescapeHTML() );
+
+      if (this.onComplete) this.onComplete.call( this.behaviour, doc, html );
    }
 } );
 
@@ -1828,9 +1821,9 @@ var Sidebar = new Class( {
 
    initialize: function( behaviour, options ) {
       this.setOptions( options );
-      this.cookies   = behaviour.cookies;
-      this.loadMore  = behaviour.loadMore;
       this.behaviour = behaviour;
+      this.cookies   = behaviour.cookies;
+      this.server    = behaviour.server;
 
       var opt = this.options, prefix = opt.prefix, sb;
 
@@ -1912,8 +1905,8 @@ var Sidebar = new Class( {
             var cfg; if (! (cfg = opt.config[ toggler.id ])) return;
 
             if (cfg.action && cfg.name) {
-               this.loadMore.request( cfg.action, cfg.name,
-                                      cfg.value,  cfg.onComplete );
+               this.server.request( cfg.action, cfg.name,
+                                    cfg.value,  cfg.onComplete );
             }
          }.bind( this ),
          onBackground    : function( togglers, index, el ) {
@@ -3182,7 +3175,7 @@ this.Tips = new Class( {
     },
 
     initialize: function( options ) {
-        this.setBuildOptions( options ); this.tip = this.createMarkup();
+        this.setBuildOptions( options ); this.createMarkup();
 
         this.build(); this.fireEvent( 'initialize' );
     },
@@ -3215,7 +3208,7 @@ this.Tips = new Class( {
     createMarkup: function() {
         var klass  = this.options.className;
         var spacer = this.options.spacer;
-        var div    = new Element( 'div', {
+        var div    = this.tip = new Element( 'div', {
             'class' : klass + '-tip',
             'styles': { 'left'      : 0,
                         'position'  : 'absolute',
@@ -3242,8 +3235,6 @@ this.Tips = new Class( {
         cell = new Element( 'td', {
             'class' : klass + '-tip-bottomRight' } ).inject( row );
         new Element( 'span' ).appendText( spacer ).inject( cell );
-
-        return div;
     },
 
     detach: function() {
@@ -3380,30 +3371,30 @@ var Togglers = new Class( {
       }.bind( this ) );
    },
 
-   toggle: function( id, obj ) {
+   toggle: function( id, name ) {
       var el = $( id ); if (! el) return;
 
-      var toggler = el.retrieve( obj ); if (! toggler) return;
+      var toggler = el.retrieve( name ); if (! toggler) return;
 
       toggler.toggle( this.cookies ); this.resize();
    },
 
-   toggleSwapText: function( id, cookie, s1, s2 ) {
+   toggleSwapText: function( id, name, s1, s2 ) {
       var el = $( id ); if (! el) return;
 
-      if (this.cookies.get( cookie ) == 'true') {
-         this.cookies.set( cookie, 'false' );
+      if (this.cookies.get( name ) == 'true') {
+         this.cookies.set( name, 'false' );
 
          if (el) el.set( 'html', s2 );
 
-         if (el = $( cookie + 'Disp' )) el.setStyle( 'display', 'none' );
+         if (el = $( name + 'Disp' )) el.setStyle( 'display', 'none' );
       }
       else {
-         this.cookies.set( cookie, 'true' );
+         this.cookies.set( name, 'true' );
 
          if (el) el.set( 'html', s1 );
 
-         if (el = $( cookie + 'Disp' )) el.setStyle( 'display', '' );
+         if (el = $( name + 'Disp' )) el.setStyle( 'display', '' );
       }
 
       this.resize();

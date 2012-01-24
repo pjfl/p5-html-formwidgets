@@ -27,8 +27,8 @@ sub render_field {
    my $hacc = $self->hacc;
 
    unless ($data = $self->data and $data->[ 0 ]) {
-      $html  = $hacc->b   ( { class => q(pad)               }, $NBSP );
-      $html .= $hacc->span( { class => q(navigation_filler) }, $NBSP );
+      $html  = $hacc->span( { class => q(menu_pad)    }, $NBSP );
+      $html .= $hacc->span( { class => q(menu_filler) }, $NBSP );
 
       return $html;
    }
@@ -37,15 +37,15 @@ sub render_field {
 
    for my $index (0 .. $#{ $data }) {
       if ($self->spacer and $index > 0) {
-         $text  = $hacc->b   ( { class => q(pad) }, $NBSP );
-         $text .= $hacc->span( { class => q(navigation_filler) },
+         $text  = $hacc->span( { class => q(menu_pad)    }, $NBSP );
+         $text .= $hacc->span( { class => q(menu_filler) },
                                $self->spacer );
          $html .= $hacc->li  ( $text );
       }
 
       $text    = $self->select && $index == $selected
-               ? $self->_top_filler( $hacc )
-               : $hacc->b( { class => q(pad) }, $NBSP );
+               ? $hacc->span( { class => q(menu_top) }, $NBSP )
+               : $hacc->span( { class => q(menu_pad) }, $NBSP );
       $content = $data->[ $index ]->{items}->[ 0 ]->{content} || q();
       $text   .= $self->inflate( $content );
 
@@ -58,44 +58,13 @@ sub render_field {
          $count++;
       }
 
-      $dlist .= $self->_bottom_filler( $hacc ) if ($count > 1);
+      $count > 1 and $dlist
+         .= $hacc->dd( $hacc->span( { class => q(menu_bottom) }, $NBSP ) );
 
       $html  .= $hacc->li( $text.$hacc->dl( $dlist ) );
    }
 
    return $hacc->ul( { class => q(menu), id => $args->{id} }, $html );
-}
-
-# Private methods
-
-sub _bottom_filler {
-   my ($self, $hacc) = @_; my ($fill, $html);
-
-   $fill  = $hacc->b( { class => q(b4) } );
-   $fill .= $hacc->b( { class => q(b3) } );
-   $fill .= $hacc->b( { class => q(b2) } );
-   $fill .= $hacc->b( { class => q(b1) } );
-   $html  = $hacc->b( { class => q(bottom) }, $fill );
-
-   return $hacc->dd( $html);
-}
-
-sub _top_filler {
-   my ($self, $hacc) = @_; my ($fill, $html);
-
-   $fill  = $hacc->b( { class => q(tl1) } );
-   $fill .= $hacc->b( { class => q(tl2) } );
-   $fill .= $hacc->b( { class => q(tl3) } );
-   $fill .= $hacc->b( { class => q(tl4) } );
-   $html  = $hacc->b( { class => q(left) }, $fill );
-   $html .= $hacc->span( { class => q(menu_top_middle_filler) }, $NBSP );
-   $fill  = $hacc->b( { class => q(tr1) } );
-   $fill .= $hacc->b( { class => q(tr2) } );
-   $fill .= $hacc->b( { class => q(tr3) } );
-   $fill .= $hacc->b( { class => q(tr4) } );
-   $html .= $hacc->b( { class => q(right) }, $fill );
-
-   return $hacc->b( { class => q(top) }, $html );
 }
 
 1;

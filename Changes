@@ -1,5 +1,8 @@
 Revision history for HTML::FormWidgets
 
+
+         - Removed CSS border art for rounded corners from Menu
+
 0.9.336  2011-12-30
          - Added Async widget. Adds a div whose content is loaded via Ajax
 

@@ -1,6 +1,6 @@
 Revision history for HTML::FormWidgets
 
-
+         - Updated Moose / Class::MOP / MRO::Compat dependencies
          - Removed CSS border art for rounded corners from Menu
 
 0.9.336  2011-12-30

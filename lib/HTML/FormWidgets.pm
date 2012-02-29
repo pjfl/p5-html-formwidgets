@@ -901,6 +901,11 @@ If I<dropcap> is true the first character of the text is wrapped
 in a C<< <span class="dropcap"> >>. Wraps the text in a span of class
 I<class> which defaults to B<label_text>
 
+=head2 List
+
+Generates an ordered and unordered lists of items. Set the I<ordered>
+attribute to true for an ordered list. Defaults to false
+
 =head2 Menu
 
 Generates an unordered list of links. Used with some applied CSS to
@@ -1105,10 +1110,6 @@ to sixty characters wide (I<width>)
 =head2 Tree
 
 Implements an expanding tree of selectable objects
-
-=head2 UnorderedList
-
-Generates an unordered list of list items
 
 =head1 Diagnostics
 

@@ -1,6 +1,6 @@
 Revision history for HTML::FormWidgets
 
-         - Added Flag type
+0.10.    2012-
          - Renamed UnorderedList to List and added odered option
          - Updated Moose / Class::MOP / MRO::Compat dependencies
          - Removed CSS border art for rounded corners from Menu

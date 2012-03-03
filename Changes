@@ -1,6 +1,8 @@
 Revision history for HTML::FormWidgets
 
-0.10.    2012-
+0.10.345 2012-03-03
+         - Added classes hash to PopupMenu
+         - Image class has subtype icon which is a span for background CSS
          - Renamed UnorderedList to List and added odered option
          - Updated Moose / Class::MOP / MRO::Compat dependencies
          - Removed CSS border art for rounded corners from Menu

@@ -1,5 +1,8 @@
 Revision history for HTML::FormWidgets
 
+0.10.346 2012-03-04
+         - Fixed failing unordered list test. Added ordered list test
+
 0.10.345 2012-03-03
          - Added classes hash to PopupMenu
          - Image class has subtype icon which is a span for background CSS

@@ -1,5 +1,10 @@
 Revision history for HTML::FormWidgets
 
+0.11.347 2012-03-09
+         - Fixed Menu padding when there is no content
+         - Fixed Rule for Opera by adding "most" class to rest of line
+         - Added form wrapper
+
 0.10.346 2012-03-04
          - Fixed failing unordered list test. Added ordered list test
 

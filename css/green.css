@@ -1,6 +1,6 @@
-/* @(#)$Id: green.css 1231 2011-10-06 00:28:00Z pjf $ */
+/* @(#)$Id: green.css 1276 2012-02-26 17:20:16Z pjf $ */
 
-body { background: url(background.png) #e9f7dc repeat; color: black; }
+body { background: url(background.jpg) #e9f7dc repeat; color: black; }
 
 abbr, acronym, fieldset, ins { border-color: #336; }
 ins { color: #f00; }
@@ -12,7 +12,7 @@ hr { border-color: #336 transparent transparent; }
 .accordion_header_first { border-top-color: #336; }
 .accordion_panel { border-color: transparent #336 #336 #336; }
 .accordion_panel_container .active { background-color: #663; color: #ffc; }
-.accordion_panel_container .inactive, .diagnostic_panel, .sdata_item .tree,
+.accordion_panel_container .inactive, .sdata_item .tree,
 .slider, .spinner-js { background-color: #cc9; }
 .accordion_panel_container .inactive, .error, .navigation,
 .tabs, .tree a.selected a.selected-inactive { color: #000; }
@@ -37,6 +37,15 @@ hr { border-color: #336 transparent transparent; }
 .spinner-shadow { background-color: #000; }
 .split { color: #ffc; }
 .tabset .tab_selected { border-color: #336 #336 #ffc; }
+.tips-container {
+   background: #9c9; border-color: #336;
+   -khtml-box-shadow: 2px 2px 4px #336; -moz-box-shadow: 2px 2px 4px #336;
+   -webkit-box-shadow: 2px 2px 4px #336; box-shadow: 2px 2px 4px #336;
+}
+.tips-mark0 { border-color: transparent transparent #336 #336; }
+.tips-mark1 { border-color: transparent transparent #9c9 #9c9; }
+.tips-defn { color: #000; }
+.tips-term { color: Yellow; }
 .warning { background: Yellow; }
 
 input.ifield, password.ifield, select.ifield, textarea.ifield {
@@ -184,23 +193,6 @@ th.normal { background-color: #663; color: #ffc; }
 }
 .chzn-container .chzn-search input { background-color: #9c9; }
 
-/* Rounded corners in menu */
-
-b.pad { background-color: #8b8b32; }
-b.bottom { background-color: transparent; }
-b.top { background-color: transparent; }
-b.b2, b.b3, b.b4 { border-color: #336; background: #cc9; }
-b.tl2, b.tl3, b.tl4 { border-color: #336; background: #8b8b32; }
-b.tr2, b.tr3, b.tr4 { border-color: #336; background: #8b8b32; }
-b.b1 { background: #336; }
-b.tl1 { border-color: #336; background: #8b8b32; }
-b.tr1 { border-color: #336; background: #8b8b32; }
-
-/* Flyover tool tips */
-
-div.tool-tip { color: #fff; }
-td.tool-tip-topLeft span, td.tool-tip-topRight span { color: #9FD4FF; }
-
 /* WYSIWYG */
 
 .wysiwyg_container iframe { background-color: #cc9; border-color: #336; }
@@ -210,19 +202,26 @@ td.tool-tip-topLeft span, td.tool-tip-topRight span { color: #9FD4FF; }
 .wysiwyg_container .toolbar.disabled *:hover {
    background-color: transparent; border-color: #663;
 }
-.wysiwyg_container .toolbar .spacer { background-color: #663; border-color: #ffc; }
+.wysiwyg_container .toolbar .spacer {
+   background-color: #663; border-color: #ffc;
+}
 
 /* Navigation menu and tools menu */
 
-#sidebarCap { background-color: #cc9; }
-#sidebarCap:hover { background-color: #ffc; }
-span.menu_top_middle_filler { background-color: #336; }
-span.navigation_filler {
-   border-bottom-color: #336; border-top-color: transparent; background-color: #cc9;
+.menu_bottom {
+   background-color: #cc9; border-color: transparent #336 #336 #336;
+}
+.menu_filler {
+   background-color: #cc9; border-color: transparent transparent #336;
+}
+.menu_pad { background-color: #8b8b32; }
+.menu_top {
+   background-color: transparent; border-color: #336 #336 transparent;
 }
 #menu dd { background: transparent; }
 #menu li a.menu_title {
-   background-color: #cc9; border-color: transparent transparent #336 transparent;  color: #000;
+   background-color: #cc9;
+   border-color: transparent transparent #336 transparent;  color: #000;
 }
 #menu li a.menu_title:hover { background-color: #ffc; }
 #menu li a.menu_selected {
@@ -230,9 +229,12 @@ span.navigation_filler {
 }
 #menu li a.menu_selected:hover { background-color: #ffc; }
 #menu li a.menu_link {
-   background-color: #cc9; border-color: transparent #336 transparent #336; color: #000;
+   background-color: #cc9; border-color: transparent #336 transparent #336;
+   color: #000;
 }
 #menu li a.menu_link:hover { background-color: #ffc; }
+#sidebarCap { background-color: #cc9; }
+#sidebarCap:hover { background-color: #ffc; }
 #tools dd { background: transparent; }
 #tools li a.tools_selected {
    border-color: transparent #336 transparent #336; color: #000;
@@ -254,6 +256,7 @@ span.navigation_filler {
 #content { border-color: #336; background-color: #ffc; }
 #conversionPanel { background-color: #ffc; }
 #footerDisp { background-color: transparent; }
+#footer\.data { background-color: #cc9; }
 #headerTop { background: #663 url(header.png) repeat-x; color: #ffc; }
 #informationPanel { background-color: #ffc; }
 #companyLogo { background-color: #663; }

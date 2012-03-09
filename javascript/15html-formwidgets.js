@@ -1,4 +1,4 @@
-/* @(#)$Id: 15html-formwidgets.js 1249 2011-11-03 03:16:26Z pjf $
+/* @(#)$Id: 15html-formwidgets.js 1273 2012-02-21 19:11:26Z pjf $
  * Portions of this code are taken from MooTools 1.3 which is:
  * Copyright (c) 2006-2010 [Valerio Proietti](http://mad4milk.net/). */
 
@@ -8,19 +8,29 @@ Options.implement( {
 
       if (selector) $$( selector ).each( function( el ) {
          if (! this.collection.contains( el )) {
-            this.collection.include( el );
-            this.attach( el );
+            this.collection.include( el ); this.attach( el );
          }
       }, this );
    },
 
    setBuildOptions: function( options ) {
-      options    = options || {};
-      this.debug = options.debug || false;  delete options[ 'debug' ];
-      this.log   = options.log   || function(){}; delete options[ 'log' ];
+      options         = options || {};
       this.collection = [];
+      this.callbacks  = {};
+      this.debug      = false;
+      this.log        = function() {};
 
-      return this.setOptions( options );
+      [ 'callbacks', 'debug', 'log' ].each( function( attr ) {
+         if (options[ attr ] != undefined) {
+            this[ attr ] = options[ attr ]; delete options[ attr ];
+         }
+      }.bind( this ) );
+
+      this.setOptions( options );
+
+      if (this.callbacks.collect) this.callbacks.collect( this );
+
+      return this;
    },
 
    setConfigOptions: function( el ) {
@@ -66,7 +76,7 @@ var AutoSize = new Class( {
    attach: function( el ) {
       var opt  = this.options;
       var div  = new Element( 'div', { 'class': opt.container_class } );
-      var pre  = new Element( 'pre', { 'class': opt.preformat_class }  );
+      var pre  = new Element( 'pre', { 'class': opt.preformat_class } );
       var span = new Element( 'span' );
 
       div.inject( el, 'before' ); pre.inject( div ); div.grab( el );
@@ -80,30 +90,26 @@ var AutoSize = new Class( {
 } );
 
 var Calendars = new Class( {
-    Implements: [ Options ],
+   Implements: [ Options ],
 
-    options     : {
-        config  : {},
-        selector: '.calendars',
-        submit  : function(){}
-    },
+   options: { config: {}, selector: '.calendars' },
 
-    initialize: function( options ) {
-        this.setBuildOptions( options ); this.build();
-    },
+   initialize: function( options ) {
+      this.setBuildOptions( options ); this.build();
+   },
 
-    attach: function( el ) {
-        var button, cfg, opt = this.options, submit = opt.submit;
+   attach: function( el ) {
+      var button, cfg, opt = this.options, submit = this.callbacks.submit;
 
-        if (! (cfg = opt.config[ el.id ])) return;
+      if (! (cfg = opt.config[ el.id ])) return;
 
-        if (submit && (button = $( el.id + '_clear' )))
-            button.addEvent( 'click', function( ev ) {
-               new Event( ev ).stop(); submit.clearField( el.id ) } );
+      if (submit && (button = $( el.id + '_clear' )))
+         button.addEvent( 'click', function( ev ) {
+            new Event( ev ).stop(); submit.clearField( el.id ) } );
 
-        Calendar.setup( Object.append( cfg, {
-            inputField: el.id, button: el.id + '_trigger' } ) );
-    }
+      Calendar.setup( Object.append( cfg, {
+         inputField: el.id, button: el.id + '_trigger' } ) );
+   }
 } );
 
 var CheckboxReplace = new Class( {
@@ -125,8 +131,7 @@ var CheckboxReplace = new Class( {
       [ opt.checkboxSelector, opt.radiobuttonSelector ]
          .each( function( selector ) {
             if (selector) $$( selector ).each( function( el ) {
-               this.collection.include( el );
-               this.attach( el );
+               this.collection.include( el ); this.attach( el );
             }, this );
          }, this );
    },
@@ -1470,9 +1475,109 @@ var LiveGridScroller = new Class( {
    }
 } );
 
+var LiveGrids = new Class( {
+   Implements: [ Options ],
+
+   options      : {
+      config    : { iconClasses: [ 'a', 'b' ] },
+      gridSize  : 10,
+      gridToggle: true,
+      selector  : '.live_grid',
+      url       : null
+   },
+
+   initialize: function( options ) {
+      this.setBuildOptions( options ); this.build();
+   },
+
+   attach: function( el ) {
+      el.addEvent( 'click', function( ev ) {
+         new Event( ev ).stop(); return this.requestGrid( el );
+      }.bind( this ) );
+   },
+
+   _createGrid: function( text, xml ) {
+      var keyid  = this.gridKey + '_' + this.gridId,
+          count  = parseInt( xml.documentElement.getAttribute( 'totalcount' ) ),
+          rows   = $$( xml.documentElement.getElementsByTagName( 'items' ) ),
+          urlkey = this.options.url + this.gridKey + '_grid_rows',
+          html   = '',
+          opts   = {
+             bufferSize    : 7,
+             gridSize      : this.options.gridSize,
+             prefetchBuffer: true,
+             onScroll      : this._updateHeader.bind( this ),
+             onFirstContent: this._updateHeader.bind( this, 0 ),
+             totalRows     : count };
+
+      rows.each( function( row ) { html += row.childNodes[ 0 ].nodeValue } );
+
+      $( keyid + 'Disp' ).set( 'html', html.unescapeHTML() );
+
+      this.gridObj = new LiveGrid( keyid + '_grid', urlkey, opts );
+   },
+
+   requestGrid: function( anchor ) {
+      var el, a = anchor.id.split( '_' ), key = a[ 0 ], id = a[ 1 ];
+
+      if (! key || ! id || ! (el = $( anchor.id + 'Disp' ))) return;
+
+      var opt = this.options, cfg = opt.config;
+
+      if (opt.gridToggle && el.isDisplayed()) {
+         el.hide();
+
+         if (el = $( anchor.id + 'Icon' )) el.className = cfg.iconClasses[ 0 ];
+
+         this.gridKey = null; this.gridId = null; this.gridObj = null;
+         return;
+      }
+
+      if (this.gridKey && this.gridId) {
+         var keyid = this.gridKey + '_' + this.gridId, prev;
+
+         if (prev = $( keyid + 'Disp' )) prev.hide();
+         if (prev = $( keyid + 'Icon' )) prev.className = cfg.iconClasses[ 0 ];
+
+         this.gridKey = null; this.gridId = null; this.gridObj = null;
+      }
+
+      el.show(); this.gridKey = key; this.gridId = id;
+
+      if (el = $( anchor.id + 'Icon' )) el.className = cfg.iconClasses[ 1 ];
+
+      new Request( {
+         onSuccess: this._createGrid.bind( this ),
+         url      : opt.url + key +  '_grid_table' } ).get( {
+            'content-type': 'text/xml', 'id': id, 'val': opt.gridSize } );
+      return;
+   },
+
+   _updateHeader: function( offset ) {
+      var id, sortInfo, text, urlkey, metaData = this.gridObj.metaData;
+
+      id    = this.gridKey + '_' + this.gridId + '_header';
+      text  = 'Listing ' + (offset + 1) + ' - ';
+      text += (offset + metaData.getPageSize());
+      text += ' of ' + metaData.getTotalRows();
+      $( id ).set( 'html', text );
+
+      if (this.gridObj.sortCol) {
+         sortInfo  = '&data_grid_sort_col=' + this.gridObj.sortCol;
+         sortInfo += '&data_grid_sort_dir=' + this.gridObj.sortDir;
+      }
+      else sortInfo = '';
+
+      urlkey = this.options.url + this.gridKey + '_gridPage';
+      text   = urlkey + '?data_grid_index=' + offset + sortInfo;
+      $( id ).href = text;
+      return;
+   }
+} );
+
 var PersistantStyleSheet = new Class( {
    initialize: function( options ) {
-      var opt = options || {}; this.cookies = opt.cookies || function(){};
+      var opt = options || {}; this.cookies = opt.cookies || function() {};
 
       this.setActive( this.cookies.get( 'stylesheet' ) || this.getPreferred() );
 
@@ -1752,8 +1857,8 @@ var ServerUtils = new Class( {
       url     : null
    },
 
-   initialize: function( behaviour, options ) {
-      this.setBuildOptions( options ); this.behaviour = behaviour; this.build();
+   initialize: function( options ) {
+      this.setBuildOptions( options ); this.build();
    },
 
    attach: function( el ) {
@@ -1770,25 +1875,25 @@ var ServerUtils = new Class( {
    },
 
    checkField: function( id ) {
-      this.request( 'check_field', id, $( id ).value, function( doc, res ) {
+      this.request( 'check_field', id, $( id ).value, function( doc, html ) {
          $( doc.getAttribute( 'id' ) ).className
-            = res ? doc.getAttribute( 'class_name' ) : 'hidden';
+            = html ? doc.getAttribute( 'class_name' ) : 'hidden';
       }.bind( this ) );
-   },
-
-   loadIfVisible: function( action, id, val, onComplete ) {
-      if ($( id ).getSize().y > 0) this.request( action, id, val, onComplete );
    },
 
    request: function( action, id, val, onComplete ) {
       if (onComplete) this.onComplete = onComplete;
 
-      new Request( { onSuccess: this._success.bind( this ),
+      new Request( { onSuccess: this._response.bind( this ),
                      url      : this.options.url + action
       } ).get( { 'content-type': 'text/xml', 'id': id, 'val': val } );
    },
 
-   _success: function( text, xml ) {
+   requestIfVisible: function( action, id, val, onComplete ) {
+      if ($( id ).isVisible()) this.request( action, id, val, onComplete );
+   },
+
+   _response: function( text, xml ) {
       var doc = xml.documentElement, html = '';
 
       $$( doc.getElementsByTagName( 'items' ) ).each( function( item ) {
@@ -1799,7 +1904,7 @@ var ServerUtils = new Class( {
 
       $( doc.getAttribute( 'id' ) ).set( 'html', html.unescapeHTML() );
 
-      if (this.onComplete) this.onComplete.call( this.behaviour, doc, html );
+      if (this.onComplete) this.onComplete.call( this.callbacks, doc, html );
    }
 } );
 
@@ -1819,22 +1924,20 @@ var Sidebar = new Class( {
       width               : 38
    },
 
-   initialize: function( behaviour, options ) {
-      this.setOptions( options );
-      this.behaviour = behaviour;
-      this.cookies   = behaviour.cookies;
-      this.server    = behaviour.server;
+   initialize: function( options ) {
+      this.callbacks = options.callbacks || {}; delete options[ 'callbacks' ];
 
-      var opt = this.options, prefix = opt.prefix, sb;
+      this.setOptions( options ); var opt = this.options, prefix = opt.prefix;
 
-      if (! (sb = $( prefix + 'Disp' ))) return;
+      var sb; if (! (sb = this.el = $( prefix + 'Disp' ))) return;
 
-      var sb_state = this.cookies.get( prefix ) ? true : false;
-      var sb_panel = this.cookies.get( prefix + 'Panel' ) || opt.panel;
-      var sb_width = this.cookies.get( prefix + 'Width' )
+      var cookies  = this.callbacks.cookies || {};
+      var sb_state = cookies.get( prefix ) ? true : false;
+      var sb_panel = cookies.get( prefix + 'Panel' ) || opt.panel;
+      var sb_width = cookies.get( prefix + 'Width' )
                   || parseInt( opt.width * window.getWidth() / 100 );
 
-      this.cookies.set( prefix + 'Width', sb_width );
+      cookies.set( prefix + 'Width', sb_width );
 
       /* Setup the slide in/out effect */
       this.slider = new Fx.Slide( prefix + 'Container', {
@@ -1843,11 +1946,11 @@ var Sidebar = new Class( {
             var sb_icon = $( prefix + 'Icon' );
 
             /* When the effect is complete toggle the state */
-            if (this.cookies.get( prefix )) {
+            if (this.callbacks.cookies.get( prefix )) {
                if (sb_icon) sb_icon.className = 'pushedpin_icon';
             }
             else {
-               this.behaviour.resize();
+               this.callbacks.resize();
 
                if (sb_icon) sb_icon.className = 'pushpin_icon';
             }
@@ -1857,18 +1960,16 @@ var Sidebar = new Class( {
 
       /* Setup the event handler to turn the side bar on/off */
       $( prefix ).addEvent( 'click', function( ev ) {
-         new Event( ev ).stop();
+         new Event( ev ).stop(); var cookies = this.callbacks.cookies;
 
-         if (this.cookies.get( prefix )) {
-            this.cookies.remove( prefix ); this.slider.slideOut();
+         if (cookies.get( prefix )) {
+            cookies.remove( prefix ); this.slider.slideOut();
          }
          else {
-            var panel = this.cookies.get( prefix + 'Panel' );
+            var panel = cookies.get( prefix + 'Panel' );
 
-            this.cookies.set( prefix, 'pushedpin_icon' );
-            this.behaviour.resize();
-            this.accordion.display( panel, false );
-            this.slider.slideIn();
+            cookies.set( prefix, 'pushedpin_icon' ); this.callbacks.resize();
+            this.accordion.display( panel, false ); this.slider.slideIn();
          }
 
          return false;
@@ -1882,13 +1983,13 @@ var Sidebar = new Class( {
          onDrag   : function() {
              var sb_width = sb.getStyle( 'width' ).toInt();
 
-             this.cookies.set( prefix + 'Width',  sb_width );
+             this.callbacks.cookies.set( prefix + 'Width',  sb_width );
              this.slider.wrapper.setStyle( 'width', sb_width + 'px' );
-             this.behaviour.resize() }.bind( this )
+             this.callbacks.resize() }.bind( this )
       } );
 
       var togglers  = $$( opt.togglerClass ), panels = $$( opt.panelClass );
-      var getHeight = this.getHeight.pass( [ sb, togglers ], this );
+      var getHeight = this.getHeight.pass( [ togglers ], this );
 
       /* Create an Accordion widget in the side bar */
       this.accordion = new Fx.Accordion( togglers, panels, {
@@ -1900,13 +2001,13 @@ var Sidebar = new Class( {
             var toggler = togglers[ index ];
 
             toggler.swapClass( 'inactive', 'active' );
-            this.cookies.set( prefix + 'Panel', index );
+            this.callbacks.cookies.set( prefix + 'Panel', index );
 
             var cfg; if (! (cfg = opt.config[ toggler.id ])) return;
 
             if (cfg.action && cfg.name) {
-               this.server.request( cfg.action, cfg.name,
-                                    cfg.value,  cfg.onComplete );
+               this.callbacks.server.request( cfg.action, cfg.name,
+                                              cfg.value,  cfg.onComplete );
             }
          }.bind( this ),
          onBackground    : function( togglers, index, el ) {
@@ -1917,25 +2018,32 @@ var Sidebar = new Class( {
       return;
    },
 
-   getHeight: function( sb, togglers ) {
-      var opt    = this.options,
-          styles = { styles: [ 'padding', 'border', 'margin' ] },
-          size   = sb.getComputedSize( styles ),
-          height = (opt.togglerHeight * togglers.length)
-                 + opt.togglersMarginHeight,
-          margin = Math.max( opt.togglersMinMargin,
-                             sb.getStyle( 'marginBottom' ).toInt() );
+   getHeight: function( togglers ) {
+      var opt    = this.options;
+      var styles = { styles: [ 'padding', 'border', 'margin' ] };
+      var size   = this.el.getComputedSize( styles );
+      var height = (opt.togglerHeight * togglers.length)
+                 + opt.togglersMarginHeight;
+      var margin = Math.max( opt.togglersMinMargin,
+                             this.el.getStyle( 'marginBottom' ).toInt() );
 
       return Math.max( 1, size.totalHeight - (height + margin) );
    },
 
-   resize: function( margin_bottom ) {
-      var prefix = this.options.prefix;
-      var state  = this.cookies.get( prefix ) ? true : false;
+   getWidth: function() {
+      return this.el.getStyle( 'width' ).toInt();
+   },
 
-      var sb; if (! (sb = $( prefix + 'Disp' ))) return 0;
+   resize: function() {
+      var sb; if (! (sb = this.el)) return;
 
-      sb.setStyle( 'display', state ? '' : 'none' );
+      var prefix        = this.options.prefix;
+      var cookies       = this.callbacks.cookies;
+      var state         = cookies.get( prefix ) ? true : false;
+      var margin_bottom = this.callbacks.getContentMarginBottom();
+
+      if (state) { sb.show() } else { sb.hide() }
+
       sb.setStyle( 'marginBottom', margin_bottom + 'px' );
 
       // Calculate and set vertical offset for side bar grippy
@@ -1946,29 +2054,25 @@ var Sidebar = new Class( {
 
       $( prefix + 'Grippy' ).setStyle( 'marginTop', offset + 'px' );
 
-      var sb_width = state ? this.cookies.get( prefix + 'Width' ) : 0;
+      var sb_width = state ? cookies.get( prefix + 'Width' ) : 0;
 
       sb.setStyle( 'width', sb_width + 'px' );
       this.accordion.resize();
-      return sb_width;
+      return;
    }
 } );
 
 var Sliders = new Class( {
    Implements: [ Options ],
 
-   options    : {
-      config  : {},
-      selector: '.slider',
-      submit  : function() {}
-   },
+   options: { config: {}, selector: '.slider' },
 
    initialize: function( options ) {
       this.setBuildOptions( options ); this.build();
    },
 
    attach: function( el ) {
-      var cfg, opt = this.options, slider, submit = opt.submit;
+      var cfg, opt = this.options, slider, submit = this.callbacks.submit;
 
       if (! (cfg = opt.config[ el.id ])) return;
 
@@ -2224,10 +2328,10 @@ Spinner.JS = new Class( {
             var alpha = Math.max( 1 - (i + s * astep) % f * ostep,
                                   opt.opacity );
 
-            self._opacity( self.el, opt.lines - s, alpha );
+            self._opacity( self.js_spinner, opt.lines - s, alpha );
          }
 
-         self.timeout = self.el && window.setTimeout( anim, 50 );
+         self.timeout = self.js_spinner && window.setTimeout( anim, 50 );
       } )();
    },
 
@@ -2407,22 +2511,26 @@ var SubmitUtils = new Class( {
    },
 
    initialize: function( options ) {
-      this.setBuildOptions( options ); var opt = this.options;
-
-      this.cookies = options.cookies || function(){};
-      this.form    = document.forms ? document.forms[ opt.formName ]
-                                    : function(){};
+      this.setBuildOptions( options );
+      this.form = document.forms ? document.forms[ this.options.formName ]
+                                 : function() {};
       this.build();
    },
 
    build: function() {
       var opt = this.options;
 
-      if (opt.chooseSelector)
-         $$( opt.chooseSelector ).each( this.attachChooser, this );
+      if (opt.chooseSelector) $$( opt.chooseSelector ).each( function( el ) {
+         if (! this.collection.contains( el )) {
+            this.collection.include( el ); this.attachChooser( el );
+         }
+      }.bind( this ) );
 
-      if (opt.submitSelector)
-         $$( opt.submitSelector ).each( this.attachSubmit, this );
+      if (opt.submitSelector) $$( opt.submitSelector ).each( function( el ) {
+         if (! this.collection.contains( el )) {
+            this.collection.include( el ); this.attachSubmit( el );
+         }
+      }.bind( this ) );
    },
 
    attachChooser: function( el ) {
@@ -2485,7 +2593,7 @@ var SubmitUtils = new Class( {
    },
 
    refresh: function( name, value ) {
-      if (name) this.cookies.set( name, value );
+      if (name) this.callbacks.cookies.set( name, value );
 
       this.form.submit();
       return false;
@@ -2505,9 +2613,7 @@ var SubmitUtils = new Class( {
    },
 
    setField: function( name, value ) {
-      var el;
-
-      if (name && (el = this.form.elements[ name ])) el.value = value;
+      var el; if (name && (el = this.form.elements[ name ])) el.value = value;
 
       return el ? el.value : null;
    },
@@ -2533,80 +2639,156 @@ var SubmitUtils = new Class( {
    }
 } );
 
+var TableSort = new Class( {
+   Implements: [ Events, Options ],
+
+   options          : {
+/*    onSortComplete: function() {}, */
+      selector      : 'th.sort',
+      sortRowClass  : 'sortable_row' },
+
+   initialize: function( options ) {
+      this.setBuildOptions( options ); this.sortables = {}; this.build();
+   },
+
+   attach: function( el ) {
+      el.addEvent( 'click', function( ev ) {
+         new Event( ev ).stop(); return this.sortRows( el );
+      }.bind( this ) );
+   },
+
+   _get_sort_field: function( cell, type ) {
+      var el = cell ? cell.firstChild : '', field = '';
+
+      if      (el && el.nodeName == '#text') field = el.nodeValue;
+      else if (el && el.nodeName == 'INPUT') field = el.value;
+
+      if (type && type == 'date') {
+         field = Date.parse( field ) || Date.parse( '01 Jan 1970' );
+      }
+      else if (type && type == 'money') {
+         field = field.substring( 1 );
+         field.replace( /[^0-9.]/g, '' );
+         field = parseFloat( field ) || 0;
+      }
+      else if (type && type == 'numeric') {
+         field.replace( /[^+\-0-9.]/g, '' );
+         field = parseFloat( field ) || 0;
+      }
+      else field = field + '';
+
+      return field;
+   },
+
+   _get_sort_order: function( table_id, default_column, column_id ) {
+      var sortable = this.sortables[ table_id ]
+                  || { sort_column: default_column, reverse: false };
+      var reverse  = (column_id == sortable.sort_column)
+                   ? ! sortable.reverse : false;
+
+      sortable.reverse = reverse; sortable.sort_column = column_id;
+      this.sortables[ table_id ] = sortable;
+      return reverse ? [ 1, -1 ] : [ -1, 1 ];
+   },
+
+   sortRows: function( table_header ) {
+      var id       = table_header.id,
+          id_a     = id.split( '.' ),
+          table_id = id_a[ 0 ], column_type = id_a[ 2 ],
+          table    = $( table_id ),
+          columns  = table.getElements( 'th' ),
+          col_ids  = columns.map( function( column ) { return column.id } );
+
+      if (! col_ids.contains( id )) return;
+
+      var col_id   = col_ids.indexOf( id ),
+          order    = this._get_sort_order( table_id, col_ids[ 0 ], id ),
+          selector = 'tr.' + this.options.sortRowClass,
+          rows     = [];
+
+      table.getElements( selector ).map( function( row, index ) {
+         var field = this._get_sort_field( row.cells[ col_id ], column_type );
+
+         rows[ index ] = row;
+
+         return [ field, row.clone( true, true ) ];
+      }.bind( this ) ).sort( function( a, b ) {
+         return a[ 0 ] < b[ 0 ] ? order[ 0 ]
+             : (a[ 0 ] > b[ 0 ] ? order[ 1 ] : 0);
+      } ).map( function( sorted_rows, index ) {
+         var old_row    = rows[ index ],
+             new_row    = sorted_rows[ 1 ],
+             new_row_id = new_row.id;
+
+         new_row.removeAttribute( 'id' ); new_row.replaces( old_row );
+
+         return [ new_row, new_row_id ];
+      } ).map( function( sorted_rows, index ) {
+         var id, row = sorted_rows[ 0 ];
+
+         if (id = sorted_rows[ 1 ]) row.id = id;
+
+         return row;
+      } );
+
+      this.fireEvent( 'sortComplete' );
+   }
+} );
+
 var TableUtils = new Class( {
    Implements: [ Events, Options ],
 
    options           : {
-      config         : { iconClasses: [ 'a', 'b' ] },
+      config         : {},
       editRowClass   : 'editable_row',
-      editSelector   : 'table.editable',
       formName       : null,
-      gridSelector   : '.live_grid',
-      gridSize       : 10,
-      gridToggle     : true,
       inputCellClass : 'data_field',
 /*    onRowAdded     : function(){}, */
 /*    onRowsRemoved  : function(){}, */
-/*    onSortComplete : function(){}, */
+      selector       : 'table.editable',
       sortableOptions: {
          clone       : function( ev, el, list ) {
-             return new Element( 'div' ).inject(document.body); },
+             return new Element( 'div' ).inject( document.body ); },
          constrain   : true,
          handle      : 'td.row_drag',
          revert      : { duration: 500, transition: 'elastic:out' } },
       sortRowClass   : 'sortable_row',
-      sortSelector   : 'th.sort',
       textCellClass  : 'data_value',
-      url            : null
    },
 
    initialize: function( options ) {
       this.setBuildOptions( options );
-      this.form      = document.forms
-                     ? document.forms[ this.options.formName ] : function(){};
-      this.sortables = {};
+      this.form = document.forms ? document.forms[ this.options.formName ]
+                                 : function() {};
       this.build();
    },
 
-   build: function() {
+   attach: function( el ) {
       var opt = this.options;
 
-      if (opt.editSelector)  $$( opt.editSelector ).each( function( el  ) {
-         el.getElements( 'tr.' + opt.editRowClass ).each( function( row ) {
-            $uid( row );
-         } );
+      el.getElements( 'tr.' + opt.editRowClass ).each( function( row ) {
+         $uid( row );
+      } );
 
-         el.sortables = new Sortables( el.getElement( 'tbody' ),
-                                       opt.sortableOptions );
+      el.sortables = new Sortables( el.getElement( 'tbody' ),
+                                    opt.sortableOptions );
 
-         var button = $( el.id + '_add' );
+      var button = $( el.id + '_add' );
 
-         if (button) button.addEvent( 'click', function( ev ) {
-             new Event( ev ).stop(); return this.addRow( el );
-         }.bind( this ) );
+      if (button) button.addEvent( 'click', function( ev ) {
+         new Event( ev ).stop(); return this.addRow( el );
+      }.bind( this ) );
 
-         button = $( el.id + '_remove' );
+      button = $( el.id + '_remove' );
 
-         if (button) button.addEvent( 'click', function( ev ) {
-            new Event( ev ).stop(); return this.removeRows( el );
-         }.bind( this ) );
-      }, this );
-
-      if (opt.gridSelector) $$( opt.gridSelector ).each( function( el ) {
-         el.addEvent( 'click', function( ev ) {
-            new Event( ev ).stop(); return this.liveGrid( el );
-         }.bind( this ) );
-      }, this );
-
-      if (opt.sortSelector) $$( opt.sortSelector ).each( function( el ) {
-         el.addEvent( 'click', function( ev ) {
-            new Event( ev ).stop(); return this.sortRows( el );
-         }.bind( this ) );
-      }, this );
+      if (button) button.addEvent( 'click', function( ev ) {
+         new Event( ev ).stop(); return this.removeRows( el );
+      }.bind( this ) );
    },
 
    addRow: function( table ) {
       var cNo     = 0, el,
+          offset  = 0,
           opt     = this.options,
           cfg     = opt.config[ table.id ] || {},
           edit    = cfg.editSide   || 'left',
@@ -2619,19 +2801,23 @@ var TableUtils = new Class( {
              id   : table.id + '_row' + row_id,
              class: opt.editRowClass + ' ' + opt.sortRowClass } ),
           id_a    = table.id.split( '.' ),
-          name    = id_a[ 1 ];
+          name    = id_a[ 1 ] || id_a[ 0 ];
 
-      if (edit == 'left') row.appendChild( this._add_drag( cNo++ ) );
+      if (edit == 'left') {
+         row.appendChild( this._add_drag( cNo++ ) ); offset++;
+      }
 
-      if (select == 'left')
+      if (select == 'left') {
          row.appendChild( this._add_select( name, row_id, cNo++ ) );
+         offset++;
+      }
 
-      while (el = $( table.id + '_add' + cNo )) {
+      while (el = $( table.id + '_add' + (cNo - offset) )) {
          var cell  = new Element( 'td' ),
              type  = el.type == 'textarea' ? 'textarea' : 'input',
              input = new Element( type, {
                 class: 'ifield',
-                name : name + '_' + row_id + '_' + cNo,
+                name : name + '_' + row_id + '_' + (cNo - offset),
                 value: el.value
              } );
 
@@ -2684,102 +2870,11 @@ var TableUtils = new Class( {
       return (cNo + 1) % 2 == 0 ? ' even_col' : ' odd_col';
    },
 
-   _createGrid: function( text, xml ) {
-      var keyid  = this.gridKey + '_' + this.gridId,
-          count  = parseInt( xml.documentElement.getAttribute( 'totalcount' ) ),
-          rows   = $$( xml.documentElement.getElementsByTagName( 'items' ) ),
-          urlkey = this.options.url + this.gridKey + '_grid_rows',
-          html   = '',
-          opts   = {
-             bufferSize    : 7,
-             gridSize      : this.options.gridSize,
-             prefetchBuffer: true,
-             onScroll      : this._updateHeader.bind( this ),
-             onFirstContent: this._updateHeader.bind( this, 0 ),
-             totalRows     : count };
-
-      rows.each( function( row ) { html += row.childNodes[ 0 ].nodeValue } );
-
-      $( keyid + 'Disp' ).set( 'html', html.unescapeHTML() );
-
-      this.gridObj = new LiveGrid( keyid + '_grid', urlkey, opts );
-   },
-
-   _get_sort_field: function( cell, type ) {
-      var el = cell ? cell.firstChild : '', field = '';
-
-      if      (el && el.nodeName == '#text') field = el.nodeValue;
-      else if (el && el.nodeName == 'INPUT') field = el.value;
-
-      if (type && type == 'date') {
-         field = Date.parse( field ) || Date.parse( '01 Jan 1970' );
-      }
-      else if (type && type == 'money') {
-         field = field.substring( 1 );
-         field.replace( /[^0-9.]/g, '' );
-         field = parseFloat( field ) || 0;
-      }
-      else if (type && type == 'numeric') {
-         field.replace( /[^+\-0-9.]/g, '' );
-         field = parseFloat( field ) || 0;
-      }
-      else field = field + '';
-
-      return field;
-   },
-
-   _get_sort_order: function( table_id, default_column, column_id ) {
-      var sortable = this.sortables[ table_id ]
-                  || { sort_column: default_column, reverse: false };
-      var reverse  = (column_id == sortable.sort_column)
-                   ? ! sortable.reverse : false;
-
-      sortable.reverse = reverse; sortable.sort_column = column_id;
-      this.sortables[ table_id ] = sortable;
-      return reverse ? [ 1, -1 ] : [ -1, 1 ];
-   },
-
-   liveGrid: function( anchor ) {
-      var el, a = anchor.id.split( '_' ), key = a[ 0 ], id = a[ 1 ];
-
-      if (! key || ! id || ! (el = $( anchor.id + 'Disp' ))) return;
-
-      var opt = this.options, cfg = opt.config;
-
-      if (opt.gridToggle && el.getStyle( 'display' ) != 'none') {
-         el.setStyle( 'display', 'none' );
-
-         if (el = $( anchor.id + 'Icon' )) el.className = cfg.iconClasses[ 0 ];
-
-         this.gridKey = null; this.gridId = null; this.gridObj = null;
-         return;
-      }
-
-      if (this.gridKey && this.gridId) {
-         var keyid = this.gridKey + '_' + this.gridId, prev;
-
-         if (prev = $( keyid + 'Disp' )) prev.setStyle( 'display', 'none' );
-         if (prev = $( keyid + 'Icon' )) prev.className = cfg.iconClasses[ 0 ];
-
-         this.gridKey = null; this.gridId = null; this.gridObj = null;
-      }
-
-      el.setStyle( 'display', '' ); this.gridKey = key; this.gridId = id;
-
-      if (el = $( anchor.id + 'Icon' )) el.className = cfg.iconClasses[ 1 ];
-
-      new Request( {
-         onSuccess: this._createGrid.bind( this ),
-         url      : opt.url + key +  '_grid_table' } ).get( {
-            'content-type': 'text/xml', 'id': id, 'val': opt.gridSize } );
-      return;
-   },
-
    removeRows: function( table ) {
       var rows      = table.getElements( 'tr.' + this.options.editRowClass ),
           nrows     = rows ? rows.length : 0,
           id_a      = table.id.split( '.' ),
-          name      = id_a[ 1 ],
+          name      = id_a[ 1 ] || id_a[ 0 ],
           destroyed = 0;
 
       rows.map( function( row ) {
@@ -2795,70 +2890,6 @@ var TableUtils = new Class( {
       if (destroyed > 0) this.fireEvent( 'rowsRemoved' );
 
       return false;
-   },
-
-   sortRows: function( table_header ) {
-      var id       = table_header.id,
-          id_a     = id.split( '.' ),
-          table_id = id_a[ 0 ], column_type = id_a[ 2 ],
-          table    = $( table_id ),
-          columns  = table.getElements( 'th' ),
-          col_ids  = columns.map( function( column ) { return column.id } );
-
-      if (! col_ids.contains( id )) return;
-
-      var col_id   = col_ids.indexOf( id ),
-          order    = this._get_sort_order( table_id, col_ids[ 0 ], id ),
-          selector = 'tr.' + this.options.sortRowClass,
-          rows     = [];
-
-      table.getElements( selector ).map( function( row, index ) {
-         var field = this._get_sort_field( row.cells[ col_id ], column_type );
-
-         rows[ index ] = row;
-
-         return [ field, row.clone( true, true ) ];
-      }.bind( this ) ).sort( function( a, b ) {
-         return a[ 0 ] < b[ 0 ] ? order[ 0 ]
-             : (a[ 0 ] > b[ 0 ] ? order[ 1 ] : 0);
-      } ).map( function( sorted_rows, index ) {
-         var old_row    = rows[ index ],
-             new_row    = sorted_rows[ 1 ],
-             new_row_id = new_row.id;
-
-         new_row.removeAttribute( 'id' ); new_row.replaces( old_row );
-
-         return [ new_row, new_row_id ];
-      } ).map( function( sorted_rows, index ) {
-         var id, row = sorted_rows[ 0 ];
-
-         if (id = sorted_rows[ 1 ]) row.id = id;
-
-         return row;
-      } );
-
-      this.fireEvent( 'sortComplete' );
-   },
-
-   _updateHeader: function( offset ) {
-      var id, sortInfo, text, urlkey, metaData = this.gridObj.metaData;
-
-      id    = this.gridKey + '_' + this.gridId + '_header';
-      text  = 'Listing ' + (offset + 1) + ' - ';
-      text += (offset + metaData.getPageSize());
-      text += ' of ' + metaData.getTotalRows();
-      $( id ).set( 'html', text );
-
-      if (this.gridObj.sortCol) {
-         sortInfo  = '&data_grid_sort_col=' + this.gridObj.sortCol;
-         sortInfo += '&data_grid_sort_dir=' + this.gridObj.sortDir;
-      }
-      else sortInfo = '';
-
-      urlkey = this.options.url + this.gridKey + '_gridPage';
-      text   = urlkey + '?data_grid_index=' + offset + sortInfo;
-      $( id ).href = text;
-      return;
    }
 } );
 
@@ -2955,9 +2986,8 @@ var TabSwapper = new Class( {
 
       var section; if (! (section = tab.retrieve( 'section' ))) return this;
 
-      if (section.getStyle( 'display' ) != 'none') {
-         this.lastHeight = section.getHeight();
-         section.setStyle( 'display', 'none' );
+      if (section.isDisplayed()) {
+         this.lastHeight = section.getHeight(); section.hide();
          tab.swapClass( this.options.selectedClass,
                         this.options.deselectedClass );
          this.fireEvent( 'onBackground', [ tab, section, idx ] );
@@ -3091,16 +3121,14 @@ var TabSwappers = new Class( {
    options: { config: {}, selector: '.tabswapper' },
 
    initialize: function( options ) {
-      this.cookies = options.cookies;
-      this.setBuildOptions( options );
-      this.build();
+      this.setBuildOptions( options ); this.build();
    },
 
    attach: function( el ) {
       var cfg     = this.options.config;
       var options = cfg[ el.id ] || cfg[ 'defaults' ] || {};
 
-      options.cookies = this.cookies;
+      options.cookies = this.callbacks.cookies;
 
       new TabSwapper( el, options );
    }
@@ -3109,245 +3137,277 @@ var TabSwappers = new Class( {
 /* Description: Class for creating nice tips that follow the mouse cursor
                 when hovering an element.
    License: MIT-style license
-   Authors: Valerio Proietti, Christoph Pojer, Luis Merino */
+   Authors: Valerio Proietti, Christoph Pojer, Luis Merino, Peter Flanigan */
 
 (function() {
 
+var getText = function( el ) {
+   return (el.get( 'rel' ) || el.get( 'href' ) || '').replace( 'http://', '' );
+};
+
 var read = function( opt, el ) {
-    return opt ? (typeOf( opt ) == 'function' ? opt( el )
-                                              : el.get( opt ))
-                                              : '';
+   return opt ? (typeOf( opt ) == 'function' ? opt( el ) : el.get( opt )) : '';
 };
 
 var storeTitleAndText = function( opt, el ) {
-    if (el.retrieve( 'tip:title' )) return;
+   if (el.retrieve( 'tip:title' )) return;
 
-    var title = read( opt.title, el ), text = read( opt.text,  el );
+   var title = read( opt.title, el ), text = read( opt.text, el );
 
-    if (title) {
-        el.store( 'tip:native', title );
+   if (title) {
+      el.store( 'tip:native', title ); var pair = title.split( opt.separator );
 
-        var pair = title.split( opt.separator );
+      if (pair.length > 1) {
+         title = pair[ 0 ].trim(); text = (pair[ 1 ] + ' ' + text).trim();
+      }
+   }
+   else title = opt.hellip;
 
-        if (pair.length > 1) {
-            title = pair[ 0 ].trim();
-            text  = (pair[ 1 ] + ' ' + text).trim();
-        }
-    }
-    else title = opt.hellip;
+   if (title.length > opt.maxTitleChars)
+      title = title.substr( 0, opt.maxTitleChars - 1 ) + opt.hellip;
 
-    if (title.length > opt.maxTitleChars)
-        title = title.substr( 0, opt.maxTitleChars - 1 ) + opt.hellip;
-
-    el.store( 'tip:title', title );
-    el.store( 'tip:text',  text  );
-    el.erase( 'title' );
+   el.store( 'tip:title', title ).erase( 'title' );
+   el.store( 'tip:text',  text  );
 };
 
 this.Tips = new Class( {
-    Implements: [ Events, Options ],
+   Implements: [ Events, Options ],
 
-    options          : {
-        className    : 'tool',
-        fixed        : false,
-        hellip       : '\u2026',
-        hideDelay    : 100,
-        maxTitleChars: 40,
-        offsets      : { x: 20, y: 20 },
-/*      onAttach     : function( el ) {}, */
-/*      onBound      : function( coords ) {}, */
-/*      onDetach     : function( el) {}, */
-        onHide       : function( tip, el ) {
-            tip.setStyle( 'visibility', 'hidden'  ) },
-        onShow       : function( tip, el ) {
-            tip.setStyle( 'visibility', 'visible' ) },
-        selector     : '.tips',
-        separator    : '~',
-        showDelay    : 100,
-        spacer       : '\u00a0\u00a0\u00a0',
-        text         : function( el ) {
-            return (el.get( 'rel' ) || el.get( 'href' )
-                    || '').replace( 'http://', '' );
-        },
-        timeout      : 30000,
-        title        : 'title',
-        windowPadding: { x: 0, y: 0 }
-    },
+   options         : {
+      className    : 'tips',
+      fixed        : false,
+      fsWidthRatio : 1.35,
+      hellip       : '\u2026',
+      hideDelay    : 100,
+      id           : 'tips',
+      maxTitleChars: 40,
+      maxWidthRatio: 4,
+      minWidth     : 120,
+      offsets      : { x: 4, y: 36 },
+/*    onAttach     : function( el ) {}, */
+/*    onBound      : function( coords ) {}, */
+/*    onDetach     : function( el) {}, */
+      onHide       : function( tip, el ) {
+         tip.setStyle( 'visibility', 'hidden'  ) },
+      onShow       : function( tip, el ) {
+         tip.setStyle( 'visibility', 'visible' ) },
+      selector     : '.tips',
+      separator    : '~',
+      showDelay    : 100,
+      showMark     : true,
+      spacer       : '\u00a0\u00a0\u00a0',
+      text         : getText,
+      timeout      : 30000,
+      title        : 'title',
+      windowPadding: { x: 0, y: 0 }
+   },
 
-    initialize: function( options ) {
-        this.setBuildOptions( options ); this.createMarkup();
+   initialize: function( options ) {
+      this.setBuildOptions( options ); this.createMarkup();
 
-        this.build(); this.fireEvent( 'initialize' );
-    },
+      this.build(); this.fireEvent( 'initialize' );
+   },
 
-    attach: function( el ) {
-        var events = [ 'enter', 'leave' ], opt = this.options;
+   attach: function( el ) {
+      var events = [ 'enter', 'leave' ], opt = this.options;
 
-        storeTitleAndText( opt, el );
+      storeTitleAndText( opt, el );
 
-        if (! opt.fixed) events.push( 'move' );
+      if (! opt.fixed) events.push( 'move' );
 
-        events.each( function( value ) {
-            var key    = 'tip:' + value;
-            var method = 'element' + value.capitalize();
-            var handler;
+      events.each( function( value ) {
+         var key = 'tip:' + value, method = 'element' + value.capitalize();
 
-            if (! (handler = el.retrieve( key ))) {
-                handler = function( ev ) {
-                    return this[ method ].apply( this, [ ev, el ] );
-                }.bind( this );
-                el.store( key, handler );
-            }
+         var handler; if (! (handler = el.retrieve( key ))) {
+            handler = function( ev ) {
+               return this[ method ].apply( this, [ ev, el ] ) }.bind( this );
+            el.store( key, handler );
+         }
 
-            el.addEvent( 'mouse' + value, handler );
-        }, this );
+         el.addEvent( 'mouse' + value, handler );
+      }, this );
 
-        this.fireEvent( 'attach', [ el ] );
-    },
+      this.fireEvent( 'attach', [ el ] );
+   },
 
-    createMarkup: function() {
-        var klass  = this.options.className;
-        var spacer = this.options.spacer;
-        var div    = this.tip = new Element( 'div', {
-            'class' : klass + '-tip',
-            'styles': { 'left'      : 0,
-                        'position'  : 'absolute',
-                        'top'       : 0,
-                        'visibility': 'hidden' } } ).inject( document.body );
-        var table  = new Element( 'table', {
-            'cellpadding': 0, 'cellspacing': 0 } ).inject( div );
-        var row    = new Element( 'tr' ).inject( table );
+   createMarkup: function() {
+      var opt    = this.options;
+      var klass  = opt.className;
+      var dlist  = this.tip = new Element( 'dl', {
+         'id'    : opt.id,
+         'class' : klass + '-container',
+         'styles': { 'left'      : 0,
+                     'position'  : 'absolute',
+                     'top'       : 0,
+                     'visibility': 'hidden' } } ).inject( document.body );
 
-        this.titleCell = new Element( 'td', {
-            'class' : klass + '-tip-topLeft' } ).inject( row );
-        this.title = new Element( 'span' ).inject( this.titleCell );
+      if (opt.showMark) {
+         this.mark = []; [ 0, 1 ].each( function( idx ) {
+            var el = this.mark[ idx ] = new Element( 'span', {
+               'class': klass + '-mark' + idx } ).inject( dlist );
 
-        var cell   = new Element( 'td', {
-            'class' : klass + '-tip-topRight' } ).inject( row );
+            [ 'left', 'top' ].each( function( prop ) {
+               el.store( 'tip:orig-' + prop, el.getStyle( prop ) ) } );
+         }, this );
+      }
 
-        new Element( 'span' ).appendText( spacer ).inject( cell );
+      this.term = new Element( 'dt', {
+         'class' : klass + '-term' } ).inject( dlist );
+      this.defn = new Element( 'dd', {
+         'class' : klass + '-defn' } ).inject( dlist );
+   },
 
-        row = new Element( 'tr' ).inject( table );
-        this.textCell = new Element( 'td', {
-            'class' : klass + '-tip-bottomLeft' } ).inject( row );
-        this.text = new Element( 'span' ).inject( this.textCell );
+   detach: function() {
+      this.collection.each( function( el ) {
+         [ 'enter', 'leave', 'move' ].each( function( value ) {
+            var ev = 'mouse' + value, key = 'tip:' + value;
 
-        cell = new Element( 'td', {
-            'class' : klass + '-tip-bottomRight' } ).inject( row );
-        new Element( 'span' ).appendText( spacer ).inject( cell );
-    },
+            el.removeEvent( ev, el.retrieve( key ) ).eliminate( key );
+         } );
 
-    detach: function() {
-        this.collection.each( function( el ) {
-            [ 'enter', 'leave', 'move' ].each( function( value ) {
-                var key = 'tip:' + value;
+         this.fireEvent( 'detach', [ el ] );
 
-                el.removeEvent( 'mouse' + value,
-                                el.retrieve( key ) ).eliminate( key );
-            } );
+         if (this.options.title == 'title') {
+            var original = el.retrieve( 'tip:native' );
 
-            this.fireEvent( 'detach', [ el ] );
+            if (original) el.set( 'title', original );
+         }
+      }, this );
 
-            if (this.options.title == 'title') {
-                // This is necessary to check if we can revert the title
-                var original = el.retrieve( 'tip:native' );
+      return this;
+   },
 
-                if (original) el.set( 'title', original );
-            }
-        }, this );
+   elementEnter: function( ev, el ) {
+      clearTimeout( this.timer );
+      this.timer = this.show.delay( this.options.showDelay, this, el );
+      this.setup( el ); this.position( ev, el );
+   },
 
-        return this;
-    },
+   elementLeave: function( ev, el ) {
+      clearTimeout( this.timer );
 
-    elementEnter: function( ev, el ) {
-        clearTimeout( this.timer );
-        this.timer = this.show.delay( this.options.showDelay, this, el );
-        this.setup( el ); this.position( ev, el );
-    },
+      var opt = this.options, delay = Math.max( opt.showDelay, opt.hideDelay );
 
-    elementLeave: function( ev, el ) {
-        clearTimeout( this.timer );
+      this.timer = this.hide.delay( delay, this, el );
+      this.fireForParent( ev, el );
+   },
 
-        var opt   = this.options,
-            delay = Math.max( opt.showDelay, opt.hideDelay );
+   elementMove: function( ev, el ) {
+      this.position( ev, el );
+   },
 
-        this.timer = this.hide.delay( delay, this, el );
-        this.fireForParent( ev, el );
-    },
+   fireForParent: function( ev, el ) {
+      el = el.getParent(); if (! el || el == document.body) return;
 
-    elementMove: function( ev, el ) {
-        this.position( ev, el );
-    },
+      if (el.retrieve( 'tip:enter' )) el.fireEvent( 'mouseenter', ev );
+      else this.fireForParent( ev, el );
+   },
 
-    fireForParent: function( ev, el ) {
-        el = el.getParent();
+   hide: function( el ) {
+      this.fireEvent( 'hide', [ this.tip, el ] );
+   },
 
-        if (! el || el == document.body) return;
+   position: function( ev, el ) {
+      var opt    = this.options;
+      var bounds = opt.fixed ? this._positionFixed( ev, el )
+                             : this._positionVariable( ev, el );
 
-        this.fireForParent( ev, el );
-    },
+      if (opt.showMark) this._positionMarks( bounds );
+   },
 
-    hide: function( el ) {
-        this.fireEvent( 'hide', [ this.tip, el ] );
-    },
+   _positionFixed: function( ev, el ) {
+      var offsets = this.options.offsets, pos = el.getPosition();
 
-    position: function( ev, el ) {
-        var opt = this.options, offsets = opt.offsets;
+      this.tip.setStyles( { left: pos.x + offsets.x, top: pos.y + offsets.y } );
 
-        if (opt.fixed) {
-            var pos = el.getPosition();
+      return { x: false, x2: false, y: false, y2: false };
+   },
 
-            this.tip.setStyles( {
-                left: pos.x + offsets.x, top: pos.y + offsets.y
-            } );
+   _positionMark: function( state, quads, coord, dimn ) {
+      for (var idx = 0; idx < 2; idx++) {
+         var el     = this.mark[ idx ];
+         var colour = el.getStyle( 'border-' + quads[ 0 ] + '-color' );
 
-            return;
-        }
+         if (colour != 'transparent') {
+            el.setStyle( 'border-' + quads[ 0 ] + '-color', 'transparent' );
+            el.setStyle( 'border-' + quads[ 1 ] + '-color', colour );
+         }
 
-        var prop    = { x: 'left',                 y: 'top'                 };
-        var scroll  = { x: window.getScrollLeft(), y: window.getScrollTop() };
-        var tip     = { x: this.tip.offsetWidth,   y: this.tip.offsetHeight };
-        var win     = { x: window.getWidth(),      y: window.getHeight()    };
-        var bounds  = { x: false, x2: false,       y: false, y2: false      };
-        var padding = opt.windowPadding;
+         var orig  = el.retrieve( 'tip:orig-' + coord ).toInt();
+         var value = this.tip.getStyle( dimn ).toInt();
 
-        for (var z in prop) {
-            var pos = ev.page[ z ] + offsets[ z ];
+         if (coord == 'left') {
+            var blsize = this.tip.getStyle( 'border-left' ).toInt();
+            var left   = this.mark[ 0 ].retrieve( 'tip:orig-left' ).toInt();
 
-            if (pos < 0) bounds[ z ] = true;
+            value -= 2 * left - blsize * idx;
+         }
 
-            if (pos + tip[ z ] > scroll[ z ] + win[ z ] - padding[ z ]) {
-                pos = ev.page[ z ] - offsets[ z ] - tip[ z ];
-                bounds[ z + '2' ] = true;
-            }
+         el.setStyle( coord, (state ? value : orig) + 'px' );
+      }
+   },
 
-            this.tip.setStyle( prop[ z ], pos );
-        }
+   _positionMarks: function( coords ) {
+      var quads = coords[ 'x2' ] ? [ 'left', 'right' ] : [ 'right', 'left' ];
 
-        this.fireEvent( 'bound', bounds );
-    },
+      this._positionMark( coords[ 'x2' ], quads, 'left', 'width' );
 
-    setup: function( el ) {
-        var max   = Math.floor( window.getWidth() / 4 ),
-            text  = el.retrieve( 'tip:text'  ) || '',
-            title = el.retrieve( 'tip:title' ) || '',
-            w     = 10 * Math.max( title.length, text.length );
+      quads = coords[ 'y2' ] ? [ 'bottom', 'top' ] : [ 'top', 'bottom' ];
 
-        w = w < 100 ? 100 : w > max ? max : w;
+      this._positionMark( coords[ 'y2' ], quads, 'top', 'height' );
+   },
 
-        this.titleCell.setStyle( 'width', parseInt( w ) + 'px' );
-        this.title.empty().appendText( title || this.options.spacer );
-        this.textCell.setStyle( 'width', parseInt( w ) + 'px' );
-        this.text.empty().appendText( text || this.options.spacer );
-    },
+   _positionVariable: function( ev, el ) {
+      var opt     = this.options, offsets = opt.offsets, pos = {};
+      var prop    = { x: 'left',                 y: 'top'                 };
+      var scroll  = { x: window.getScrollLeft(), y: window.getScrollTop() };
+      var tip     = { x: this.tip.offsetWidth,   y: this.tip.offsetHeight };
+      var win     = { x: window.getWidth(),      y: window.getHeight()    };
+      var bounds  = { x: false, x2: false,       y: false, y2: false      };
+      var padding = opt.windowPadding;
 
-    show: function( el ) {
-        var opt = this.options;
+      for (var z in prop) {
+         var coord = ev.page[ z ] + offsets[ z ];
 
-        if (opt.timeout) this.timer = this.hide.delay( opt.timeout, this );
+         if (coord < 0) bounds[ z ] = true;
 
-        this.fireEvent( 'show', [ this.tip, el ] );
-    }
+         if (coord + tip[ z ] > scroll[ z ] + win[ z ] - padding[ z ]) {
+            coord = ev.page[ z ] - offsets[ z ] - tip[ z ];
+            bounds[ z + '2' ] = true;
+         }
+
+         pos[ prop[ z ] ] = coord;
+      }
+
+      this.fireEvent( 'bound', bounds ); this.tip.setStyles( pos );
+
+      return bounds;
+   },
+
+   setup: function( el ) {
+      var opt    = this.options;
+      var term   = el.retrieve( 'tip:title' ) || '';
+      var defn   = el.retrieve( 'tip:text'  ) || '';
+      var tfsize = this.term.getStyle( 'font-size' ).toInt();
+      var dfsize = this.defn.getStyle( 'font-size' ).toInt();
+      var max    = Math.floor( window.getWidth() / opt.maxWidthRatio );
+      var w      = Math.max( term.length * tfsize / opt.fsWidthRatio,
+                             defn.length * dfsize / opt.fsWidthRatio );
+
+      w = parseInt( w < opt.minWidth ? opt.minWidth : w > max ? max : w );
+
+      this.tip.setStyle( 'width', w + 'px' );
+      this.term.empty().appendText( term || opt.spacer );
+      this.defn.empty().appendText( defn || opt.spacer );
+   },
+
+   show: function( el ) {
+      var opt = this.options;
+
+      if (opt.timeout) this.timer = this.hide.delay( opt.timeout, this );
+
+      this.fireEvent( 'show', [ this.tip, el ] );
+   }
 } );
 } )();
 
@@ -3356,11 +3416,10 @@ var Togglers = new Class( {
 
    options: { config: {}, selector: '.togglers' },
 
-   initialize: function( behaviour, options ) {
-      this.cookies = behaviour.cookies;
-      this.resize  = behaviour.resize.bind( behaviour );
-
+   initialize: function( options ) {
       this.setBuildOptions( options ); this.build();
+
+      this.resize = this.callbacks.resize.bind( this.callbacks );
    },
 
    attach: function( el ) {
@@ -3376,25 +3435,25 @@ var Togglers = new Class( {
 
       var toggler = el.retrieve( name ); if (! toggler) return;
 
-      toggler.toggle( this.cookies ); this.resize();
+      toggler.toggle( this.callbacks.cookies ); this.resize();
    },
 
    toggleSwapText: function( id, name, s1, s2 ) {
-      var el = $( id ); if (! el) return;
+      var el = $( id ); if (! el) return; var cookies = this.callbacks.cookies;
 
-      if (this.cookies.get( name ) == 'true') {
-         this.cookies.set( name, 'false' );
+      if (cookies.get( name ) == 'true') {
+         cookies.set( name, 'false' );
 
          if (el) el.set( 'html', s2 );
 
-         if (el = $( name + 'Disp' )) el.setStyle( 'display', 'none' );
+         if (el = $( name + 'Disp' )) el.hide();
       }
       else {
-         this.cookies.set( name, 'true' );
+         cookies.set( name, 'true' );
 
          if (el) el.set( 'html', s1 );
 
-         if (el = $( name + 'Disp' )) el.setStyle( 'display', '' );
+         if (el = $( name + 'Disp' )) el.show();
       }
 
       this.resize();

@@ -4,7 +4,7 @@ package HTML::FormWidgets::Menu;
 
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.10.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.11.%d', q$Rev$ =~ /\d+/gmx );
 use parent qw(HTML::FormWidgets);
 
 __PACKAGE__->mk_accessors( qw(data select spacer) );
@@ -22,7 +22,7 @@ sub init {
 }
 
 sub render_field {
-   my ($self, $args) = @_; my ($content, $data, $fill, $html, $text);
+   my ($self, $args) = @_; my ($content, $data, $html, $text);
 
    my $hacc = $self->hacc;
 
@@ -38,15 +38,20 @@ sub render_field {
    for my $index (0 .. $#{ $data }) {
       if ($self->spacer and $index > 0) {
          $text  = $hacc->span( { class => q(menu_pad)    }, $NBSP );
-         $text .= $hacc->span( { class => q(menu_filler) },
-                               $self->spacer );
+         $text .= $hacc->span( { class => q(menu_filler) }, $self->spacer );
          $html .= $hacc->li  ( $text );
       }
 
       $text    = $self->select && $index == $selected
                ? $hacc->span( { class => q(menu_top) }, $NBSP )
                : $hacc->span( { class => q(menu_pad) }, $NBSP );
-      $content = $data->[ $index ]->{items}->[ 0 ]->{content} || q();
+
+      unless ($content = $data->[ $index ]->{items}->[ 0 ]->{content}) {
+         $text .= $hacc->span( { class => q(menu_filler) }, $NBSP );
+         $html .= $hacc->li( $text );
+         next;
+      }
+
       $text   .= $self->inflate( $content );
 
       my $count = 0; my $dlist = q();

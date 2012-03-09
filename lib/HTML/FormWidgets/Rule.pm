@@ -4,7 +4,7 @@ package HTML::FormWidgets::Rule;
 
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.10.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.11.%d', q$Rev$ =~ /\d+/gmx );
 use parent qw(HTML::FormWidgets);
 
 __PACKAGE__->mk_accessors( qw(alt config href imgclass) );
@@ -48,7 +48,7 @@ sub render_field {
    }
 
    $html and $cells .= $hacc->td( { class => q(minimal) }, $html );
-   $cells .= $hacc->td( { class => q(rule_section) },
+   $cells .= $hacc->td( { class => q(most rule_section) },
                         $hacc->hr( { class => $self->class } ) );
 
    return $hacc->table( { class => q(rule) }, $hacc->tr( $cells ) );

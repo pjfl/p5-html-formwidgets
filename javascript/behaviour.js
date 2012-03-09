@@ -8,6 +8,8 @@ var Behaviour = new Class( {
          anchors       : {},
          calendars     : {},
          lists         : {},
+         liveGrids     : {
+            iconClasses: [ 'down_point_icon', 'up_point_icon' ] },
          scrollPins    : { fadeInDuration: 1500, showDelay: 1000,
                            trayPadding   : 0 },
          server        : {},
@@ -16,95 +18,128 @@ var Behaviour = new Class( {
          spinners      : {
             defaults   : { hideOnClick   : true, shadow: true,
                            useIframeShim : false } },
-         tables        : {
-            iconClasses: [ 'down_point_icon', 'up_point_icon' ] },
+         tables        : {},
          tabSwappers   : {
             defaults   : { smooth        : true, smoothSize: true } },
          tips          : { fadeInDuration: 500,  showDelay : 666  } },
+      contentId        : 'content',
       cookieDomain     : '',
       cookiePath       : '/',
       cookiePrefix     : 'behaviour',
+      defaultURL       : null,
       formName         : null,
       minMarginBottom  : 5,
+      minMarginLeft    : 0,
       minMarginRight   : 10,
       popup            : false,
-      target           : null,
-      defaultURL       : null
+      target           : null
    },
 
    initialize: function( options ) {
-      this.setOptions( options ); var opt = this.options;
+      this.setOptions( options ); this.collection = [];
 
-      this.config  = Object.merge( opt.config );
-      this.cookies = new Cookies( { domain: opt.cookieDomain,
-                                    path  : opt.cookiePath,
-                                    prefix: opt.cookiePrefix } );
+      this.config = Object.merge( this.options.config );
 
       window.addEvent( 'load',   function() {
          this.load( options.firstField ) }.bind( this ) );
       window.addEvent( 'resize', function() { this.resize() }.bind( this ) );
    },
 
+   collect: function( object ) {
+      this.collection.include( object ); return object;
+   },
+
+   getContentMarginBottom: function() {
+      var content; if (! (content = $( this.options.contentId ))) return 0;
+
+      return content.getStyle( 'marginBottom' ).toInt();
+   },
+
    load: function( first_field ) {
       var cfg = this.config, el, opt = this.options;
+
+      this.cookies = new Cookies( { domain: opt.cookieDomain,
+                                    path  : opt.cookiePath,
+                                    prefix: opt.cookiePrefix } );
 
       this.stylesheet = new PersistantStyleSheet( { cookies: this.cookies } );
 
       this._restoreStateFromCookie();
 
-      this.checkboxReplacements = new CheckboxReplace();
+      this.checkboxReplacements = new CheckboxReplace( { callbacks: this } );
 
       var f_replace_boxes = function() {
          this.build() }.bind( this.checkboxReplacements );
 
       this.submit      = new SubmitUtils( {
+         callbacks     : this,
          config        : cfg.anchors,
-         cookies       : this.cookies,
          formName      : opt.formName } );
       this.window      = new WindowUtils( {
+         callbacks     : this,
          config        : cfg.anchors,
          cookieDomain  : opt.cookieDomain,
          cookiePath    : opt.cookiePath,
          cookiePrefix  : opt.cookiePrefix,
          target        : opt.target } );
 
-      this.autosizer   = new AutoSize();
+      this.autosizer   = new AutoSize( { callbacks: this } );
       this.calendars   = new Calendars( {
-         config        : cfg.calendars,
-         submit        : this.submit } );
-      this.freeList    = new FreeList();
-      this.groupMember = new GroupMember();
-      this.rotateList  = new RotateList( { config: cfg.lists } );
-      this.server      = new ServerUtils( this, {
-            config     : cfg.server,
-            url        : opt.defaultURL } );
-      this.sidebar     = new Sidebar ( this, { config: cfg.sidebars } );
+         callbacks     : this,
+         config        : cfg.calendars } );
+      this.freeList    = new FreeList( { callbacks: this } );
+      this.groupMember = new GroupMember( { callbacks: this } );
+      this.liveGrids   = new LiveGrids( {
+         callbacks     : this,
+         config        : cfg.liveGrids,
+         url           : opt.defaultURL } );
+      this.rotateList  = new RotateList( {
+         callbacks     : this,
+         config        : cfg.lists } );
+      this.server      = new ServerUtils( {
+         callbacks     : this,
+         config        : cfg.server,
+         url           : opt.defaultURL } );
+      this.sidebar     = new Sidebar ( {
+         callbacks     : this,
+         config        : cfg.sidebars } );
       this.sliders     = new Sliders( {
-         config        : cfg.sliders,
-         submit        : this.submit } );
-      this.spinners    = new Spinners( { config: cfg.spinners } );
+         callbacks     : this,
+         config        : cfg.sliders } );
+      this.spinners    = new Spinners( {
+         callbacks     : this,
+         config: cfg.spinners } );
       this.tables      = new TableUtils( {
+         callbacks     : this,
          config        : cfg.tables,
          formName      : opt.formName,
-         onRowAdded    : f_replace_boxes,
-         onSortComplete: f_replace_boxes,
-         url           : opt.defaultURL } );
+         onRowAdded    : f_replace_boxes } );
+      this.tableSort   = new TableSort( {
+         callbacks     : this,
+         onSortComplete: f_replace_boxes } );
       this.tabSwappers = new TabSwappers( {
-         config        : cfg.tabSwappers,
-         cookies       : this.cookies } );
-      this.togglers    = new Togglers( this, { config: cfg.anchors } );
+         callbacks     : this,
+         config        : cfg.tabSwappers } );
+      this.togglers    = new Togglers( {
+         callbacks     : this,
+         config        : cfg.anchors } );
       this.trees       = new Trees( {
+         callbacks     : this,
          cookieDomain  : opt.cookieDomain,
          cookiePath    : opt.cookiePath,
          cookiePrefix  : opt.cookiePrefix } );
-      this.wysiwyg     = new WYSIWYG();
-      this.linkFade    = new LinkFader();
+      this.wysiwyg     = new WYSIWYG( { callbacks: this } );
+      this.linkFade    = new LinkFader( { callbacks: this } );
 
-      if (window.Chosens != undefined) this.chosens = new Chosens();
+      // TODO: This is clumsy and needs fixing
+      if (window.Chosens  != undefined)
+         this.chosens  = new Chosens( { callbacks: this } );
+      if (window.Typeface != undefined)
+         this.typeface = this.collect( window._typeface_js );
 
       this.resize();
 
-      this.columnizers = new Columnizers();
+      this.columnizers = new Columnizers( { callbacks: this } );
       this.scrollPins  = new ScrollPins( {
          config        : cfg.scrollPins,
          log           : this.window.log,
@@ -121,6 +156,7 @@ var Behaviour = new Class( {
             this.fireEvent.delay( cfg.scrollPins.showDelay, this, [ 'show' ] ) }
       } );
       this.tips        = new Tips( {
+         callbacks     : this,
          onHide        : function() { this.fx.start( 0 ) },
          onInitialize  : function() {
             this.fx    = new Fx.Tween( this.tip, {
@@ -132,26 +168,29 @@ var Behaviour = new Class( {
       if (first_field && (el = $( first_field ))) el.focus();
    },
 
+   rebuild: function() {
+      this.collection.each( function( object ) { object.build() } );
+   },
+
    resize: function() {
-      var append, content, footer, foot_height = 0, opt = this.options;
-      var h = window.getHeight(), w = window.getWidth();
-      var margin_bottom = opt.minMarginBottom;
+      var opt = this.options, h = window.getHeight(), w = window.getWidth();
 
       if (! opt.popup) {
-         this.cookies.set( 'width',  w );
-         this.cookies.set( 'height', h );
+         this.cookies.set( 'height', h ); this.cookies.set( 'width',  w );
          window.defaultStatus = 'w: ' + w + ' h: ' + h;
       }
 
-      if (! (content = $( 'content' ))) return;
+      var content; if (! (content = $( opt.contentId ))) return;
 
-      if (footer = $( 'footerDisp' )) {
-         foot_height = footer.getStyle( 'display' ) != 'none'
+      var foot_height = 0, margin_bottom = opt.minMarginBottom;
+
+      var footer; if (footer = $( 'footerDisp' )) {
+         foot_height = footer.isDisplayed()
                      ? footer.getStyle( 'height' ).toInt() : 0;
          margin_bottom += foot_height;
       }
 
-      if (append = $( 'appendDisp' )) {
+      var append; if (append = $( 'appendDisp' )) {
          margin_bottom += append.getStyle( 'height' ).toInt();
 
          if (footer) append.setStyle( 'marginBottom', foot_height + 'px' );
@@ -159,7 +198,9 @@ var Behaviour = new Class( {
 
       content.setStyle( 'marginBottom', margin_bottom + 'px' );
 
-      var margin_left = this.sidebar ? this.sidebar.resize( margin_bottom ) : 0;
+      var sb = this.sidebar, margin_left = opt.minMarginLeft;
+
+      if (sb) { sb.resize(); margin_left = sb.getWidth() }
 
       content.setStyle( 'marginLeft', margin_left + 'px' );
 
@@ -181,18 +222,16 @@ var Behaviour = new Class( {
          if (! cookies[ i ]) continue;
 
          var pair = cookies[ i ].split( '~' );
-         var p0   = unescape( pair[ 0 ] );
-         var p1   = unescape( pair[ 1 ] );
+         var p0   = unescape( pair[ 0 ] ), p1 = unescape( pair[ 1 ] );
 
          /* Restore the state of any elements whose ids end in Disp */
-         if (el = $( p0 + 'Disp' ))
-            el.setStyle( 'display', (p1 != 'false' ? '' : 'none') );
+         if (el = $( p0 + 'Disp' )) { p1 != 'false' ? el.show() : el.hide(); }
 
          /* Restore the className for elements whose ids end in Icon */
          if (el = $( p0 + 'Icon' )) { if (p1) el.className = p1; }
 
          /* Restore the source URL for elements whose ids end in Img */
-         if (el = $( p0 + 'Img' )) { if (p1) el.src = p1; }
+         if (el = $( p0 + 'Img'  )) { if (p1) el.src = p1; }
       }
    }
 } );

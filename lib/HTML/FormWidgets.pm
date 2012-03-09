@@ -4,7 +4,7 @@ package HTML::FormWidgets;
 
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.10.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.11.%d', q$Rev$ =~ /\d+/gmx );
 use parent qw(Class::Accessor::Fast);
 
 use Class::MOP;
@@ -75,46 +75,6 @@ sub build {
    return;
 }
 
-sub __build_widget {
-   my ($class, $options, $item, $stack) = @_; $item or return;
-
-   (ref $item and ref $item->{content} eq q(HASH)) or return $item;
-
-   if ($item->{content}->{group}) {
-      $options->{skip_groups} and return;
-      return __group_fields( $options, $item, $stack );
-   }
-
-   my $widget = blessed $item->{content}
-              ? $item->{content}
-              : $item->{content}->{widget}
-              ? $class->new( __inject( $options, $item->{content} ) )
-              : undef;
-
-   $widget or return $item;
-   $widget->frame_class and $item->{class} = $widget->frame_class;
-   $item->{content} = $widget->render;
-   return $item;
-}
-
-sub __group_fields {
-   my ($options, $item, $stack) = @_;
-
-   my $hacc = $options->{hacc}; my $html = $NUL; my $class;
-
-   $class = delete $item->{content}->{frame_class} and $item->{class} = $class;
-
-   for (1 .. $item->{content}->{nitems}) {
-      my $args = pop @{ $stack }; $html = ($args->{content} || $NUL).$html;
-   }
-
-   my $legend = $hacc->legend( $item->{content}->{text} );
-
-   $item->{content} = "\n".$hacc->fieldset( "\n".$legend.$html );
-
-   return $item;
-}
-
 sub new {
    my ($self, @rest) = @_; my $args = __arg_list( @rest );
 
@@ -135,10 +95,72 @@ sub new {
    return $new;
 }
 
+# Private functions
+
 sub __arg_list {
    my (@rest) = @_; $rest[ 0 ] or return {};
 
    return ref $rest[ 0 ] eq q(HASH) ? $rest[ 0 ] : { @rest };
+}
+
+sub __build_widget {
+   my ($class, $options, $item, $stack) = @_; $item or return;
+
+   (ref $item and ref $item->{content} eq q(HASH)) or return $item;
+
+   $item->{content}->{form}
+      and return __form_wrapper( $options, $item, $stack );
+
+   if ($item->{content}->{group}) {
+      $options->{skip_groups} and return;
+      return __group_fields( $options, $item, $stack );
+   }
+
+   my $widget = blessed $item->{content}
+              ? $item->{content}
+              : $item->{content}->{widget}
+              ? $class->new( __inject( $options, $item->{content} ) )
+              : undef;
+
+   $widget or return $item;
+   $widget->frame_class and $item->{class} = $widget->frame_class;
+   $item->{content} = $widget->render;
+   return $item;
+}
+
+sub __collect_items {
+   my ($nitems, $stack) = @_; my $html = $NUL; $nitems or return $NUL;
+
+   for (1 .. $nitems) {
+      my $args = pop @{ $stack }; $html = ($args->{content} || $NUL).$html;
+   }
+
+   return $html;
+}
+
+sub __form_wrapper {
+   my ($options, $item, $stack) = @_; my $content = $item->{content};
+
+   my $hacc = $options->{hacc};
+   my $html = __collect_items( $content->{nitems}, $stack );
+
+   $item->{content} = "\n".$hacc->form( $content->{attrs}, "\n".$html );
+
+   return $item;
+}
+
+sub __group_fields {
+   my ($options, $item, $stack) = @_; my $content = $item->{content}; my $class;
+
+   $class = delete $content->{frame_class} and $item->{class} = $class;
+
+   my $hacc   = $options->{hacc};
+   my $legend = $hacc->legend( $content->{text} );
+   my $html   = __collect_items( $content->{nitems}, $stack );
+
+   $item->{content} = "\n".$hacc->fieldset( "\n".$legend.$html );
+
+   return $item;
 }
 
 sub __inject {
@@ -487,7 +509,7 @@ HTML::FormWidgets - Create HTML user interface components
 
 =head1 Version
 
-0.10.$Rev$
+0.11.$Rev$
 
 =head1 Synopsis
 
@@ -767,9 +789,16 @@ gets rendered in place of the widget
 Accepts either a single argument of a hash ref or a list of key/value
 pairs. Returns a hash ref in either case.
 
+=head3 __form_wrapper
+
+   $item = __form_wrapper( $options, $item, $stack );
+
+Wraps the top I<nitems> number of widgets on the build stack in a C<<
+<form> >> element
+
 =head3 __group_fields
 
-   $html = __group_fields( $hacc, $item, $stack );
+   $item = __group_fields( $options, $item, $stack );
 
 Wraps the top I<nitems> number of widgets on the build stack in a C<<
 <fieldset> >> element with a legend

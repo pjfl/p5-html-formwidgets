@@ -127,7 +127,7 @@ ok( $widget->render =~ m{ value="6" \s name="test" \s type="radio" }mx,
 $widget = HTML::FormWidgets->new( class => q(test), type => q(rule) );
 
 ok $widget->render =~
-   m{ td \s class="rule_section"><hr \s class="test" }msx, 'Rule';
+   m{ td \s class="most \s rule_section"><hr \s class="test" }msx, 'Rule';
 
 # ScrollPin
 

@@ -1,5 +1,6 @@
 Revision history for HTML::FormWidgets
 
+         - Updated inc::Bob. Added inc::CPANTesting
          - Bumped HTML::Accessor version dependency
 
 0.11.347 2012-03-09

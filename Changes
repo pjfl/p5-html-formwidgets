@@ -1,5 +1,7 @@
 Revision history for HTML::FormWidgets
 
+         - Updated inc::Bob to 1.2
+
 0.12.351 2012-03-29
          - Upped min Perl ver to 5.10
          - Funs over stopping CPAN testing

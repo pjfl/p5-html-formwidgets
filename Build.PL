@@ -14,7 +14,7 @@ Bob->new( {
       'parent'                  => 0.221,
       'version'                 => 0.74,
       'Class::Accessor::Fast'   => 0.31,
-      'HTML::Accessors'         => q(0.6.117),
+      'HTML::Accessors'         => q(0.7.0),
       'Moose'                   => 2.0402,
       'Pod::Xhtml'              => 1.61,
       'Scalar::Util'            => 1.23,

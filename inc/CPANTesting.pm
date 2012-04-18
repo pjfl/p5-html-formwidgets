@@ -12,6 +12,10 @@ sub broken_toolchain {
 }
 
 sub exceptions {
+   lc $^O eq q(cygwin)  and return 'Cygwin not supported';
+   lc $^O eq q(mirbsd)  and return 'Mirbsd not supported';
+   lc $^O eq q(mswin32) and return 'Mswin  not supported';
+   lc $^O eq q(netbsd)  and return 'Netbsd not supported';
    return 0;
 }
 

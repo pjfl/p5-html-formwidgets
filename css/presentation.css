@@ -1,4 +1,4 @@
-/* @(#)$Id: presentation.css 1277 2012-03-01 08:52:56Z pjf $ */
+/* @(#)$Id: presentation.css 1278 2012-03-11 23:23:04Z pjf $ */
 /*  Elements - Reset styling */
 
 a, abbr, acronym, address, article, aside, audio, b, big, blockquote,
@@ -169,7 +169,6 @@ ul { list-style-position: inside; list-style-type: disc; }
 .field_group {
    height: auto; position: relative; vertical-align: middle; width: auto;
 }
-.footer_item { position: relative; }
 .freelist_buttons { display: block; float: right; position: relative; }
 .freelist_buttons .add { margin-bottom: 3px; }
 .freelist_buttons .remove { display: block; margin-top: 6px; }
@@ -552,7 +551,7 @@ ul { list-style-position: inside; list-style-type: disc; }
 }
 .scissors_icon {
    background: url(icons.png) no-repeat 0 -300px;
-   display: inline-block; height: 18px; overflow: hidden; width: 19px;
+   display: inline-block; height: 20px; overflow: hidden; width: 19px;
 }
 .scrollpin_icon {
    background: url(icons.png) no-repeat -240px -150px;
@@ -1101,7 +1100,9 @@ img.tools {
    bottom: 0; display: inherit; height: 60px; left: 0; position: fixed;
    right: 0; z-index: 2;
 }
-#footerList { position: relative; }
+#footerList { height: 100%; position: relative; }
+#footer\.data { bottom: 0; left: 0; position: absolute; right: 0; }
+#footer\.data form { float: left; }
 #footer\.select_language_label {
    font-weight: bold; margin: 0 5px 0 0;
 }

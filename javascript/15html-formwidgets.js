@@ -1,4 +1,4 @@
-/* @(#)$Id: 15html-formwidgets.js 1273 2012-02-21 19:11:26Z pjf $
+/* @(#)$Id: 15html-formwidgets.js 1278 2012-03-11 23:23:04Z pjf $
  * Portions of this code are taken from MooTools 1.3 which is:
  * Copyright (c) 2006-2010 [Valerio Proietti](http://mad4milk.net/). */
 

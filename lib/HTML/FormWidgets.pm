@@ -381,11 +381,12 @@ sub _build_hint_title {
 sub _build_pwidth {
    # Calculate the prompt width
    my $self   = shift;
-   my $pwidth = defined $self->pwidth ? $self->pwidth
-                                      : $self->options->{pwidth};
+   my $opts   = $self->options;
+   my $width  = $opts->{width} || 1024;
+   my $pwidth = defined $self->pwidth ? $self->pwidth : $opts->{pwidth};
 
    $pwidth and $pwidth =~ m{ \A \d+ \z }mx
-      and $pwidth = (int $pwidth * $self->options->{width} / 100).q(px);
+      and $pwidth = (int $pwidth * $width / 100).q(px);
 
    return $pwidth;
 }

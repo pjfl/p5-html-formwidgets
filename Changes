@@ -1,5 +1,7 @@
 Revision history for HTML::FormWidgets
 
+         - Made _init_options more efficient
+
 0.13.358 2012-04-19
          - Turned CPAN testing on
          - Added more tests

@@ -463,10 +463,7 @@ sub _init_fields {
 }
 
 sub _init_options {
-   my ($self, $args) = @_; my $options = $args->{options} || {};
-
-   $self->options->{ $_ } = $options->{ $_ } for (keys %{ $options });
-
+   $_[ 0 ]->options( { %{ $_[ 0 ]->options }, %{ $_[ 1 ]->{options} || {} } } );
    return;
 }
 

@@ -172,14 +172,12 @@ sub _editable_cell {
    my $field_type = defined $map->{ $type } ? $type : q();
 
    if ($el_type eq q(textarea)) {
-      $args->{rows}  = exists $data->{rows}->{ $field }
-                     ? $data->{rows}->{ $field } : 5;
-      $args->{cols}  = exists $data->{cols}->{ $field }
-                     ? $data->{cols}->{ $field } : 60;
+      $args->{cols} = $data->{cols}->{ $field } || 60;
+      $args->{rows} = $data->{rows}->{ $field } || 1;
    }
    elsif ($el_type eq q(textfield)) {
-      $args->{size}  = exists $data->{sizes}->{ $field }
-                     ? $data->{sizes}->{ $field } : 40;
+      exists $data->{sizes}->{ $field }
+         and $args->{size} = $data->{sizes}->{ $field };
    }
 
    my $class  = q(data_field).($field_type ? " ${field_type}" : q());

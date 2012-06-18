@@ -186,7 +186,7 @@ like $widget->render, qr{ tr \s class=".*" \s id="table.row0" }mx, 'Table';
 $widget = HTML::FormWidgets->new( default => q(test), type => q(textarea) );
 
 like $widget->render,
-   qr{ textarea \s name="textarea" \s class="ifield">test }mx, 'Textarea';
+   qr{ textarea \s name="textarea" \s class="ifield" \s rows="1" \s cols="60">test }mx, 'Textarea';
 
 $widget = HTML::FormWidgets->new( default => q(test), type => q(textfield) );
 

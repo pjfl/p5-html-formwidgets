@@ -87,18 +87,17 @@ sub _add_line_number {
 sub _add_row_count {
    my ($self, $n_rows) = @_;
 
-   return $self->add_hidden( q(_).($self->id || q()).q(_nrows), $n_rows );
+   return $self->add_hidden( q(_).($self->name || q()).q(_nrows), $n_rows );
 }
 
 sub _add_select_box {
    my ($self, $r_no, $c_no, $val) = @_; my $hacc = $self->hacc;
 
-   my $box   = $hacc->checkbox( { label => q(),
-                                  name  => q(select).$r_no,
-                                  value => $val } );
+   my $args  = { label => q(), name => $self->name.".select${r_no}",
+                 value => $val };
    my $class = $self->subtype.__column_class( $c_no );
 
-   return $hacc->td( { class => $class }, $box );
+   return $hacc->td( { class => $class }, $hacc->checkbox( $args ) );
 }
 
 sub _build_table {

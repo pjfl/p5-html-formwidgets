@@ -29,11 +29,13 @@ sub init {
 }
 
 sub render_field {
-   my ($self, $args) = @_;
+   my ($self, $args) = @_; my $hacc = $self->hacc;
 
    $self->add_literal_js( 'scrollPins', $self->id, $self->config );
 
-   return $self->hacc->ul( { class => $self->class, id => $self->id } );
+   my $li = $hacc->li( { style => q(display: none;) } );
+
+   return $hacc->ul( { class => $self->class, id => $self->id }, $li );
 }
 
 1;

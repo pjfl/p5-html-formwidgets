@@ -62,7 +62,7 @@ sub _markup_button {
 
    $args->{class} = $self->class || q(markup_button submit);
 
-   return $hacc->div( $args, $html );
+   return $hacc->span( $args, $html );
 }
 
 sub _submit_button {

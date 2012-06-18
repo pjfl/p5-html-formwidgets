@@ -707,8 +707,7 @@ element and appended to the return value
 =item container
 
 If true the value return by the L</_render> method is wrapped in
-C<< <span class="container"> >> element. The value of the I<align>
-attribute is added to the space separated class list
+C<< <span class="container"> >> element
 
 =item tip
 
@@ -942,8 +941,8 @@ implement a navigation menu
 
 Calls L</localize> with the I<name> attribute as the message key. If
 the message does not exist the value if the I<text> attribute is
-used. The text is wrapped in a c<< <span class="note"> >> with I<align>
-setting the style text alignment and I<width> setting the style width
+used. The text is wrapped in a c<< <span class="note"> >> with
+I<width> setting the style width
 
 =head2 POD
 

@@ -1,5 +1,8 @@
 Revision history for HTML::FormWidgets
 
+         - Textarea now has mandatory rows and cols. Thanks W3C
+         - Added class per cell in tables
+         - Better classing for table cells
          - Made _init_options more efficient
 
 0.13.358 2012-04-19

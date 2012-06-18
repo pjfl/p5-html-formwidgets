@@ -73,7 +73,7 @@ sub render_field {
 
    $args = { cellspacing => 0, class => $self->table_class, id => $self->id };
 
-   return $hacc->table( $args, "${caption}\n${thead}\n${tbody}\n${tfoot}" );
+   return $hacc->table( $args, "${caption}\n${thead}\n${tfoot}\n${tbody}" );
 }
 
 # Private methods
@@ -124,16 +124,19 @@ sub _add_row_count {
 }
 
 sub _check_box {
-   my ($self, $r_no, $c_no, $id) = @_; my $hacc = $self->hacc;
+   my ($self, $r_no, $c_no, $val) = @_; my $hacc = $self->hacc;
 
-   my $args = { name => $self->name.q(.select).$r_no };
-
-   $id and $args->{value} = $id;
-
-   my $text  = $hacc->checkbox( $args );
    my $class = q(row_select).__column_class( $c_no );
+   my $args  = { name => $self->name.".select${r_no}" };
 
-   return $hacc->td( { class => $class }, $text );
+   defined $val->{id} and $args->{value} = $val->{id};
+
+   exists $val->{_meta} and exists $val->{_meta}->{select}
+      and defined $val->{_meta}->{select}
+      and $val->{_meta}->{select} eq q(checked)
+      and $args->{checked} = q(checked);
+
+   return $hacc->td( { class => $class }, $hacc->checkbox( $args ) );
 }
 
 sub _drag_icon {
@@ -162,22 +165,27 @@ sub _editable_cell {
    exists $data->{maxlengths}->{ $field }
       and $args->{maxlength} = $data->{maxlengths}->{ $field };
 
-   my $type = $data->{typelist}->{ $field } || q(textfield);
+   my $map        = { date  => q(textfield),
+                      money => q(textfield), numeric => q(textfield) };
+   my $type       = $data->{typelist}->{ $field } || q(textfield);
+   my $el_type    = defined $map->{ $type } ? $map->{ $type } : $type;
+   my $field_type = defined $map->{ $type } ? $type : q();
 
-   if ($type eq q(textarea)) {
+   if ($el_type eq q(textarea)) {
       $args->{rows}  = exists $data->{rows}->{ $field }
                      ? $data->{rows}->{ $field } : 5;
       $args->{cols}  = exists $data->{cols}->{ $field }
                      ? $data->{cols}->{ $field } : 60;
    }
-   elsif ($type eq q(textfield)) {
+   elsif ($el_type eq q(textfield)) {
       $args->{size}  = exists $data->{sizes}->{ $field }
                      ? $data->{sizes}->{ $field } : 40;
    }
 
-   my $class = q(data_field).__column_class( $c_no );
+   my $class  = q(data_field).($field_type ? " ${field_type}" : q());
+      $class .= __column_class( $c_no );
 
-   return $hacc->td( { class => $class }, $hacc->$type( $args ) );
+   return $hacc->td( { class => $class }, $hacc->$el_type( $args ) );
 }
 
 sub _field_header {
@@ -231,7 +239,7 @@ sub _render_row {
       and $cells .= $self->_drag_icon( $c_no++ );
 
    $self->select eq q(left) and $first_value
-      and $cells .= $self->_check_box( $r_no, $c_no++, $val->{id} );
+      and $cells .= $self->_check_box( $r_no, $c_no++, $val );
 
    for my $field (@{ $data->{flds} }) {
       my $args = {};
@@ -245,24 +253,26 @@ sub _render_row {
          exists $data->{hclass}->{ $field }
             and $data->{hclass}->{ $field } eq q(hide) and next;
 
-         my $class = $data->{class} || q(data_value);
+         my $class = $data->{class}   || q(data_value);
+         my $fval  = $val->{ $field } || $NBSP;
 
          $args->{class}  = ref $class eq q(HASH) ? $class->{ $field } : $class;
          exists $data->{typelist}->{ $field }
             and $args->{class   } .= q( ).$data->{typelist}->{ $field };
-         $args->{class} .= __column_class( $c_no );
          exists $data->{wrap}->{ $field } or $args->{class} .= q( nowrap);
+         exists $val->{_meta} and exists  $val->{_meta}->{ $field }
+                              and defined $val->{_meta}->{ $field }
+            and $args->{class   } .= q( ).$val->{_meta}->{ $field };
+         $args->{class} .= __column_class( $c_no );
 
-         my $fld_val = $self->inflate( $val->{ $field } ) || $NBSP;
-
-         $cells .= $hacc->td( $args, $fld_val );
+         $cells .= $hacc->td( $args, $self->inflate( $fval ) );
       }
 
       $c_no++;
    }
 
    $self->select eq q(right) and $first_value
-      and $cells .= $self->_check_box( $r_no, $c_no++, $val->{id} );
+      and $cells .= $self->_check_box( $r_no, $c_no++, $val );
 
    $self->edit eq q(right) and $first_value
       and $cells .= $self->_drag_icon( $c_no++ );

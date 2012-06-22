@@ -15,7 +15,7 @@ use Try::Tiny;
 
 my $COLON   = '&#160;:&#160;';
 my $LSB     = '[';
-my $NB      = '&#160;&#8224;';
+my $NB      = '&#160;&#8224;&#160;';
 my $NUL     = q();
 my $SPACE   = '&#160;' x 3;
 my $SPC     = q( );

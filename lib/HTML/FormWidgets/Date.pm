@@ -46,7 +46,7 @@ sub render_field {
    $text   .= $hacc->span( { class => q(icon_button tips),
                              id    => $self->id.q(_clear),
                              title => $clear_hint }, $icon );
-   $html   .= $hacc->span( { class => q(icon_buttons) }, $text );
+   $html   .= $text;
 
    return $html;
 }

@@ -1,5 +1,6 @@
 Revision history for HTML::FormWidgets
 
+         - Slider adds numeric class to textfield
          - Date no longer wraps buttons in a span. Fixes vertical alignment
          - Textarea now has mandatory rows and cols. Thanks W3C
          - Added class per cell in tables

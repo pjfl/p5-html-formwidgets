@@ -37,7 +37,7 @@ sub render_field {
    my $text;
 
    if ($self->display) {
-      $html .= $hacc->textfield( { class    => q(ifield),
+      $html .= $hacc->textfield( { class    => q(ifield numeric),
                                    name     => $args->{name},
                                    readonly => q(readonly),
                                    size     => $size,

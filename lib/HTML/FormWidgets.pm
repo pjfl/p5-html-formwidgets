@@ -28,10 +28,10 @@ my $OPTIONS = {
    literal_js      => [],
    optional_js     => [],
    pwidth          => 30,
-   skip            => { qw(ajaxid 1 options 1 id 1 name 1 type 1) },
+   skip            => { qw(options 1 id 1 name 1 type 1) },
    width           => 1000, };
 my $ATTRS   = {
-   ajaxid          => undef,        class           => $NUL,
+   check_field     => undef,        class           => $NUL,
    clear           => $NUL,         container       => 1,
    container_class => q(container), container_id    => undef,
    default         => undef,        frame_class     => $NUL,
@@ -246,18 +246,18 @@ sub render {
 
    $self->clear eq q(left) and $lead .= $self->hacc->br;
 
-   $self->stepno    and $lead .= $self->render_stepno;
-   $self->prompt    and $lead .= $self->render_prompt;
-   $self->sep       and $lead .= $self->render_separator;
-   $self->tip       and $field = $self->render_tip        ( $field );
-   $self->ajaxid    and $field = $self->render_check_field( $field );
-   $self->container and $field = $self->render_container  ( $field );
+   $self->stepno      and $lead .= $self->render_stepno;
+   $self->prompt      and $lead .= $self->render_prompt;
+   $self->sep         and $lead .= $self->render_separator;
+   $self->tip         and $field = $self->render_tip        ( $field );
+   $self->check_field and $field = $self->render_check_field( $field );
+   $self->container   and $field = $self->render_container  ( $field );
 
    return $lead.$field;
 }
 
 sub render_check_field {
-   my ($self, $field) = @_; my $hacc = $self->hacc; my $id = $self->ajaxid;
+   my ($self, $field) = @_; my $hacc = $self->hacc; my $id = $self->id;
 
    $field .= $hacc->span( { class => q(hidden), id => $id.q(_ajax) } );
 
@@ -330,19 +330,22 @@ sub render_tip {
 sub _bootstrap {
    my ($self, $args) = @_;
 
+   # Deprecated
+   my $ajaxid = delete $args->{ajaxid} and $self->check_field( 1 );
+
    # Bare minimum is fields + id to get a useful widget
-   for (grep { exists $args->{ $_ } } qw(ajaxid id name type)) {
-      $self->{ $_ } = $args->{ $_ };
+   for my $attr (grep { exists $args->{ $_ } } qw(id name type)) {
+      $self->$attr( $args->{ $attr } );
    }
 
    # Defaults id from name (least significant) from id from ajaxid (most sig.)
    my $id = $self->id; my $name = $self->name; my $type = $self->type;
 
-   not $id and $self->ajaxid and $id = $self->id( $self->ajaxid );
+   not $id and $ajaxid and $id = $self->id( $ajaxid );
 
    if ($id and not $name) {
-      $name = $self->name( $id =~ m{ \. }mx ? (split m{ \. }mx, $id)[1]
-                                            : (reverse split m{ _ }mx, $id)[0]);
+      $name = $self->name( $id =~ m{ \. }mx ? (split m{ \. }mx, $id)[  1 ]
+                                            : (split m{ \_ }mx, $id)[ -1 ] );
    }
 
    not $id and $name and $id = $self->id( $name ); $args->{options} ||= {};
@@ -474,18 +477,18 @@ sub _next_step {
 sub _render_field {
    my $self = shift; my $id = $self->id; my $args = {};
 
-   $id               and $args->{id        }  = $id;
-   $self->name       and $args->{name      }  = $self->name;
-   $self->ajaxid     and $args->{class     }  = q(server);
-   $self->required   and $args->{class     } .= q( required);
-   $self->default    and $args->{default   }  = $self->default;
-   $self->onblur     and $args->{onblur    }  = $self->onblur;
-   $self->onkeypress and $args->{onkeypress}  = $self->onkeypress;
-   $self->readonly   and $args->{readonly  }  = q(readonly);
+   $id                and $args->{id        }  = $id;
+   $self->name        and $args->{name      }  = $self->name;
+   $self->check_field and $args->{class     }  = q(server);
+   $self->required    and $args->{class     } .= q( required);
+   $self->default     and $args->{default   }  = $self->default;
+   $self->onblur      and $args->{onblur    }  = $self->onblur;
+   $self->onkeypress  and $args->{onkeypress}  = $self->onkeypress;
+   $self->readonly    and $args->{readonly  }  = q(readonly);
 
    my $html = $self->render_field( $args );
 
-   $self->ajaxid and $self->add_literal_js( 'server', $id, {
+   $self->check_field and $self->add_literal_js( 'server', $id, {
       args => "[ '${id}' ]", event => "'blur'", method => "'checkField'" } );
 
    return $html;
@@ -718,10 +721,10 @@ returned input field. The tip text is used as the I<title>
 attribute. If the I<tiptype> is not set to B<dagger> then the help
 text is wrapped around the input field itself
 
-=item ajaxid
+=item check_field
 
-The text of the message which is displayed if the field's value fails
-server side validation
+Boolean which if true causes the field to generate server side check field
+requests
 
 =back
 

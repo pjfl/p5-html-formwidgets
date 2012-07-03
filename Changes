@@ -1,5 +1,6 @@
 Revision history for HTML::FormWidgets
 
+         - Replaced ajaxid with check_field
          - Slider adds numeric class to textfield
          - Date no longer wraps buttons in a span. Fixes vertical alignment
          - Textarea now has mandatory rows and cols. Thanks W3C

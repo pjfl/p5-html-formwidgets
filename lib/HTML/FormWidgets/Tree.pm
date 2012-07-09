@@ -18,11 +18,10 @@ my $TTS = q( ~ );
 sub init {
    my ($self, $args) = @_;
 
-   $self->class_prefix   ( q(tree)      );
-   $self->container_class( q(container) );
-   $self->data           ( {}           );
-   $self->node_count     ( 0            );
-   $self->selected       ( undef        );
+   $self->class_prefix( q(tree) );
+   $self->data        ( {}      );
+   $self->node_count  ( 0       );
+   $self->selected    ( undef   );
    return;
 }
 

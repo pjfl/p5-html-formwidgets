@@ -242,18 +242,21 @@ sub loc {
 sub render {
    my $self  = shift; $self->type or return $self->text || $NUL;
 
-   my $field = $self->_render_field or return $NUL; my $lead  = "\n";
-
-   $self->clear eq q(left) and $lead .= $self->hacc->br;
+   my $field = $self->_render_field or return $NUL; my $lead = $NUL;
 
    $self->stepno      and $lead .= $self->render_stepno;
    $self->prompt      and $lead .= $self->render_prompt;
    $self->sep         and $lead .= $self->render_separator;
-   $self->tip         and $field = $self->render_tip        ( $field );
+   $self->tip         and $field = $self->render_tip( $field );
    $self->check_field and $field = $self->render_check_field( $field );
-   $self->container   and $field = $self->render_container  ( $field );
 
-   return $lead.$field;
+   $field = $lead.$field;
+
+   $self->container   and $field = $self->render_container( $field );
+
+   $self->clear eq q(left) and $field = $self->hacc->br.$field;
+
+   return "\n".$field;
 }
 
 sub render_check_field {
@@ -294,7 +297,7 @@ sub render_separator {
    my $self = shift; my $class = q(separator);
 
    if ($self->sep eq q(break)) {
-      $class = q(separator_break); $self->sep( $SPACE );
+      $class = q(separator_break); $self->sep( $NUL );
    }
 
    return $self->hacc->span( { class => $class }, $self->sep );

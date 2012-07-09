@@ -44,7 +44,6 @@ my %SCHEME    =
 sub init {
    my ($self, $args) = @_;
 
-   $self->container   ( 0         );
    $self->header      ( []        );
    $self->header_class( q(normal) );
    $self->number      ( 1         );
@@ -65,7 +64,7 @@ sub render_field {
    $self->subtype or return 'Subtype not specified';
    $self->subtype eq q(html) and return $self->_render_html( $path );
 
-   -f $path or return "Path $path not found";
+   -f $path or return "Path ${path} not found";
 
    my $rdr    = IO::File->new( $path, q(r) ) or return "Path $path cannot read";
    my $text   = do { local $RS = undef; <$rdr> }; $rdr->close;
@@ -178,7 +177,7 @@ sub _render_csv {
 sub _render_html {
    my ($self, $path) = @_;  my $hacc = $self->hacc;
 
-   my $pat = $self->options->{root};
+   my $pat = $self->options->{root}; $self->container( 0 );
 
    $path  =~ m{ \A $pat }msx
       and $path = $self->options->{base}.($path =~ s{ \A $pat }{/}msx);
@@ -192,7 +191,7 @@ sub _render_html {
 sub _render_logfile {
    my ($self, $text) = @_; my $hacc = $self->hacc;
 
-   my $r_no = 0; my $rows = q(); my $cells;
+   my $r_no = 0; my $rows = q(); my $cells; $self->container( 0 );
 
    # TODO: Add Prev and next links to append div
    my $header_cells = sub {
@@ -215,7 +214,7 @@ sub _render_logfile {
 sub _render_source {
    my ($self, $text) = @_; my $hacc = $self->hacc;
 
-   my $fmt = Syntax::Highlight::Perl->new();
+   my $fmt = Syntax::Highlight::Perl->new(); $self->container( 0 );
 
    $fmt->set_format( $self->scheme );
    $fmt->define_substitution( q(<) => q(&lt;),
@@ -244,7 +243,7 @@ sub _render_source {
 sub _render_text {
    my ($self, $text) = @_; my $hacc = $self->hacc;
 
-   $self->container( 1 ); $self->container_class( q(container textfile) );
+   $self->container_class( q(container textfile) );
 
    return $hacc->pre( $hacc->escape_html( $text, 0 ) );
 }

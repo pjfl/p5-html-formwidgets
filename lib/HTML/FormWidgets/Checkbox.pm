@@ -12,11 +12,10 @@ __PACKAGE__->mk_accessors( qw(checked label_class labels value) );
 sub init {
    my ($self, $args) = @_;
 
-   $self->checked        ( 0 );
-   $self->container_class( q(checkbox_container) );
-   $self->label_class    ( q(checkbox_label) );
-   $self->labels         ( {} );
-   $self->value          ( 1 );
+   $self->checked    ( 0 );
+   $self->label_class( q(checkbox_label) );
+   $self->labels     ( {} );
+   $self->value      ( 1 );
    return;
 }
 
@@ -32,7 +31,7 @@ sub render_field {
 
    $label and $html .= $hacc->span( { class => $self->label_class }, $label );
 
-   return $html;
+   return $hacc->div( { class => q(checkbox_container) }, $html );
 }
 
 1;

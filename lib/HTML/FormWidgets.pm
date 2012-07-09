@@ -4,7 +4,7 @@ package HTML::FormWidgets;
 
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.13.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.14.%d', q$Rev$ =~ /\d+/gmx );
 use parent qw(Class::Accessor::Fast);
 
 use Class::MOP;
@@ -513,7 +513,7 @@ HTML::FormWidgets - Create HTML user interface components
 
 =head1 Version
 
-0.13.$Rev$
+0.14.$Rev$
 
 =head1 Synopsis
 

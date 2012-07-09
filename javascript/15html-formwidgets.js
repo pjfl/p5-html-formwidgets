@@ -1,4 +1,4 @@
-/* @(#)$Id: 15html-formwidgets.js 1278 2012-03-11 23:23:04Z pjf $
+/* @(#)$Id: 15html-formwidgets.js 1340 2012-06-23 12:29:54Z pjf $
  * Portions of this code are taken from MooTools 1.3 which is:
  * Copyright (c) 2006-2010 [Valerio Proietti](http://mad4milk.net/). */
 
@@ -48,6 +48,24 @@ String.implement( {
       text = text.replace( /\"/g, '&quot;' );
       text = text.replace( /\&/g, '&amp;'  );
       return text;
+   },
+
+   pad: function( length, str, direction ) {
+      if (this.length >= length) return this;
+
+      var pad = (str == null ? ' ' : '' + str)
+         .repeat( length - this.length )
+         .substr( 0, length - this.length );
+
+      if (!direction || direction == 'right') return this + pad;
+      if (direction == 'left') return pad + this;
+
+      return pad.substr( 0, (pad.length / 2).floor() )
+           + this + pad.substr( 0, (pad.length / 2).ceil() );
+   },
+
+   repeat: function( times ) {
+      return new Array( times + 1 ).join( this );
    },
 
    unescapeHTML: function() {
@@ -2031,7 +2049,9 @@ var Sidebar = new Class( {
    },
 
    getWidth: function() {
-      return this.el.getStyle( 'width' ).toInt();
+      var sb; if (! (sb = this.el)) return 0;
+
+      return sb.getStyle( 'width' ).toInt();
    },
 
    resize: function() {
@@ -2666,6 +2686,16 @@ var TableSort = new Class( {
       if (type && type == 'date') {
          field = Date.parse( field ) || Date.parse( '01 Jan 1970' );
       }
+      else if (type && type == 'hex') {
+         field = field.toLowerCase().pad( 64, '0', 'left' );
+      }
+      else if (type && type == 'ipaddr') {
+         var ipaddr = field; field = '';
+
+         ipaddr.split( '.' ).each( function( octet ) {
+            field = field + String.from( octet ).pad( 3, '0', 'left' );
+         } );
+      }
       else if (type && type == 'money') {
          field = field.substring( 1 );
          field.replace( /[^0-9.]/g, '' );
@@ -2675,7 +2705,7 @@ var TableSort = new Class( {
          field.replace( /[^+\-0-9.]/g, '' );
          field = parseFloat( field ) || 0;
       }
-      else field = field + '';
+      else field = String.from( field );
 
       return field;
    },
@@ -2816,14 +2846,19 @@ var TableUtils = new Class( {
          var cell  = new Element( 'td' ),
              type  = el.type == 'textarea' ? 'textarea' : 'input',
              input = new Element( type, {
-                class: 'ifield',
+                class: el.className || 'ifield',
                 name : name + '_' + row_id + '_' + (cNo - offset),
                 value: el.value
              } );
 
-         if (el.cols)      input.set( 'cols',      el.cols );
-         if (el.rows)      input.set( 'rows',      el.rows );
-         if (el.size)      input.set( 'size',      el.size );
+         if (type == 'textarea') {
+            if (el.cols) input.set( 'cols', el.cols );
+            if (el.rows) input.set( 'rows', el.rows );
+         }
+         else {
+            if (el.size) input.set( 'size', el.size );
+         }
+
          if (el.maxlength) input.set( 'maxlength', el.maxlength );
 
          cell.appendChild( input );
@@ -3705,6 +3740,11 @@ var WindowUtils = new Class( {
       }.bind( this ) );
    },
 
+   location: function( href ) {
+      if (document.images) top.location.replace( href );
+      else top.location.href = href;
+   },
+
    log: function( message ) {
       if (this.options.quiet) return;
 
@@ -3730,17 +3770,6 @@ var WindowUtils = new Class( {
          if (document.images) top.location.replace( window.location.href );
          else top.location.href = window.location.href;
       }
-   },
-
-   wayOut: function( href ) {
-      var copt, name, opt = this.options;
-
-      name = (opt.cookiePrefix ? opt.cookiePrefix + '_' : '') + opt.cookieName;
-
-      new Cookie( name, { path: opt.cookiePath } ).dispose();
-
-      if (document.images) top.location.replace( href );
-      else top.location.href = href;
    }
 } );
 

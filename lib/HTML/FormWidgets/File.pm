@@ -4,7 +4,7 @@ package HTML::FormWidgets::File;
 
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.13.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.14.%d', q$Rev$ =~ /\d+/gmx );
 use parent qw(HTML::FormWidgets);
 
 use English qw(-no_match_vars);

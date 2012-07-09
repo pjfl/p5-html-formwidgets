@@ -4,7 +4,7 @@ package HTML::FormWidgets::GroupMembership;
 
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.13.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.14.%d', q$Rev$ =~ /\d+/gmx );
 use parent q(HTML::FormWidgets);
 
 __PACKAGE__->mk_accessors( qw(all current fhelp height labels) );

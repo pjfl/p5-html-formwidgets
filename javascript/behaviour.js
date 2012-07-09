@@ -66,11 +66,6 @@ var Behaviour = new Class( {
 
       this._restoreStateFromCookie();
 
-      this.checkboxReplacements = new CheckboxReplace( { callbacks: this } );
-
-      var f_replace_boxes = function() {
-         this.build() }.bind( this.checkboxReplacements );
-
       this.submit      = new SubmitUtils( {
          callbacks     : this,
          config        : cfg.anchors,
@@ -87,6 +82,7 @@ var Behaviour = new Class( {
       this.calendars   = new Calendars( {
          callbacks     : this,
          config        : cfg.calendars } );
+      this.checkboxReplacements = new CheckboxReplace( { callbacks: this } );
       this.freeList    = new FreeList( { callbacks: this } );
       this.groupMember = new GroupMember( { callbacks: this } );
       this.liveGrids   = new LiveGrids( {
@@ -109,14 +105,19 @@ var Behaviour = new Class( {
       this.spinners    = new Spinners( {
          callbacks     : this,
          config: cfg.spinners } );
+
+      var table_rebuild = function() {
+         this.checkboxReplacements.build();
+         this.autosizer.build() }.bind( this );
+
       this.tables      = new TableUtils( {
          callbacks     : this,
          config        : cfg.tables,
          formName      : opt.formName,
-         onRowAdded    : f_replace_boxes } );
+         onRowAdded    : table_rebuild } );
       this.tableSort   = new TableSort( {
          callbacks     : this,
-         onSortComplete: f_replace_boxes } );
+         onSortComplete: table_rebuild } );
       this.tabSwappers = new TabSwappers( {
          callbacks     : this,
          config        : cfg.tabSwappers } );

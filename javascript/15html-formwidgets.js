@@ -1,6 +1,9 @@
-/* @(#)$Id: 15html-formwidgets.js 1340 2012-06-23 12:29:54Z pjf $
- * Portions of this code are taken from MooTools 1.3 which is:
- * Copyright (c) 2006-2010 [Valerio Proietti](http://mad4milk.net/). */
+/* @(#)$Id: 15html-formwidgets.js 1350 2012-08-30 18:37:08Z pjf $ */
+
+/* Local Variables:
+ * Mode: javascript
+ * Tab-width: 3
+ * End: */
 
 Options.implement( {
    build: function() {
@@ -625,10 +628,10 @@ var Columnizers = new Class( {
    },
 
    attach: function( el ) {
-      var opt   = this.options,
-          klass = el.getProperty( 'class' ).split( ' ' )[ 0 ],
-          cols  = opt.classNames.indexOf( klass ),
-          cfg   = Object.merge( opt.config, { columns: cols } );
+      var opt   = this.options;
+      var klass = el.getProperty( 'class' ).split( ' ' )[ 0 ];
+      var cols  = opt.classNames.indexOf( klass );
+      var cfg   = Object.merge( Object.clone( opt.config ), { columns: cols } );
 
       el.columnizer = new Columnizer( el, cfg );
    }
@@ -722,6 +725,65 @@ var Cookies = new Class( {
       else { val = name + '~' + cookie }
 
       return this.cookie.write( val );
+   }
+} );
+
+var Dialog = new Class( {
+   Implements: [ Options ],
+
+   Binds: [ '_keyup' ],
+
+   options: {
+      klass   : 'dialog',
+      maskOpts: {},
+      title   : 'Options',
+      useMask : true,
+   },
+
+   initialize: function( el, body, options ) {
+      this.setOptions( options ); this.create( el, body ); this.attach();
+   },
+
+   attach: function() {
+      this.close.addEvent( 'click', function( ev ) {
+         ev.stop(); this.hide() }.bind( this ) );
+      window.addEvent( 'keyup', this._keyup );
+   },
+
+   create: function( el, body ) {
+      var opt = this.options;
+
+      if (opt.useMask) this.mask = new Mask( el, opt.maskOpts );
+
+      this.parent = this.mask ? this.mask.element : $( document.body );
+      this.dialog = new Element( 'div', { 'class': opt.klass } ).hide()
+         .inject( this.parent );
+
+      var title   = new Element( 'div', { 'class': opt.klass + '-title' } )
+         .appendText( opt.title ).inject( this.dialog );
+
+      this.close  = new Element( 'span', { 'class': opt.klass + '-close' } )
+         .appendText( 'x' ).inject( title );
+
+      body.addClass( opt.klass + '-body' ).inject( this.dialog );
+   },
+
+   hide: function() {
+      this.dialog.hide(); this.visible = false; if (this.mask) this.mask.hide();
+   },
+
+   position: function() {
+      this.dialog.position( { relativeTo: this.parent } );
+   },
+
+   show: function() {
+      if (this.mask) this.mask.show();
+
+      this.position(); this.dialog.show(); this.visible = true;
+   },
+
+   _keyup: function( ev ) {
+      ev.stop(); if (this.visible && (ev.key == 'esc')) this.hide();
    }
 } );
 
@@ -1057,6 +1119,52 @@ var GroupMember = new Class( {
          // This suddenly started happening, weird but works after v0.1.657
          // members.options[ i ] = null;
       }
+   }
+} );
+
+var LoadMore = new Class( {
+   Implements: [ Options ],
+
+   options: { config: {}, url: null },
+
+   initialize: function( options ) {
+      this.setBuildOptions( options ); this.build();
+   },
+
+   attach: function( el ) {
+      var cfg; if (! (cfg = this.options.config[ el.id ])) return;
+      var event = cfg.event || 'click';
+
+      if (event == 'load') {
+         this[ cfg.method ].apply( this, cfg.args ); return;
+      }
+
+      el.addEvent( event, function( ev ) {
+         new Event( ev ).stop(); this[ cfg.method ].apply( this, cfg.args );
+      }.bind( this ) );
+   },
+
+   request: function( url, id, val, onComplete ) {
+      if (onComplete) this.onComplete = onComplete;
+
+      if (url.substring( 0, 4 ) != 'http') url = this.options.url + url;
+
+      new Request( { 'onSuccess': this._response.bind( this ), 'url': url } )
+             .get( { 'content-type': 'text/xml', 'id': id, 'val': val } );
+   },
+
+   _response: function( text, xml ) {
+      var doc = xml.documentElement, html = '';
+
+      $$( doc.getElementsByTagName( 'items' ) ).each( function( item ) {
+         for (var i = 0, il = item.childNodes.length; i < il; i++) {
+            html += item.childNodes[ i ].nodeValue;
+         }
+      } );
+
+      $( doc.getAttribute( 'id' ) ).set( 'html', html.unescapeHTML() );
+
+      if (this.onComplete) this.onComplete.call( this.callbacks, doc, html );
    }
 } );
 
@@ -1747,7 +1855,7 @@ var ScrollPins = new Class( {
       var opt = this.options;
 
       if (opt.selector) $$( opt.selector ).each( function( pintray ) {
-         var cfg = Object.merge( opt, opt.config,
+         var cfg = Object.merge( Object.clone( opt ), opt.config,
                                  (opt.config[ pintray.id ] || {}) );
 
          if (typeOf( cfg.target ) != 'window') cfg.target = $( cfg.target );
@@ -1867,30 +1975,9 @@ var ScrollPins = new Class( {
 } );
 
 var ServerUtils = new Class( {
-   Implements: [ Options ],
+   Extends: LoadMore,
 
-   options    : {
-      config  : {},
-      selector: '.server',
-      url     : null
-   },
-
-   initialize: function( options ) {
-      this.setBuildOptions( options ); this.build();
-   },
-
-   attach: function( el ) {
-      var cfg; if (! (cfg = this.options.config[ el.id ])) return;
-      var event = cfg.event || 'click';
-
-      if (event == 'load') {
-         this[ cfg.method ].apply( this, cfg.args ); return;
-      }
-
-      el.addEvent( event, function( ev ) {
-         new Event( ev ).stop(); this[ cfg.method ].apply( this, cfg.args );
-      }.bind( this ) );
-   },
+   options: { selector: '.server' },
 
    checkField: function( id ) {
       this.request( 'check_field', id, $( id ).value, function( doc, html ) {
@@ -1899,30 +1986,8 @@ var ServerUtils = new Class( {
       }.bind( this ) );
    },
 
-   request: function( action, id, val, onComplete ) {
-      if (onComplete) this.onComplete = onComplete;
-
-      new Request( { onSuccess: this._response.bind( this ),
-                     url      : this.options.url + action
-      } ).get( { 'content-type': 'text/xml', 'id': id, 'val': val } );
-   },
-
    requestIfVisible: function( action, id, val, onComplete ) {
       if ($( id ).isVisible()) this.request( action, id, val, onComplete );
-   },
-
-   _response: function( text, xml ) {
-      var doc = xml.documentElement, html = '';
-
-      $$( doc.getElementsByTagName( 'items' ) ).each( function( item ) {
-         for (var i = 0, il = item.childNodes.length; i < il; i++) {
-            html += item.childNodes[ i ].nodeValue;
-         }
-      } );
-
-      $( doc.getAttribute( 'id' ) ).set( 'html', html.unescapeHTML() );
-
-      if (this.onComplete) this.onComplete.call( this.callbacks, doc, html );
    }
 } );
 
@@ -3701,14 +3766,9 @@ var Trees = new Class( {
 } );
 
 var WindowUtils = new Class( {
-   Implements: [ Options ],
+   Extends: LoadMore,
 
    options        : {
-      config      : {},
-      cookieDomain: null,
-      cookieName  : 'session',
-      cookiePath  : '/',
-      cookiePrefix: null,
       customLogFn : false,
       quiet       : false,
       selector    : '.windows',
@@ -3718,7 +3778,7 @@ var WindowUtils = new Class( {
    },
 
    initialize: function( options ) {
-      this.setBuildOptions( options ); var opt = this.options;
+      this.parent( options ); var opt = this.options; this.dialogs = [];
 
       if (opt.customLogFn) {
          if (typeOf( opt.customLogFn ) != 'function')
@@ -3727,17 +3787,6 @@ var WindowUtils = new Class( {
       }
 
       if (opt.target == 'top') this.placeOnTop();
-
-      this.build();
-   },
-
-   attach: function( el ) {
-      var cfg; if (! (cfg = this.options.config[ el.id ])) return;
-
-      el.addEvent( cfg.event || 'click', function( ev ) {
-         new Event( ev ).stop();
-         return this[ cfg.method ].apply( this, cfg.args );
-      }.bind( this ) );
    },
 
    location: function( href ) {
@@ -3754,6 +3803,23 @@ var WindowUtils = new Class( {
       else if (window.console && window.console.log) {
          window.console.log( message );
       }
+   },
+
+   modalDialog: function( href, options ) {
+      var opt = Object.merge( Object.clone( this.options ), options );
+      var id  = opt.name + '_dialog';
+
+      if (! this.dialogs[ opt.name ]) {
+         var content = new Element( 'div', {
+            'id': id } ).appendText( 'Loading...' );
+
+         this.dialogs[ opt.name ] = new Dialog( undefined, content, opt );
+//         this.dialogs[ opt.name ].show();
+      }
+
+      this.request( href, id, '', function() {
+         this.callbacks.rebuild(); this.dialogs[ opt.name ].show();
+      }.bind( this ) );
    },
 
    openWindow: function( href, options ) {
@@ -4165,9 +4231,3 @@ var WYSIWYG = new Class( {
 } );
 
 function Expand_Collapse() {}
-
-/* Local Variables:
- * mode: javascript
- * tab-width: 3
- * End:
- */

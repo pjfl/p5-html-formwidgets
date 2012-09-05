@@ -1,5 +1,10 @@
 /* $Id$ */
 
+/* Local Variables:
+ * Mode: javascript
+ * Tab-width: 3
+ * End: */
+
 var Behaviour = new Class( {
    Implements: [ Events, Options ],
 
@@ -38,7 +43,7 @@ var Behaviour = new Class( {
    initialize: function( options ) {
       this.setOptions( options ); this.collection = [];
 
-      this.config = Object.merge( this.options.config );
+      this.config = Object.clone( this.options.config );
 
       window.addEvent( 'load',   function() {
          this.load( options.firstField ) }.bind( this ) );
@@ -73,10 +78,8 @@ var Behaviour = new Class( {
       this.window      = new WindowUtils( {
          callbacks     : this,
          config        : cfg.anchors,
-         cookieDomain  : opt.cookieDomain,
-         cookiePath    : opt.cookiePath,
-         cookiePrefix  : opt.cookiePrefix,
-         target        : opt.target } );
+         target        : opt.target,
+         url           : opt.defaultURL } );
 
       this.autosizer   = new AutoSize( { callbacks: this } );
       this.calendars   = new Calendars( {
@@ -227,18 +230,10 @@ var Behaviour = new Class( {
 
          /* Restore the state of any elements whose ids end in Disp */
          if (el = $( p0 + 'Disp' )) { p1 != 'false' ? el.show() : el.hide(); }
-
          /* Restore the className for elements whose ids end in Icon */
          if (el = $( p0 + 'Icon' )) { if (p1) el.className = p1; }
-
          /* Restore the source URL for elements whose ids end in Img */
          if (el = $( p0 + 'Img'  )) { if (p1) el.src = p1; }
       }
    }
 } );
-
-/* Local Variables:
- * mode: javascript
- * tab-width: 3
- * End:
- */

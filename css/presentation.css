@@ -1,4 +1,4 @@
-/* @(#)$Id: presentation.css 1344 2012-07-08 15:30:38Z pjf $ */
+/* @(#)$Id: presentation.css 1350 2012-08-30 18:37:08Z pjf $ */
 /*  Elements - Reset styling */
 
 a, abbr, acronym, address, article, aside, audio, b, big, blockquote,
@@ -41,7 +41,7 @@ b, caption, dt, legend, strong, th, thead { font-weight: bold; }
 big { font-size: 1.8em; line-height: 1em; }
 blockquote { padding: 18px; }
 body {
-   font-family: "Lucida Sans", verdana, tahoma, arial, sans-serif;
+   font-family: "Lucida Sans", Verdana, tahoma, arial, sans-serif;
    font-size: 62.5%; font-weight: normal; height: 100%; line-height: 1.8em;
    max-height: 100%; width: 100%; /* 10 18 */
 }
@@ -57,7 +57,7 @@ dl, ol, ul { margin-bottom: 18px; }
 fieldset { border: 1px solid; margin-bottom: 18px; padding: 5px; }
 form { display: inline-block; overflow: auto; }
 h1, h2, h3, h4, h5, h6 {
-   font-family: "Helvetiker", verdana, tahoma, arial, sans-serif;
+   font-family: "Helvetiker", Verdana, tahoma, arial, sans-serif;
    font-weight: normal;
 }
 h1 { font-size: 3.6em; line-height: 1em;     margin: 0.5em    0; } /* 36 36 */
@@ -146,6 +146,20 @@ ul { list-style-position: inside; list-style-type: disc; }
 .data_value .anchor_button { margin: 0; }
 .diagnostic_item { float: left; margin-right: 10px; }
 .diagnostic_panel { display: inline-block; float: right; padding-left: 10px; }
+.dialog { max-width: 66%; z-index: 1000; }
+.dialog-body { border: 1px solid; clear: left; }
+.dialog-body, .dialog-title { padding: 5px; width: 100%; }
+.dialog-body, .dialog-field, .dialog-group, .dialog-title {
+   -khtml-box-sizing: border-box; -moz-box-sizing: border-box;
+   -webkit-box-sizing: border-box; box-sizing: border-box;
+   display: inline-block; float: left; position: relative;
+}
+.dialog-close {
+   background: red; cursor: pointer; display: block; float: right;
+   font-size: 0.9em; height: 15px; line-height: 1em; margin-left: 10px;
+   text-align: center; vertical-align: baseline; width: 15px;
+}
+.dialog-title { font-size: 1.4em; font-weight: bold; line-height: 1.2875em; }
 .dropcap {
    float: left; font-size: 3.6em; line-height: 1em;
    margin-right: 6px; vertical-align: top; width: auto;
@@ -157,12 +171,13 @@ ul { list-style-position: inside; list-style-type: disc; }
    white-space: pre-wrap; word-wrap: break-word;
 }
 .expanding_area > textarea {
-   -webkit-box-sizing: border-box; -moz-box-sizing: border-box;
+   -khtml-box-sizing: border-box; -moz-box-sizing: border-box;
+   -webkit-box-sizing: border-box; box-sizing: border-box;
    bottom: 0; height: 100%; left: 0; margin: 0; overflow: hidden;
    position: absolute; resize: none; top: 0; width: 100%;
 }
 .expanding_spacer, .ifield {
-   font-family: "Lucida Sans", verdana, tahoma, arial, sans-serif;
+   font-family: "Lucida Sans", Verdana, tahoma, arial, sans-serif;
 }
 .expanding_spacer, .ifield {
    font-size: 1.2em; font-weight: bold; line-height: 1.5em;
@@ -215,6 +230,7 @@ ul { list-style-position: inside; list-style-type: disc; }
 }
 .lineNumber { text-align: right; }
 .logfile { white-space: pre; }
+.mask { position: absolute; z-index: 999; }
 .minimal { width: 1%; }
 .most { width: 98%; }
 .multiColumn {
@@ -310,9 +326,8 @@ ul { list-style-position: inside; list-style-type: disc; }
 .stack textarea { display: inline-block; float: left; min-height: 400px; }
 .std_row td { font-size: 1.2em; }
 .step_number {
-   display: block; float: left;
-   font-size: 1em; margin: 0.6em 12px 0.6em 0; padding: 3px 0;
-   text-align: right; width: 36px;
+   display: block; float: left; font-size: 1em; margin: 0.6em 12px 0.6em 0;
+   padding: 3px 0; text-align: right; width: 36px;
 }
 .step_number .checkbox_container {
    float: right; line-height: 0; margin: 0; padding: 0;
@@ -572,9 +587,9 @@ span.prompt { font-size: 1.2em; line-height: 1.5em; }
 
 input.freelist { float: left; width: 172px; }
 input.ifield, password.ifield, select.ifield {
+   border: 1px solid;
    -khtml-border-radius: 4px; -moz-border-radius: 4px;
    -webkit-border-radius: 4px; border-radius: 4px;
-   border: 1px solid;
 }
 input.numeric { text-align: right; }
 input.required, password.required, select.required, textarea.required {
@@ -617,14 +632,15 @@ table.grid   td.first, table.logfile td.first,
 table.source td.first { border-right: 1px solid; }
 table.logfile  { margin-top: 13px; width: auto; }
 table.editable td.row_select, table.editable td.row_drag {
+   border: 1px solid;
    -khtml-border-radius: 4px; -moz-border-radius: 4px;
    -webkit-border-radius: 4px; border-radius: 4px;
-   border: 1px solid;
 }
 table.editable th  {
+   border: 1px solid;
    -khtml-border-radius: 4px; -moz-border-radius: 4px;
    -webkit-border-radius: 4px; border-radius: 4px;
-   border: 1px solid; line-height: 1.333em;
+   line-height: 1.333em;
 }
 
 td.csv, td.data_value, td.mono
@@ -653,7 +669,7 @@ tr.std_row td   { padding-left: 4px; padding-right: 4px; }
 div.calendar { margin-left: -30px; position: relative; z-index: 50; }
 .calendar, .calendar table {
    border: 1px solid; border-collapse: collapse; cursor: default;
-   font-family: "Lucida Sans", verdana, tahoma, arial, sans-serif;
+   font-family: "Lucida Sans", Verdana, tahoma, arial, sans-serif;
    font-size: 1.2em; line-height: 1.5em; margin: 0;
 }
 

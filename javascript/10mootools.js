@@ -3356,13 +3356,13 @@ Element.Properties.html = (function(){
 			var wrap = Browser.ie && translations[this.get('tag')];
 			if (wrap){
 				var first = wrapper;
-//				first.innerHTML = wrap[1] + html + wrap[2];
-            HTMLtoDOM( wrap[1] + html + wrap[2], first );
+				first.innerHTML = wrap[1] + html + wrap[2];
+//            HTMLtoDOM( wrap[1] + html + wrap[2], first );
 				for (var i = wrap[0]; i--;) first = first.firstChild;
 				this.empty().adopt(first.childNodes);
 			} else {
-//				this.innerHTML = html;
-            HTMLtoDOM( html, this.empty() );
+				this.innerHTML = html;
+//            HTMLtoDOM( html, this.empty() );
 			}
 		}
 	};

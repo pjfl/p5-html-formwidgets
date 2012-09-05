@@ -1,6 +1,8 @@
 Revision history for HTML::FormWidgets
 
-         - Updated inc::Bob to 1.4
+0.14.370 2012-09-05
+         - Add POD spelling test
+         - Updated inc::Bob to 1.5
 
 0.14.368 2012-07-10
          - Container now wraps whole of widget

@@ -533,7 +533,7 @@ into HTML or XHTML. Each widget is comprised of these optional
 components: a line or question number, a prompt string, a separator,
 an input field, additional field help, and Ajax field error string.
 
-Input fields are selected by the widget I<type> attribute. A factory
+Input fields are selected by the widget C<type> attribute. A factory
 subclass implements the method that generates the HTML or XHTML for
 that input field type. Adding more widget types is straightforward
 
@@ -545,53 +545,53 @@ main use is as a form generator within a L<Catalyst> application
 
 =head1 Configuration and Environment
 
-The following are passed to L</build> in the I<config> hash (they
+The following are passed to L</build> in the C<config> hash (they
 reflect this modules primary use within a L<Catalyst> application):
 
 =over 3
 
-=item assets
+=item C<assets>
 
 Some of the widgets require image files. This attribute is used to
 create the URI for those images
 
-=item base
+=item C<base>
 
 This is the prefix for our URI
 
-=item content_type
+=item C<content_type>
 
-Either B<application/xhtml+xml> which generates XHTML 1.1 or
-B<text/html> which generates HTML 4.01 and is the default
+Either C<application/xhtml+xml> which generates XHTML 1.1 or
+C<text/html> which generates HTML 4.01 and is the default
 
-=item fields
+=item C<fields>
 
 This hash ref contains the fields definitions. Static parameters for
 each widget can be stored in configuration files. This reduces the
 number of attributes that have to be passed in the call to the
 constructor
 
-=item hidden
+=item C<hidden>
 
 So that the L</File> and L</Table> subclasses can store the number
-of rows added as the hidden form attribute I<nRows>
+of rows added as the hidden form attribute C<nRows>
 
-=item js_object
+=item C<js_object>
 
 This is the name of the global Javascript variable that holds
-B<config> object. Defaults to B<html_formwidgets>
+C<config> object. Defaults to C<html_formwidgets>
 
-=item root
+=item C<root>
 
 The path to the document root for this application
 
-=item width
+=item C<width>
 
 Width in pixels of the browser window. This is used to calculate the
 width of the field prompt. The field prompt needs to be a fixed length
 so that the separator colons align vertically
 
-=item templatedir
+=item C<templatedir>
 
 The path to template files used by the L</Template> subclass
 
@@ -664,16 +664,16 @@ it's own attributes. In the base class this method does nothing
 
    $bool = $widget->is_xml;
 
-Returns true if the content type matches I<xml>
+Returns true if the content type matches C<xml>
 
 =head3 loc
 
    $message_text = $widget->loc( $message_id, @args );
 
-Use the supplied key to return a value from the I<l10n> object. This
+Use the supplied key to return a value from the C<l10n> object. This
 object was passed to the constructor and should localize the key to
 the required language. The C<@args> list contains parameters to substituted
-in place of the placeholders which have the form I<[_n]>
+in place of the placeholders which have the form C<[_n]>
 
 =head3 render
 
@@ -688,43 +688,43 @@ This method uses these attributes:
 
 =over 3
 
-=item clear
+=item C<clear>
 
-If set to B<left> the widget begins with an C<< <br> >> element
+If set to C<left> the widget begins with an C<< <br> >> element
 
-=item stepno
+=item C<stepno>
 
 If true it's value is wrapped in a C<< <span class="lineNumber"> >>
 element and appended to the return value
 
-=item prompt
+=item C<prompt>
 
 If true it's value is wrapped in a C<< <label class="prompt_class"> >>
 element and appended to the return value. The prompt class is set by
-the C<pclass> attribute. The I<id> attribute is used to set the I<for>
-attribute of the C<< <label> >> element.  The I<pwidth> attribute sets
+the C<pclass> attribute. The C<id> attribute is used to set the C<for>
+attribute of the C<< <label> >> element.  The C<pwidth> attribute sets
 the width style attribute in the C<< <label> >> element
 
-=item sep
+=item C<sep>
 
 If true it's value is wrapped in a C<< <span class="separator"> >>
 element and appended to the return value
 
-=item container
+=item C<container>
 
 If true the value return by the L</_render> method is wrapped in
 C<< <span class="container"> >> element
 
-=item tip
+=item C<tip>
 
-The text of the field help. If I<tiptype> is set to B<dagger>
+The text of the field help. If C<tiptype> is set to C<dagger>
 (which is the default) then a dagger symbol is
 wrapped in a C<< <span class="help tips"> >> and this is appended to the
-returned input field. The tip text is used as the I<title>
-attribute. If the I<tiptype> is not set to B<dagger> then the help
+returned input field. The tip text is used as the C<title>
+attribute. If the C<tiptype> is not set to C<dagger> then the help
 text is wrapped around the input field itself
 
-=item check_field
+=item C<check_field>
 
 Boolean which if true causes the field to generate server side check field
 requests
@@ -766,7 +766,7 @@ Flyover tooltip field help text
 
    $widget->_bootstrap( $args );
 
-Determine the I<id>, I<name> and I<type> attributes of the widget from
+Determine the C<id>, C<name> and C<type> attributes of the widget from
 the supplied arguments
 
 =head3 _ensure_class_loaded
@@ -780,7 +780,7 @@ and then re-blesses the self referential object into the correct class
 
    $widget->_set_error( $error_text );
 
-Stores the passed error message in the I<text> attribute so that it
+Stores the passed error message in the C<text> attribute so that it
 gets rendered in place of the widget
 
 =head2 Private Subroutines
@@ -796,20 +796,20 @@ pairs. Returns a hash ref in either case.
 
    $item = __form_wrapper( $options, $item, $stack );
 
-Wraps the top I<nitems> number of widgets on the build stack in a C<<
+Wraps the top C<nitems> number of widgets on the build stack in a C<<
 <form> >> element
 
 =head3 __group_fields
 
    $item = __group_fields( $options, $item, $stack );
 
-Wraps the top I<nitems> number of widgets on the build stack in a C<<
+Wraps the top C<nitems> number of widgets on the build stack in a C<<
 <fieldset> >> element with a legend
 
 =head1 Factory Subclasses
 
-These are the possible values for the I<type> attribute which defaults
-to B<textfield>. Each subclass implements the L</_render> method, it
+These are the possible values for the C<type> attribute which defaults
+to C<textfield>. Each subclass implements the L</_render> method, it
 receives a hash ref of options an returns a scalar containing some
 XHTML.
 
@@ -817,31 +817,31 @@ The distribution ships with the following factory subclasses:
 
 =head2 Anchor
 
-Returns an C<< <anchor> >> element with a class set from the I<class>
-arg (which defaults to B<linkFade>). It's I<href> attribute
-set to the I<href> arg. The anchor body is set to the I<text>
-arg
+Returns an C<< <anchor> >> element with a class set from the C<class>
+argument (which defaults to C<linkFade>). It's C<href> attribute
+set to the C<href> argument. The anchor body is set to the C<text>
+argument
 
 =head2 Async
 
-Returns a C<< <div> >> element with a class set from the I<class> arg
-(which defaults to B<server>). The div body is set to the I<text>
-arg. When the JS onload event handler fires it will asynchronously
-load the content of the div if it is visible
+Returns a C<< <div> >> element with a class set from the C<class>
+argument (which defaults to C<server>). The div body is set to the
+C<text> argument. When the JavaScript C<onload> event handler fires it
+will asynchronously load the content of the div if it is visible
 
 =head2 Button
 
-Generates an image button where I<name> identifies the image
-file in I<assets> and is also used as the return value. The
-button name is set to I<_verb>. If the image file does not
+Generates an image button where C<name> identifies the image
+file in C<assets> and is also used as the return value. The
+button name is set to C<_verb>. If the image file does not
 exist a regular input button is rendered instead
 
 =head2 Checkbox
 
-Return a C<< <checkbox> >> element of value I<value>. Use the
-element's value as key to the I<labels> hash. The hash value
+Return a C<< <checkbox> >> element of value C<value>. Use the
+element's value as key to the C<labels> hash. The hash value
 (which defaults null) is used as the displayed label. The
-I<checked> arg determines the checkbox's initial
+C<checked> argument determines the checkbox's initial
 setting
 
 =head2 Chooser
@@ -851,54 +851,54 @@ long list of items
 
 =head2 Cloud
 
-Creates list of links from the data set supplied in the I<data> arg
+Creates list of links from the data set supplied in the C<data> argument
 
 =head2 Date
 
 Return another C<< <textfield> >>, this time with a calendar icon
 which when clicked pops up a Javascript date picker. Requires the
-appropriate JS library to have been loaded by the page. Attribute
-I<width> controls the size of the C<< <textfield> >> (default 10
-characters) and I<format> defaults to B<dd/mm/yyyy>. Setting the
-I<readonly> attribute to true (which is the default) causes the input
-C<< <textfield> >> to become readonly
+appropriate JavaScript library to have been loaded by the page. Attribute
+C<width> controls the size of the C<< <textfield> >> (default 10
+characters) and C<format> defaults to C<dd/mm/yyyy>. Setting the
+C<readonly> attribute to true (which is the default) causes the input
+C<< <textfield> >> to become read only
 
 =head2 File
 
-Display the contents of a file pointed to by I<path>. Supports the
+Display the contents of a file pointed to by C<path>. Supports the
 following subtypes:
 
 =over 3
 
-=item csv
+=item C<csv>
 
-Return a table containing the CSV formatted file. This and the I<file>
-subtype are selectable if I<select> >= 0 and represents the
+Return a table containing the CSV formatted file. This and the C<file>
+subtype are selectable if C<select> >= 0 and represents the
 column number of the key field
 
-=item file
+=item C<file>
 
 Default subtype. Like the logfile subtype but without the C<< <pre> >> tags
 
-=item html
+=item C<html>
 
-The L</_render> method returns an C<< <iframe> >> element whose I<src>
-attribute is set to I<path>. Paths that begin with B<root> will have
-that replaced with the I<base> attribute value. Paths that do not
-begin with "http:" will have the I<base> attribute value prepended to
+The L</_render> method returns an C<< <iframe> >> element whose C<src>
+attribute is set to C<path>. Paths that begin with C<root> will have
+that replaced with the C<base> attribute value. Paths that do not
+begin with C<http:> will have the C<base> attribute value prepended to
 them
 
-=item logfile
+=item C<logfile>
 
 The L</_render> method returns a table where each line of the logfile
 appears as a separate row containing one cell. The logfile lines are
 each wrapped in C<< <pre> >> tags
 
-=item source
+=item C<source>
 
 The module L<Syntax::Highlight::Perl> is used to provide colour
 highlights for the Perl source code. Tabs are expanded to
-I<tabstop> spaces and the result is returned wrapped in
+C<tabstop> spaces and the result is returned wrapped in
 C<< <pre> >> tags
 
 =back
@@ -906,36 +906,36 @@ C<< <pre> >> tags
 =head2 Freelist
 
 New values entered into a text field can be added to the
-list. Existing list values (passed in I<values>) can be
-removed. The height of the list is set by I<height>.
+list. Existing list values (passed in C<values>) can be
+removed. The height of the list is set by C<height>.
 
 =head2 GroupMembership
 
 Displays two lists which allow for membership of a group. The first
-scrolling list contains "all" values (I<all>), the second
-contains those values currently selected (I<current>). The
-height of the scrolling lists is set by I<height>
+scrolling list contains "all" values (C<all>), the second
+contains those values currently selected (C<current>). The
+height of the scrolling lists is set by C<height>
 
 =head2 Hidden
 
-Generates a hidden input field. Uses the I<default> attribute as the value
+Generates a hidden input field. Uses the C<default> attribute as the value
 
 =head2 Image
 
-Generates an image tag. The I<text> attribute contains the source URI. The
-I<fhelp> attribute contains the alt text and the I<tiptype> attribute is
-defaulted to B<normal> (wraps the image in a span with a JS tooltip)
+Generates an image tag. The C<text> attribute contains the source URI. The
+C<fhelp> attribute contains the alt text and the C<tiptype> attribute is
+defaulted to C<normal> (wraps the image in a span with a JavaScript tooltip)
 
 =head2 Label
 
-Calls L</loc> with the I<text> attribute if set otherwise returns nothing.
-If I<dropcap> is true the first character of the text is wrapped
+Calls L</loc> with the C<text> attribute if set otherwise returns nothing.
+If C<dropcap> is true the first character of the text is wrapped
 in a C<< <span class="dropcap"> >>. Wraps the text in a span of class
-I<class> which defaults to B<label_text>
+C<class> which defaults to C<label_text>
 
 =head2 List
 
-Generates an ordered and unordered lists of items. Set the I<ordered>
+Generates an ordered and unordered lists of items. Set the C<ordered>
 attribute to true for an ordered list. Defaults to false
 
 =head2 Menu
@@ -945,10 +945,10 @@ implement a navigation menu
 
 =head2 Note
 
-Calls L</localize> with the I<name> attribute as the message key. If
-the message does not exist the value if the I<text> attribute is
+Calls L</localize> with the C<name> attribute as the message key. If
+the message does not exist the value if the C<text> attribute is
 used. The text is wrapped in a c<< <span class="note"> >> with
-I<width> setting the style width
+C<width> setting the style width
 
 =head2 POD
 
@@ -961,33 +961,33 @@ approximately the same length. Defines these attributes;
 
 =over 3
 
-=item column_class
+=item C<column_class>
 
 CSS class name of the C<< <span> >> wrapped around each column. Defaults
 to null
 
-=item columns
+=item C<columns>
 
 Number of columns to render the paragraphs in. Defaults to 1
 
-=item data
+=item C<data>
 
-Paragraphs of text. A hash ref whose I<values> attribute is an array
+Paragraphs of text. A hash ref whose C<values> attribute is an array
 ref. The values of that array are the hash refs that define each
-paragraph. The keys of the paragraph hash ref are I<class>, I<heading>, and
-I<text>.
+paragraph. The keys of the paragraph hash ref are C<class>, C<heading>, and
+C<text>.
 
-=item hclass
+=item C<hclass>
 
 Each paragraph can have a heading. This is the class of the C<<
 <div> >> that wraps the heading text. Defaults to null
 
-=item max_width
+=item C<max_width>
 
 Maximum width of all paragraphs expressed as a percentage. Defaults
 to 90
 
-=item para_lead
+=item C<para_lead>
 
 Paragraph leading. This value is in characters. It is added to the size of
 each paragraph to account for the leading applied by the CSS to each
@@ -998,26 +998,26 @@ than twice this value or the widows and orphans trap will reap it
 
 =head2 Password
 
-Returns a password field of width I<width> which defaults to
-twenty characters. If I<subtype> equals B<verify> then the
-message B<vPasswordPrompt> and another password field are
-appended. The fields I<id> and I<name> are expected
+Returns a password field of width C<width> which defaults to
+twenty characters. If C<subtype> equals C<verify> then the
+message C<vPasswordPrompt> and another password field are
+appended. The fields C<id> and C<name> are expected
 to contain the digit 1 which will be substituted for the digit 2 in
 the attributes of the second field
 
 =head2 PopupMenu
 
 Returns a list of C<< <option> >> elements wrapped in a C<< <select> >>
-element. The list of options is passed in I<values> with the
-display labels in I<labels>. The onchange event handler will
-be set to the I<onchange> attribute value
+element. The list of options is passed in C<values> with the
+display labels in C<labels>. The C<onchange> event handler will
+be set to the C<onchange> attribute value
 
 =head2 RadioGroup
 
-The attribute I<columns> sets the number of columns for the
+The attribute C<columns> sets the number of columns for the
 returned table of radio buttons. The list of button values is passed in
-I<values> with the display labels in I<labels>. The
-onchange event handler will be set to I<onchange>
+C<values> with the display labels in C<labels>. The
+C<onchange> event handler will be set to C<onchange>
 
 =head2 Rule
 
@@ -1026,37 +1026,37 @@ Generates a horizontal rule with optional clickable action
 =head2 ScrollPin
 
 Implements clickable navigation markers that scroll the page to given
-location. Returns an unordered list of class I<class> which defaults
-to B<pintray>. This is the default selector class for the JS C<ScrollPins>
-object
+location. Returns an unordered list of class C<class> which defaults
+to C<pintray>. This is the default selector class for the JavaScript
+C<ScrollPins> object
 
 =head2 ScrollingList
 
-The I<height> attribute controls the number of options the scrolling
-list displays.  The list of options is passed in I<values> with the
-display labels in I<labels>. The onchange event handler will
-be set to I<onchange>
+The C<height> attribute controls the number of options the scrolling
+list displays.  The list of options is passed in C<values> with the
+display labels in C<labels>. The C<onchange> event handler will
+be set to C<onchange>
 
 =head2 SidebarPanel
 
 Generates the markup for a sidebar accordion panel (a "header" C<div>
-and a "body" C<div>). The panel contents are requested asyncronously
+and a "body" C<div>). The panel contents are requested asynchronously
 by the browser. The L</SidebarPanel> widget defines these attributes:
 
 =over 3
 
-=item config
+=item C<config>
 
-A hash ref whose keys and values are written out as literal JS by
+A hash ref whose keys and values are written out as literal JavaScript by
 L</add_literal_js>
 
-=item header
+=item C<header>
 
-A hash that provides the I<id>, I<class>, and I<text> for header C<div>
+A hash that provides the C<id>, C<class>, and C<text> for header C<div>
 
-=item panel
+=item C<panel>
 
-A hash that provides the I<id> and I<class> for body C<div>
+A hash that provides the C<id> and C<class> for body C<div>
 
 =back
 
@@ -1067,77 +1067,77 @@ widget defines these attributes:
 
 =over 3
 
-=item display
+=item C<display>
 
-Boolean which if true causes the widget to display a readonly text
+Boolean which if true causes the widget to display a read only text
 field containing the sliders current value. If false a C< <hidden> >>
-element is generated instead. Defaults to B<1>
+element is generated instead. Defaults to C<1>
 
-=item element
+=item C<element>
 
 Name of the Javascript instance variable. This will need setting to a
 unique value for each slider on the same form. Defaults to
-B<behaviour.sliderElement>
+C<behaviour.sliderElement>
 
-=item hide
+=item C<hide>
 
-If the I<display> attribute is false the current value is pushed onto
-this array. Defaults to B<[]>
+If the C<display> attribute is false the current value is pushed onto
+this array. Defaults to C<[]>
 
-=item mode
+=item C<mode>
 
-Which orientation to render in. Defaults to B<horizontal>
+Which orientation to render in. Defaults to C<horizontal>
 
-=item offset
+=item C<offset>
 
-Sets the minimum value for the slider. Defaults to B<0>
+Sets the minimum value for the slider. Defaults to C<0>
 
-=item range
+=item C<range>
 
 The range is either the offset plus the number of steps or the two
-values of this array if it is set. Defaults to B<false>
+values of this array if it is set. Defaults to C<false>
 
-=item snap
+=item C<snap>
 
-Snap to the nearest step value? Defaults to B<1>
+Snap to the nearest step value? Defaults to C<1>
 
-=item steps
+=item C<steps>
 
-Sets the number of steps. Defaults to B<100>
+Sets the number of steps. Defaults to C<100>
 
-=item wheel
+=item C<wheel>
 
-Use the mouse wheel? Defaults to B<1>
+Use the mouse wheel? Defaults to C<1>
 
 =back
 
 =head2 TabSwapper
 
-A list of I<div>s is constructed that can be styled to display only one at
-a time. Clicking the tab header displays the coresponding I<div>
+A list of C<div>s is constructed that can be styled to display only one at
+a time. Clicking the tab header displays the corresponding C<div>
 
 =head2 Table
 
-The input data is in I<< $data->{values} >> which is an array
+The input data is in C<< $data->{values} >> which is an array
 ref for which each element is an array ref containing the list of
 field values.
 
 =head2 Template
 
-Look in I<templatedir> for a L<Template::Toolkit> template
-called I<id> with a B<.tt> extension. Slurp it in and return
+Look in C<templatedir> for a L<Template::Toolkit> template
+called C<id> with a F<.tt> extension. Slurp it in and return
 it as the content for this widget. This provides for a "user defined"
 widget type
 
 =head2 Textarea
 
-A text area. It defaults to five lines high (I<height>) and
-sixty characters wide (I<width>)
+A text area. It defaults to five lines high (C<height>) and
+sixty characters wide (C<width>)
 
 =head2 Textfield
 
 This is the default widget type. Your basic text field which defaults
-to sixty characters wide (I<width>)
+to sixty characters wide (C<width>)
 
 =head2 Tree
 
@@ -1170,37 +1170,37 @@ None
 Included in the distribution are the Javascript files whose methods
 are called by the event handlers associated with these widgets
 
-=head2 05htmlparser.js
+=head2 F<05htmlparser.js>
 
    HTML Parser By John Resig (ejohn.org)
    Original code by Erik Arvidsson, Mozilla Public License
    http://erik.eae.net/simplehtmlparser/simplehtmlparser.js
 
-Used to reimplement "innerHTML" assignments from XHTML
+Used to reimplement C<innerHTML> assignments from XHTML
 
-=head2 10mootools.js
+=head2 F<10mootools.js>
 
    Mootools - My Object Oriented javascript.
    License: MIT-style license.
    WWW: http://mootools.net/
 
-This is the main JS library used with this package
+This is the main JavaScript library used with this package
 
-=head2 15html-formwidgets.js
+=head2 F<15html-formwidgets.js>
 
 Replaces Mootools' C<setHTML> method with one that uses the HTML
 parser. The included copy has a few hacks that improve the Accordion
 widget
 
-=head2 50calendar.js
+=head2 F<50calendar.js>
 
    Copyright Mihai Bazon, 2002-2005  |  www.bazon.net/mishoo
    The DHTML Calendar, version 1.0   |  www.dynarch.com/projects/calendar
    License: GNU Lesser General Public License
 
-Implements the calendar popup used by the I<::Date> subclass
+Implements the calendar popup used by the C<::Date> subclass
 
-=head2 behaviour.js
+=head2 F<behaviour.js>
 
 Is included from the L<App::Munchies> default skin. It uses the
 MooTools library to implement the server side field validation
@@ -1242,4 +1242,3 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE
 # mode: perl
 # tab-width: 3
 # End:
-

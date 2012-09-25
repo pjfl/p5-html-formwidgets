@@ -1,5 +1,7 @@
 Revision history for HTML::FormWidgets
 
+         - Added modalDialogs to Chooser
+
 0.14.370 2012-09-05
          - Add POD spelling test
          - Updated inc::Bob to 1.5

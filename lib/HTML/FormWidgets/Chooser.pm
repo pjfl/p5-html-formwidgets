@@ -7,31 +7,43 @@ use warnings;
 use version; our $VERSION = qv( sprintf '0.14.%d', q$Rev$ =~ /\d+/gmx );
 use parent qw(HTML::FormWidgets);
 
-__PACKAGE__->mk_accessors( qw(config field href) );
+__PACKAGE__->mk_accessors( qw(config field href subtype title) );
 
 sub init {
    my ($self, $args) = @_;
 
-   $self->class  ( q(chooser_button fade) );
-   $self->config ( { height   => 500, screen_x => 10,
-                     screen_y => 10,  width    => 500 } );
-   $self->default( q(Choose) );
+   $self->class  ( q(chooser_button fade submit) );
+   $self->config ( { height => 500, width => 500, x => 10, y => 10 } );
+   $self->default( $self->loc( 'Choose' ) );
    $self->field  ( q() );
    $self->href   ( undef );
+   $self->subtype( q(window) );
+   $self->title  ( $self->loc( 'Select Item' ) );
    return;
 }
 
 sub render_field {
-   my $self = shift;
+   my $self = shift; my $config = $self->config;
 
-   $self->config->{field} = '"'.$self->field.'"';
-   $self->config->{href } = '"'.$self->href.'"';
-   $self->add_literal_js( 'anchors', $self->id, $self->config );
+   $config->{ $_ } = "'".($self->$_)."'" for (qw(field subtype title));
+
+   $config->{button} = "'".$self->default."'";
+
+   my $js = { args   => "[ '".$self->href."', ".__stringify( $config )." ]",
+              method => "'chooser'" };
+
+   $self->add_literal_js( 'anchors', $self->id, $js );
 
    return $self->hacc->submit( { class => $self->class,
                                  id    => $self->id,
                                  name  => q(_method),
                                  value => $self->default } );
+}
+
+sub __stringify {
+   my $hash = shift;
+
+   return '{ '.(join ', ', map { "${_}: ".$hash->{ $_ } } keys %{ $hash }).' }';
 }
 
 1;

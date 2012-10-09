@@ -20,7 +20,7 @@ sub init {
 
    $self->class      ( q(ifield) );
    $self->container  ( 0 );
-   $self->data       ( { flds => [], values => [] } );
+   $self->data       ( { fields => [], values => [] } );
    $self->edit       ( 0 );
    $self->hclass     ( q(normal) );
    $self->number_rows( 0 );
@@ -47,7 +47,7 @@ sub render_field {
    $self->edit   eq q(left) and $cells .= $self->_drag_header  ( $c_no++ );
    $self->select eq q(left) and $cells .= $self->_select_header( $c_no++ );
 
-   for (@{ $data->{flds} }) {
+   for (@{ $data->{fields} }) {
       $cells .= $self->_field_header( $data, $_, $c_no++ );
    }
 
@@ -83,9 +83,9 @@ sub _add_edit_row {
 
    my $cells = $NUL; my $c_no = 0;
 
-   for (0 .. $#{ $data->{flds} }) {
+   for (0 .. $#{ $data->{fields} }) {
       my $args      = { id => $self->id.q(_add).$_ };
-      my $field     = $data->{flds}->[ $_ ];
+      my $field     = $data->{fields}->[ $_ ];
 
       $args->{name} = q(_).$self->name.q(_).$field;
       $cells       .= $self->_editable_cell( $data, $field, $args, $c_no );
@@ -239,7 +239,7 @@ sub _render_row {
    $self->select eq q(left) and $first_value
       and $cells .= $self->_check_box( $r_no, $c_no++, $val );
 
-   for my $field (@{ $data->{flds} }) {
+   for my $field (@{ $data->{fields} }) {
       my $args = {};
 
       if ($self->edit) {

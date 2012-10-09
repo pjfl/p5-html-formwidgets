@@ -1122,6 +1122,11 @@ The input data is in C<< $data->{values} >> which is an array
 ref for which each element is an array ref containing the list of
 field values.
 
+=head2 TableRow
+
+Returns markup for a table row. Used to generate responses for the C<LiveGrid>
+JavaScript class
+
 =head2 Template
 
 Look in C<templatedir> for a L<Template::Toolkit> template

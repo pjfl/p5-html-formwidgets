@@ -24,7 +24,7 @@ sub render_field {
    my $content = do { local $RS = undef; <$rdr> }; $rdr->close();
    my $id      = $self->id;
 
-   return "[% ref = template_data_${id}; %]\n${content}";
+   return "[% ref = template_data.${id}; %]\n${content}";
 }
 
 1;

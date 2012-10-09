@@ -14,30 +14,41 @@ sub init {
 
    $self->class  ( q(chooser_button fade submit) );
    $self->config ( { height => 500, width => 500, x => 10, y => 10 } );
-   $self->default( $self->loc( 'Choose' ) );
+   $self->default( 'Choose' );
    $self->field  ( q() );
    $self->href   ( undef );
    $self->subtype( q(window) );
-   $self->title  ( $self->loc( 'Select Item' ) );
+   $self->title  ( 'Select Item' );
    return;
 }
 
 sub render_field {
-   my $self = shift; my $config = $self->config;
+   my $self = shift; my $config = $self->config; my $hacc = $self->hacc;
 
-   $config->{ $_ } = "'".($self->$_)."'" for (qw(field subtype title));
+   if ($self->subtype eq q(display)) {
+      $self->add_literal_js( 'anchors', $self->id, $config );
 
-   $config->{button} = "'".$self->default."'";
+      my $html = $hacc->a( { class => $self->class,
+                             href  => $self->href,
+                             id    => $self->id, }, q( ) );
+
+      return $hacc->div( { id => $self->id.q(Disp) }, $html );
+   }
+
+   $config->{ $_ } = "'".($self->$_)."'" for (qw(field subtype));
+
+   $config->{button} = "'".$self->loc( $self->default )."'";
+   $config->{title } = "'".$self->loc( $self->title   )."'";
 
    my $js = { args   => "[ '".$self->href."', ".__stringify( $config )." ]",
               method => "'chooser'" };
 
    $self->add_literal_js( 'anchors', $self->id, $js );
 
-   return $self->hacc->submit( { class => $self->class,
-                                 id    => $self->id,
-                                 name  => q(_method),
-                                 value => $self->default } );
+   return $hacc->submit( { class => $self->class,
+                           id    => $self->id,
+                           name  => q(_method),
+                           value => $self->default, } );
 }
 
 sub __stringify {

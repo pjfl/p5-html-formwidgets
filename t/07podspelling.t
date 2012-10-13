@@ -63,6 +63,7 @@ scrollinglist
 scrollpin
 sidebarpanel
 subdirectory
+tablerow
 tabswapper
 textfield
 tooltip

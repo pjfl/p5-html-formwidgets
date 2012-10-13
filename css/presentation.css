@@ -1,4 +1,4 @@
-/* @(#)$Id: presentation.css 1350 2012-08-30 18:37:08Z pjf $ */
+/* @(#)$Id: presentation.css 1355 2012-10-13 21:44:31Z pjf $ */
 /*  Elements - Reset styling */
 
 a, abbr, acronym, address, article, aside, audio, b, big, blockquote,
@@ -122,10 +122,10 @@ ul { list-style-position: inside; list-style-type: disc; }
    background: url(icons.png) -90px -300px no-repeat; cursor: pointer;
    display: inline-block; height: 16px; width: 16px;
 }
-.checkbox_container, .container, .container ul.rotate, .editable,
-.expanding_area, .field_group, .freelist_container, .freelist_ifields,
-.groupmember_buttons, .groupmember_container, .groupmember_ifields,
-.separator_break, .textfile pre, .tree {
+.checkbox_container, .chooser_panel, .container, .container ul.rotate,
+.editable, .expanding_area, .field_group, .freelist_container,
+.freelist_ifields, .groupmember_buttons, .groupmember_container,
+.groupmember_ifields, .search_label, .separator_break, .textfile pre, .tree {
    display: inline-block; float: left; position: relative;
 }
 .checkbox_container {
@@ -139,6 +139,12 @@ ul { list-style-position: inside; list-style-type: disc; }
 }
 .checked  { background: url(icons.png) -120px -300px no-repeat transparent; }
 .chooser { clear: left; }
+.chooser_grid {
+   border: transparent 1px solid; display: block; font-size: 1.4em;
+   line-height: 1.2857em; padding: 4px; text-decoration: none;
+   white-space: nowrap;
+}
+.chooser_grid:hover { border: 1px outset; }
 .clearLeft { clear: left; }
 .collapse { background-position: -150px -210px; }
 .cut_here { border-bottom: 0; border-top: 2px dashed; }
@@ -148,10 +154,14 @@ ul { list-style-position: inside; list-style-type: disc; }
 .diagnostic_panel { display: inline-block; float: right; padding-left: 10px; }
 .dialog { max-width: 66%; z-index: 1000; }
 .dialog-body { border: 1px solid; clear: left; }
-.dialog-body, .dialog-title { padding: 5px; width: 100%; }
+.dialog-body {
+   -khtml-border-radius: 0 0 4px 4px; -moz-border-radius: 0 0 4px 4px;
+   -webkit-border-radius: 0 0 4px 4px; border-radius: 0 0 4px 4px;
+   width: 100%;
+}
 .dialog-body, .dialog-field, .dialog-group, .dialog-title {
    -khtml-box-sizing: border-box; -moz-box-sizing: border-box;
-   -webkit-box-sizing: border-box; box-sizing: border-box;
+   -webkit-box-sizing: border-box;
    display: inline-block; float: left; position: relative;
 }
 .dialog-close {
@@ -159,7 +169,14 @@ ul { list-style-position: inside; list-style-type: disc; }
    font-size: 0.9em; height: 15px; line-height: 1em; margin-left: 10px;
    text-align: center; vertical-align: baseline; width: 15px;
 }
-.dialog-title { font-size: 1.4em; font-weight: bold; line-height: 1.2875em; }
+.dialog-title {
+   font-size: 1.4em; font-weight: bold; line-height: 1.2875em; padding: 5px;
+}
+.dialog-title {
+   -khtml-border-radius: 4px 4px 0 0; -moz-border-radius: 4px 4px 0 0;
+   -webkit-border-radius: 4px 4px 0 0; border-radius: 4px 4px 0 0;
+   width: 100%;
+}
 .dropcap {
    float: left; font-size: 3.6em; line-height: 1em;
    margin-right: 6px; vertical-align: top; width: auto;
@@ -172,7 +189,7 @@ ul { list-style-position: inside; list-style-type: disc; }
 }
 .expanding_area > textarea {
    -khtml-box-sizing: border-box; -moz-box-sizing: border-box;
-   -webkit-box-sizing: border-box; box-sizing: border-box;
+   -webkit-box-sizing: border-box;
    bottom: 0; height: 100%; left: 0; margin: 0; overflow: hidden;
    position: absolute; resize: none; top: 0; width: 100%;
 }
@@ -184,10 +201,10 @@ ul { list-style-position: inside; list-style-type: disc; }
    padding: 3px; text-align: left;
 }
 .expanding_spacer {
-   border: 1px solid transparent;
    -khtml-border-radius: 4px; -moz-border-radius: 4px;
    -webkit-border-radius: 4px; border-radius: 4px;
-   display: block; min-width: 400px; visibility: hidden;
+   border: 1px solid transparent; display: block;
+   min-width: 400px; visibility: hidden;
 }
 .field_group { vertical-align: middle; }
 .freelist_buttons {
@@ -197,7 +214,20 @@ ul { list-style-position: inside; list-style-type: disc; }
 .freelist_buttons .add { margin: 0 0 3px 0; }
 .freelist_buttons .remove { display: block; margin: 6px 0 0 0; }
 .freelist_ifields { margin: 7px 0 8px; }
-.grid_container { float: left; overflow: hidden; width: auto; }
+.grid_container {
+   -khtml-border-radius: 0 0 4px 4px; -moz-border-radius: 0 0 4px 4px;
+   -webkit-border-radius: 0 0 4px 4px; border-radius: 0 0 4px 4px;
+   float: left; min-width: 300px; overflow: hidden; position: relative;
+}
+.grid_header {
+   position: relative;
+}
+.grid_scrollBar {
+   float: right; overflow: auto; position: relative; width: 19px;
+}
+.grid_subheader {
+   display: block; padding: 3px; text-decoration: none;
+}
 .groupmember_buttons { margin: 30px 0 0; padding: 0 12px; }
 .groupmember_buttons .add { margin: 0 0 3px 0; }
 .groupmember_buttons .remove { display: block; margin: 6px 0 0 0; }
@@ -218,12 +248,14 @@ ul { list-style-position: inside; list-style-type: disc; }
 .hidden { display: none; }
 .icon { display: block; padding: 3px 6px; text-align: center; }
 .info { font-style: italic; }
-.instructions { float: left; text-align: left; }
-.instructions p { font-size: 1.2em; line-height: 1.5em; padding-right: 12px; }
-.label_text, .separator {
+.info p { font-size: 1.2em; }
+.info, .label_text, .separator {
    float: left; font-size: 1.2em; line-height: 1.5em;
    margin: 0.5em 0; padding: 3px 0; width: auto;
 }
+.info_dialog { padding: 5px; }
+.instructions { float: left; text-align: left; }
+.instructions p { font-size: 1.2em; line-height: 1.5em; padding-right: 12px; }
 .label_text { font-style: italic; padding: 3px; }
 .lineNumber, .logfile, .mono, .source, .step_number {
    font-family: "Andale Mono", monaco, "Courier New", courier, monospace;
@@ -302,7 +334,10 @@ ul { list-style-position: inside; list-style-type: disc; }
 }
 .sdata_panel dd { font-size: 1.4em; line-height: 1.2857em; margin: 1.2857em 0; }
 .sdata_panel dt { font-size: 1.6em; line-height: 1.125em;  margin: 0.5em    0; }
-.search { font-weight: bold; padding: 0 6px; text-decoration: none; }
+.search {
+   font-weight: bold; padding-left: 6px; padding-right: 6px;
+   text-decoration: none;
+}
 .search:active { position: relative; top: 1px; }
 .separator_break { clear: left; }
 .slider {
@@ -585,7 +620,7 @@ span.prompt { font-size: 1.2em; line-height: 1.5em; }
 
 /* Form elements */
 
-input.freelist { float: left; width: 172px; }
+input.freelist { float: left; margin-bottom: 3px; width: 172px; }
 input.ifield, password.ifield, select.ifield {
    border: 1px solid;
    -khtml-border-radius: 4px; -moz-border-radius: 4px;
@@ -628,6 +663,7 @@ table.csv, table.editable, table.std {
 table.editable {
    margin: 3px 0 0 -3px; width: auto;
 }
+table.grid { min-width: 200px; }
 table.grid   td.first, table.logfile td.first,
 table.source td.first { border-right: 1px solid; }
 table.logfile  { margin-top: 13px; width: auto; }
@@ -658,7 +694,10 @@ td.row_select a { display: block; text-align: center; vertical-align: middle; }
 td.source       { font-size: 1.4em; line-height: 1.2857em; }
 
 th.first        { text-align: center; width: 1%; }
-th.grid_header  { border-bottom: 1px solid; text-align: left; }
+th.grid_header  {
+   border-bottom: 1px solid; font-size: 1.4em; line-height: 1.2857em;
+   text-align: left;
+}
 th.sort         { cursor: pointer; }
 th.normal       { font-size: 1.2em; text-align: center; }
 
@@ -1182,9 +1221,11 @@ img.tools {
    white-space: nowrap;
 }
 .library:hover { border: 1px outset; }
-.library_panel { border: 1px solid; clear: left; margin-left: 6px; }
-.library_subheader {
-   display: block; padding: 3px; text-decoration: none;
+.library_panel {
+   -khtml-border-radius: 4px; -moz-border-radius: 4px;
+   -webkit-border-radius: 4px; border-radius: 4px;
+   display: none; border: 1px solid; float: left; height: auto;
+   margin-left: 3px; position: relative; overflow: hidden;
 }
 .recipe {
    border-collapse: separate; border-spacing: 3px; clear: left; margin-top: 0;

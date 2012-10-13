@@ -18,7 +18,6 @@ sub init {
    $self->href    ( undef     );
    $self->imgclass( undef     );
    $self->target  ( undef     );
-   $self->text    ( $self->loc( q(link) ) );
    $self->tiptype ( q(normal) );
    return;
 }
@@ -35,7 +34,7 @@ sub render_field {
                              class => $self->imgclass,
                              src   => $self->text } )
             : $hacc->span( { class => $self->imgclass } )
-            : $self->text;
+            : $self->text || $self->loc( q(link) );
 
    $self->href or return $html; delete $args->{name};
 

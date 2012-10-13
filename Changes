@@ -1,5 +1,9 @@
 Revision history for HTML::FormWidgets
 
+0.14.373 2012-10-13
+         - Only localise our own text, not text passed in
+         - Refactored the calling of the localisation method
+         - Refactored the initialisation of the options hash
          - Changed flds attr to fields in Table
          - Add TableRow type to support LiveGrids
          - Bug fix data lookup in Template

@@ -53,11 +53,8 @@ sub render_field {
 
       $ref->{href} and next;
 
-      $style     = 'display: none; ';
-      $style    .= 'width: '.$self->width.'px;' if ($self->width);
       $html     .= $hacc->div( { class => $self->class.q(_panel),
-                                 id    => $id.q(Disp),
-                                 style => $style }, 'Loading...' );
+                                 id    => $id.q(Disp) }, 'Loading...' );
    }
 
    return $html;

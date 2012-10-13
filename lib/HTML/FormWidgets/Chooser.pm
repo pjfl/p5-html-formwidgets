@@ -14,11 +14,11 @@ sub init {
 
    $self->class  ( q(chooser_button fade submit) );
    $self->config ( { height => 500, width => 500, x => 10, y => 10 } );
-   $self->default( 'Choose' );
+   $self->default( $self->loc( 'Choose' ) );
    $self->field  ( q() );
    $self->href   ( undef );
    $self->subtype( q(window) );
-   $self->title  ( 'Select Item' );
+   $self->title  ( $self->loc( 'Select Item' ) );
    return;
 }
 
@@ -32,13 +32,14 @@ sub render_field {
                              href  => $self->href,
                              id    => $self->id, }, q( ) );
 
-      return $hacc->div( { id => $self->id.q(Disp) }, $html );
+      return $hacc->div( { class => q(chooser_panel),
+                           id    => $self->id.q(Disp) }, $html );
    }
 
    $config->{ $_ } = "'".($self->$_)."'" for (qw(field subtype));
 
-   $config->{button} = "'".$self->loc( $self->default )."'";
-   $config->{title } = "'".$self->loc( $self->title   )."'";
+   $config->{button} = "'".$self->default."'";
+   $config->{title } = "'".$self->title."'";
 
    my $js = { args   => "[ '".$self->href."', ".__stringify( $config )." ]",
               method => "'chooser'" };

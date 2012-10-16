@@ -1,5 +1,7 @@
 Revision history for HTML::FormWidgets
 
+         - Re-added setting the outer div width for Cloud
+
 0.14.373 2012-10-13
          - Only localise our own text, not text passed in
          - Refactored the calling of the localisation method

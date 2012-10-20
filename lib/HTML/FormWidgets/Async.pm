@@ -4,7 +4,7 @@ package HTML::FormWidgets::Async;
 
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.14.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.15.%d', q$Rev$ =~ /\d+/gmx );
 use parent qw(HTML::FormWidgets);
 
 __PACKAGE__->mk_accessors( qw(config) );
@@ -24,7 +24,7 @@ sub render_field {
 
    for my $item (@{ $self->config }) {
       while (my ($id, $js) = each %{ $item }) {
-         $self->add_literal_js( $self->class, $id, $js );
+         $self->add_literal_js( q(server), $id, $js );
       }
    }
 

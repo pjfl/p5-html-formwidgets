@@ -1,4 +1,4 @@
-/* @(#)$Id: 15html-formwidgets.js 1355 2012-10-13 21:44:31Z pjf $ */
+/* @(#)$Id: 15html-formwidgets.js 1361 2012-10-22 04:57:44Z pjf $ */
 
 /* Local Variables:
  * Mode: javascript
@@ -9,7 +9,6 @@ Options.implement( {
    aroundSetOptions: function( options ) {
       options         = options || {};
       this.collection = [];
-      this.config     = {};
       this.context    = {};
       this.debug      = false;
       this.log        = function() {};
@@ -20,7 +19,12 @@ Options.implement( {
          }
       }.bind( this ) );
 
-      this.setOptions( options );
+      this.setOptions( options ); var opt = this.options;
+
+      if (!this.config && this.context.config && opt.config_attr)
+         this.config = this.context.config[ opt.config_attr ];
+
+      if (!this.config) this.config = {};
 
       if (this.context.collect) this.context.collect( this );
 
@@ -92,6 +96,7 @@ var AutoSize = new Class( {
    Implements: [ Events, Options ],
 
    options           : {
+      config_attr    : 'inputs',
       container_class: 'expanding_area',
       preformat_class: 'expanding_spacer',
       selector       : '.autosize' // element class to search for
@@ -102,7 +107,7 @@ var AutoSize = new Class( {
    },
 
    attach: function( el ) {
-      var opt  = this.options;
+      var opt  = this.mergeOptions( el.id );
       var div  = new Element( 'div', { 'class': opt.container_class } );
       var pre  = new Element( 'pre', { 'class': opt.preformat_class } );
       var span = new Element( 'span' );
@@ -120,7 +125,7 @@ var AutoSize = new Class( {
 var Calendars = new Class( {
    Implements: [ Options ],
 
-   options: { selector: '.calendars' },
+   options: { config_attr: 'calendars', selector: '.calendars' },
 
    initialize: function( options ) {
       this.aroundSetOptions( options ); this.build();
@@ -252,20 +257,15 @@ var Columnizer = new Class( {
    },
 
    initialize: function( el, options ) {
-      el = $( el );
-
       if (options.columns && typeOf( options.columns ) != 'number')
          options.columns = null;
 
       this.setOptions( options ); var opt = this.options;
-      // this is where we'll put the real content
-      this.cache = new Element( 'div' );
-      this.node  = $( opt.target || el );
+
+      el = $( el ); this.node = $( opt.target ) || el;
 
       if (! this.node.data) this.node.data = {
           lastWidth: 0, size: this.node.getSize() };
-
-      this.cache.adopt( this.node.getChildren().clone() );
 
       // images loading after dom load can screw up the column heights,
       // so recolumnize after images load
@@ -294,7 +294,11 @@ var Columnizer = new Class( {
          }
       }
 
-      this.build();
+      // this is where we'll put the real content
+      this.cache = new Element( 'div' );
+      this.cache.adopt( this.node.getChildren().clone() );
+
+      this.build(); this.node.store( 'columnizer', this );
 
       if (! opt.buildOnce)
          window.addEvent( 'resize', function() { this.build() }.bind( this ) );
@@ -306,7 +310,7 @@ var Columnizer = new Class( {
       var num_cols   = opt.columns ? opt.columns
                                    : Math.round( data.size.x / opt.width );
       var padding    = opt.columnPadding;
-      var width      = (100 - (2 * padding * num_cols)) / num_cols;
+      var width      = Math.floor( (100 - (2 * padding * num_cols)) / num_cols);
 
       if (data.columnizing || data.lastWidth == width) return;
 
@@ -316,7 +320,7 @@ var Columnizer = new Class( {
 
       var style      = { float  : opt.float,
                          padding: '0px ' + padding + '%',
-                         width  : Math.floor( width ) + '%' };
+                         width  : width + '%' };
 
       this.node.setStyles( style );
       this.cache.getChildren().each( function( el ) {
@@ -637,8 +641,7 @@ var Columnizers = new Class( {
       var klass = el.getProperty( 'class' ).split( ' ' )[ 0 ];
       var cols  = this.options.classNames.indexOf( klass );
 
-      el.columnizer
-         = new Columnizer( el, this.mergeOptions( { columns: cols } ));
+      new Columnizer( el, this.mergeOptions( { columns: cols } ));
    }
 } );
 
@@ -1497,20 +1500,12 @@ var LiveGridScroller = new Class( {
       this.scrollerDiv.inject( table.parentNode, 'after' );
       this.plugin();
 
-      if (Browser.ie) {
-         table.onmousewheel = function( ev ) {
-            this.scrollerDiv.scrollTop
-               += (ev.wheelDelta >= 0 < 0 ? -1 : 1) * this.lineHeight;
-            this.handleScroll( true );
-         }.bind( this );
-      }
-      else {
-         table.addEventListener( 'DOMMouseScroll', function( ev ) {
-            this.scrollerDiv.scrollTop
-               += (ev.detail < 0 ? -1 : 1) * this.lineHeight;
-            this.handleScroll( true );
-         }.bind( this ), true );
-      }
+      table.addEvent( 'mousewheel', function( ev ) {
+         ev.stop();
+         this.scrollerDiv.scrollTop
+            += (ev.wheel < 0 ? 1 : -1) * this.lineHeight;
+         this.handleScroll( true );
+      }.bind( this ) );
 
       return;
    },
@@ -1555,7 +1550,7 @@ var LiveGridScroller = new Class( {
 
       this.liveGrid.requestContentRefresh( contentOffset );
 
-      if ( this.metaData.onscrollidle ) this.metaData.onscrollidle();
+      if (this.metaData.onscrollidle) this.metaData.onscrollidle();
 
       return;
    },
@@ -1575,6 +1570,7 @@ var LiveGrids = new Class( {
    Implements: [ Options ],
 
    options       : {
+      config_attr: 'anchors',
       gridSize   : 10,
       gridToggle : true,
       iconClasses: [ 'a', 'b' ],
@@ -1758,6 +1754,124 @@ var LoadMore = new Class( {
    }
 } );
 
+/* Formally jquery-notification 1.1
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ * http://www.opensource.org/licenses/mit-license.php
+ * http://www.gnu.org/licenses/gpl-2.0.html
+ */
+
+var NoticeBoard = new Class( {
+   Implements: Options,
+
+   options      : {
+      canClose  : true,
+      click     : function() {},
+      content   : '',
+      fadeIn    : 400,
+      fadeOut   : 600,
+      hideDelay : 7000,
+      horizontal: 'right',
+      limit     : 3,
+      noshow    : false,
+      queue     : true,
+      slideUp   : 600,
+      vertical  : 'bottom'
+   },
+
+   initialize: function( options ) {
+      this.aroundSetOptions( options ); var opt = this.options;
+
+      var klass = 'notice-board nb-' + opt.vertical + ' nb-' + opt.horizontal;
+
+      this.board = $$( '.' + klass )[ 0 ];
+
+      // Create notification container
+      if (! this.board) this.board =
+         new Element( 'div', { class: klass } ).inject( $( 'body' ) );
+
+      this.queue = [];
+   },
+
+   create: function( content, options ) { // Create new notification and show
+      var opt  = this.mergeOptions( options );
+      var qlen = this.board.getChildren( '.notice:not(.hiding)' ).length;
+
+      if (opt.limit && qlen >= opt.limit) { // Limit reached
+         if (opt.queue) this.queue.push( [ content, opt ] );
+         return;
+      }
+
+      var el = new Element( 'div', { class: 'notice' } ).set( 'html', content );
+
+      if (opt.canClose) {
+         new Element( 'div', { class: 'close_icon' } ).inject( el, 'top' );
+      }
+
+      el.store( 'notice:options', opt ); this.attach( el );
+
+      if (!opt.noshow) this.show( el );
+
+      return el;
+   },
+
+   attach: function( el ) {
+      var opt = el.retrieve( 'notice:options' );
+
+      el.addEvents( {
+         click: function( ev ) {
+            ev.stop(); opt.click.call( this, el ) }.bind( this ),
+
+         mouseenter: function( ev ) { // Avoid hide when hover
+            ev.stop(); el.addClass( 'hover' );
+
+            if (el.hasClass( 'hiding' )) {
+               el.get( 'slide' ).pause(); // Recover
+               el.get( 'tween' ).pause();
+               el.set( 'tween', { duration: opt.fadeIn, property: 'opacity' } );
+               el.tween( 1 );
+               el.get( 'slide' ).show();
+               el.removeClass( 'hiding' );
+               el.addClass( 'pending' );
+            }
+         },
+
+         mouseleave: function( ev ) { // Hide was pending
+            if (el.hasClass( 'pending' )) this.hide( el );
+            el.removeClass( 'hover' );
+         }.bind( this )
+      } );
+
+      var icon; if (icon = el.getChildren( '.close_icon' )[ 0 ]) {
+         icon.addEvent( 'click', function( ev ) { // Close button
+            ev.stop(); this.hide( el ) }.bind( this ) );
+      }
+   },
+
+   show: function( el ) { // Append to board and show
+      var opt = el.retrieve( 'notice:options' ), fadein = opt.fadeIn;
+
+      el.inject( this.board, opt.vertical == 'top' ? 'bottom' : 'top' );
+      el.set( 'tween', { duration: fadein, property: 'opacity' } ).tween( 1 );
+
+      if (!opt.hideDelay) return;
+
+      el.noticeTimer = function() { // Hide timer
+         el.hasClass( 'hover' ) ? el.addClass( 'pending' ) : this.hide( el );
+      }.delay( opt.hideDelay, this );
+   },
+
+   hide: function( el ) {
+      var opt = el.retrieve( 'notice:options' ); el.addClass( 'hiding' );
+
+      el.set( 'tween', { duration: opt.fadeOut, onComplete: function() {
+         var q; if (q = this.queue.shift()) this.create( q[ 0 ], q[ 1 ] );
+      }.bind( this ), property: 'opacity' } ).tween( 0 );
+
+      el.set( 'slide', { duration: opt.slideUp, onComplete: function() {
+         el.getParent().destroy() } } ).slide( 'out' );
+   }
+} );
+
 var PersistantStyleSheet = new Class( {
    initialize: function( options ) {
       var opt = options || {}; this.cookies = opt.cookies || function() {};
@@ -1802,15 +1916,16 @@ var PersistantStyleSheet = new Class( {
 var RotateList = new Class( {
    Implements: [ Options ],
 
-   options      : {
-      direction : 'up',      // Direction in which to scroll
-      duration  : 1000,      // Millisecs for each transition
-      nitems    : 3,         // Number of items to display
-      selector  : '.rotate', // Class name matching lists to rotate
-      speed     : 5000,      // Millisecs between rotations
-      transition: 'linear',  // Transition style
-      zero_style: { height : 0, marginBottom : 0, marginTop : 0,
-                    opacity: 0, paddingBottom: 0, paddingTop: 0 }
+   options       : {
+      config_attr: 'lists',
+      direction  : 'up',      // Direction in which to scroll
+      duration   : 1000,      // Millisecs for each transition
+      nitems     : 3,         // Number of items to display
+      selector   : '.rotate', // Class name matching lists to rotate
+      speed      : 5000,      // Millisecs between rotations
+      transition : 'linear',  // Transition style
+      zero_style : { height : 0, marginBottom : 0, marginTop : 0,
+                     opacity: 0, paddingBottom: 0, paddingTop: 0 }
    },
 
    initialize: function( options ) {
@@ -1883,6 +1998,7 @@ var ScrollPins = new Class( {
    Implements: [ Events, Options ],
 
    options             : {
+      config_attr      : 'scrollPins',
       scrollBarWidth   : 19,
       scrollDuration   : 500,
       scrollMargin     : 0,
@@ -2025,7 +2141,7 @@ var ScrollPins = new Class( {
 var ServerUtils = new Class( {
    Implements: [ Options, LoadMore ],
 
-   options: { selector: '.server', url: null },
+   options: { config_attr: 'server', selector: '.server', url: null },
 
    initialize: function( options ) {
       this.aroundSetOptions( options ); this.build();
@@ -2047,6 +2163,7 @@ var Sidebar = new Class( {
    Implements: [ Options ],
 
    options                : {
+      config_attr         : 'sidebars',
       accordion           : 'accordionDiv',
       panel               : 0,
       panelClass          : '.accordion_panel',
@@ -2059,10 +2176,18 @@ var Sidebar = new Class( {
    },
 
    initialize: function( options ) {
-      this.config  = options.config  || {}; delete options[ 'config'  ];
+      this.config  = options.config; delete options[ 'config'  ];
       this.context = options.context || {}; delete options[ 'context' ];
 
       this.setOptions( options ); var opt = this.options, prefix = opt.prefix;
+
+      if (!this.config && this.context.config && opt.config_attr)
+         this.config = this.context.config[ opt.config_attr ];
+
+      if (!this.config && opt.config_attr)
+         this.config = this.context.config[ opt.config_attr ];
+
+      if (!this.config) this.config = {};
 
       var sb; if (! (sb = this.el = $( prefix + 'Disp' ))) return;
 
@@ -2097,12 +2222,14 @@ var Sidebar = new Class( {
 
          if (cookies.get( prefix )) {
             cookies.remove( prefix ); this.slider.slideOut();
+            this.context.noticeBoard.create( 'Sidebar closed...' );
          }
          else {
             var panel = cookies.get( prefix + 'Panel' );
 
             cookies.set( prefix, 'pushedpin_icon' ); this.context.resize();
             this.accordion.display( panel, false ); this.slider.slideIn();
+            this.context.noticeBoard.create( 'Sidebar opened...' );
          }
       }.bind( this ) );
 
@@ -2198,7 +2325,7 @@ var Sidebar = new Class( {
 var Sliders = new Class( {
    Implements: [ Options ],
 
-   options: { selector: '.slider' },
+   options: { config_attr: 'sliders', selector: '.slider' },
 
    initialize: function( options ) {
       this.aroundSetOptions( options ); this.build();
@@ -2219,7 +2346,7 @@ var Sliders = new Class( {
             submit.setField.call( submit, name, value ) }
       } );
 
-      el.slider = new Slider( el, knob, cfg ).set( default_v );
+      new Slider( el, knob, cfg ).set( default_v );
    }
 } );
 
@@ -2490,6 +2617,7 @@ var Spinners = new Class( {
    Implements: [ Options ],
 
    options         : {
+      config_attr  : 'spinners',
       class        : 'spinner-js',
       hideOnClick  : true,
       img          : false,
@@ -2638,7 +2766,12 @@ var Storage = new Class( {
 var SubmitUtils = new Class( {
    Implements: [ Options ],
 
-   options: { formName: null, selector: '.submit', wildCard: '%' },
+   options       : {
+      config_attr: 'anchors',
+      formName   : null,
+      selector   : '.submit',
+      wildCard   : '%'
+   },
 
    initialize: function( options ) {
       this.aroundSetOptions( options );
@@ -2747,10 +2880,13 @@ var SubmitUtils = new Class( {
    },
 
    submitForm: function( button_value ) {
-      var has__method_element = $$( '*[name=_method]' ).some( function( el ) {
-         return (el.value == button_value) ? true : false; } );
+      var button; $$( '*[name=_method]' ).some( function( el ) {
+         if (el.value == button_value) { button = el; return true }
+         return false;
+      }.bind( this ) );
 
-      if (! has__method_element) {
+      if (button) { this.detach( button ); button.click() }
+      else {
          new Element( 'input', {
             name: '_method', type: 'hidden', value: button_value
          } ).inject( $( 'top' ), 'after' );
@@ -2881,6 +3017,7 @@ var TableUtils = new Class( {
    Implements: [ Events, Options ],
 
    options           : {
+      config_attr    : 'tables',
       editRowClass   : 'editable_row',
       formName       : null,
       inputCellClass : 'data_field',
@@ -3086,7 +3223,7 @@ var TabSwapper = new Class( {
    },
 
    addTab: function( tab, section, index ) {
-      var opt = this.options, clicker = tab.getElement( opt.clickers ) || tab;
+      var opt = this.options;
 
       // If the index isn't specified, put the tab at the end
       if (index == undefined) index = this.tabs.length;
@@ -3114,6 +3251,8 @@ var TabSwapper = new Class( {
          mouseover: function() {
             this.addClass( opt.mouseoverClass ); }.bind( tab )
       } );
+
+      var clicker = tab.getElement( opt.clickers ) || tab;
 
       clicker.addEvent( 'click', function( ev ) {
          ev.stop(); this.show( index ) }.bind( this ) );
@@ -3261,7 +3400,12 @@ var TabSwapper = new Class( {
 var TabSwappers = new Class( {
    Implements: [ Options ],
 
-   options: { selector: '.tabswapper', smooth: true, smoothSize: true },
+   options       : {
+      config_attr: 'tabSwappers',
+      selector   : '.tabswapper',
+      smooth     : true,
+      smoothSize : true
+   },
 
    initialize: function( options ) {
       this.aroundSetOptions( options ); this.build();
@@ -3550,7 +3694,7 @@ this.Tips = new Class( {
 var Togglers = new Class( {
    Implements: [ Options ],
 
-   options: { selector: '.togglers' },
+   options: { config_attr: 'anchors', selector: '.togglers' },
 
    initialize: function( options ) {
       this.aroundSetOptions( options ); this.build();
@@ -3803,6 +3947,7 @@ var WindowUtils = new Class( {
    Implements: [ Options, LoadMore ],
 
    options       : {
+      config_attr: 'anchors',
       customLogFn: false,
       height     : 600,
       quiet      : false,

@@ -11,6 +11,7 @@ var Behaviour = new Class( {
    config            : {
       anchors        : {},
       calendars      : {},
+      inputs         : {},
       lists          : {},
       scrollPins     : {},
       server         : {},
@@ -18,7 +19,8 @@ var Behaviour = new Class( {
       sliders        : {},
       spinners       : {},
       tables         : {},
-      tabSwappers    : {} },
+      tabSwappers    : {}
+   },
 
    options           : {
       contentId      : 'content',
@@ -54,54 +56,41 @@ var Behaviour = new Class( {
    },
 
    load: function( first_field ) {
-      var cfg = this.config, el, opt = this.options;
+      var opt = this.options;
 
-      this.cookies = new Cookies( { domain: opt.cookieDomain,
-                                    path  : opt.cookiePath,
-                                    prefix: opt.cookiePrefix } );
-
-      this.stylesheet = new PersistantStyleSheet( { cookies: this.cookies } );
+      this.cookies     = new Cookies( {
+         domain        : opt.cookieDomain,
+         path          : opt.cookiePath,
+         prefix        : opt.cookiePrefix } );
+      this.stylesheet  = new PersistantStyleSheet( { cookies: this.cookies } );
 
       this._restoreStateFromCookie();
 
       this.submit      = new SubmitUtils( {
          context       : this,
-         config        : cfg.anchors,
          formName      : opt.formName } );
       this.window      = new WindowUtils( {
          context       : this,
-         config        : cfg.anchors,
          target        : opt.target,
          url           : opt.defaultURL } );
 
       this.autosizer   = new AutoSize( { context: this } );
-      this.calendars   = new Calendars( {
-         context       : this,
-         config        : cfg.calendars } );
+      this.calendars   = new Calendars( { context: this } );
       this.checkboxReplacements = new CheckboxReplace( { context: this } );
       this.freeList    = new FreeList( { context: this } );
       this.groupMember = new GroupMember( { context: this } );
       this.liveGrids   = new LiveGrids( {
          context       : this,
-         config        : cfg.anchors,
          iconClasses   : opt.iconClasses,
          url           : opt.defaultURL } );
-      this.rotateList  = new RotateList( {
-         context       : this,
-         config        : cfg.lists } );
+      this.noticeBoard = new NoticeBoard( { context: this } );
+      this.rotateList  = new RotateList( { context: this } );
       this.server      = new ServerUtils( {
          context       : this,
-         config        : cfg.server,
          url           : opt.defaultURL } );
-      this.sidebar     = new Sidebar ( {
-         context       : this,
-         config        : cfg.sidebars } );
-      this.sliders     = new Sliders( {
-         context       : this,
-         config        : cfg.sliders } );
-      this.spinners    = new Spinners( {
-         context       : this,
-         config        : cfg.spinners } );
+      this.sidebar     = new Sidebar ( { context: this } );
+      this.sliders     = new Sliders( { context: this } );
+      this.spinners    = new Spinners( { context: this } );
 
       var table_rebuild = function() {
          this.checkboxReplacements.build();
@@ -109,18 +98,13 @@ var Behaviour = new Class( {
 
       this.tables      = new TableUtils( {
          context       : this,
-         config        : cfg.tables,
          formName      : opt.formName,
          onRowAdded    : table_rebuild } );
       this.tableSort   = new TableSort( {
          context       : this,
          onSortComplete: table_rebuild } );
-      this.tabSwappers = new TabSwappers( {
-         context       : this,
-         config        : cfg.tabSwappers } );
-      this.togglers    = new Togglers( {
-         context       : this,
-         config        : cfg.anchors } );
+      this.tabSwappers = new TabSwappers( { context: this } );
+      this.togglers    = new Togglers( { context: this } );
       this.trees       = new Trees( {
          context       : this,
          cookieDomain  : opt.cookieDomain,
@@ -139,7 +123,7 @@ var Behaviour = new Class( {
 
       this.columnizers = new Columnizers( { context: this } );
       this.scrollPins  = new ScrollPins( {
-         config        : cfg.scrollPins,
+         context       : this,
          log           : this.window.log,
          onAttach      : function( el ) {
             this.addEvent( 'build', function() {
@@ -147,12 +131,10 @@ var Behaviour = new Class( {
             }.bind( el.pin.markup ) );
 
             this.addEvent( 'show', function() {
-               this.tween( 'opacity', 1 ) }.bind( el.pin.markup ) );
-         },
+               this.tween( 'opacity', 1 ) }.bind( el.pin.markup ) ); },
          onInitialize  : function() {
             this.fireEvent.delay( 1000, this, [ 'show' ] ) },
-         trayPadding   : 0
-      } );
+         trayPadding   : 0 } );
       this.tips        = new Tips( {
          context       : this,
          onHide        : function() { this.fx.start( 0 ) },
@@ -162,7 +144,7 @@ var Behaviour = new Class( {
          onShow        : function() { this.fx.start( 1 ) },
          showDelay     : 666 } );
 
-      if (first_field && (el = $( first_field ))) el.focus();
+      var el; if (first_field && (el = $( first_field ))) el.focus();
    },
 
    rebuild: function() {

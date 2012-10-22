@@ -1,6 +1,6 @@
-/* @(#)$Id: green.css 1355 2012-10-13 21:44:31Z pjf $ */
+/* @(#)$Id: green.css 1360 2012-10-22 03:31:52Z pjf $ */
 
-body { background: url(background.png) #e9f7dc repeat; color: black; }
+body { background: url(background.jpg) #e9f7dc repeat; color: black; }
 /* body { background-color: #E08F2F; color: black; } */
 
 abbr, acronym, fieldset, ins { border-color: #336; }
@@ -12,6 +12,7 @@ hr { border-color: #336 transparent transparent; }
 .accordion_header { border-color: #cc9 #336 #336 #336; }
 .accordion_header_first { border-top-color: #336; }
 .accordion_panel { border-color: transparent #336 #336 #336; }
+.accordion_panel_container { background-color: #ffc; }
 .accordion_panel_container .active { background-color: #663; color: #ffc; }
 .accordion_panel_container .inactive, .sdata_item .tree,
 .slider, .spinner-js { background-color: #cc9; }
@@ -21,9 +22,13 @@ hr { border-color: #336 transparent transparent; }
 .submit_button { border-color: #cc9; color: #336; }
 .button, .dialog-body, .navigation:hover, .pod h2, .pod p.toplink,
 .results legend, .sdata_item legend, .sdata_item input.button, .slider,
-.slider .knob, .spinner-js, .tabset .panel_content, .tabset .tab, .tick, .tree {
-   border-color: #336;
+.slider .knob, .sidebar_panel, .spinner-js, .tabset .panel_content, .tabset
+.tab, .tick, .tree { border-color: #336; }
+.button_item input.button:hover, .slider .knob, .tree_link:hover {
+   background-color: #9c9;
 }
+.company_logo { background-color: #663; border-bottom-color: #336; }
+.content_panel { border-color: #336; background-color: #ffc; }
 .dialog-body { background: rgba( 204,204,153,1 ); }
 .dialog-title {
    background: -moz-linear-gradient( top, #13e800 0%, #242e01 );
@@ -31,10 +36,6 @@ hr { border-color: #336 transparent transparent; }
    background: -webkit-gradient( linear, left top, left bottom, from( #13e800 ), to( #242e01 ) );
    color: #ffc;
 }
-.groupmember_container span.title { background: #663; color: #ffc; }
-.header_link, .search, .tree_link { color: #336; }
-.button_item input.button:hover, .slider .knob,
-.tree_link:hover { background-color: #9c9; }
 .checkbox_container, .navigation { border-color: transparent; }
 .checkbox_container:hover { background-color: #9c9; border-color: #336; }
 .chooser_grid { color: #000; }
@@ -42,24 +43,84 @@ hr { border-color: #336 transparent transparent; }
 .cut_here { background-color: transparent; border-top-color: #f00; }
 .error { background-color: #fcc; }
 .even_row { background-color: #c1d9a9; }
+.footer_item_panel { background-color: #cc9; }
+.footer_panel { background-color: transparent; }
 .grid_subheader { background-color: #9c9; color: #000; }
+.groupmember_container span.title { background: #663; color: #ffc; }
+.header_link, .search, .tree_link { color: #336; }
 .header_title { color: #336; }
+.header_top { background: #663 url(header.png) repeat-x; color: #ffc; }
 .info { color: #8b8b32; }
 .mask { background: rgba( 64,64,64,0.5 ); }
+.menu_bottom {
+   background-color: #cc9; border-color: transparent #336 #336 #336;
+}
+.menu_filler {
+   background-color: #cc9; border-color: transparent transparent #336;
+}
+.menu_pad { background-color: #8b8b32; }
+.menu_top {
+   background-color: transparent; border-color: #336 #336 transparent;
+}
+.navigation_menu .menu dd { background: transparent; }
+.navigation_menu a.menu_title {
+   background-color: #cc9;
+   border-color: transparent transparent #336 transparent;  color: #000;
+}
+.navigation_menu a.menu_title:hover { background-color: #ffc; }
+.navigation_menu a.menu_selected {
+   border-color: transparent #336 transparent #336; color: #000;
+}
+.navigation_menu a.menu_selected:hover { background-color: #ffc; }
+.navigation_menu a.menu_link {
+   background-color: #cc9; border-color: transparent #336 transparent #336;
+   color: #000;
+}
+.navigation_menu a.menu_link:hover { background-color: #ffc; }
+.notice-board .notice, .tips-container {
+   -khtml-box-shadow: 2px 2px 4px #336; -moz-box-shadow: 2px 2px 4px #336;
+   -webkit-box-shadow: 2px 2px 4px #336; box-shadow: 2px 2px 4px #336;
+   background: #9c9; border-color: #336;
+}
 .odd_row { background-color: #cc9; }
+.sidebar_fill { border-color: #cc9; }
+.sidebar_switch {
+   background-color: #cc9; border-top-color: #8b8b32;
+   border-bottom-color: #336;
+}
+.sidebar_switch:hover { background-color: #ffc; }
 .spinner-shadow { background-color: #000; }
 .split { color: #ffc; }
 .tabset .tab_selected { border-color: #336 #336 #ffc; }
-.tips-container {
-   background: #9c9; border-color: #336;
-   -khtml-box-shadow: 2px 2px 4px #336; -moz-box-shadow: 2px 2px 4px #336;
-   -webkit-box-shadow: 2px 2px 4px #336; box-shadow: 2px 2px 4px #336;
-}
 .tips-mark0 { border-color: transparent transparent #336 #336; }
 .tips-mark1 { border-color: transparent transparent #9c9 #9c9; }
 .tips-defn { color: #000; }
 .tips-term { color: Yellow; }
+.tools_menu .menu dd { background: transparent; }
+.tools_menu a.tools_selected {
+   border-color: transparent #336 transparent #336; color: #000;
+}
+.tools_menu a.tools_selected:hover { background-color: #ffc; }
+.tools_menu a.tools_title {
+   background-color: #cc9; border-color: transparent; color: #000;
+}
+.tools_menu a.tools_title:hover { background-color: #ffc; }
+.tools_menu a.tools_link {
+   background-color: #cc9; border-color: transparent #336 transparent #336;
+   color: #000;
+}
+.tools_menu a.tools_link:hover { background-color: #ffc; }
 .warning { background: Yellow; }
+.wysiwyg_container iframe { background-color: #cc9; border-color: #336; }
+.wysiwyg_container .toolbar { background-color: #663; }
+.wysiwyg_container .toolbar * { background-color: #ffc; }
+.wysiwyg_container .toolbar *:hover { background-color: #9c9; }
+.wysiwyg_container .toolbar.disabled *:hover {
+   background-color: transparent; border-color: #663;
+}
+.wysiwyg_container .toolbar .spacer {
+   background-color: #663; border-color: #ffc;
+}
 
 input.ifield, password.ifield, select.ifield, textarea.ifield {
    background-color: #cc9; border-color: #336; color: #336;
@@ -70,14 +131,13 @@ input:focus, password:focus, select:focus, textarea:focus {
 input.required, password.required, select.required, textarea.required {
    border-right-color: #f00;
 }
-
 span.error { border-color: #336; }
 table.editable td.row_select,
 table.editable td.row_drag { background-color: #c1d9a9; border-color: #336; }
 table.editable th { border-color: #336; }
 table.editable .even_row, table.editable .odd_row { background-color: #ffc; }
 table.source .even_row { background-color: #cc9; }
-table.grid { background-color: #cc9; }
+table.grid, .grid_container { background-color: #cc9; }
 td.first { border-right-color: #336; }
 th.grid_header { border-bottom-color: #336; }
 th.normal { background-color: #663; color: #ffc; }
@@ -125,6 +185,9 @@ th.normal { background-color: #663; color: #ffc; }
 .calendar table .wn { border-color: #336; background: #dfb; }
 .calendar tbody .rowhilite td { background: #dfd; }
 .calendar tbody .rowhilite td.wn { background: #efe; }
+.calendar tbody td {
+   border-color: transparent;
+}
 .calendar tbody td.hilite { /* Hovered cells <TD> */
   border-color: #bbb; background: #efd;
 }
@@ -205,81 +268,6 @@ th.normal { background-color: #663; color: #ffc; }
    background-color: #abbd6b;
 }
 .chzn-container .chzn-search input { background-color: #9c9; }
-
-/* WYSIWYG */
-
-.wysiwyg_container iframe { background-color: #cc9; border-color: #336; }
-.wysiwyg_container .toolbar { background-color: #663; }
-.wysiwyg_container .toolbar * { background-color: #ffc; }
-.wysiwyg_container .toolbar *:hover { background-color: #9c9; }
-.wysiwyg_container .toolbar.disabled *:hover {
-   background-color: transparent; border-color: #663;
-}
-.wysiwyg_container .toolbar .spacer {
-   background-color: #663; border-color: #ffc;
-}
-
-/* Navigation menu and tools menu */
-
-.menu_bottom {
-   background-color: #cc9; border-color: transparent #336 #336 #336;
-}
-.menu_filler {
-   background-color: #cc9; border-color: transparent transparent #336;
-}
-.menu_pad { background-color: #8b8b32; }
-.menu_top {
-   background-color: transparent; border-color: #336 #336 transparent;
-}
-#menu dd { background: transparent; }
-#menu li a.menu_title {
-   background-color: #cc9;
-   border-color: transparent transparent #336 transparent;  color: #000;
-}
-#menu li a.menu_title:hover { background-color: #ffc; }
-#menu li a.menu_selected {
-   border-color: transparent #336 transparent #336; color: #000;
-}
-#menu li a.menu_selected:hover { background-color: #ffc; }
-#menu li a.menu_link {
-   background-color: #cc9; border-color: transparent #336 transparent #336;
-   color: #000;
-}
-#menu li a.menu_link:hover { background-color: #ffc; }
-#sidebarCap { background-color: #cc9; }
-#sidebarCap:hover { background-color: #ffc; }
-#tools dd { background: transparent; }
-#tools li a.tools_selected {
-   border-color: transparent #336 transparent #336; color: #000;
-}
-#tools li a.tools_selected:hover { background-color: #ffc; }
-#tools li a.tools_title {
-   background-color: #cc9; border-color: transparent; color: #000;
-}
-#tools li a.tools_title:hover { background-color: #ffc; }
-#tools li a.tools_link {
-   background-color: #cc9; border-color: transparent #336 transparent #336; color: #000;
-}
-#tools li a.tools_link:hover { background-color: #ffc; }
-
-/* Identifird elements */
-
-#bookmark { background-color: #663; }
-#companyLogo { border-bottom-color: #336; }
-#content { border-color: #336; background-color: #ffc; }
-#conversionPanel { background-color: #ffc; }
-#footerDisp { background-color: transparent; }
-#footer\.data { background-color: #cc9; }
-#headerTop { background: #663 url(header.png) repeat-x; color: #ffc; }
-#informationPanel { background-color: #ffc; }
-#companyLogo { background-color: #663; }
-#navigation_sidebarPanel { background-color: #ffc; }
-#overviewPanel { background-color: #ffc; }
-#searchPanel { background-color: #ffc; }
-#sidebarCap { border-top-color: #8b8b32; border-bottom-color: #336; }
-#sidebarDisp { border-color: #336; }
-#sidebarFill { border-color: #cc9; }
-#toolTip { background-color: #9CC; }
 
 /* Application specific */
 

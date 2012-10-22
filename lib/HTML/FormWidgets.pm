@@ -186,11 +186,14 @@ sub add_hidden {
 sub add_literal_js {
    my ($self, $js_class, $id, $config) = @_; my $list = $NUL;
 
-   ($js_class and $id and $config and ref $config eq q(HASH)) or return;
+   ($js_class and $id and $config) or return;
 
-   while (my ($k, $v) = each %{ $config }) {
-      if ($k) { $list and $list .= ', '; $list .= $k.': '.($v || 'null') }
+   if (ref $config eq q(HASH)) {
+      while (my ($k, $v) = each %{ $config }) {
+         if ($k) { $list and $list .= ', '; $list .= $k.': '.($v || 'null') }
+      }
    }
+   else { $list = $config };
 
    my $obj = $self->options->{js_object}; $self->options->{literal_js} ||= [];
 

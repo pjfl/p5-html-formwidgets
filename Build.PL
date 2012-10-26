@@ -27,6 +27,7 @@ Bob->new( {
 } )->create_build_script; # Goal!
 
 # Local Variables:
+# eval: (load-project-state "html-formwidgets")
 # mode: perl
 # tab-width: 3
 # End:

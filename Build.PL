@@ -16,8 +16,9 @@ Bob->new( {
       'HTML::Accessors'         => q(0.7.0),
       'Moose'                   => 2.0402,
       'Pod::Xhtml'              => 1.61,
+      'PPI'                     => 1.213,
+      'PPI::HTML'               => 1.08,
       'Scalar::Util'            => 1.23,
-      'Syntax::Highlight::Perl' => 1.00,
       'Text::ParseWords'        => 3.22,
       'Text::Tabs'              => 98.112801,
       'Try::Tiny'               => 0.06, },
@@ -27,6 +28,7 @@ Bob->new( {
 } )->create_build_script; # Goal!
 
 # Local Variables:
+# tab-title: FormWidgets
 # eval: (load-project-state "html-formwidgets")
 # mode: perl
 # tab-width: 3

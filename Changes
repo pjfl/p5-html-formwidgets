@@ -1,5 +1,7 @@
 Revision history for HTML::FormWidgets
 
+0.16
+         - Replaced Syntax::Highlight::Perl with PPI::HTML
          - Textareas can have literal js in the inputs js config group
          - Can pass scalars as well as hash refs as config to add_literal_js
 

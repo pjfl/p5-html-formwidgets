@@ -9,37 +9,15 @@ use parent qw(HTML::FormWidgets);
 
 use English qw(-no_match_vars);
 use IO::File;
-use Syntax::Highlight::Perl;
+use PPI;
+use PPI::HTML;
 use Text::ParseWords;
 use Text::Tabs;
 
 __PACKAGE__->mk_accessors( qw(header header_class number
-                              path scheme select subtype tabstop) );
+                              path select subtype tabstop) );
 
 my $HASH_CHAR = chr 35;
-my %SCHEME    =
-   ( Variable_Scalar   => [ '<font color="#CC6600">', '</font>' ],
-     Variable_Array    => [ '<font color="#FFCC00">', '</font>' ],
-     Variable_Hash     => [ '<font color="#990099">', '</font>' ],
-     Variable_Typeglob => [ '<font color="#000000">', '</font>' ],
-     Subroutine        => [ '<font color="#339933">', '</font>' ],
-     Quote             => [ '<font color="#000000">', '</font>' ],
-     String            => [ '<font color="#3399FF">', '</font>' ],
-     Comment_Normal    => [ '<font color="#ff0000"><i>', '</i></font>' ],
-     Comment_POD       => [ '<font color="#ff9999">', '</font>' ],
-     Bareword          => [ '<font color="#000000">', '</font>' ],
-     Package           => [ '<font color="#000000">', '</font>' ],
-     Number            => [ '<font color="#003333">', '</font>' ],
-     Operator          => [ '<font color="#999999">', '</font>' ],
-     Symbol            => [ '<font color="#000000">', '</font>' ],
-     Keyword           => [ '<font color="#0000ff"><b>', '</b></font>' ],
-     Builtin_Operator  => [ '<font color="#000000">', '</font>' ],
-     Builtin_Function  => [ '<font color="#000000">', '</font>' ],
-     Character         => [ '<font color="#3399FF"><b>', '</b></font>' ],
-     Directive         => [ '<font color="#000000"><i><b>',
-                            '</b></i></font>' ],
-     Label             => [ '<font color="#000000">', '</font>' ],
-     Line              => [ '<font color="#000000">', '</font>' ], );
 
 sub init {
    my ($self, $args) = @_;
@@ -48,25 +26,24 @@ sub init {
    $self->header_class( q(normal) );
    $self->number      ( 1         );
    $self->path        ( undef     );
-   $self->scheme      ( \%SCHEME  );
    $self->select      ( -1        );
    $self->subtype     ( q(text)   );
    $self->tabstop     ( 3         );
    return;
 }
 
-sub render_field {
-   # Subtypes: csv, html, logfile, source, and text
+sub render_field { # Subtypes: csv, html, logfile, source, and text
    my ($self, $args) = @_;
 
-   my $path = $self->path or return 'Path not specified';
+   my $path = $self->path or return $self->loc( 'Path not specified' );
 
-   $self->subtype or return 'Subtype not specified';
+   $self->subtype or return $self->loc( 'Subtype not specified' );
    $self->subtype eq q(html) and return $self->_render_html( $path );
 
-   -f $path or return "Path ${path} not found";
+   -f $path or return $self->loc( 'Path [_1] not found', $path );
 
-   my $rdr    = IO::File->new( $path, q(r) ) or return "Path $path cannot read";
+   my $error  = $self->loc( 'Path [_1] cannot read', $path );
+   my $rdr    = IO::File->new( $path, q(r) ) or return $error;
    my $text   = do { local $RS = undef; <$rdr> }; $rdr->close;
    my $method = q(_render_).$self->subtype;
 
@@ -193,7 +170,7 @@ sub _render_logfile {
 
    my $r_no = 0; my $rows = q(); my $cells; $self->container( 0 );
 
-   # TODO: Add Prev and next links to append div
+   # TODO: Add Prev and next links to append div. Interior log file sequences
    my $header_cells = sub {
       my ($c_max, $c_no) = @_; my $text = $self->loc( 'Logfile' );
 
@@ -212,21 +189,25 @@ sub _render_logfile {
 }
 
 sub _render_source {
-   my ($self, $text) = @_; my $hacc = $self->hacc;
+   my ($self, $text) = @_; my $hacc = $self->hacc; $self->container( 0 );
 
-   my $fmt = Syntax::Highlight::Perl->new(); $self->container( 0 );
+   $tabstop = $self->tabstop; $text = expand( $text ); # Text::Tabs
 
-   $fmt->set_format( $self->scheme );
-   $fmt->define_substitution( q(<) => q(&lt;),
-                              q(>) => q(&gt;),
-                              q(&) => q(&amp;) );
-   $tabstop = $self->tabstop; # Text::Tabs
-   $text    = $fmt->format_string( expand( $text ) );
+   my $document  = PPI::Document->new( \$text );
+   my $highlight = PPI::HTML->new( line_numbers => 1 );
+   my @lines     = split m{ <br>\n }msx, $highlight->html( $document );
+
+   for my $lno (0 .. $#lines) {
+      $lines[ $lno ] =~ s{ \A </span> }{}msx and $lines[ $lno-1 ] .= q(</span>);
+      $lines[ $lno ] =~ s{ <span\s+class="line_number">\s*\d+:\s+</span> }{}msx;
+   }
+
+   $text = join "\n", @lines;
 
    my $header_cells = sub {
-      my ($c_max, $c_no) = @_; my $text = $self->loc( 'Source Code' );
+      my ($c_max, $c_no) = @_; my $heading = $self->loc( 'Source Code' );
 
-      return $hacc->th( { class => $self->header_class }, $text );
+      return $hacc->th( { class => $self->header_class }, $heading );
    };
    my $row_cells = sub {
       my ($line, $r_no) = @_;

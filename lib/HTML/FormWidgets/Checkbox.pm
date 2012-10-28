@@ -4,7 +4,7 @@ package HTML::FormWidgets::Checkbox;
 
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.15.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.16.%d', q$Rev$ =~ /\d+/gmx );
 use parent qw(HTML::FormWidgets);
 
 __PACKAGE__->mk_accessors( qw(checked label_class labels value) );

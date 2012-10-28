@@ -1,9 +1,38 @@
-/* @(#)$Id: 15html-formwidgets.js 1361 2012-10-22 04:57:44Z pjf $ */
+/* @(#)$Id: 15html-formwidgets.js 1362 2012-10-26 04:39:04Z pjf $ */
 
 /* Local Variables:
- * Mode: javascript
- * Tab-width: 3
+ * mode: javascript
+ * tab-width: 3
  * End: */
+
+Date.extend( 'nowMET', function() { // Calculate Middle European Time UTC + 1
+   var now = new Date();
+
+   now.setTime( now.getTime() + (now.getTimezoneOffset() + 60) * 60 * 1000 );
+
+   return now;
+} );
+
+Date.extend( 'nowUTC', function() { // Calculate UTC
+   var now = new Date();
+
+   now.setTime( now.getTime() + now.getTimezoneOffset() * 60 * 1000 );
+
+   return now;
+} );
+
+Date.implement( {
+   dayFraction: function() { // Elapsed time since SOD in thousandths of a day
+      return ( this.getHours() * 3600 + this.getMinutes() * 60
+               + this.getSeconds() ) /  86.4;
+   },
+
+   swatchTime: function() {
+      var met_day_fraction = Date.nowMET().dayFraction();
+
+      return Number.from( met_day_fraction ).format( { decimals: 2 } );
+   }
+} );
 
 Options.implement( {
    aroundSetOptions: function( options ) {
@@ -2201,7 +2230,7 @@ var Sidebar = new Class( {
 
       // Setup the slide in/out effect
       this.slider = new Fx.Slide( prefix + 'Container', {
-         mode      : 'horizontal',
+         'mode'    : 'horizontal',
          onComplete: function() {
             var sb_icon = $( prefix + 'Icon' );
 

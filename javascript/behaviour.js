@@ -1,8 +1,8 @@
 /* $Id$ */
 
 /* Local Variables:
- * Mode: javascript
- * Tab-width: 3
+ * mode: javascript
+ * tab-width: 3
  * End: */
 
 var Behaviour = new Class( {
@@ -34,6 +34,7 @@ var Behaviour = new Class( {
       minMarginLeft  : 0,
       minMarginRight : 10,
       popup          : false,
+      statusUpdPeriod: 5000,
       target         : null
    },
 
@@ -144,6 +145,9 @@ var Behaviour = new Class( {
          onShow        : function() { this.fx.start( 1 ) },
          showDelay     : 666 } );
 
+      if (opt.statusUpdPeriod && !opt.popup)
+         this.statusUpdater.periodical( opt.statusUpdPeriod, this );
+
       var el; if (first_field && (el = $( first_field ))) el.focus();
    },
 
@@ -156,7 +160,6 @@ var Behaviour = new Class( {
 
       if (! opt.popup) {
          this.cookies.set( 'height', h ); this.cookies.set( 'width',  w );
-         window.defaultStatus = 'w: ' + w + ' h: ' + h;
       }
 
       var content; if (! (content = $( opt.contentId ))) return;
@@ -210,5 +213,13 @@ var Behaviour = new Class( {
          /* Restore the source URL for elements whose ids end in Img */
          if (el = $( p0 + 'Img'  )) { if (p1) el.src = p1; }
       }
+   },
+
+   statusUpdater: function() {
+      var h = window.getHeight(), w = window.getWidth();
+
+      var swatch_time = Date.swatchTime();
+
+      window.defaultStatus = 'w: ' + w + ' h: ' + h + ' @' + swatch_time;
    }
 } );

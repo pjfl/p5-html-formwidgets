@@ -269,6 +269,30 @@ th.normal { background-color: #663; color: #ffc; }
 }
 .chzn-container .chzn-search input { background-color: #9c9; }
 
+/* For syntax highlighting source code */
+/* Standard token classes */
+.source .cast          { color: #339999; }
+.source .comment       { color: #771616; }
+.source .double        { color: #de610a; }
+.source .interpolate   { color: #de610a; }
+.source .literal       { color: #de610a; }
+.source .magic         { color: #0099FF; }
+.source .match         { color: #9900FF; }
+.source .number        { color: #990000; }
+.source .operator      { color: #000000; }
+.source .regex         { color: #9900FF; }
+.source .single        { color: #de610a; }
+.source .substitute    { color: #9900FF; }
+.source .symbol        { color: #aa7700; }
+.source .transliterate { color: #9900FF; }
+.source .words         { color: #de610a; }
+/* Special classes */
+.source .core          { color: #FF0000; }
+.source .keyword       { color: #008200; }
+.source .line_number   { color: #666666; }
+.source .pod           { color: #008080; }
+.source .pragma        { color: #990000; }
+
 /* Application specific */
 
 .library { color: #000; }

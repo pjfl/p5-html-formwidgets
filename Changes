@@ -1,5 +1,7 @@
 Revision history for HTML::FormWidgets
 
+         - Passwords can now auto reveal
+
 0.16.381 2012-10-28
          - Replaced Syntax::Highlight::Perl with PPI::HTML
          - Textareas can have literal js in the inputs js config group

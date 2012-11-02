@@ -1,5 +1,6 @@
 Revision history for HTML::FormWidgets
 
+         - Updated inc::Bob to 1.6
          - Passwords can now auto reveal
 
 0.16.381 2012-10-28

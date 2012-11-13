@@ -1,5 +1,8 @@
 Revision history for HTML::FormWidgets
 
+0.17.387 2012-11-13
+         - Updated inc::Bob to 1.7. Removed defined ors
+
 0.17.386 2012-11-07
          - Updated inc::Bob to 1.6
          - Passwords can now auto reveal

@@ -1,5 +1,8 @@
 Revision history for HTML::FormWidgets
 
+0.17.388 2013-02-17
+         - Fixed tests to not depend on hash ordering
+
 0.17.387 2012-11-13
          - Updated inc::Bob to 1.7. Removed defined ors
 

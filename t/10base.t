@@ -20,27 +20,38 @@ BEGIN {
 use HTML::FormWidgets;
 
 my $widget = HTML::FormWidgets->new( id => q(test) );
+my $r      = $widget->render;
 
-like $widget->render, qr{ input \s value="" \s name="test" \s type="text" }mx,
-    'Default textfield';
+like $r, qr{ input }mx,       'Default textfield 1';
+like $r, qr{ value="" }mx,    'Default textfield 2';
+like $r, qr{ name="test" }mx, 'Default textfield 3';
+like $r, qr{ type="text" }mx, 'Default textfield 4';
 
 $widget = HTML::FormWidgets->new( href => q(test), type => q(anchor) );
+$r      = $widget->render;
 
-like $widget->render, qr{ a \s href="test" \s class="anchor_button \s fade" }mx,
-    'Anchor';
+like $r, qr{ a  }mx,                            'Anchor 1';
+like $r, qr{ href="test" }mx,                   'Anchor 2';
+like $r, qr{ class="anchor_button \s fade" }mx, 'Anchor 3';
 
 # TODO: Async - test missing
 
 $widget = HTML::FormWidgets->new( id => q(test), type => q(button) );
+$r      = $widget->render;
 
-like $widget->render,
-   qr{ input \s value="Test" \s name="_method" \s type="submit" \s
-          id="test" }msx, 'Button';
+like $r, qr{ input  }msx,         'Button 1';
+like $r, qr{ value="Test" }msx,   'Button 2';
+like $r, qr{ name="_method" }msx, 'Button 3';
+like $r, qr{ type="submit" }msx,  'Button 4';
+like $r, qr{ id="test" }msx,      'Button 5';
 
 $widget = HTML::FormWidgets->new( id => q(test), type => q(checkbox) );
+$r      = $widget->render;
 
-like $widget->render,
-   qr{ input \s value="1" \s name="test" \s type="checkbox" }mx, 'Checkbox';
+like $r, qr{ input }mx,           'Checkbox 1';
+like $r, qr{ value="1" }mx,       'Checkbox 2';
+like $r, qr{ name="test" }mx,     'Checkbox 3';
+like $r, qr{ type="checkbox" }mx, 'Checkbox 4';
 
 # TODO: Chooser - test missing
 
@@ -49,73 +60,93 @@ $widget = HTML::FormWidgets->new
       colour => '#ff0000', count => 1, size => 1, tag => q(Item1), }, {
       colour => '#0000ff', count => 2, size => 2, tag => q(Item2), }, ],
      type    => q(cloud) );
+$r      = $widget->render;
 
-like $widget->render,
-   qr{ <div \s class="cloud_header"> .*
-          class="cloud_header \s fade \s live_grid" \s id="Item1" .*
-          class="cloud_panel" \s id="Item2Disp" }msx, 'Cloud';
+like $r, qr{ <div \s class="cloud_header"> }msx,             'Cloud 1';
+like $r, qr{ class="cloud_header \s fade \s live_grid" }msx, 'Cloud 2';
+like $r, qr{ id="Item1" }msx,                                'Cloud 3';
+like $r, qr{ class="cloud_panel" }msx,                       'Cloud 4';
+like $r, qr{ id="Item2Disp" }msx,                            'Cloud 5';
 
 $widget = HTML::FormWidgets->new( id => q(test), type => q(date) );
+$r      = $widget->render;
 
-like $widget->render, qr{ id="test_trigger" }mx, 'Date';
+like $r, qr{ id="test_trigger" }mx, 'Date';
 
 $widget = HTML::FormWidgets->new( name => q(file),
                                   path => q(honestly),
                                   type => q(file) );
+$r      = $widget->render;
 
-like $widget->render, qr{ Path \s honestly \s not \s found }mx,
-   'File not found';
+like $r, qr{ Path \s honestly \s not \s found }mx, 'File not found';
 
-$widget->path( q(t/10base.t) );
+$widget->path( q(t/10base.t) ); $r = $widget->render;
 
-like $widget->render, qr{ use \s HTML::FormWidgets }mx, 'File found';
+like $r, qr{ use \s HTML::FormWidgets }mx, 'File found';
 
 $widget = HTML::FormWidgets->new( id => q(test), type => q(freelist) );
+$r      = $widget->render;
 
-like $widget->render,
-   qr{ <span \s class="freelist_ifields"><input \s
-          value="" \s name="_test" \s type="text" \s
-          class="\s ifield \s freelist" \s id="test" }msx, 'Freelist';
+like $r, qr{ <span \s class="freelist_ifields"> }msx, 'Freelist 1';
+like $r, qr{ input }msx,                              'Freelist 2';
+like $r, qr{ value="" }msx,                           'Freelist 3';
+like $r, qr{ name="_test" }msx,                       'Freelist 4';
+like $r, qr{ type="text" }msx,                        'Freelist 5';
+like $r, qr{ class="\s ifield \s freelist" }msx,      'Freelist 6';
+like $r, qr{ id="test" }msx,                          'Freelist 7';
 
 # TODO: GroupMembership - test missing
 
 $widget = HTML::FormWidgets->new( default => q(test), type => q(hidden) );
+$r      = $widget->render;
 
-like $widget->render,
-   qr{ input \s value="test" \s name="hidden" \s type="hidden" }msx, 'Hidden';
+like $r, qr{ input }msx,         'Hidden 1';
+like $r, qr{ value="test" }msx,  'Hidden 2';
+like $r, qr{ name="hidden" }msx, 'Hidden 3';
+like $r, qr{ type="hidden" }msx, 'Hidden 4';
 
 $widget = HTML::FormWidgets->new( fhelp => q(Help Text),
                                   text  => q(http://localhost),
                                   type  => q(image) );
+$r      = $widget->render;
 
-like $widget->render,
-   qr{ img \s alt="Help \s Text" \s src="http://localhost" }msx, 'Image';
+like $r, qr{ img  }msx,                   'Image 1';
+like $r, qr{ alt="Help \s Text" }msx,     'Image 2';
+like $r, qr{ src="http://localhost" }msx, 'Image 3';
 
 $widget = HTML::FormWidgets->new( id   => q(test),
                                   text => q(Test text),
                                   type => q(label) );
+$r      = $widget->render;
 
-like $widget->render, qr{ Test \s text }mx, 'Label';
+like $r, qr{ Test \s text }mx, 'Label';
 
 my $data = [ { content => { text => q(t1), type => q(label) } },
              { content => { text => q(t2), type => q(label) } } ];
 
 $widget = HTML::FormWidgets->new( data => $data, ordered => 1,
                                   type => q(list) );
+$r      = $widget->render;
 
-like $widget->render, qr{ ol \s class="plain"><li }msx, 'List - ordered ';
+like $r, qr{ ol }msx,            'List - ordered 1';
+like $r, qr{ class="plain" }msx, 'List - ordered 2';
+like $r, qr{ <li }msx,           'List - ordered 3';
 
 $widget = HTML::FormWidgets->new( data => $data, type => q(list) );
+$r      = $widget->render;
 
-like $widget->render, qr{ ul \s class="plain"><li }msx, 'List - unordered ';
+like $r, qr{ ul }msx,            'List - unordered 1';
+like $r, qr{ class="plain" }msx, 'List - unordered 2';
+like $r, qr{ <li }msx,           'List - unordered 3';
 
 # TODO: Menu - test missing
 
 $widget = HTML::FormWidgets->new( id   => q(test),
                                   text => q(Test text),
                                   type => q(note) );
+$r      = $widget->render;
 
-like $widget->render, qr{ >Test \s text</span> }mx, 'Note';
+like $r, qr{ >Test \s text</span> }mx, 'Note';
 
 # TODO: POD - test missing
 # TODO: Paragraphs - test missing
@@ -123,15 +154,18 @@ like $widget->render, qr{ >Test \s text</span> }mx, 'Note';
 $widget = HTML::FormWidgets->new( id      => q(test1),
                                   subtype => q(verify),
                                   type    => q(password) );
+$r      = $widget->render;
 
-like $widget->render, qr{ name="test2" \s type="password" }mx, 'Password';
+like $r, qr{ name="test2" }mx,    'Password 1';
+like $r, qr{ type="password" }mx, 'Password 2';
 
 $widget = HTML::FormWidgets->new( id      => q(test),
                                   labels  => { 1 => q(One), 2 => q(Two) },
                                   type    => q(popupMenu),
                                   values  => [ 1, 2 ] );
+$r      = $widget->render;
 
-like $widget->render, qr{ <option \s value="2">Two</option> }mx, 'Popup menu';
+like $r, qr{ <option \s value="2">Two</option> }mx, 'Popup menu';
 
 $widget = HTML::FormWidgets->new( columns => 3,
                                   id      => q(test),
@@ -140,29 +174,34 @@ $widget = HTML::FormWidgets->new( columns => 3,
                                                5 => q(Five),  6 => q(Six) },
                                   type    => q(radioGroup),
                                   values  => [ 1, 2, 3, 4, 5, 6 ] );
+$r      = $widget->render;
 
-like $widget->render, qr{ value="6" \s name="test" \s type="radio" }mx,
-    'Radio group';
+like $r, qr{ value="6" }mx,    'Radio group 1';
+like $r, qr{ name="test" }mx,  'Radio group 2';
+like $r, qr{ type="radio" }mx, 'Radio group 3';
 
 $widget = HTML::FormWidgets->new( class => q(test), type => q(rule) );
+$r      = $widget->render;
 
-like $widget->render,
-   qr{ td \s class="most \s rule_section"><hr \s class="test" }msx, 'Rule';
+like $r, qr{ td \s class="most \s rule_section"><hr }msx, 'Rule 1';
+like $r, qr{ class="test" }msx,                           'Rule 2';
 
 # TODO: ScrollPin - test missing
 
 $widget = HTML::FormWidgets->new( id     => q(test),
                                   type   => q(scrollingList),
                                   values => [ 1, 2, 3, 4 ], );
+$r      = $widget->render;
 
-like $widget->render, qr{ id="test" \s multiple="multiple" }msx,
-   'Scrolling List';
+like $r, qr{ id="test" }msx,           'Scrolling List 1';
+like $r, qr{ multiple="multiple" }msx, 'Scrolling List 2';
 
 # TODO: SidebarPanel - test missing
 
 $widget = HTML::FormWidgets->new( id => q(test), type => q(slider) );
+$r      = $widget->render;
 
-like $widget->render, qr{ class="knob" }mx, 'Slider';
+like $r, qr{ class="knob" }mx, 'Slider';
 
 # TODO: TabSwapper - test missing
 
@@ -178,21 +217,31 @@ $widget = HTML::FormWidgets->new( data   => {
                                   hide   => [],
                                   name   => q(table),
                                   type   => q(table) );
+$r      = $widget->render;
 
-like $widget->render, qr{ tr \s class=".*" \s id="table.row0" }mx, 'Table';
+like $r, qr{ tr }mx,              'Table 1';
+like $r, qr{ class=".*" }mx,      'Table 2';
+like $r, qr{ id="table.row0" }mx, 'Table 3';
 
 # TODO: Template - test missing
 
 $widget = HTML::FormWidgets->new( default => q(test), type => q(textarea) );
+$r      = $widget->render;
 
-like $widget->render,
-   qr{ textarea \s name="textarea" \s class="ifield" \s rows="1" \s cols="60">test }mx, 'Textarea';
+like $r, qr{ name="textarea" }mx, 'Textarea 1';
+like $r, qr{ class="ifield" }mx,  'Textarea 2';
+like $r, qr{ rows="1" }mx,        'Textarea 3';
+like $r, qr{ cols="60" }mx,       'Textarea 4';
+like $r, qr{ >test }mx,           'Textarea 5';
 
 $widget = HTML::FormWidgets->new( default => q(test), type => q(textfield) );
+$r      = $widget->render;
 
-like $widget->render,
-   qr{ input \s value="test" \s name="textfield" \s type="text" \s
-          class="ifield" \s size="40" }mx, 'Textfield';
+like $r, qr{ value="test" }mx,     'Textfield 1';
+like $r, qr{ name="textfield" }mx, 'Textfield 2';
+like $r, qr{ type="text" }mx,      'Textfield 3';
+like $r, qr{ class="ifield" }mx,   'Textfield 4';
+like $r, qr{ size="40" }mx,        'Textfield 5';
 
 # TODO: Tree - test missing
 

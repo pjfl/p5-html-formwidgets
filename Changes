@@ -1,5 +1,9 @@
 Revision history for HTML::FormWidgets
 
+0.18.391 2013-04-18
+         - Pass in just loc method not whole of view object
+         - Stopped leakage in __inject
+
 0.17.389 2013-02-17
          - Fixed tests to not depend on hash ordering
 

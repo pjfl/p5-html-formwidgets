@@ -1,10 +1,5 @@
 /* $Id$ */
 
-/* Local Variables:
- * mode: javascript
- * tab-width: 3
- * End: */
-
 var Behaviour = new Class( {
    Implements: [ Events, Options ],
 
@@ -34,7 +29,7 @@ var Behaviour = new Class( {
       minMarginLeft  : 0,
       minMarginRight : 10,
       popup          : false,
-      statusUpdPeriod: 5000,
+      statusUpdPeriod: 4320,
       target         : null
    },
 
@@ -67,17 +62,15 @@ var Behaviour = new Class( {
 
       this._restoreStateFromCookie();
 
-      this.submit      = new SubmitUtils( {
-         context       : this,
-         formName      : opt.formName } );
       this.window      = new WindowUtils( {
          context       : this,
          target        : opt.target,
          url           : opt.defaultURL } );
+      this.submit      = new SubmitUtils( {
+         context       : this,
+         formName      : opt.formName } );
 
-      this.autosizer   = new AutoSize( { context: this } );
       this.calendars   = new Calendars( { context: this } );
-      this.checkboxReplacements = new CheckboxReplace( { context: this } );
       this.freeList    = new FreeList( { context: this } );
       this.groupMember = new GroupMember( { context: this } );
       this.liveGrids   = new LiveGrids( {
@@ -85,17 +78,16 @@ var Behaviour = new Class( {
          iconClasses   : opt.iconClasses,
          url           : opt.defaultURL } );
       this.noticeBoard = new NoticeBoard( { context: this } );
+      this.replacements = new Replacements( { context: this } );
       this.rotateList  = new RotateList( { context: this } );
       this.server      = new ServerUtils( {
          context       : this,
          url           : opt.defaultURL } );
-      this.sidebar     = new Sidebar ( { context: this } );
+      this.sidebar     = new Sidebar( { context: this } );
       this.sliders     = new Sliders( { context: this } );
       this.spinners    = new Spinners( { context: this } );
 
-      var table_rebuild = function() {
-         this.checkboxReplacements.build();
-         this.autosizer.build() }.bind( this );
+      var table_rebuild = function() { this.replacements.build() }.bind( this );
 
       this.tables      = new TableUtils( {
          context       : this,
@@ -125,7 +117,6 @@ var Behaviour = new Class( {
       this.columnizers = new Columnizers( { context: this } );
       this.scrollPins  = new ScrollPins( {
          context       : this,
-         log           : this.window.log,
          onAttach      : function( el ) {
             this.addEvent( 'build', function() {
                this.set( 'opacity', 0 ).set( 'tween', { duration: 1500 } );
@@ -223,3 +214,8 @@ var Behaviour = new Class( {
       window.defaultStatus = 'w: ' + w + ' h: ' + h + ' @' + swatch_time;
    }
 } );
+
+/* Local Variables:
+ * mode: javascript
+ * tab-width: 3
+ * End: */

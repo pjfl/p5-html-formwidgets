@@ -1,4 +1,4 @@
-/* @(#)$Id: 15html-formwidgets.js 1362 2012-10-26 04:39:04Z pjf $ */
+/* @(#)$Id: 15html-formwidgets.js 1370 2013-03-12 17:16:01Z pjf $ */
 
 /* Local Variables:
  * mode: javascript
@@ -42,7 +42,7 @@ Options.implement( {
       this.debug      = false;
       this.log        = function() {};
 
-      [ 'config', 'context', 'debug', 'log' ].each( function( attr ) {
+      [ 'config', 'context', 'debug' ].each( function( attr ) {
          if (options[ attr ] != undefined) {
             this[ attr ] = options[ attr ]; delete options[ attr ];
          }
@@ -50,12 +50,15 @@ Options.implement( {
 
       this.setOptions( options ); var opt = this.options;
 
-      if (!this.config && this.context.config && opt.config_attr)
+      if (! this.config && this.context.config && opt.config_attr)
          this.config = this.context.config[ opt.config_attr ];
 
-      if (!this.config) this.config = {};
+      if (! this.config) this.config = {};
 
       if (this.context.collect) this.context.collect( this );
+
+      if (this.context.window && this.context.window.logger)
+         this.log = this.context.window.logger
 
       return this;
    },
@@ -121,36 +124,6 @@ String.implement( {
    }
 } );
 
-var AutoSize = new Class( {
-   Implements: [ Events, Options ],
-
-   options           : {
-      config_attr    : 'inputs',
-      container_class: 'expanding_area',
-      preformat_class: 'expanding_spacer',
-      selector       : '.autosize' // element class to search for
-   },
-
-   initialize: function( options ) {
-      this.aroundSetOptions( options ); this.build();
-   },
-
-   attach: function( el ) {
-      var opt  = this.mergeOptions( el.id );
-      var div  = new Element( 'div', { 'class': opt.container_class } );
-      var pre  = new Element( 'pre', { 'class': opt.preformat_class } );
-      var span = new Element( 'span' );
-
-      div.inject( el, 'before' ); pre.inject( div ); div.grab( el );
-
-      span.inject( pre ); new Element( 'br' ).inject( pre );
-
-      el.addEvent( 'keyup', function() { span.set( 'text', el.value ) } );
-
-      span.set( 'text', el.value );
-   }
-} );
-
 var Calendars = new Class( {
    Implements: [ Options ],
 
@@ -171,81 +144,6 @@ var Calendars = new Class( {
 
       Calendar.setup( Object.append( cfg, {
          inputField: el.id, button: el.id + '_trigger' } ) );
-   }
-} );
-
-var CheckboxReplace = new Class( {
-   Implements: [ Options ],
-
-   options               : {
-      checkboxSelector   : 'input[type=checkbox]',
-      radiobuttonSelector: 'input[type=radio]',
-      suffix             : '_replacement'
-   },
-
-   initialize: function( options ) {
-      this.aroundSetOptions( options ); this.build();
-   },
-
-   build: function() {
-      var opt = this.options;
-
-      [ opt.checkboxSelector, opt.radiobuttonSelector ]
-         .each( function( selector ) {
-            if (selector) $$( selector ).each( function( el ) {
-               this.collection.include( el ); this.attach( el );
-            }, this );
-         }, this );
-   },
-
-   attach: function( el ) {
-      var handler, replacement = this.getReplacement( el );
-
-      if (! (handler = replacement.retrieve( 'click' )))
-         replacement.store( 'click', handler = this.toggle.bind( this, el ) );
-
-      replacement.addEvent( 'click', handler );
-   },
-
-   getReplacement: function( el ) {
-      var new_id = el.name
-                 + (el.type == 'checkbox' ? '' : el.value)
-                 + this.options.suffix;
-
-      var replacement; if (replacement = $( new_id )) return replacement;
-
-      el.setStyles( { position: 'absolute', left: '-9999px' } );
-
-      return new Element( 'span', {
-         'class': 'checkbox' + (el.checked ? ' checked' : ''),
-         id     : new_id,
-         name   : el.name
-      } ).inject( el, 'after' );
-   },
-
-   toggle: function( el ) {
-      if (el.getProperty( 'disabled' )) return;
-
-      var replacement = this.getReplacement( el );
-
-      replacement.toggleClass( 'checked' );
-
-      if (replacement.hasClass( 'checked' )) {
-         el.setProperty( 'checked', 'checked' );
-
-         if (el.type == 'radio') {
-            this.collection.each( function( box ) {
-               replacement = this.getReplacement( box );
-
-               if (box != el && box.name == el.name
-                   && replacement.hasClass( 'checked' )) {
-                  replacement.removeClass ( 'checked' );
-                  box.removeProperty( 'checked' );
-               }
-            }.bind( this ) );
-         }
-      }
-      else el.removeProperty( 'checked' );
    }
 } );
 
@@ -1451,19 +1349,15 @@ var LiveGridBuffer = new Class( {
             = items[ i ].childNodes[ 0 ].nodeValue.unescapeHTML();
       }
 
-      var id = doc.getAttribute( 'id' ), text = '';
-
       $$( doc.getElementsByTagName( 'script' ) ).each( function( item ) {
+         var text = '';
+
          for (var i = 0, il = item.childNodes.length; i < il; i++) {
             text += item.childNodes[ i ].nodeValue;
          }
-      }, this );
 
-      var script; if (! (script = $( id ))) {
-         script = new Element( 'script', { id: id } ).inject( document.body );
-      }
-
-      script.set( 'html', text );
+         if (text) Browser.exec( text );
+      } );
    }
 } );
 
@@ -1701,7 +1595,7 @@ var LiveGrids = new Class( {
             text += item.childNodes[ i ].nodeValue;
          }
 
-         html += '<script>' + text + '</script>';
+         if (text) Browser.exec( text );
       } );
 
       return html;
@@ -1776,7 +1670,7 @@ var LoadMore = new Class( {
             text += item.childNodes[ i ].nodeValue;
          }
 
-         html += '<script>' + text + '</script>';
+         if (text) Browser.exec( text );
       } );
 
       return html;
@@ -1844,7 +1738,7 @@ var NoticeBoard = new Class( {
    },
 
    attach: function( el ) {
-      var opt = el.retrieve( 'notice:options' );
+      var opt = el.retrieve( 'notice:options' ) || this.options;
 
       el.addEvents( {
          click: function( ev ) {
@@ -1877,7 +1771,8 @@ var NoticeBoard = new Class( {
    },
 
    show: function( el ) { // Append to board and show
-      var opt = el.retrieve( 'notice:options' ), fadein = opt.fadeIn;
+      var opt    = el.retrieve( 'notice:options' ) || this.options;
+      var fadein = opt.fadeIn;
 
       el.inject( this.board, opt.vertical == 'top' ? 'bottom' : 'top' );
       el.set( 'tween', { duration: fadein, property: 'opacity' } ).tween( 1 );
@@ -1890,7 +1785,9 @@ var NoticeBoard = new Class( {
    },
 
    hide: function( el ) {
-      var opt = el.retrieve( 'notice:options' ); el.addClass( 'hiding' );
+      var opt = el.retrieve( 'notice:options' ) || this.options;
+
+      el.addClass( 'hiding' );
 
       el.set( 'tween', { duration: opt.fadeOut, onComplete: function() {
          var q; if (q = this.queue.shift()) this.create( q[ 0 ], q[ 1 ] );
@@ -1939,6 +1836,136 @@ var PersistantStyleSheet = new Class( {
          if (el.rel.indexOf( 'style' ) != -1 && el.title)
             el.disabled = el.title != active ? true : false;
       } );
+   }
+} );
+
+var Replacements = new Class( {
+   Implements: [ Options ],
+
+   options              : {
+      textarea_container: 'expanding_area',
+      textarea_preformat: 'expanding_spacer',
+      config_attr       : 'inputs',
+      event             : 'click',
+      method            : 'toggle',
+      selector          : [ '.autosize', 'input[type=checkbox]',
+                            'input[type=password].reveal',
+                            'input[type=radio]' ],
+      suffix            : '_replacement'
+   },
+
+   initialize: function( options ) {
+      this.aroundSetOptions( options ); this.build();
+   },
+
+   build: function() {
+      this.options.selector.each( function( selector ) {
+         $$( selector ).each( function( el ) {
+            if (! el.id) { $uid( el ); el.id = el.type + el.uid }
+
+            if (! this.collection.contains( el.id )) {
+               this.collection.include( el.id ); this.createMarkup( el );
+            }
+
+            this.attach( el );
+         }, this );
+      }, this );
+   },
+
+   createMarkup: function( el ) {
+      var opt = this.mergeOptions( el.id ), new_id = el.id + opt.suffix;
+
+      if (el.type == 'checkbox' || el.type == 'radio') {
+         el.setStyles( { position: 'absolute', left: '-9999px' } );
+         new Element( 'span', {
+            'class': 'checkbox' + (el.checked ? ' checked' : ''),
+            id     : new_id,
+            name   : el.name
+         } ).inject( el, 'after' );
+         return;
+      }
+
+      if (el.type == 'textarea') {
+         var div  = new Element( 'div',  { 'class': opt.textarea_container } );
+         var pre  = new Element( 'pre',  { 'class': opt.textarea_preformat } );
+         var span = new Element( 'span', { id: new_id } );
+
+         div.inject( el, 'before' ); pre.inject( div ); div.grab( el );
+         span.inject( pre ); new Element( 'br' ).inject( pre );
+         span.set( 'text', el.value );
+      }
+
+      return;
+   },
+
+   attach: function( el ) {
+      var opt = this.mergeOptions( el.id );
+
+      if (el.type == 'textarea') {
+         this._add_events( el, el, 'keyup', 'set_text' );
+      }
+      else {
+         var replacement = $( el.id + opt.suffix ) || el;
+
+         this._add_events( el, replacement, opt.event, opt.method );
+      }
+   },
+
+   _add_events: function( el, replacement, events, methods ) {
+      methods = Array.from( methods );
+
+      Array.from( events ).each( function( event, index ) {
+         var handler, key = 'event:' + event;
+
+         if (! (handler = replacement.retrieve( key ))) {
+            handler = function( ev ) {
+               ev.stop(); this[ methods[ index ] ].call( this, el );
+            }.bind( this );
+            replacement.store( key, handler );
+         }
+
+         replacement.addEvent( event, handler );
+      }, this );
+   },
+
+   hide_password: function( el ) {
+      el.setProperty( 'type', 'password' );
+   },
+
+   set_text: function( el ) {
+      var opt = this.mergeOptions( el.id );
+
+      $( el.id + opt.suffix ).set( 'text', el.value );
+   },
+
+   show_password: function( el ) {
+      el.setProperty( 'type', 'text' );
+   },
+
+   toggle: function( el ) {
+      var opt         = this.mergeOptions( el.id );
+      var replacement = $( el.id + opt.suffix );
+
+      if (el.getProperty( 'disabled' )) return;
+
+      replacement.toggleClass( 'checked' );
+
+      if (replacement.hasClass( 'checked' )) {
+         el.setProperty( 'checked', 'checked' );
+
+         if (el.type == 'radio') {
+            this.collection.each( function( box_id ) {
+               var box = $( box_id ), replacement = $( box_id + opt.suffix );
+
+               if (replacement && box_id != el.id && box.name == el.name
+                   && replacement.hasClass( 'checked' )) {
+                  replacement.removeClass ( 'checked' );
+                  box.removeProperty( 'checked' );
+               }
+            }, this );
+         }
+      }
+      else el.removeProperty( 'checked' );
    }
 } );
 
@@ -2954,39 +2981,6 @@ var TableSort = new Class( {
          ev.stop(); this.sortRows( el ) }.bind( this ) );
    },
 
-   _get_sort_field: function( cell, type ) {
-      var el = cell ? cell.firstChild : '', field = '';
-
-      if      (el && el.nodeName == '#text') field = el.nodeValue;
-      else if (el && el.nodeName == 'INPUT') field = el.value;
-
-      if (type && type == 'date') {
-         field = Date.parse( field ) || Date.parse( '01 Jan 1970' );
-      }
-      else if (type && type == 'hex') {
-         field = field.toLowerCase().pad( 64, '0', 'left' );
-      }
-      else if (type && type == 'ipaddr') {
-         var ipaddr = field; field = '';
-
-         ipaddr.split( '.' ).each( function( octet ) {
-            field = field + String.from( octet ).pad( 3, '0', 'left' );
-         } );
-      }
-      else if (type && type == 'money') {
-         field = field.substring( 1 );
-         field.replace( /[^0-9.]/g, '' );
-         field = parseFloat( field ) || 0;
-      }
-      else if (type && type == 'numeric') {
-         field.replace( /[^+\-0-9.]/g, '' );
-         field = parseFloat( field ) || 0;
-      }
-      else field = String.from( field );
-
-      return field;
-   },
-
    _get_sort_order: function( table_id, default_column, column_id ) {
       var sortable = this.sortables[ table_id ]
                   || { sort_column: default_column, reverse: false };
@@ -2996,6 +2990,39 @@ var TableSort = new Class( {
       sortable.reverse = reverse; sortable.sort_column = column_id;
       this.sortables[ table_id ] = sortable;
       return reverse ? [ 1, -1 ] : [ -1, 1 ];
+   },
+
+   _get_sort_value: function( cell, type ) {
+      var el = cell ? cell.firstChild : '', value = '';
+
+      if      (el && el.nodeName == '#text') value = el.nodeValue;
+      else if (el && el.nodeName == 'INPUT') value = el.value;
+
+      if (type && type == 'date') {
+         value = Date.parse( value ) || Date.parse( '01 Jan 1970' );
+      }
+      else if (type && type == 'hex') {
+         value = value.toLowerCase().pad( 64, '0', 'left' );
+      }
+      else if (type && type == 'ipaddr') {
+         var ipaddr = value; value = '';
+
+         ipaddr.split( '.' ).each( function( octet ) {
+            value = value + String.from( octet ).pad( 3, '0', 'left' );
+         } );
+      }
+      else if (type && type == 'money') {
+         value = value.substring( 1 );
+         value.replace( /[^0-9.]/g, '' );
+         value = parseFloat( value ) || 0;
+      }
+      else if (type && type == 'numeric') {
+         value.replace( /[^+\-0-9.]/g, '' );
+         value = parseFloat( value ) || 0;
+      }
+      else value = String.from( value );
+
+      return value;
    },
 
    sortRows: function( table_header ) {
@@ -3014,11 +3041,11 @@ var TableSort = new Class( {
           rows     = [];
 
       table.getElements( selector ).map( function( row, index ) {
-         var field = this._get_sort_field( row.cells[ col_id ], column_type );
+         var value = this._get_sort_value( row.cells[ col_id ], column_type );
 
          rows[ index ] = row;
 
-         return [ field, row.clone( true, true ) ];
+         return [ value, row.clone( true, true ) ];
       }.bind( this ) ).sort( function( a, b ) {
          return a[ 0 ] < b[ 0 ] ? order[ 0 ]
              : (a[ 0 ] > b[ 0 ] ? order[ 1 ] : 0);
@@ -4006,7 +4033,7 @@ var WindowUtils = new Class( {
       else top.location.href = href;
    },
 
-   log: function( message ) {
+   logger: function( message ) {
       if (this.options.quiet) return;
 
       message = 'html-formwidgets.js: ' + message;

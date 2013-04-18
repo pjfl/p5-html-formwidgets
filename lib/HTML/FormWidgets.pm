@@ -4,7 +4,7 @@ package HTML::FormWidgets;
 
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.17.%d', q$Rev$ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.18.%d', q$Rev$ =~ /\d+/gmx );
 use parent qw(Class::Accessor::Fast);
 
 use Class::MOP;
@@ -54,7 +54,7 @@ __PACKAGE__->mk_accessors( keys %{ $ATTRS } );
 sub build {
    my ($class, $options) = @_; $options ||= {}; my $step = 0;
 
-   my $data = $options->{data        } ||  [];
+   my $data = delete $options->{data } ||  [];
    my $key  = $options->{list_key    } ||= $OPTIONS->{list_key    };
    my $type = $options->{content_type} ||= $OPTIONS->{content_type};
 
@@ -165,7 +165,7 @@ sub __group_fields {
 }
 
 sub __inject {
-   $_[ 1 ]->{options} = $_[ 0 ]; return $_[ 1 ];
+   return { %{ $_[ 1 ] }, options => $_[ 0 ] };
 }
 
 # Public object methods
@@ -236,7 +236,7 @@ sub loc {
    if (defined ($l10n = $opt->{l10n})) {
       my $args = { language => $opt->{language}, ns => $opt->{ns} };
 
-      return $l10n->loc( $args, $text, @rest );
+      return $l10n->( $args, $text, @rest );
    }
 
    $text or return; $text = $NUL.$text; # Stringify
@@ -542,7 +542,7 @@ HTML::FormWidgets - Create HTML user interface components
 
 =head1 Version
 
-0.17.$Rev$
+0.18.$Rev$
 
 =head1 Synopsis
 
@@ -1257,7 +1257,7 @@ Patches are welcome
 
 =head1 Author
 
-Peter Flanigan, C<< @ <Support at RoxSoft dot co dot uk> >>
+Peter Flanigan, C<< <pjfl@cpan.org> >>
 
 =head1 License and Copyright
 

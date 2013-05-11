@@ -2,6 +2,7 @@
 
 package HTML::FormWidgets;
 
+use 5.01;
 use strict;
 use warnings;
 use version; our $VERSION = qv( sprintf '0.18.%d', q$Rev$ =~ /\d+/gmx );

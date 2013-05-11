@@ -9,22 +9,22 @@ Bob->new( {
    module     => q(HTML::FormWidgets),
    home_page  => q(http://www.roxsoft.co.uk),
    requires   => {
-      'perl'                    => 5.010,
-      'parent'                  => 0.221,
-      'version'                 => 0.74,
-      'Class::Accessor::Fast'   => 0.31,
-      'HTML::Accessors'         => q(0.7.0),
-      'Moose'                   => 2.0402,
-      'Pod::Xhtml'              => 1.61,
-      'PPI'                     => 1.213,
-      'PPI::HTML'               => 1.08,
-      'Scalar::Util'            => 1.23,
-      'Text::ParseWords'        => 3.22,
-      'Text::Tabs'              => 98.112801,
-      'Try::Tiny'               => 0.06, },
-   configure_requires => { 'Module::Build' => 0.32,
-                           'version'       => 0.74, },
-   build_requires     => { 'Test::More'    => 0.74, },
+      'perl'            => 5.01,
+      'parent'          => 0.224,
+      'Class::Accessor' => 0.34,
+      'HTML::Accessors' => q(0.7.0),
+      'Moose'           => 2.0402,
+      'Pod::Xhtml'      => 1.61,
+      'PPI'             => 1.215,
+      'PPI::HTML'       => 1.08,
+      'Try::Tiny'       => 0.09, },
+   recommends           => {
+      'App::cpanminus'  => 1.6005, },
+   configure_requires   => {
+      'version'         => 0.88, },
+   build_requires       => {
+      'version'         => 0.88,
+      'Module::Build'   => 0.4004, },
 } )->create_build_script; # Goal!
 
 # Local Variables:

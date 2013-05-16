@@ -1,10 +1,10 @@
-# @(#)$Ident: ;
+# @(#)$Ident: TableRow.pm 2013-05-16 14:20 pjf ;
 
 package HTML::FormWidgets::TableRow;
 
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.19.%d', q$Rev: 0 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.19.%d', q$Rev: 1 $ =~ /\d+/gmx );
 use parent qw(HTML::FormWidgets);
 
 __PACKAGE__->mk_accessors( qw(classes fields values) );

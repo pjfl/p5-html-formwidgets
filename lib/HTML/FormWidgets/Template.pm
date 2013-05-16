@@ -1,10 +1,10 @@
-# @(#)$Ident: ;
+# @(#)$Ident: Template.pm 2013-05-16 14:20 pjf ;
 
 package HTML::FormWidgets::Template;
 
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.19.%d', q$Rev: 0 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.19.%d', q$Rev: 1 $ =~ /\d+/gmx );
 use parent q(HTML::FormWidgets);
 
 use English qw(-no_match_vars);

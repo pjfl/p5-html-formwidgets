@@ -1,11 +1,11 @@
-# @(#)$Ident: FormWidgets.pm 2013-05-16 14:18 pjf ;
+# @(#)$Ident: FormWidgets.pm 2013-05-16 14:58 pjf ;
 
 package HTML::FormWidgets;
 
 use 5.01;
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.19.%d', q$Rev: 1 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.19.%d', q$Rev: 2 $ =~ /\d+/gmx );
 use parent qw(Class::Accessor::Fast);
 
 use Class::MOP;
@@ -51,7 +51,6 @@ my $ATTRS   = {
 __PACKAGE__->mk_accessors( keys %{ $ATTRS } );
 
 # Class methods
-
 sub build {
    my ($class, $options) = @_; $options ||= {}; my $step = 0;
 
@@ -89,7 +88,7 @@ sub new {
    # Your basic factory method trick
    my $class = ucfirst $new->type;
       $class = (q(+) eq substr $class, 0, 1)
-             ? (substr $class, 1) : __PACKAGE__.q(::).$class;
+             ? (substr $class, 1) : __PACKAGE__."::${class}";
 
    $new->_ensure_class_loaded( $class );
    $new->_init( $args ); # Complete the initialization
@@ -98,11 +97,10 @@ sub new {
 }
 
 # Private functions
-
 sub __arg_list {
-   my (@rest) = @_; $rest[ 0 ] or return {};
+   my (@args) = @_; $args[ 0 ] or return {};
 
-   return ref $rest[ 0 ] eq q(HASH) ? $rest[ 0 ] : { @rest };
+   return ref $args[ 0 ] eq q(HASH) ? $args[ 0 ] : { @args };
 }
 
 sub __build_widget {
@@ -170,7 +168,6 @@ sub __inject {
 }
 
 # Public object methods
-
 sub add_hidden {
    my ($self, $name, $value) = @_;
 
@@ -205,9 +202,9 @@ sub add_literal_js {
 }
 
 sub add_optional_js {
-   my ($self, @rest) = @_; $self->options->{optional_js} ||= [];
+   my ($self, @args) = @_; $self->options->{optional_js} ||= [];
 
-   push @{ $self->options->{optional_js} }, @rest;
+   push @{ $self->options->{optional_js} }, @args;
    return;
 }
 
@@ -223,8 +220,7 @@ sub inflate {
    return __PACKAGE__->new( __inject( $self->options, $args ) )->render;
 }
 
-sub init {
-   # Can be overridden in factory subclass
+sub init { # Can be overridden in factory subclass
 }
 
 sub is_xml {
@@ -342,22 +338,15 @@ sub render_tip {
 }
 
 # Private object methods
-
-sub _bootstrap {
+sub _bootstrap { # Bare minimum is fields + id to get a useful widget
    my ($self, $args) = @_;
 
-   # Deprecated
-   my $ajaxid = delete $args->{ajaxid} and $self->check_field( 1 );
-
-   # Bare minimum is fields + id to get a useful widget
    for my $attr (grep { exists $args->{ $_ } } qw(id name type)) {
       $self->$attr( $args->{ $attr } );
    }
 
-   # Defaults id from name (least significant) from id from ajaxid (most sig.)
+   # Defaults id from name
    my $id = $self->id; my $name = $self->name; my $type = $self->type;
-
-   not $id and $ajaxid and $id = $self->id( $ajaxid );
 
    if ($id and not $name) {
       $name = $self->name( $id =~ m{ \. }mx ? (split m{ \. }mx, $id)[  1 ]
@@ -381,8 +370,7 @@ sub _bootstrap {
    return;
 }
 
-sub _build_hacc {
-   # Now we can create HTML elements like we could with CGI.pm
+sub _build_hacc { # Now we can create HTML elements like we could with CGI.pm
    my $self = shift; my $hacc = $self->options->{hacc};
 
    $hacc or $hacc = HTML::Accessors->new
@@ -391,8 +379,7 @@ sub _build_hacc {
    return $hacc
 }
 
-sub _build_pwidth {
-   # Calculate the prompt width
+sub _build_pwidth { # Calculate the prompt width
    my $self   = shift;
    my $opts   = $self->options;
    my $width  = $opts->{width} || 1024;
@@ -512,11 +499,6 @@ sub _set_error {
    my ($self, $error) = @_; return $self->text( $error );
 }
 
-sub __downgrade {
-   # TODO: Remove downgrade fix
-   my $x = shift || q(); my ($y) = $x =~ m{ (.*) }msx; return $y;
-}
-
 sub __merge_attributes {
    my ($dest, $src, $attrs) = @_; $attrs ||= [ keys %{ $src } ];
 
@@ -543,7 +525,7 @@ HTML::FormWidgets - Create HTML user interface components
 
 =head1 Version
 
-Describes version v0.19.$Rev: 1 $ of L<HTML::FormWidgets>
+Describes version v0.19.$Rev: 2 $ of L<HTML::FormWidgets>
 
 =head1 Synopsis
 
@@ -817,7 +799,7 @@ gets rendered in place of the widget
 
 =head3 __arg_list
 
-   $args = __arg_list( @rest );
+   $args = __arg_list( @args );
 
 Accepts either a single argument of a hash ref or a list of key/value
 pairs. Returns a hash ref in either case.

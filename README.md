@@ -4,7 +4,7 @@ HTML::FormWidgets - Create HTML user interface components
 
 # Version
 
-Describes version v0.19.$Rev: 0 $ of [HTML::FormWidgets](https://metacpan.org/module/HTML::FormWidgets)
+Describes version v0.19.$Rev: 2 $ of [HTML::FormWidgets](https://metacpan.org/module/HTML::FormWidgets)
 
 # Synopsis
 
@@ -270,7 +270,7 @@ gets rendered in place of the widget
 
 ### \_\_arg\_list
 
-    $args = __arg_list( @rest );
+    $args = __arg_list( @args );
 
 Accepts either a single argument of a hash ref or a list of key/value
 pairs. Returns a hash ref in either case.

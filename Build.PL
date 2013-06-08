@@ -1,9 +1,9 @@
-# @(#)$Ident: Build.PL 2013-05-16 14:18 pjf ;
+# @(#)$Ident: Build.PL 2013-06-08 21:24 pjf ;
 
 use strict;
 use warnings;
 use inc::Bob; # Module::Build subclass
-use version; our $VERSION = qv( sprintf '0.19.%d', q$Rev: 1 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.19.%d', q$Rev: 3 $ =~ /\d+/gmx );
 
 Bob->new( {
    module    => q(HTML::FormWidgets),
@@ -12,8 +12,8 @@ Bob->new( {
       'perl'            => 5.01,
       'parent'          => 0.224,
       'Class::Accessor' => 0.34,
-      'HTML::Accessors' => q(0.7.0),
-      'Moose'           => 2.0402,
+      'Class::Load'     => 0.18,
+      'HTML::Accessors' => q(0.8.0),
       'Pod::Xhtml'      => 1.61,
       'PPI'             => 1.215,
       'PPI::HTML'       => 1.08,

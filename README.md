@@ -4,7 +4,7 @@ HTML::FormWidgets - Create HTML user interface components
 
 # Version
 
-Describes version v0.19.$Rev: 2 $ of [HTML::FormWidgets](https://metacpan.org/module/HTML::FormWidgets)
+Describes version v0.19.$Rev: 3 $ of [HTML::FormWidgets](https://metacpan.org/module/HTML::FormWidgets)
 
 # Synopsis
 
@@ -619,7 +619,7 @@ None
 # Dependencies
 
 - [Class::Accessor::Fast](https://metacpan.org/module/Class::Accessor::Fast)
-- [Class::MOP](https://metacpan.org/module/Class::MOP)
+- [Class::Load](https://metacpan.org/module/Class::Load)
 - [HTML::Accessors](https://metacpan.org/module/HTML::Accessors)
 - [Syntax::Highlight::Perl](https://metacpan.org/module/Syntax::Highlight::Perl)
 - [Text::ParseWords](https://metacpan.org/module/Text::ParseWords)

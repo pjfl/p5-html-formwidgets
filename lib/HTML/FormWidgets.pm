@@ -1,15 +1,15 @@
-# @(#)$Ident: FormWidgets.pm 2013-05-16 14:58 pjf ;
+# @(#)$Ident: FormWidgets.pm 2013-06-08 21:23 pjf ;
 
 package HTML::FormWidgets;
 
 use 5.01;
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.19.%d', q$Rev: 2 $ =~ /\d+/gmx );
-use parent qw(Class::Accessor::Fast);
+use version; our $VERSION = qv( sprintf '0.19.%d', q$Rev: 3 $ =~ /\d+/gmx );
+use parent       qw(Class::Accessor::Fast);
 
-use Class::MOP;
-use English qw(-no_match_vars);
+use Class::Load  qw(is_class_loaded load_class);
+use English      qw(-no_match_vars);
 use HTML::Accessors;
 use Scalar::Util qw(blessed);
 use Try::Tiny;
@@ -417,9 +417,9 @@ sub _ensure_class_loaded {
    my ($self, $class) = @_;
 
    try {
-      Class::MOP::load_class     ( $class );
-      Class::MOP::is_class_loaded( $class )
-           and return bless $self, $class; # Rebless ourself as subclass
+      load_class( $class );
+      # Rebless ourself as subclass
+      is_class_loaded( $class ) and return bless $self, $class;
       $self->_set_error( "Class ${class} loaded but package undefined" );
    }
    catch { $self->_set_error( $_ ) };
@@ -525,7 +525,7 @@ HTML::FormWidgets - Create HTML user interface components
 
 =head1 Version
 
-Describes version v0.19.$Rev: 2 $ of L<HTML::FormWidgets>
+Describes version v0.19.$Rev: 3 $ of L<HTML::FormWidgets>
 
 =head1 Synopsis
 
@@ -1170,7 +1170,7 @@ None
 
 =item L<Class::Accessor::Fast>
 
-=item L<Class::MOP>
+=item L<Class::Load>
 
 =item L<HTML::Accessors>
 

@@ -1,10 +1,10 @@
-# @(#)$Ident: Freelist.pm 2013-05-16 14:22 pjf ;
+# @(#)$Ident: Freelist.pm 2013-07-12 19:46 pjf ;
 
 package HTML::FormWidgets::Freelist;
 
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.19.%d', q$Rev: 1 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.19.%d', q$Rev: 4 $ =~ /\d+/gmx );
 use parent qw(HTML::FormWidgets);
 
 __PACKAGE__->mk_accessors( qw(height values width) );
@@ -17,7 +17,6 @@ sub init {
    $self->container_class( q(freelist_container) );
    $self->height         ( 5 );
    $self->values         ( [] );
-   $self->width          ( 20 );
    return;
 }
 
@@ -31,7 +30,7 @@ sub render_field {
    $args->{class   } .= q( ifield freelist);
    $args->{id      }  = $self->id;
    $args->{name    }  = q(_).$self->name;
-   $args->{size    }  = $self->width;
+   $args->{size    }  = $self->width if (defined $self->width);
 
    my $html  = $hacc->textfield( $args );
 

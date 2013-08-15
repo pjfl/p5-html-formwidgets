@@ -1,5 +1,8 @@
 Revision history for HTML::FormWidgets
 
+0.20.1    2013-08-15 22:46:43
+          - Switched to Dist::Zilla
+
 0.19.3    2013-06-08 22:26:23
           - Replaced Class::Mop dep with Class::Load
           - Removed deprecated ajaxid attr

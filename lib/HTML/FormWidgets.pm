@@ -1,17 +1,17 @@
-# @(#)$Ident: FormWidgets.pm 2013-06-08 21:23 pjf ;
+# @(#)$Ident: FormWidgets.pm 2013-08-15 21:39 pjf ;
 
 package HTML::FormWidgets;
 
 use 5.01;
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.19.%d', q$Rev: 3 $ =~ /\d+/gmx );
-use parent       qw(Class::Accessor::Fast);
+use version; our $VERSION = qv( sprintf '0.20.%d', q$Rev: 1 $ =~ /\d+/gmx );
+use parent       qw( Class::Accessor::Fast );
 
-use Class::Load  qw(is_class_loaded load_class);
-use English      qw(-no_match_vars);
+use Class::Load  qw( is_class_loaded load_class );
+use English      qw( -no_match_vars );
 use HTML::Accessors;
-use Scalar::Util qw(blessed);
+use Scalar::Util qw( blessed );
 use Try::Tiny;
 
 my $COLON   = '&#160;:&#160;';
@@ -525,7 +525,7 @@ HTML::FormWidgets - Create HTML user interface components
 
 =head1 Version
 
-Describes version v0.19.$Rev: 3 $ of L<HTML::FormWidgets>
+Describes version v0.20.$Rev: 1 $ of L<HTML::FormWidgets>
 
 =head1 Synopsis
 

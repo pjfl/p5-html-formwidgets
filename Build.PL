@@ -1,36 +1,29 @@
-# @(#)$Ident: Build.PL 2013-06-08 21:24 pjf ;
+# @(#)$Ident: DZ_Build.PL 2013-08-15 13:04 pjf ;
 
 use strict;
 use warnings;
-use inc::Bob; # Module::Build subclass
-use version; our $VERSION = qv( sprintf '0.19.%d', q$Rev: 3 $ =~ /\d+/gmx );
 
-Bob->new( {
-   module    => q(HTML::FormWidgets),
-   home_page => q(http://www.roxsoft.co.uk),
-   requires  => {
-      'perl'            => 5.01,
-      'parent'          => 0.224,
-      'Class::Accessor' => 0.34,
-      'Class::Load'     => 0.18,
-      'HTML::Accessors' => q(0.8.0),
-      'Pod::Xhtml'      => 1.61,
-      'PPI'             => 1.215,
-      'PPI::HTML'       => 1.08,
-      'Try::Tiny'       => 0.09, },
-   recommends           => {
-      'App::cpanminus'  => 1.6005, },
-   configure_requires   => {
-      'version'         => 0.88,
-      'Module::Build'   => 0.4004, },
-   build_requires       => {
-      'version'         => 0.88,
-      'Module::Build'   => 0.4004, },
-} )->create_build_script; # Goal!
+use Module::Build;
 
-# Local Variables:
-# tab-title: FormWidgets
-# eval: (load-project-state "html-formwidgets")
-# mode: perl
-# tab-width: 3
-# End:
+sub whimper { print {*STDOUT} $_[ 0 ]."\n"; exit 0 }
+
+my $perl_ver = ##{ $meta2{prereqs}->{runtime}->{requires}->{perl} ##};
+my $name     = '##{ $zilla->name ##}'; $name =~ s{ - }{::}gmx;
+
+$] >= $perl_ver or $ENV{PERL5_CPANPLUS_IS_VERSION}
+   or whimper "Minimum required Perl version is ${perl_ver}";
+
+Module::Build->subclass( code => do { local $/; <DATA> } )->new(
+  'module_name' => $name,
+  'notes'       => { min_perl_version => $perl_ver },
+##{ $plugin->get_prereqs( 1 ) ##}
+##{ $plugin->get_default('share_dir') ##}
+)->create_build_script;
+
+exit 0;
+
+__DATA__
+
+sub _normalize_prereqs { # Dynamic config
+   my $self = shift; my $p = $self->SUPER::_normalize_prereqs; return $p;
+}

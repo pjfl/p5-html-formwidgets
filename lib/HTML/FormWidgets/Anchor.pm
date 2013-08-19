@@ -4,7 +4,7 @@ package HTML::FormWidgets::Anchor;
 
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.20.%d', q$Rev: 1 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.21.%d', q$Rev: 1 $ =~ /\d+/gmx );
 use parent qw(HTML::FormWidgets);
 
 __PACKAGE__->mk_accessors( qw(config fhelp href imgclass target) );

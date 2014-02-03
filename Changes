@@ -1,5 +1,6 @@
 Revision history for HTML::FormWidgets
 
+          - Updated git pre commit hook
           - Updated toolchain
 
 0.21.1    2013-08-19 18:00:51

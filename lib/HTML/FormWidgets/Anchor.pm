@@ -1,24 +1,24 @@
-# @(#)$Ident: Anchor.pm 2013-05-16 14:18 pjf ;
+# @(#)$Ident: Anchor.pm 2013-12-01 00:07 pjf ;
 
 package HTML::FormWidgets::Anchor;
 
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.21.%d', q$Rev: 1 $ =~ /\d+/gmx );
-use parent qw(HTML::FormWidgets);
+use version; our $VERSION = qv( sprintf '0.21.%d', q$Rev: 3 $ =~ /\d+/gmx );
+use parent                  qw( HTML::FormWidgets );
 
-__PACKAGE__->mk_accessors( qw(config fhelp href imgclass target) );
+__PACKAGE__->mk_accessors( qw( config fhelp href imgclass target ) );
 
 sub init {
    my ($self, $args) = @_;
 
-   $self->class   ( q(anchor_button fade) );
-   $self->config  ( undef     );
-   $self->fhelp   ( ''        );
-   $self->href    ( undef     );
-   $self->imgclass( undef     );
-   $self->target  ( undef     );
-   $self->tiptype ( q(normal) );
+   $self->class   ( 'anchor_button fade' );
+   $self->config  ( undef    );
+   $self->fhelp   ( q()      );
+   $self->href    ( undef    );
+   $self->imgclass( undef    );
+   $self->target  ( undef    );
+   $self->tiptype ( 'normal' );
    return;
 }
 
@@ -34,7 +34,7 @@ sub render_field {
                              class => $self->imgclass,
                              src   => $self->text } )
             : $hacc->span( { class => $self->imgclass } )
-            : $self->text || $self->loc( q(link) );
+            : $self->text || $self->loc( 'link' );
 
    $self->href or return $html; delete $args->{name};
 

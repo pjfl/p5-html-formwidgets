@@ -1,17 +1,17 @@
-# @(#)$Ident: FormWidgets.pm 2013-08-15 21:39 pjf ;
+# @(#)$Ident: FormWidgets.pm 2014-02-02 22:33 pjf ;
 
 package HTML::FormWidgets;
 
 use 5.01;
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.21.%d', q$Rev: 1 $ =~ /\d+/gmx );
-use parent       qw( Class::Accessor::Fast );
+use version; our $VERSION = qv( sprintf '0.21.%d', q$Rev: 3 $ =~ /\d+/gmx );
+use parent                  qw( Class::Accessor::Fast );
 
-use Class::Load  qw( is_class_loaded load_class );
-use English      qw( -no_match_vars );
+use Class::Load             qw( is_class_loaded load_class );
+use English                 qw( -no_match_vars );
 use HTML::Accessors;
-use Scalar::Util qw( blessed );
+use Scalar::Util            qw( blessed );
 use Try::Tiny;
 
 my $COLON   = '&#160;:&#160;';
@@ -20,33 +20,33 @@ my $NB      = '&#160;&#8224;&#160;';
 my $NUL     = q();
 my $SPACE   = '&#160;' x 3;
 my $SPC     = q( );
-my $TTS     = q( ~ );
+my $TTS     = ' ~ ';
 my $OPTIONS = {
-   content_type    => q(text/html),
+   content_type    => 'text/html',
    hidden          => sub { {} },
-   js_object       => q(html_formwidgets),
-   language        => q(en),
-   list_key        => q(items),
+   js_object       => 'html_formwidgets',
+   language        => 'en',
+   list_key        => 'items',
    literal_js      => sub { [] },
-   ns              => q(default),
+   ns              => 'default',
    optional_js     => sub { [] },
    pwidth          => 30,
    skip            => sub { return { qw(options 1 id 1 name 1 type 1) } },
    width           => 1000, };
 my $ATTRS   = {
-   check_field     => undef,        class           => $NUL,
-   clear           => $NUL,         container       => 1,
-   container_class => q(container), container_id    => undef,
-   default         => undef,        frame_class     => $NUL,
-   hacc            => undef,        id              => undef,
-   name            => undef,        onblur          => undef,
-   onchange        => undef,        onkeypress      => undef,
-   options         => undef,        pclass          => q(prompt),
-   pwidth          => undef,        prompt          => $NUL,
-   readonly        => 0,            required        => 0,
-   sep             => undef,        stepno          => undef,
-   text            => $NUL,         tip             => $NUL,
-   tiptype         => q(dagger),    type            => undef, };
+   check_field     => undef,       class           => $NUL,
+   clear           => $NUL,        container       => 1,
+   container_class => 'container', container_id    => undef,
+   default         => undef,       frame_class     => $NUL,
+   hacc            => undef,       id              => undef,
+   name            => undef,       onblur          => undef,
+   onchange        => undef,       onkeypress      => undef,
+   options         => undef,       pclass          => 'prompt',
+   pwidth          => undef,       prompt          => $NUL,
+   readonly        => 0,           required        => 0,
+   sep             => undef,       stepno          => undef,
+   text            => $NUL,        tip             => $NUL,
+   tiptype         => 'dagger',    type            => undef, };
 
 __PACKAGE__->mk_accessors( keys %{ $ATTRS } );
 
@@ -61,8 +61,8 @@ sub build {
    $options->{hacc    } ||= HTML::Accessors->new( content_type => $type );
    $options->{iterator} ||= sub { return ++$step };
 
-   for my $list (grep { $_ and ref $_ eq q(HASH) } @{ $data }) {
-      ref $list->{ $key } eq q(ARRAY) or next; my @stack = ();
+   for my $list (grep { $_ and ref $_ eq 'HASH' } @{ $data }) {
+      ref $list->{ $key } eq 'ARRAY' or next; my @stack = ();
 
       for my $item (@{ $list->{ $key } }) {
          my $built = __build_widget( $class, $options, $item, \@stack );
@@ -73,21 +73,21 @@ sub build {
       $list->{ $key } = \@stack;
    }
 
-   return;
+   return $data;
 }
 
 sub new {
    my ($self, @args) = @_; my $args = __arg_list( @args );
 
-   # Start with some hard coded defaults;
-   my $new = bless { %{ $ATTRS } }, ref $self || $self;
+   # Start with some hard coded defaults
+   my $new = bless { %{ $ATTRS } }, blessed $self || $self;
 
    # Set minimum requirements from the supplied args and the defaults
    $new->_bootstrap( $args );
 
    # Your basic factory method trick
    my $class = ucfirst $new->type;
-      $class = (q(+) eq substr $class, 0, 1)
+      $class = ('+' eq substr $class, 0, 1)
              ? (substr $class, 1) : __PACKAGE__."::${class}";
 
    $new->_ensure_class_loaded( $class );
@@ -100,13 +100,13 @@ sub new {
 sub __arg_list {
    my (@args) = @_; $args[ 0 ] or return {};
 
-   return ref $args[ 0 ] eq q(HASH) ? $args[ 0 ] : { @args };
+   return ref $args[ 0 ] eq 'HASH' ? $args[ 0 ] : { @args };
 }
 
 sub __build_widget {
    my ($class, $options, $item, $stack) = @_; $item or return;
 
-   (ref $item and ref $item->{content} eq q(HASH)) or return $item;
+   (ref $item and ref $item->{content} eq 'HASH') or return $item;
 
    $item->{content}->{form}
       and return __form_wrapper( $options, $item, $stack );
@@ -145,7 +145,6 @@ sub __form_wrapper {
    my $html = __collect_items( $content->{nitems}, $stack );
 
    $item->{content} = "\n".$hacc->form( $content->{attrs}, "\n".$html );
-
    return $item;
 }
 
@@ -159,7 +158,6 @@ sub __group_fields {
    my $html   = __collect_items( $content->{nitems}, $stack );
 
    $item->{content} = "\n".$hacc->fieldset( "\n".$legend.$html );
-
    return $item;
 }
 
@@ -171,13 +169,12 @@ sub __inject {
 sub add_hidden {
    my ($self, $name, $value) = @_;
 
-   my $key    = $self->options->{list_key} || q(items);
+   my $key    = $self->options->{list_key} || 'items';
    my $hidden = $self->options->{hidden  } || {}; $hidden->{ $key } ||= [];
 
    push @{ $hidden->{ $key } }, {
       content => "\n".$self->hacc->input( {
-         name => $name, type => q(hidden), value => $value } ) };
-
+         name => $name, type => 'hidden', value => $value } ) };
    return;
 }
 
@@ -186,9 +183,9 @@ sub add_literal_js {
 
    ($js_class and $id and $config) or return;
 
-   if (ref $config eq q(HASH)) {
+   if (ref $config eq 'HASH') {
       while (my ($k, $v) = each %{ $config }) {
-         if ($k) { $list and $list .= ', '; $list .= $k.': '.($v || 'null') }
+         if ($k) { $list and $list .= ', '; $list .= "${k}: ".($v || 'null') }
       }
    }
    else { $list = $config };
@@ -197,7 +194,6 @@ sub add_literal_js {
 
    push @{ $self->options->{literal_js} },
       "${obj}.config.${js_class}[ '${id}' ] = { ${list} };";
-
    return;
 }
 
@@ -209,13 +205,13 @@ sub add_optional_js {
 }
 
 sub hint_title {
-   return $_[ 0 ]->{hint_title} ||= $_[ 0 ]->loc( q(form_hint_title) );
+   return $_[ 0 ]->{hint_title} ||= $_[ 0 ]->loc( 'form_hint_title' );
 }
 
 sub inflate {
    my ($self, $args) = @_;
 
-   (defined $args and ref $args eq q(HASH)) or return $args;
+   (defined $args and ref $args eq 'HASH') or return $args;
 
    return __PACKAGE__->new( __inject( $self->options, $args ) )->render;
 }
@@ -241,7 +237,7 @@ sub loc {
    # Expand positional parameters of the form [_<n>]
    0 > index $text, $LSB and return $text;
 
-   my @args = $rest[0] && ref $rest[0] eq q(ARRAY) ? @{ $rest[0] } : @rest;
+   my @args = $rest[0] && ref $rest[0] eq 'ARRAY' ? @{ $rest[0] } : @rest;
 
    push @args, map { '[?]' } 0 .. 10;
    $text =~ s{ \[ _ (\d+) \] }{$args[ $1 - 1 ]}gmx;
@@ -261,19 +257,17 @@ sub render {
 
    $field = $lead.$field;
 
-   $self->container   and $field = $self->render_container( $field );
-
-   $self->clear eq q(left) and $field = $self->hacc->br.$field;
-
-   return "\n".$field;
+   $self->container and $field = $self->render_container( $field );
+   $self->clear eq 'left' and $field = $self->hacc->br.$field;
+   return "\n${field}";
 }
 
 sub render_check_field {
    my ($self, $field) = @_; my $hacc = $self->hacc; my $id = $self->id;
 
-   $field .= $hacc->span( { class => q(hidden), id => $id.q(_ajax) } );
+   $field .= $hacc->span( { class => 'hidden', id => "${id}_ajax" } );
 
-   return $hacc->div( { class => q(field_group) }, $field );
+   return $hacc->div( { class => 'field_group' }, $field );
 }
 
 sub render_container {
@@ -295,18 +289,18 @@ sub render_field {
 sub render_prompt {
    my $self = shift; my $args = { class => $self->pclass };
 
-   $self->id and $args->{for} = $self->id and $args->{id} = $self->id.q(_label);
+   $self->id and $args->{for} = $self->id and $args->{id} = $self->id.'_label';
 
-   $self->pwidth and $args->{style} .= 'width: '.$self->pwidth.q(;);
+   $self->pwidth and $args->{style} .= 'width: '.$self->pwidth.';';
 
    return $self->hacc->label( $args, $self->prompt );
 }
 
 sub render_separator {
-   my $self = shift; my $class = q(separator);
+   my $self = shift; my $class = 'separator';
 
-   if ($self->sep eq q(break)) {
-      $class = q(separator_break); $self->sep( $NUL );
+   if ($self->sep eq 'break') {
+      $class = 'separator_break'; $self->sep( $NUL );
    }
 
    return $self->hacc->span( { class => $class }, $self->sep );
@@ -315,9 +309,9 @@ sub render_separator {
 sub render_stepno {
    my $self = shift; my $stepno = $self->stepno;
 
-   ref $stepno eq q(HASH) and return $self->inflate( $stepno );
+   ref $stepno eq 'HASH' and return $self->inflate( $stepno );
 
-   return $self->hacc->span( { class => q(step_number) }, $stepno );
+   return $self->hacc->span( { class => 'step_number' }, $stepno );
 }
 
 sub render_tip {
@@ -328,20 +322,20 @@ sub render_tip {
    $tip !~ m{ $TTS }mx and $tip = $self->hint_title.$TTS.$tip;
    $tip =~ s{ \s+ }{ }gmx;
 
-   my $args = { class => q(help tips), title => $tip };
+   my $args = { class => 'help tips', title => $tip };
 
-   $self->tiptype eq q(dagger) or return $hacc->span( $args, "\n".$field );
+   $self->tiptype eq 'dagger' or return $hacc->span( $args, "\n${field}" );
 
    $field .= $hacc->span( $args, $NB );
 
-   return $hacc->div( { class => q(field_group) }, "\n".$field );
+   return $hacc->div( { class => 'field_group' }, "\n".$field );
 }
 
 # Private object methods
 sub _bootstrap { # Bare minimum is fields + id to get a useful widget
    my ($self, $args) = @_;
 
-   for my $attr (grep { exists $args->{ $_ } } qw(id name type)) {
+   for my $attr (grep { exists $args->{ $_ } } qw( id name type )) {
       $self->$attr( $args->{ $attr } );
    }
 
@@ -365,7 +359,7 @@ sub _bootstrap { # Bare minimum is fields + id to get a useful widget
    else { $args->{options}->{fields} ||= {} }
 
    # This is the default widget type if not overidden in the config
-   $type or $type = $self->type( q(textfield) );
+   $type or $type = $self->type( 'textfield' );
    $name or $self->name( $type );
    return;
 }
@@ -375,7 +369,6 @@ sub _build_hacc { # Now we can create HTML elements like we could with CGI.pm
 
    $hacc or $hacc = HTML::Accessors->new
       ( { content_type => $self->options->{content_type} } );
-
    return $hacc
 }
 
@@ -386,45 +379,42 @@ sub _build_pwidth { # Calculate the prompt width
    my $pwidth = defined $self->pwidth ? $self->pwidth : $opts->{pwidth};
 
    $pwidth and $pwidth =~ m{ \A \d+ \z }mx
-      and $pwidth = (int $pwidth * $width / 100).q(px);
-
+      and $pwidth = (int $pwidth * $width / 100).'px';
    return $pwidth;
 }
 
 sub _build_sep {
    my $self = shift; my $sep = $self->sep;
 
-   not defined $sep and $self->prompt    and $sep = $COLON;
-       defined $sep and $sep eq q(space) and $sep = $SPACE;
-       defined $sep and $sep eq q(none)  and $sep = $NUL;
-
+   not defined $sep and $self->prompt   and $sep = $COLON;
+       defined $sep and $sep eq 'space' and $sep = $SPACE;
+       defined $sep and $sep eq 'none'  and $sep = $NUL;
    return $sep;
 }
 
 sub _build_stepno {
    my $self = shift; my $stepno = $self->stepno;
 
-   defined $stepno and ref $stepno eq q(HASH) and return $stepno;
-   defined $stepno and $stepno eq q(none)     and return $NUL;
-   defined $stepno and $stepno == -1          and $stepno = $self->_next_step;
-   defined $stepno and $stepno == 0           and $stepno = $SPACE;
-           $stepno and $stepno ne $SPACE      and $stepno = $stepno.q(.);
-
-   return $stepno;
+   defined $stepno and ref $stepno eq 'HASH' and return $stepno;
+   defined $stepno and $stepno eq 'none'     and return $NUL;
+   defined $stepno and $stepno == -1         and $stepno = $self->_next_step;
+   defined $stepno and $stepno == 0          and $stepno = $SPACE;
+           $stepno and $stepno ne $SPACE     and $stepno = "${stepno}.";
+   return  $stepno;
 }
 
 sub _ensure_class_loaded {
-   my ($self, $class) = @_;
+   my ($self, $class) = @_; my $error;
 
-   try {
-      load_class( $class );
-      # Rebless ourself as subclass
-      is_class_loaded( $class ) and return bless $self, $class;
-      $self->_set_error( "Class ${class} loaded but package undefined" );
-   }
-   catch { $self->_set_error( $_ ) };
+   try { load_class( $class ) } catch { $error = $self->_set_error( $_ ) };
 
-   return;
+   $error and return;
+
+   is_class_loaded( $class )
+      or ( $self->_set_error
+           ( "Class ${class} loaded but package undefined" ) and return );
+
+   return bless $self, $class; # Rebless ourself as subclass
 }
 
 sub _init {
@@ -457,7 +447,6 @@ sub _init_fields {
 
    $fields and $id = $self->id and exists $fields->{ $id }
       and $self->_init_args( $fields->{ $id } );
-
    return;
 }
 
@@ -480,18 +469,18 @@ sub _render_field {
 
    $id                and $args->{id        }  = $id;
    $self->name        and $args->{name      }  = $self->name;
-   $self->check_field and $args->{class     }  = q(server);
-   $self->required    and $args->{class     } .= q( required);
-   $self->default     and $args->{default   }  = $self->default;
+   $self->check_field and $args->{class     }  = 'server';
+   $self->required    and $args->{class     } .= ' required';
    $self->onblur      and $args->{onblur    }  = $self->onblur;
    $self->onkeypress  and $args->{onkeypress}  = $self->onkeypress;
-   $self->readonly    and $args->{readonly  }  = q(readonly);
+   $self->readonly    and $args->{readonly  }  = 'readonly';
+
+   defined $self->default and $args->{default}  = $self->default;
 
    my $html = $self->render_field( $args );
 
    $self->check_field and $self->add_literal_js( 'server', $id, {
       args => "[ '${id}' ]", event => "'blur'", method => "'checkField'" } );
-
    return $html;
 }
 
@@ -506,7 +495,7 @@ sub __merge_attributes {
             @{ $attrs }) {
       my $v = $src->{ $_ };
 
-      defined $v and ref $v eq q(CODE) and $v = $v->();
+      defined $v and ref $v eq 'CODE' and $v = $v->();
       defined $v and $dest->{ $_ } = $v;
    }
 
@@ -525,13 +514,13 @@ HTML::FormWidgets - Create HTML user interface components
 
 =head1 Version
 
-Describes version v0.21.$Rev: 1 $ of L<HTML::FormWidgets>
+Describes version v0.21.$Rev: 3 $ of L<HTML::FormWidgets>
 
 =head1 Synopsis
 
    use HTML::FormWidgets;
 
-   my $widget = HTML::FormWidgets->new( id => q(test) );
+   my $widget = HTML::FormWidgets->new( id => 'test' );
 
    print $widget->render;
    # <div class="container">

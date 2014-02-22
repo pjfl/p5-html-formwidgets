@@ -1,13 +1,10 @@
-# @(#)$Ident: Date.pm 2013-05-16 14:22 pjf ;
-
 package HTML::FormWidgets::Date;
 
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.21.%d', q$Rev: 1 $ =~ /\d+/gmx );
-use parent qw(HTML::FormWidgets);
+use parent 'HTML::FormWidgets';
 
-__PACKAGE__->mk_accessors( qw(config width) );
+__PACKAGE__->mk_accessors( qw( config width ) );
 
 my $SPC = q( );
 my $TTS = q( ~ );

@@ -1,15 +1,12 @@
-# @(#)$Ident: Tree.pm 2013-05-16 14:19 pjf ;
-
 package HTML::FormWidgets::Tree;
 
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.21.%d', q$Rev: 1 $ =~ /\d+/gmx );
-use parent qw(HTML::FormWidgets);
+use parent 'HTML::FormWidgets';
 
-use English qw(-no_match_vars);
+use English qw( -no_match_vars );
 
-__PACKAGE__->mk_accessors( qw(class_prefix data node_count selected) );
+__PACKAGE__->mk_accessors( qw( class_prefix data node_count selected ) );
 
 my $NUL = q();
 my $SPC = q( );

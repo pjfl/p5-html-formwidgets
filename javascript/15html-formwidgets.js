@@ -1,10 +1,3 @@
-/* @(#)$Id: 15html-formwidgets.js 1370 2013-03-12 17:16:01Z pjf $ */
-
-/* Local Variables:
- * mode: javascript
- * tab-width: 3
- * End: */
-
 Date.extend( 'nowMET', function() { // Calculate Middle European Time UTC + 1
    var now = new Date();
 
@@ -1412,9 +1405,10 @@ var LiveGridScroller = new Class( {
       var table         = this.liveGrid.table;
       var visibleHeight = table.offsetHeight;
       var pageSize      = this.metaData.getPageSize();
-      var lineHeight    = this.lineHeight = visibleHeight / pageSize;
+      var lineHeight    = parseInt( 0.5 + visibleHeight / (pageSize + 1) );
       var height        = this.metaData.getTotalRows() * lineHeight;
 
+      this.lineHeight = lineHeight; visibleHeight -= lineHeight;
       this.heightDiv    = new Element( 'div', {
          styles: { height: parseInt( height ) + 'px', width: '1px' } } );
       this.scrollerDiv  = new Element( 'div', {
@@ -1438,11 +1432,12 @@ var LiveGridScroller = new Class( {
          clearTimeout( this.scrollTimeout ); this.scrollTimeout = null;
       }
 
-      var contentOffset = parseInt( this.scrollerDiv.scrollTop
-                * this.metaData.getTotalRows() / this.heightDiv.offsetHeight );
+      if (this.metaData.onscroll) {
+         var contentOffset = parseInt( this.metaData.getTotalRows()
+                * this.scrollerDiv.scrollTop / this.heightDiv.offsetHeight );
 
-      if (this.metaData.onscroll)
          this.metaData.onscroll( contentOffset, this.metaData );
+      }
 
       if (skiptimeout == true) this.scrollIdle();
       else this.scrollTimeout = setTimeout( this.scrollIdle.bind( this ), 100 );
@@ -1467,9 +1462,9 @@ var LiveGridScroller = new Class( {
          clearTimeout( this.scrollTimeout ); this.scrollTimeout = null;
       }
 
-      // this.adjustScrollTop();
-      var contentOffset = parseInt( this.scrollerDiv.scrollTop *
-                 this.metaData.getTotalRows() / this.heightDiv.offsetHeight );
+      //this.adjustScrollTop();
+      var contentOffset = parseInt( this.metaData.getTotalRows()
+             * this.scrollerDiv.scrollTop / this.heightDiv.offsetHeight );
 
       this.liveGrid.requestContentRefresh( contentOffset );
 
@@ -1481,10 +1476,8 @@ var LiveGridScroller = new Class( {
    unplug: function() { this.scrollerDiv.onscroll = null; return },
 
    updateSize: function() {
-      var table = this.liveGrid.table, visibleHeight = table.offsetHeight;
-
-      this.heightDiv.style.height = parseInt( visibleHeight *
-         this.metaData.getTotalRows() / this.metaData.getPageSize() ) + 'px';
+      this.heightDiv.style.height = parseInt(
+         this.lineHeight * this.metaData.getTotalRows() ) + 'px';
       return;
    }
 } );
@@ -1860,11 +1853,11 @@ var Replacements = new Class( {
 
    build: function() {
       this.options.selector.each( function( selector ) {
-         $$( selector ).each( function( el ) {
+         $$( selector ).each( function( el, index ) {
             if (! el.id) { $uid( el ); el.id = el.type + el.uid }
 
             if (! this.collection.contains( el.id )) {
-               this.collection.include( el.id ); this.createMarkup( el );
+               this.collection.include( el.id ); this.createMarkup( el, index );
             }
 
             this.attach( el );
@@ -1872,7 +1865,7 @@ var Replacements = new Class( {
       }, this );
    },
 
-   createMarkup: function( el ) {
+   createMarkup: function( el, index ) {
       var opt = this.mergeOptions( el.id ), new_id = el.id + opt.suffix;
 
       if (el.type == 'checkbox' || el.type == 'radio') {
@@ -4036,7 +4029,7 @@ var WindowUtils = new Class( {
    logger: function( message ) {
       if (this.options.quiet) return;
 
-      message = 'html-formwidgets.js: ' + message;
+      message = 'formwidgets.js: ' + message;
 
       if (this.customLogFn) { this.customLogFn( message ) }
       else if (window.console && window.console.log) {
@@ -4360,7 +4353,7 @@ var WYSIWYG = new Class( {
       }
       else { width = editor.width; height = editor.height; editor.height = -1; }
 
-      toolbar.setStyle( 'width', (width  + opt.iframePadding) + 'px' );
+      toolbar.setStyle( 'width',  width  + 'px' );
       iframe.setStyle(  'width',  width  + 'px' );
       iframe.setStyle(  'height', height + 'px' );
    },
@@ -4376,13 +4369,13 @@ var WYSIWYG = new Class( {
       var opt      = this.options,
           panels   = opt.toolbars[ editor.barNum ],
           barWidth = 0,
-          rowWidth = 0;
+          rowWidth = 8;
 
       editor.toolbar.empty();
 
       panels.each( function( p, index ) {
          if (! p) {
-            new Element( 'br' ).inject( editor.toolbar ); rowWidth = 0; return;
+            new Element( 'br' ).inject( editor.toolbar ); rowWidth = 8; return;
          }
 
          var found = false;
@@ -4406,7 +4399,7 @@ var WYSIWYG = new Class( {
 
       barWidth = Math.max( opt.minWidth, barWidth );
       editor.toolbar.setStyle( 'width', barWidth + 'px' );
-      editor.iframe.setStyle( 'width', (barWidth - opt.iframePadding) + 'px' );
+      editor.iframe.setStyle( 'width', barWidth + 'px' );
    },
 
    nextToolBar: function( editor ) {
@@ -4465,3 +4458,8 @@ var WYSIWYG = new Class( {
 } );
 
 function Expand_Collapse() {}
+
+/* Local Variables:
+ * mode: javascript
+ * tab-width: 3
+ * End: */

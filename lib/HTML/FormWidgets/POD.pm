@@ -1,16 +1,13 @@
-# @(#)$Ident: POD.pm 2013-05-16 14:21 pjf ;
-
 package HTML::FormWidgets::POD;
 
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.21.%d', q$Rev: 1 $ =~ /\d+/gmx );
-use parent qw(HTML::FormWidgets);
+use parent 'HTML::FormWidgets';
 
 use Pod::Hyperlink::BounceURL;
 use Pod::Xhtml;
 
-__PACKAGE__->mk_accessors( qw(src title url) );
+__PACKAGE__->mk_accessors( qw( src title url ) );
 
 sub init {
    my ($self, $args) = @_;

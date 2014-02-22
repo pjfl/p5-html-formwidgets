@@ -1,13 +1,10 @@
-# @(#)$Ident: Cloud.pm 2013-05-16 14:22 pjf ;
-
 package HTML::FormWidgets::Cloud;
 
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.21.%d', q$Rev: 1 $ =~ /\d+/gmx );
-use parent qw(HTML::FormWidgets);
+use parent 'HTML::FormWidgets';
 
-__PACKAGE__->mk_accessors( qw(data height width) );
+__PACKAGE__->mk_accessors( qw( data height width ) );
 
 sub init {
    my ($self, $args) = @_;

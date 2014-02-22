@@ -1,21 +1,18 @@
-# @(#)$Ident: File.pm 2013-05-16 14:22 pjf ;
-
 package HTML::FormWidgets::File;
 
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.21.%d', q$Rev: 1 $ =~ /\d+/gmx );
-use parent qw(HTML::FormWidgets);
+use parent 'HTML::FormWidgets';
 
-use English qw(-no_match_vars);
+use English qw( -no_match_vars );
 use IO::File;
 use PPI;
 use PPI::HTML;
 use Text::ParseWords;
 use Text::Tabs;
 
-__PACKAGE__->mk_accessors( qw(header header_class number
-                              path select subtype tabstop) );
+__PACKAGE__->mk_accessors( qw( header header_class number
+                               path select subtype tabstop ) );
 
 my $HASH_CHAR = chr 35;
 

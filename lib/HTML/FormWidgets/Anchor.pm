@@ -1,11 +1,8 @@
-# @(#)$Ident: Anchor.pm 2013-12-01 00:07 pjf ;
-
 package HTML::FormWidgets::Anchor;
 
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.21.%d', q$Rev: 3 $ =~ /\d+/gmx );
-use parent                  qw( HTML::FormWidgets );
+use parent 'HTML::FormWidgets';
 
 __PACKAGE__->mk_accessors( qw( config fhelp href imgclass target ) );
 

@@ -1,5 +1,8 @@
 Revision history for HTML::FormWidgets
 
+          - Removed Ident and VERSION from most files
+          - Added namespace and name to check field args
+          - Added reset button
           - Updated git pre commit hook
           - Updated toolchain
 

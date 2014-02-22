@@ -1,13 +1,10 @@
-# @(#)$Ident: Freelist.pm 2013-07-12 19:46 pjf ;
-
 package HTML::FormWidgets::Freelist;
 
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.21.%d', q$Rev: 1 $ =~ /\d+/gmx );
-use parent qw(HTML::FormWidgets);
+use parent 'HTML::FormWidgets';
 
-__PACKAGE__->mk_accessors( qw(height values width) );
+__PACKAGE__->mk_accessors( qw( height values width ) );
 
 my $TTS = q( ~ );
 

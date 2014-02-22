@@ -1,11 +1,9 @@
-# @(#)$Ident: FormWidgets.pm 2014-02-02 22:33 pjf ;
-
 package HTML::FormWidgets;
 
 use 5.01;
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.21.%d', q$Rev: 3 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.21.%d', q$Rev: 4 $ =~ /\d+/gmx );
 use parent                  qw( Class::Accessor::Fast );
 
 use Class::Load             qw( is_class_loaded load_class );
@@ -28,6 +26,7 @@ my $OPTIONS = {
    language        => 'en',
    list_key        => 'items',
    literal_js      => sub { [] },
+   max_pwidth      => undef,
    ns              => 'default',
    optional_js     => sub { [] },
    pwidth          => 30,
@@ -145,6 +144,7 @@ sub __form_wrapper {
    my $html = __collect_items( $content->{nitems}, $stack );
 
    $item->{content} = "\n".$hacc->form( $content->{attrs}, "\n".$html );
+
    return $item;
 }
 
@@ -315,9 +315,9 @@ sub render_stepno {
 }
 
 sub render_tip {
-   my ($self, $field) = @_; my $hacc = $self->hacc;
+   my ($self, $field) = @_; my $hacc = $self->hacc; my $break = 'EOL';
 
-   (my $tip = $self->tip) =~ s{ \n }{ }gmx;
+   (my $tip = $self->tip) =~ s{ \n }{$break}gmx;
 
    $tip !~ m{ $TTS }mx and $tip = $self->hint_title.$TTS.$tip;
    $tip =~ s{ \s+ }{ }gmx;
@@ -378,8 +378,13 @@ sub _build_pwidth { # Calculate the prompt width
    my $width  = $opts->{width} || 1024;
    my $pwidth = defined $self->pwidth ? $self->pwidth : $opts->{pwidth};
 
-   $pwidth and $pwidth =~ m{ \A \d+ \z }mx
-      and $pwidth = (int $pwidth * $width / 100).'px';
+   if ($pwidth and $pwidth =~ m{ \A \d+ \z }mx) {
+      $pwidth  = int $pwidth * $width / 100;
+      $opts->{max_pwidth} and $pwidth > $opts->{max_pwidth}
+         and $pwidth = $opts->{max_pwidth};
+      $pwidth .= 'px';
+   }
+
    return $pwidth;
 }
 
@@ -478,9 +483,12 @@ sub _render_field {
    defined $self->default and $args->{default}  = $self->default;
 
    my $html = $self->render_field( $args );
+   my $name = $self->options->{name} // $NUL;
+   my $ns   = $self->options->{ns  } // $NUL;
 
    $self->check_field and $self->add_literal_js( 'server', $id, {
-      args => "[ '${id}' ]", event => "'blur'", method => "'checkField'" } );
+      args   => "[ '${id}', '${name}', '${ns}' ]", event => "'blur'",
+      method => "'checkField'" } );
    return $html;
 }
 
@@ -514,7 +522,7 @@ HTML::FormWidgets - Create HTML user interface components
 
 =head1 Version
 
-Describes version v0.21.$Rev: 3 $ of L<HTML::FormWidgets>
+Describes version v0.21.$Rev: 4 $ of L<HTML::FormWidgets>
 
 =head1 Synopsis
 

@@ -1,13 +1,10 @@
-# @(#)$Ident: Async.pm 2013-05-16 14:22 pjf ;
-
 package HTML::FormWidgets::Async;
 
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.21.%d', q$Rev: 1 $ =~ /\d+/gmx );
-use parent qw(HTML::FormWidgets);
+use parent 'HTML::FormWidgets';
 
-__PACKAGE__->mk_accessors( qw(config) );
+__PACKAGE__->mk_accessors( qw( config ) );
 
 sub init {
    my ($self, $args) = @_;

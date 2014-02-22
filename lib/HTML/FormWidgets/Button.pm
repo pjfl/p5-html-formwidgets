@@ -1,50 +1,46 @@
-# @(#)$Ident: Button.pm 2013-05-16 14:18 pjf ;
-
 package HTML::FormWidgets::Button;
 
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.21.%d', q$Rev: 1 $ =~ /\d+/gmx );
-use parent qw(HTML::FormWidgets);
+use parent 'HTML::FormWidgets';
 
-__PACKAGE__->mk_accessors( qw(button_name config src) );
+__PACKAGE__->mk_accessors( qw( button_name config src ) );
 
-my $TTS = q( ~ );
+my $TTS = ' ~ ';
 
 sub init {
    my ($self, $args) = @_;
 
-   $self->button_name( q(_method) );
-   $self->config     ( undef      );
-   $self->container  ( 0          );
-   $self->src        ( q()        );
-   $self->tiptype    ( q(normal)  );
+   $self->button_name( '_method' );
+   $self->config     ( undef     );
+   $self->container  ( 0         );
+   $self->src        ( q()       );
+   $self->tiptype    ( 'normal'  );
    return;
 }
 
 sub render_field {
-   my $self = shift; my $hacc = $self->hacc; my $args = {};
+   my $self = shift; my $args = {}; my $src = $self->src;
 
    $self->id and $args->{id} = $self->id and $self->config
       and $self->add_literal_js( 'anchors', $self->id, $self->config );
 
-   return $self->src && ref $self->src eq q(HASH)
-        ? $self->_markup_button( $args )
-        : $self->src
-        ? $self->_image_button ( $args )
-        : $self->_submit_button( $args );
+   return $src && ref $src eq 'HASH'  ? $self->_markup_button( $args )
+        : $src &&     $src eq 'reset' ? $self->_reset_button ( $args )
+        : $src                        ? $self->_image_button ( $args )
+                                      : $self->_submit_button( $args );
 }
 
 sub _image_button {
    my ($self, $args) = @_; my $hacc = $self->hacc;
 
-   my $src   = q(http:) eq (substr $self->src, 0, 5)
+   my $src   = 'http:' eq (substr $self->src, 0, 5)
              ? $self->src : $self->options->{assets}.$self->src;
    my $image = $hacc->img( { alt   => ucfirst $self->name,
-                             class => q(button),
+                             class => 'button',
                              src   => $src } );
 
-   $args->{class} = $self->class || q(image_button submit);
+   $args->{class} = $self->class || 'image_button submit';
    $args->{name } = $self->button_name;
    $args->{value} = ucfirst $self->name;
 
@@ -54,21 +50,31 @@ sub _image_button {
 sub _markup_button {
    my ($self, $args) = @_; my $hacc = $self->hacc; my $html;
 
-   my $class = $self->src->{class} || q(button_replacement);
+   my $class = $self->src->{class} || 'button_replacement';
 
    for my $char (split m{}m, $self->src->{content} || 'Button') {
       $html .= $hacc->span( { class => $class }, $char );
    }
 
-   $args->{class} = $self->class || q(markup_button submit);
+   $args->{class} = $self->class || 'markup_button submit';
 
    return $hacc->span( $args, $html );
+}
+
+sub _reset_button {
+   my ($self, $args) = @_;
+
+   $args->{class} = $self->class || 'reset_button';
+   $args->{type } = 'reset';
+   $args->{value} = ucfirst $self->name;
+
+   return $self->hacc->input( $args );
 }
 
 sub _submit_button {
    my ($self, $args) = @_;
 
-   $args->{class} = $self->class || q(submit_button submit);
+   $args->{class} = $self->class || 'submit_button submit';
    $args->{name } = $self->button_name;
    $args->{value} = ucfirst $self->name;
 

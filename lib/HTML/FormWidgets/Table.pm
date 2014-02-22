@@ -1,14 +1,11 @@
-# @(#)$Ident: Table.pm 2013-05-16 14:19 pjf ;
-
 package HTML::FormWidgets::Table;
 
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.21.%d', q$Rev: 1 $ =~ /\d+/gmx );
-use parent qw(HTML::FormWidgets);
+use parent 'HTML::FormWidgets';
 
-__PACKAGE__->mk_accessors( qw(data edit hclass number_rows
-                              select sortable table_class) );
+__PACKAGE__->mk_accessors( qw( data edit hclass number_rows
+                               select sortable table_class ) );
 
 my $HASH_CHAR = chr 35;
 my $NBSP      = '&#160;';

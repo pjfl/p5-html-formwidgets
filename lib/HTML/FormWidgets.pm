@@ -3,7 +3,7 @@ package HTML::FormWidgets;
 use 5.01;
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.21.%d', q$Rev: 4 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.21.%d', q$Rev: 5 $ =~ /\d+/gmx );
 use parent                  qw( Class::Accessor::Fast );
 
 use Class::Load             qw( is_class_loaded load_class );
@@ -142,8 +142,9 @@ sub __form_wrapper {
 
    my $hacc = $options->{hacc};
    my $html = __collect_items( $content->{nitems}, $stack );
+   my $attr = $content->{config} // $content->{attrs} // {};
 
-   $item->{content} = "\n".$hacc->form( $content->{attrs}, "\n".$html );
+   $item->{content} = "\n".$hacc->form( $attr, "\n".$html );
 
    return $item;
 }
@@ -430,10 +431,10 @@ sub _init {
    $self->_init_fields    ( $args );
    $self->_init_args      ( $args );
    $self->_init_hint_title( $args );
-   $self->hacc            ( $self->_build_hacc       );
-   $self->pwidth          ( $self->_build_pwidth     );
-   $self->sep             ( $self->_build_sep        );
-   $self->stepno          ( $self->_build_stepno     );
+   $self->hacc            ( $self->_build_hacc   );
+   $self->pwidth          ( $self->_build_pwidth );
+   $self->sep             ( $self->_build_sep    );
+   $self->stepno          ( $self->_build_stepno );
    return;
 }
 
@@ -522,7 +523,7 @@ HTML::FormWidgets - Create HTML user interface components
 
 =head1 Version
 
-Describes version v0.21.$Rev: 4 $ of L<HTML::FormWidgets>
+Describes version v0.21.$Rev: 5 $ of L<HTML::FormWidgets>
 
 =head1 Synopsis
 
@@ -1241,7 +1242,7 @@ Peter Flanigan, C<< <pjfl@cpan.org> >>
 
 =head1 License and Copyright
 
-Copyright (c) 2012 Peter Flanigan. All rights reserved
+Copyright (c) 2014 Peter Flanigan. All rights reserved
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself. See L<perlartistic>
@@ -1256,4 +1257,3 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE
 # mode: perl
 # tab-width: 3
 # End:
-

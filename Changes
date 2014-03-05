@@ -1,5 +1,6 @@
 Revision history for HTML::FormWidgets
 
+          - Fixed defined text error in ::Label
           - Form attrs deprecated in favour of form config
           - Removed Ident and VERSION from most files
           - Added namespace and name to check field args

@@ -9,17 +9,17 @@ __PACKAGE__->mk_accessors( qw( dropcap ) );
 sub init {
    my ($self, $args) = @_;
 
-   $self->class    ( q(label_text) );
-   $self->container( 0   );
-   $self->dropcap  ( 0   );
-   $self->text     ( q() );
+   $self->class    ( 'label_text' );
+   $self->container( 0 );
+   $self->dropcap  ( 0 );
+   $self->text     ( undef );
    return;
 }
 
 sub render_field {
-   my ($self, $args) = @_; my $text = $self->text or return;
+   my ($self, $args) = @_; my $text = $self->text;
 
-   $text =~ s{ \A \n }{}msx;
+   defined $text or return; $text =~ s{ \A \n }{}msx;
 
    if ($self->dropcap) {
       my $markup;

@@ -3,7 +3,7 @@ package HTML::FormWidgets;
 use 5.01;
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.21.%d', q$Rev: 5 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.21.%d', q$Rev: 6 $ =~ /\d+/gmx );
 use parent                  qw( Class::Accessor::Fast );
 
 use Class::Load             qw( is_class_loaded load_class );
@@ -24,6 +24,7 @@ my $OPTIONS = {
    hidden          => sub { {} },
    js_object       => 'html_formwidgets',
    language        => 'en',
+   l10n            => undef,
    list_key        => 'items',
    literal_js      => sub { [] },
    max_pwidth      => undef,
@@ -103,23 +104,23 @@ sub __arg_list {
 }
 
 sub __build_widget {
-   my ($class, $options, $item, $stack) = @_; $item or return;
+   my ($class, $opts, $item, $stack) = @_; $item or return;
 
-   (ref $item and ref $item->{content} eq 'HASH') or return $item;
+   (ref $item and (ref $item->{content} eq 'HASH' or blessed $item->{content}))
+      or return $item;
 
-   $item->{content}->{form}
-      and return __form_wrapper( $options, $item, $stack );
+   my $content = $item->{content};
 
-   if ($item->{content}->{group}) {
-      $options->{skip_groups} and return;
-      return __group_fields( $options, $item, $stack );
+   $content->{form} and return __form_wrapper( $opts, $item, $stack );
+
+   if ($content->{group}) {
+      $opts->{skip_groups} and return;
+      return __group_fields( $opts, $item, $stack );
    }
 
-   my $widget = blessed $item->{content}
-              ? $item->{content}
-              : $item->{content}->{widget}
-              ? $class->new( __inject( $options, $item->{content} ) )
-              : undef;
+   my $widget = blessed $content   ? $content
+              : $content->{widget} ? $class->new( __inject( $opts, $content ) )
+                                   : undef;
 
    $widget or return $item;
    $widget->frame_class and $item->{class} = $widget->frame_class;
@@ -225,10 +226,10 @@ sub is_xml {
 }
 
 sub loc {
-   my ($self, $text, @rest) = @_; my $opt = $self->options; my $l10n;
+   my ($self, $text, @rest) = @_; my $opts = $self->options; my $l10n;
 
-   if (defined ($l10n = $opt->{l10n})) {
-      my $args = { language => $opt->{language}, ns => $opt->{ns} };
+   if (defined ($l10n = $opts->{l10n})) {
+      my $args = { language => $opts->{language}, ns => $opts->{ns} };
 
       return $l10n->( $args, $text, @rest );
    }
@@ -523,7 +524,7 @@ HTML::FormWidgets - Create HTML user interface components
 
 =head1 Version
 
-Describes version v0.21.$Rev: 5 $ of L<HTML::FormWidgets>
+Describes version v0.21.$Rev: 6 $ of L<HTML::FormWidgets>
 
 =head1 Synopsis
 

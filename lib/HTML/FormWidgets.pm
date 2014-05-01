@@ -3,7 +3,7 @@ package HTML::FormWidgets;
 use 5.01;
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.21.%d', q$Rev: 6 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.21.%d', q$Rev: 7 $ =~ /\d+/gmx );
 use parent                  qw( Class::Accessor::Fast );
 
 use Class::Load             qw( is_class_loaded load_class );
@@ -524,7 +524,7 @@ HTML::FormWidgets - Create HTML user interface components
 
 =head1 Version
 
-Describes version v0.21.$Rev: 6 $ of L<HTML::FormWidgets>
+Describes version v0.21.$Rev: 7 $ of L<HTML::FormWidgets>
 
 =head1 Synopsis
 

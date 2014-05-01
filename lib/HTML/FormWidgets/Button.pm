@@ -68,7 +68,7 @@ sub _reset_button {
    $args->{type } = 'reset';
    $args->{value} = ucfirst $self->name;
 
-   return $self->hacc->input( $args );
+   return $self->hacc->button( $args, $args->{value} );
 }
 
 sub _submit_button {
@@ -76,9 +76,10 @@ sub _submit_button {
 
    $args->{class} = $self->class || 'submit_button submit';
    $args->{name } = $self->button_name;
+   $args->{type } = 'submit';
    $args->{value} = ucfirst $self->name;
 
-   return $self->hacc->submit( $args );
+   return $self->hacc->button( $args, $args->{value} );
 }
 
 1;

@@ -4,18 +4,19 @@ use strict;
 use warnings;
 use parent 'HTML::FormWidgets';
 
-__PACKAGE__->mk_accessors( qw( config field href subtype title ) );
+__PACKAGE__->mk_accessors( qw( button_name config field href subtype title ) );
 
 sub init {
    my ($self, $args) = @_;
 
-   $self->class  ( q(chooser_button fade submit) );
-   $self->config ( { height => 500, width => 500, x => 10, y => 10 } );
-   $self->default( $self->loc( 'Choose' ) );
-   $self->field  ( q() );
-   $self->href   ( undef );
-   $self->subtype( q(window) );
-   $self->title  ( $self->loc( 'Select Item' ) );
+   $self->button_name( '_method' );
+   $self->class      ( 'chooser_button fade submit' );
+   $self->config     ( { height => 500, width => 500, x => 10, y => 10 } );
+   $self->default    ( $self->loc( 'Choose' ) );
+   $self->field      ( q() );
+   $self->href       ( undef );
+   $self->subtype    ( 'window' );
+   $self->title      ( $self->loc( 'Select Item' ) );
    return;
 }
 
@@ -33,7 +34,7 @@ sub render_field {
                            id    => $self->id.q(Disp) }, $html );
    }
 
-   $config->{ $_ } = "'".($self->$_)."'" for (qw(field subtype));
+   $config->{ $_ } = "'".($self->$_)."'" for (qw( field subtype ));
 
    $config->{button} = "'".$self->default."'";
    $config->{title } = "'".$self->title."'";
@@ -43,10 +44,10 @@ sub render_field {
 
    $self->add_literal_js( 'anchors', $self->id, $js );
 
-   return $hacc->submit( { class => $self->class,
+   return $hacc->button( { class => $self->class,
                            id    => $self->id,
-                           name  => q(_method),
-                           value => $self->default, } );
+                           name  => $self->button_name,
+                           value => $self->default, }, $self->default );
 }
 
 sub __stringify {

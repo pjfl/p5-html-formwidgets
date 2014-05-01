@@ -39,7 +39,7 @@ like $r, qr{ class="anchor_button \s fade" }mx, 'Anchor 3';
 $widget = HTML::FormWidgets->new( id => q(test), type => q(button) );
 $r      = $widget->render;
 
-like $r, qr{ input  }msx,         'Button 1';
+like $r, qr{ button  }msx,        'Button 1';
 like $r, qr{ value="Test" }msx,   'Button 2';
 like $r, qr{ name="_method" }msx, 'Button 3';
 like $r, qr{ type="submit" }msx,  'Button 4';

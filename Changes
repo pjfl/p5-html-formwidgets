@@ -1,5 +1,6 @@
 Revision history for HTML::FormWidgets
 
+          - Added value attribute to Button
           - Create buttons not input type submit. Styles better
           - Fixed defined text error in ::Label
           - Form attrs deprecated in favour of form config

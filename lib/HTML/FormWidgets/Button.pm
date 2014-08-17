@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use parent 'HTML::FormWidgets';
 
-__PACKAGE__->mk_accessors( qw( button_name config src ) );
+__PACKAGE__->mk_accessors( qw( button_name config src value ) );
 
 my $TTS = ' ~ ';
 
@@ -16,6 +16,7 @@ sub init {
    $self->container  ( 0         );
    $self->src        ( q()       );
    $self->tiptype    ( 'normal'  );
+   $self->value      ( undef     );
    return;
 }
 
@@ -42,7 +43,7 @@ sub _image_button {
 
    $args->{class} = $self->class || 'image_button submit';
    $args->{name } = $self->button_name;
-   $args->{value} = ucfirst $self->name;
+   $args->{value} = $self->value // $self->name;
 
    return $hacc->button( $args, $image );
 }
@@ -66,9 +67,9 @@ sub _reset_button {
 
    $args->{class} = $self->class || 'reset_button';
    $args->{type } = 'reset';
-   $args->{value} = ucfirst $self->name;
+   $args->{value} = $self->value // $self->name;
 
-   return $self->hacc->button( $args, $args->{value} );
+   return $self->hacc->button( $args, ucfirst $self->name );
 }
 
 sub _submit_button {
@@ -77,9 +78,9 @@ sub _submit_button {
    $args->{class} = $self->class || 'submit_button submit';
    $args->{name } = $self->button_name;
    $args->{type } = 'submit';
-   $args->{value} = ucfirst $self->name;
+   $args->{value} = $self->value // $self->name;
 
-   return $self->hacc->button( $args, $args->{value} );
+   return $self->hacc->button( $args, ucfirst $self->name );
 }
 
 1;

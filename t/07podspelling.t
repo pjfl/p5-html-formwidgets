@@ -50,8 +50,10 @@ groupmembership
 html
 htmlparser
 init
+initialises
 javascript
 loc
+merchantability
 mootools
 png
 popup
@@ -59,6 +61,8 @@ popupmenu
 radiogroup
 scrollinglist
 scrollpin
+selectable
+serialised
 sidebarpanel
 subdirectory
 tablerow

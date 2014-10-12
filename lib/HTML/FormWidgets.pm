@@ -3,7 +3,7 @@ package HTML::FormWidgets;
 use 5.01;
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.21.%d', q$Rev: 8 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.21.%d', q$Rev: 9 $ =~ /\d+/gmx );
 use parent                  qw( Class::Accessor::Fast );
 
 use Class::Load             qw( is_class_loaded load_class );
@@ -524,7 +524,7 @@ HTML::FormWidgets - Create HTML user interface components
 
 =head1 Version
 
-Describes version v0.21.$Rev: 8 $ of L<HTML::FormWidgets>
+Describes version v0.21.$Rev: 9 $ of L<HTML::FormWidgets>
 
 =head1 Synopsis
 
@@ -682,7 +682,7 @@ Returns true if the content type matches C<xml>
    $message_text = $widget->loc( $message_id, @args );
 
 Use the supplied key to return a value from the C<l10n> object. This
-object was passed to the constructor and should localize the key to
+object was passed to the constructor and should localise the key to
 the required language. The C<@args> list contains parameters to substituted
 in place of the placeholders which have the form C<[_n]>
 

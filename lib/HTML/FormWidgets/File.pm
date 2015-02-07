@@ -202,7 +202,7 @@ sub _render_source {
 sub _render_text {
    my ($self, $text) = @_; my $hacc = $self->hacc;
 
-   $self->container_class( q(container textfile) );
+   $self->container_class( 'container textfile' );
 
    return $hacc->pre( $hacc->escape_html( $text, 0 ) );
 }

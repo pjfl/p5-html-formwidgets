@@ -12,7 +12,7 @@ sub init {
    my ($self, $args) = @_;
 
    $self->config    ( {} );
-   $self->class     ( q(plain) );
+   $self->class     ( 'plain' );
    $self->data      ( [] );
    $self->item_class( undef );
    $self->ordered   ( 0 );
@@ -29,7 +29,7 @@ sub render_field {
          $js_args->{ $_ } = '"'.$self->config->{ $_ }.'"';
       }
 
-      $self->add_literal_js( q(lists), $self->id, $js_args );
+      $self->add_literal_js( 'lists', $self->id, $js_args );
    }
 
    my $item_args = $self->item_class ? { class => $self->item_class } : {} ;

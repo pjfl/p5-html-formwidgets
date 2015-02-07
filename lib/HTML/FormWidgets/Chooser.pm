@@ -6,6 +6,12 @@ use parent 'HTML::FormWidgets';
 
 __PACKAGE__->mk_accessors( qw( button_name config field href subtype title ) );
 
+my $_stringify = sub {
+   my $hash = shift;
+
+   return '{ '.(join ', ', map { "${_}: ".$hash->{ $_ } } keys %{ $hash }).' }';
+};
+
 sub init {
    my ($self, $args) = @_;
 
@@ -23,15 +29,15 @@ sub init {
 sub render_field {
    my $self = shift; my $config = $self->config; my $hacc = $self->hacc;
 
-   if ($self->subtype eq q(display)) {
+   if ($self->subtype eq 'display') {
       $self->add_literal_js( 'anchors', $self->id, $config );
 
       my $html = $hacc->a( { class => $self->class,
                              href  => $self->href,
                              id    => $self->id, }, q( ) );
 
-      return $hacc->div( { class => q(chooser_panel),
-                           id    => $self->id.q(Disp) }, $html );
+      return $hacc->div( { class => 'chooser_panel',
+                           id    => $self->id.'Disp' }, $html );
    }
 
    $config->{ $_ } = "'".($self->$_)."'" for (qw( field subtype ));
@@ -39,7 +45,7 @@ sub render_field {
    $config->{button} = "'".$self->default."'";
    $config->{title } = "'".$self->title."'";
 
-   my $js = { args   => "[ '".$self->href."', ".__stringify( $config )." ]",
+   my $js = { args   => "[ '".$self->href."', ".$_stringify->( $config )." ]",
               method => "'chooser'" };
 
    $self->add_literal_js( 'anchors', $self->id, $js );
@@ -48,12 +54,6 @@ sub render_field {
                            id    => $self->id,
                            name  => $self->button_name,
                            value => $self->default, }, $self->default );
-}
-
-sub __stringify {
-   my $hash = shift;
-
-   return '{ '.(join ', ', map { "${_}: ".$hash->{ $_ } } keys %{ $hash }).' }';
 }
 
 1;

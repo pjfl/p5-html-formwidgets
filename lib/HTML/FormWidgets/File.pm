@@ -16,64 +16,45 @@ __PACKAGE__->mk_accessors( qw( header header_class number
 
 my $HASH_CHAR = chr 35;
 
-sub init {
-   my ($self, $args) = @_;
+# Private functions
+my $_even_or_odd = sub {
+   return ($_[ 0 ] + 1) % 2 == 0 ? ' even' : ' odd';
+};
 
-   $self->header      ( []        );
-   $self->header_class( q(normal) );
-   $self->number      ( 1         );
-   $self->path        ( undef     );
-   $self->select      ( -1        );
-   $self->subtype     ( q(text)   );
-   $self->tabstop     ( 3         );
-   return;
-}
+my $_column_class = sub {
+   return $_even_or_odd->( $_[ 0 ] ).'_col';
+};
 
-sub render_field { # Subtypes: csv, html, logfile, source, and text
-   my ($self, $args) = @_;
+my $_row_class = sub {
+   return $_even_or_odd->( $_[ 0 ] ).'_row';
+};
 
-   my $path = $self->path or return $self->loc( 'Path not specified' );
-
-   $self->subtype or return $self->loc( 'Subtype not specified' );
-   $self->subtype eq q(html) and return $self->_render_html( $path );
-
-   -f $path or return $self->loc( 'Path [_1] not found', $path );
-
-   my $error  = $self->loc( 'Path [_1] cannot read', $path );
-   my $rdr    = IO::File->new( $path, q(r) ) or return $error;
-   my $text   = do { local $RS = undef; <$rdr> }; $rdr->close;
-   my $method = q(_render_).$self->subtype;
-
-   return $self->$method( $text );
-}
-
-# Private subroutines
-
-sub _add_line_number {
+# Private methods
+my $_add_line_number = sub {
    my ($self, $r_no, $c_no) = @_;
 
-   my $class = q(first lineNumber).__column_class( $c_no );
+   my $class = 'first lineNumber'.$_column_class->( $c_no );
 
    return $self->hacc->td( { class => $class }, $r_no + 1 );
-}
+};
 
-sub _add_row_count {
+my $_add_row_count = sub {
    my ($self, $n_rows) = @_;
 
-   return $self->add_hidden( q(_).($self->name || q()).q(_nrows), $n_rows );
-}
+   return $self->add_hidden( '_'.($self->name || q()).'_nrows', $n_rows );
+};
 
-sub _add_select_box {
+my $_add_select_box = sub {
    my ($self, $r_no, $c_no, $val) = @_; my $hacc = $self->hacc;
 
    my $args  = { label => q(), name => $self->name.".select${r_no}",
                  value => $val };
-   my $class = $self->subtype.__column_class( $c_no );
+   my $class = $self->subtype.$_column_class->( $c_no );
 
    return $hacc->td( { class => $class }, $hacc->checkbox( $args ) );
-}
+};
 
-sub _build_table {
+my $_build_table = sub {
    my ($self, $text, $header_cells, $row_cells) = @_; my $hacc = $self->hacc;
 
    my ($cells, $class, $val); my $r_no = 0; my $rows = q(); my $c_max = 1;
@@ -84,10 +65,10 @@ sub _build_table {
       my ($ncells, $cells, $val) = $row_cells->( $line, $r_no );
 
       if ($cells) {
-         $self->number and $lead = $self->_add_line_number( $r_no, $c_no++ );
+         $self->number and $lead = $self->$_add_line_number( $r_no, $c_no++ );
          $self->select >= 0
-            and $lead .= $self->_add_select_box( $r_no, $c_no++, $val );
-         $class = $self->subtype.__row_class( $r_no );
+            and $lead .= $self->$_add_select_box( $r_no, $c_no++, $val );
+         $class = $self->subtype.$_row_class->( $r_no );
          $rows .= $hacc->tr( { class => $class }, $lead.$cells );
          $r_no++;
       }
@@ -95,17 +76,17 @@ sub _build_table {
       $c_no += $ncells; $c_no > $c_max and $c_max = $c_no;
    }
 
-   $class = $self->header_class.q( minimal);
+   $class = $self->header_class.' minimal';
    $self->number
       and $cells = $hacc->th( { class => $class }, $self->loc( $HASH_CHAR ) );
    $self->select >= 0
       and $cells .= $hacc->th( { class => $class }, $self->loc( 'M' ) );
    $cells .= $header_cells->( $c_max, $self->select < 0 ? 1 : 2 );
    $rows   = $hacc->tr( $cells ).$rows;
-   $self->_add_row_count( $r_no );
+   $self->$_add_row_count( $r_no );
 
    return $hacc->table( { cellspacing => 0, class => $self->subtype }, $rows );
-}
+};
 
 sub _render_csv {
    my ($self, $text) = @_; my $hacc = $self->hacc;
@@ -113,7 +94,7 @@ sub _render_csv {
    my $header_cells = sub {
       my ($c_max, $c_no) = @_; my $cells = q();
 
-      my @headers = $self->header->[0] ? @{ $self->header } : ('A' .. 'Z');
+      my @headers = $self->header->[ 0 ] ? @{ $self->header } : ('A' .. 'Z');
 
       for my $header (@headers) {
          $cells .= $hacc->th( { class => $self->header_class }, $header );
@@ -127,14 +108,14 @@ sub _render_csv {
 
       my $cells = q(); my $f_no = 0; my $val = q();
 
-      for my $fld (parse_line( q(,), 0, $hacc->escape_html( $line, 0 ) )) {
+      for my $fld (parse_line( ',', 0, $hacc->escape_html( $line, 0 ) )) {
          if ($r_no == 0 and $line =~ m{ \A \# }mx) {
             $f_no == 0 and $fld = substr $fld, 1;
             $self->header->[ $f_no ] = $fld;
          }
          else {
-            my $class = $self->subtype.__column_class
-               ( ($self->select < 0 ? 1 : 2) + $f_no );
+            my $class = $self->subtype
+                       .$_column_class->( ($self->select < 0 ? 1 : 2) + $f_no );
 
             $cells .= $hacc->td( { class => $class }, $fld );
          }
@@ -145,7 +126,7 @@ sub _render_csv {
       return ($f_no, $cells, $val);
    };
 
-   return $self->_build_table( $text, $header_cells, $row_cells );
+   return $self->$_build_table( $text, $header_cells, $row_cells );
 }
 
 sub _render_html {
@@ -176,13 +157,13 @@ sub _render_logfile {
    my $row_cells = sub {
       my ($line, $r_no) = @_; $line = $hacc->escape_html( $line, 0 );
 
-      my $class = $self->subtype.__column_class( 1 );
+      my $class = $self->subtype.$_column_class->( 1 );
       my $cells = $hacc->td( { class => $class }, $line );
 
       return (1, $cells, $line);
    };
 
-   return $self->_build_table( $text, $header_cells, $row_cells );
+   return $self->$_build_table( $text, $header_cells, $row_cells );
 }
 
 sub _render_source {
@@ -209,13 +190,13 @@ sub _render_source {
    my $row_cells = sub {
       my ($line, $r_no) = @_;
 
-      my $class = $self->subtype.__column_class( 1 );
+      my $class = $self->subtype.$_column_class->( 1 );
       my $cells = $hacc->td( { class => $class }, $line );
 
       return (1, $cells, $line);
    };
 
-   return $self->_build_table( $text, $header_cells, $row_cells );
+   return $self->$_build_table( $text, $header_cells, $row_cells );
 }
 
 sub _render_text {
@@ -226,18 +207,36 @@ sub _render_text {
    return $hacc->pre( $hacc->escape_html( $text, 0 ) );
 }
 
-# Private subroutines
+# Public methods
+sub init {
+   my ($self, $args) = @_;
 
-sub __column_class {
-   return __even_or_odd( $_[ 0 ] ).q(_col);
+   $self->header      ( []       );
+   $self->header_class( 'normal' );
+   $self->number      ( 1        );
+   $self->path        ( undef    );
+   $self->select      ( -1       );
+   $self->subtype     ( 'text'   );
+   $self->tabstop     ( 3        );
+   return;
 }
 
-sub __even_or_odd {
-   return ($_[ 0 ] + 1) % 2 == 0 ? q( even) : q( odd);
-}
+sub render_field { # Subtypes: csv, html, logfile, source, and text
+   my ($self, $args) = @_;
 
-sub __row_class {
-   return __even_or_odd( $_[ 0 ] ).q(_row);
+   my $path = $self->path or return $self->loc( 'Path not specified' );
+
+   $self->subtype or return $self->loc( 'Subtype not specified' );
+   $self->subtype eq 'html' and return $self->_render_html( $path );
+
+   -f $path or return $self->loc( 'Path [_1] not found', $path );
+
+   my $error  = $self->loc( 'Path [_1] cannot read', $path );
+   my $rdr    = IO::File->new( $path, 'r' ) or return $error;
+   my $text   = do { local $RS = undef; <$rdr> }; $rdr->close;
+   my $method = '_render_'.$self->subtype;
+
+   return $self->$method( $text );
 }
 
 1;

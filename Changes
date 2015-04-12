@@ -1,5 +1,6 @@
 Revision history for HTML::FormWidgets
 
+          - Rationalised the class names in Table
           - Switched to lexical subroutines
           - Added value attribute to Button
           - Create buttons not input type submit. Styles better

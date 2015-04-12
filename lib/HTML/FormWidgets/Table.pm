@@ -224,13 +224,12 @@ my $_render_row = sub {
          exists $data->{hclass}->{ $field }
             and $data->{hclass}->{ $field } eq 'hide' and next;
 
-         my $class = $data->{class}   || 'data_value';
-         my $fval  = $val->{ $field } || $NBSP;
+         my $class = $data->{class} // {}; my $fval = $val->{ $field } // $NBSP;
 
-         $args->{class}  = ref $class eq 'HASH' ? $class->{ $field } : $class;
+         $args->{class}  = (ref $class eq 'HASH' && $class->{ $field })
+                         ? $class->{ $field } : 'std_cell';
          exists $data->{typelist}->{ $field }
             and $args->{class   } .= $SPC.$data->{typelist}->{ $field };
-         exists $data->{wrap}->{ $field } or $args->{class} .= ' nowrap';
          exists $val->{_meta} and exists  $val->{_meta}->{ $field }
                               and defined $val->{_meta}->{ $field }
             and $args->{class   } .= $SPC.$val->{_meta}->{ $field };

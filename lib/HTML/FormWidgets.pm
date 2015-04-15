@@ -3,7 +3,7 @@ package HTML::FormWidgets;
 use 5.01;
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.21.%d', q$Rev: 12 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.21.%d', q$Rev: 13 $ =~ /\d+/gmx );
 use parent                  qw( Class::Accessor::Fast );
 
 use Class::Load             qw( is_class_loaded load_class );
@@ -32,21 +32,23 @@ my $OPTIONS = {
    optional_js     => sub { [] },
    pwidth          => 30,
    skip            => sub { return { qw(options 1 id 1 name 1 type 1) } },
+   uri_for         => sub {},
    width           => 1000, };
 my $ATTRS   = {
    check_field     => undef,       class           => $NUL,
    clear           => $NUL,        container       => 1,
    container_class => 'container', container_id    => undef,
    default         => undef,       frame_class     => $NUL,
-   hacc            => undef,       id              => undef,
-   name            => undef,       onblur          => undef,
-   onchange        => undef,       onkeypress      => undef,
-   options         => undef,       pclass          => 'prompt',
-   pwidth          => undef,       prompt          => $NUL,
-   readonly        => 0,           required        => 0,
-   sep             => undef,       stepno          => undef,
-   text            => $NUL,        tip             => $NUL,
-   tiptype         => 'dagger',    type            => undef, };
+   hacc            => undef,       hint_title      => undef,
+   id              => undef,       name            => undef,
+   onblur          => undef,       onchange        => undef,
+   onkeypress      => undef,       options         => undef,
+   pclass          => 'prompt',    pwidth          => undef,
+   prompt          => $NUL,        readonly        => 0,
+   required        => 0,           sep             => undef,
+   stepno          => undef,       text            => $NUL,
+   tip             => $NUL,        tiptype         => 'dagger',
+   type            => undef, };
 
 __PACKAGE__->mk_accessors( keys %{ $ATTRS } );
 
@@ -221,8 +223,11 @@ my $_init_fields = sub {
 };
 
 my $_init_hint_title = sub {
-   $_[ 1 ]->{hint_title} and $_[ 0 ]->hint_title( $_[ 1 ]->{hint_title} );
-   return;
+   my ($self, $args) = @_;
+
+   $args->{hint_title} and return $self->hint_title( $args->{hint_title} );
+
+   return $self->hint_title( $self->loc( 'form_hint_title' ) );
 };
 
 my $_init_options = sub {
@@ -386,10 +391,6 @@ sub add_optional_js {
    return;
 }
 
-sub hint_title {
-   return $_[ 0 ]->{hint_title} ||= $_[ 0 ]->loc( 'form_hint_title' );
-}
-
 sub inflate {
    my ($self, $args) = @_;
 
@@ -525,7 +526,7 @@ HTML::FormWidgets - Create HTML user interface components
 
 =head1 Version
 
-Describes version v0.21.$Rev: 12 $ of L<HTML::FormWidgets>
+Describes version v0.21.$Rev: 13 $ of L<HTML::FormWidgets>
 
 =head1 Synopsis
 

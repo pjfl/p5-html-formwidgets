@@ -1,5 +1,3 @@
-/* $Id$ */
-
 var Behaviour = new Class( {
    Implements: [ Events, Options ],
 
@@ -18,37 +16,31 @@ var Behaviour = new Class( {
    },
 
    options           : {
-      contentId      : 'content',
+      baseURI        : null,
       cookieDomain   : '',
       cookiePath     : '/',
       cookiePrefix   : 'behaviour',
-      defaultURL     : null,
       formName       : null,
       iconClasses    : [ 'down_point_icon', 'up_point_icon' ],
-      minMarginBottom: 5,
-      minMarginLeft  : 0,
-      minMarginRight : 10,
       popup          : false,
       statusUpdPeriod: 4320,
       target         : null
    },
 
    initialize: function( options ) {
-      this.setOptions( options ); this.collection = [];
+      this.setOptions( options ); this.collection = []; this.attach();
+   },
+
+   attach: function() {
+      var opt = this.options;
 
       window.addEvent( 'load',   function() {
-         this.load( options.firstField ) }.bind( this ) );
+         this.load( opt.firstField ) }.bind( this ) );
       window.addEvent( 'resize', function() { this.resize() }.bind( this ) );
    },
 
    collect: function( object ) {
       this.collection.include( object ); return object;
-   },
-
-   getContentMarginBottom: function() {
-      var content; if (! (content = $( this.options.contentId ))) return 0;
-
-      return content.getStyle( 'marginBottom' ).toInt();
    },
 
    load: function( first_field ) {
@@ -60,73 +52,35 @@ var Behaviour = new Class( {
          prefix        : opt.cookiePrefix } );
       this.stylesheet  = new PersistantStyleSheet( { cookies: this.cookies } );
 
-      this._restoreStateFromCookie();
+      this.restoreStateFromCookie(); this.resize();
 
       this.window      = new WindowUtils( {
          context       : this,
          target        : opt.target,
-         url           : opt.defaultURL } );
+         url           : opt.baseURI } );
       this.submit      = new SubmitUtils( {
          context       : this,
          formName      : opt.formName } );
 
-      this.calendars   = new Calendars( { context: this } );
-      this.freeList    = new FreeList( { context: this } );
-      this.groupMember = new GroupMember( { context: this } );
       this.liveGrids   = new LiveGrids( {
          context       : this,
          iconClasses   : opt.iconClasses,
-         url           : opt.defaultURL } );
-      this.noticeBoard = new NoticeBoard( { context: this } );
-      this.replacements = new Replacements( { context: this } );
-      this.rotateList  = new RotateList( { context: this } );
+         url           : opt.baseURI } );
+      this.diagram     = new StateDiagram( {
+         context       : this,
+         url           : opt.baseURI } );
+      this.replacement = new Replacements( { context: this } );
       this.server      = new ServerUtils( {
          context       : this,
-         url           : opt.defaultURL } );
-      this.sidebar     = new Sidebar( { context: this } );
+         url           : opt.baseURI } );
       this.sliders     = new Sliders( { context: this } );
-      this.spinners    = new Spinners( { context: this } );
-
-      var table_rebuild = function() { this.replacements.build() }.bind( this );
-
-      this.tables      = new TableUtils( {
-         context       : this,
-         formName      : opt.formName,
-         onRowAdded    : table_rebuild } );
-      this.tableSort   = new TableSort( {
-         context       : this,
-         onSortComplete: table_rebuild } );
-      this.tabSwappers = new TabSwappers( { context: this } );
       this.togglers    = new Togglers( { context: this } );
       this.trees       = new Trees( {
          context       : this,
          cookieDomain  : opt.cookieDomain,
          cookiePath    : opt.cookiePath,
          cookiePrefix  : opt.cookiePrefix } );
-      this.wysiwyg     = new WYSIWYG( { context: this } );
       this.linkFade    = new LinkFader( { context: this } );
-
-      // TODO: This is clumsy and needs fixing
-      if (window.Chosens  != undefined)
-         this.chosens  = new Chosens( { context: this } );
-      if (window.Typeface != undefined)
-         this.typeface = this.collect( window._typeface_js );
-
-      this.resize();
-
-      this.columnizers = new Columnizers( { context: this } );
-      this.scrollPins  = new ScrollPins( {
-         context       : this,
-         onAttach      : function( el ) {
-            this.addEvent( 'build', function() {
-               this.set( 'opacity', 0 ).set( 'tween', { duration: 1500 } );
-            }.bind( el.pin.markup ) );
-
-            this.addEvent( 'show', function() {
-               this.tween( 'opacity', 1 ) }.bind( el.pin.markup ) ); },
-         onInitialize  : function() {
-            this.fireEvent.delay( 1000, this, [ 'show' ] ) },
-         trayPadding   : 0 } );
       this.tips        = new Tips( {
          context       : this,
          onHide        : function() { this.fx.start( 0 ) },
@@ -152,40 +106,9 @@ var Behaviour = new Class( {
       if (! opt.popup) {
          this.cookies.set( 'height', h ); this.cookies.set( 'width',  w );
       }
-
-      var content; if (! (content = $( opt.contentId ))) return;
-
-      var foot_height = 0, margin_bottom = opt.minMarginBottom;
-
-      var footer; if (footer = $( 'footerDisp' )) {
-         foot_height = footer.isDisplayed()
-                     ? footer.getStyle( 'height' ).toInt() : 0;
-         margin_bottom += foot_height;
-      }
-
-      var append; if (append = $( 'appendDisp' )) {
-         margin_bottom += append.getStyle( 'height' ).toInt();
-
-         if (footer) append.setStyle( 'marginBottom', foot_height + 'px' );
-      }
-
-      content.setStyle( 'marginBottom', margin_bottom + 'px' );
-
-      var sb = this.sidebar, margin_left = opt.minMarginLeft;
-
-      if (sb) { sb.resize(); margin_left = sb.getWidth() }
-
-      content.setStyle( 'marginLeft', margin_left + 'px' );
-
-      var buttons = $( 'buttonDisp' ), margin_right = opt.minMarginRight;
-
-      if (buttons) margin_right = buttons.getStyle( 'width' ).toInt();
-
-      content.setStyle( 'marginRight', margin_right + 'px' );
-      content.fireEvent( 'resize' );
    },
 
-   _restoreStateFromCookie: function() {
+   restoreStateFromCookie: function() {
       /* Use state cookie to restore the visual state of the page */
       var cookie_str; if (! (cookie_str = this.cookies.get())) return;
 
@@ -211,7 +134,8 @@ var Behaviour = new Class( {
 
       var swatch_time = Date.swatchTime();
 
-      window.defaultStatus = 'w: ' + w + ' h: ' + h + ' @' + swatch_time;
+      if (el = $( 'page-status' ) )
+         el.set( 'html', 'w: ' + w + ' h: ' + h + ' @' + swatch_time );
    }
 } );
 

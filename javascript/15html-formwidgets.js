@@ -1171,17 +1171,14 @@ var LiveGrid = new Class( {
       else { this.scroller = new LiveGridScroller( this ) }
    },
 
-   ajaxUpdate: function( text, xml ) {
+   ajaxUpdate: function( resp) {
       clearTimeout( this.timeoutHandler ); this.timeoutHandler = null;
 
-      try {
-         var totalrows =  xml.documentElement.getAttribute( 'totalcount' );
+      var totalrows = parseInt( resp.totalcount );
 
-         if (totalrows) this.setTotalRows( totalrows );
-      }
-      catch (err) {}
+      if (totalrows) this.setTotalRows( totalrows );
 
-      this.buffer.update( text, xml );
+      this.buffer.update( resp );
 
       if (this.unprocessedRequest == null)
          this.updateContent( this.processingRequest.requestOffset );
@@ -1215,7 +1212,7 @@ var LiveGrid = new Class( {
 
          options.onSuccess = this.ajaxUpdate.bind( this );
          options.url       = this.url;
-         this.ajaxRequest  = new Request( options );
+         this.ajaxRequest  = new Request.JSON( options );
       }
 
       page_size = this.metaData.getBufferSize() * this.metaData.getPageSize();
@@ -1226,8 +1223,10 @@ var LiveGrid = new Class( {
 
       if (page < 0) page = 0;
 
-      var callParms = { 'content-type': 'text/xml', 'id'       : this.tableId,
-                        'page'        : page,       'page_size': page_size };
+      var callParms = { 'id'       : this.tableId,
+                        'page'     : page,
+                        'page_size': page_size,
+                        'button'   : this.options.button };
 
       Object.merge( callParms, this.additionalParms );
       this.ajaxRequest.get( callParms );
@@ -1330,27 +1329,14 @@ var LiveGridBuffer = new Class( {
       return ! this.rows[ start - this.metaData.getPageSize() ];
    },
 
-   update: function( text, xml ) {
-      var doc    = xml.documentElement;
-      var items  = doc.getElementsByTagName( 'items' );
+   update: function( resp ) {
+      this.start = parseInt( resp.offset ); this.size = parseInt( resp.count );
 
-      this.start = parseInt( doc.getAttribute( 'offset' ) );
-      this.size  = parseInt( doc.getAttribute( 'count'  ) );
-
-      for (var i = 0, size = this.size; i < size; i++) {
-         this.rows[ this.start + i ]
-            = items[ i ].childNodes[ 0 ].nodeValue.unescapeHTML();
+      for (var i = 0; i < this.size; i++) {
+         this.rows[ this.start + i ] = resp.fields[ i ].content;
       }
 
-      $$( doc.getElementsByTagName( 'script' ) ).each( function( item ) {
-         var text = '';
-
-         for (var i = 0, il = item.childNodes.length; i < il; i++) {
-            text += item.childNodes[ i ].nodeValue;
-         }
-
-         if (text) Browser.exec( text );
-      } );
+      if (resp.script) Browser.exec( resp.script );
    }
 } );
 
@@ -1486,6 +1472,7 @@ var LiveGrids = new Class( {
    Implements: [ Options ],
 
    options       : {
+      button     : null,
       config_attr: 'anchors',
       gridSize   : 10,
       gridToggle : true,
@@ -1537,24 +1524,25 @@ var LiveGrids = new Class( {
 
       if (icon = $( el.id + 'Icon' )) icon.className = opt.iconClasses[ 1 ];
 
-      new Request( {
-         onSuccess: this._createGrid.bind( this ),
-         url      : opt.url + key +  '_grid_table' } ).get( {
-            'content-type': 'text/xml', 'field_value': opt.fieldValue,
-            'id'          : id,          'page_size' : opt.gridSize } );
+      new Request.JSON( {
+         onSuccess       : this._createGrid.bind( this ),
+         url             : opt.url + key +  '_grid_table' } ).get( {
+            'field_value': opt.fieldValue,
+            'id'         : id,
+            'page_size'  : opt.gridSize,
+            'button'     : opt.button } );
    },
 
-   _createGrid: function( text, xml ) {
+   _createGrid: function( resp ) {
       var keyid  = this.gridKey + '_' + this.gridId;
       var opt    = this.mergeOptions( keyid );
-      var doc    = xml.documentElement;
-      var count  = parseInt( doc.getAttribute( 'totalcount' ) );
-      var value  = doc.getAttribute( 'field_value' ) || '';
+      var count  = parseInt( resp.totalcount );
+      var value  = resp.field_value || '';
       var url    = opt.url + this.gridKey + '_grid_rows';
-      var html   = this._unpack( doc );
       var before = function() { this.submit.detach() }.bind( this.context );
       var after  = function() { this.rebuild()       }.bind( this.context );
       var opts   = {
+         button           : opt.button,
          bufferSize       : 7,
          gridSize         : opt.gridSize,
          prefetchBuffer   : true,
@@ -1565,33 +1553,15 @@ var LiveGrids = new Class( {
          requestParameters: { 'field_value': value },
          totalRows        : count };
 
-      $( keyid + 'Disp' ).set( 'html', html.unescapeHTML() );
+      var html = ''; resp.fields.each( function( field ) {
+         html += field.content;
+      } );
+
+      $( keyid + 'Disp' ).set( 'html', html );
 
       this.gridObj = new LiveGrid( keyid + '_grid', url, opts );
 
       if (opt.onComplete) opt.onComplete.call( this.context );
-   },
-
-   _unpack: function( doc ) {
-      var html = '';
-
-      $$( doc.getElementsByTagName( 'items' ) ).each( function( item ) {
-         for (var i = 0, il = item.childNodes.length; i < il; i++) {
-            html += item.childNodes[ i ].nodeValue;
-         }
-      } );
-
-      $$( doc.getElementsByTagName( 'script' ) ).each( function( item ) {
-         var text = '';
-
-         for (var i = 0, il = item.childNodes.length; i < il; i++) {
-            text += item.childNodes[ i ].nodeValue;
-         }
-
-         if (text) Browser.exec( text );
-      } );
-
-      return html;
    },
 
    _updateHeader: function( offset ) {
@@ -1635,38 +1605,20 @@ var LoadMore = new Class( {
 
       if (url.substring( 0, 4 ) != 'http') url = this.options.url + url;
 
-      new Request( { 'onSuccess': this._response.bind( this ), 'url': url } )
-             .get( { 'content-type': 'text/xml', 'id': id, 'val': val } );
+      new Request.JSON( { onSuccess: this._response.bind( this ), url: url } )
+                  .get( { 'id': id, 'val': val } );
    },
 
-   _response: function( text, xml ) {
-      var doc = xml.documentElement, html = this._unpack( doc );
-
-      $( doc.getAttribute( 'id' ) ).set( 'html', html.unescapeHTML() );
-
-      if (this.onComplete) this.onComplete.call( this.context, doc, html );
-   },
-
-   _unpack: function( doc ) {
-      var html = '';
-
-      $$( doc.getElementsByTagName( 'items' ) ).each( function( item ) {
-         for (var i = 0, il = item.childNodes.length; i < il; i++) {
-            html += item.childNodes[ i ].nodeValue;
-         }
+   _response: function( resp ) {
+      var html = ''; resp.fields.each( function( field ) {
+         html += field.content;
       } );
 
-      $$( doc.getElementsByTagName( 'script' ) ).each( function( item ) {
-         var text = '';
+      $( resp.id ).set( 'html', html );
 
-         for (var i = 0, il = item.childNodes.length; i < il; i++) {
-            text += item.childNodes[ i ].nodeValue;
-         }
+      if (resp.script) Browser.exec( resp.script );
 
-         if (text) Browser.exec( text );
-      } );
-
-      return html;
+      if (this.onComplete) this.onComplete.call( this.context, resp );
    }
 } );
 
@@ -2196,10 +2148,13 @@ var ServerUtils = new Class( {
       this.aroundSetOptions( options ); this.build();
    },
 
-   checkField: function( id ) {
-      this.request( 'check_field', id, $( id ).value, function( doc, html ) {
-         $( doc.getAttribute( 'id' ) ).className
-            = html ? doc.getAttribute( 'class_name' ) : 'hidden';
+   checkField: function( id, form, domain ) {
+      var url = 'check_field';
+
+      if (form && domain) url += '?domain=' + domain + '&form=' + form;
+
+      this.request( url, id, $( id ).value, function( resp ) {
+         $( resp.id ).className = resp.class_name ? resp.class_name : 'hidden';
       }.bind( this ) );
    },
 
@@ -2819,7 +2774,7 @@ var SubmitUtils = new Class( {
       config_attr: 'anchors',
       formName   : null,
       selector   : '.submit',
-      wildCard   : '%'
+      wildCards  : [ '%', '*' ]
    },
 
    initialize: function( options ) {
@@ -2845,23 +2800,27 @@ var SubmitUtils = new Class( {
       var opt   = this.mergeOptions( options );
       var value = this.form.elements[ opt.field ].value || '';
 
-      if (value.indexOf( opt.wildCard ) < 0)
-         return this.submitForm( opt.button );
+      for (var i = 0, max = opt.wildCards.length; i < max; i++) {
+         if (value.indexOf( opt.wildCards[ i ] ) > -1) {
+            var uri = href + '?form=' + opt.formName + '&field='  + opt.field
+                                                     + '&button=' + opt.button;
 
-      var uri = href + '?form=' + opt.formName + '&field=' + opt.field;
+            if (opt.subtype == 'modal') {
+               opt.value        = value;
+               opt.name         = opt.field;
+               opt.onComplete   = function() { this.rebuild() };
+               this.modalDialog = this.context.window.modalDialog( uri, opt );
+               return false;
+            }
 
-      if (opt.subtype == 'modal') {
-         opt.value        = value;
-         opt.name         = opt.field;
-         opt.onComplete   = function() { this.rebuild() };
-         this.modalDialog = this.context.window.modalDialog( uri, opt );
-         return false;
+            opt.name = 'chooser'; uri += '&val=' + value;
+            top.chooser = this.context.window.openWindow( uri, opt );
+            top.chooser.opener = top;
+            return false;
+         }
       }
 
-      opt.name = 'chooser'; uri += '&val=' + value;
-      top.chooser = this.context.window.openWindow( uri, opt );
-      top.chooser.opener = top;
-      return false;
+      return this.submitForm( opt.button );
    },
 
    clearField: function( field_name ) {
@@ -2906,7 +2865,7 @@ var SubmitUtils = new Class( {
       return false;
    },
 
-   returnValue: function( form_name, field_name, value ) {
+   returnValue: function( form_name, field_name, value, button ) {
       if (form_name && field_name) {
          var form = opener ? opener.document.forms[ form_name ]
                            :        document.forms[ form_name ];
@@ -2918,6 +2877,8 @@ var SubmitUtils = new Class( {
 
       if (opener) window.close();
       else if (this.modalDialog) this.modalDialog.hide();
+
+      if (button) this.submitForm( button );
 
       return false;
    },
@@ -3726,8 +3687,8 @@ this.Tips = new Class( {
       w = parseInt( w < opt.minWidth ? opt.minWidth : w > max ? max : w );
 
       this.tip.setStyle( 'width', w + 'px' );
-      this.term.empty().appendText( term || opt.spacer );
-      this.defn.empty().appendText( defn || opt.spacer );
+      this.term.set( 'html', term.replace( /\.\.\./g, '<br>' ) || opt.spacer );
+      this.defn.set( 'html', defn.replace( /\.\.\./g, '<br>' ) || opt.spacer );
    },
 
    show: function( el ) {

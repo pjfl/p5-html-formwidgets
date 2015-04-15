@@ -1,5 +1,7 @@
 Revision history for HTML::FormWidgets
 
+          - Updated Javascript from most recent app
+          - Switched to JSON for ajax calls
           - Rationalised the class names in Table
           - Switched to lexical subroutines
           - Added value attribute to Button

@@ -227,7 +227,7 @@ my $_render_row = sub {
          my $class = $data->{class} // {}; my $fval = $val->{ $field } // $NBSP;
 
          $args->{class}  = (ref $class eq 'HASH' && $class->{ $field })
-                         ? $class->{ $field } : 'std_cell';
+                         ? $class->{ $field } : $self->table_class.'_cell';
          exists $data->{typelist}->{ $field }
             and $args->{class   } .= $SPC.$data->{typelist}->{ $field };
          exists $val->{_meta} and exists  $val->{_meta}->{ $field }
@@ -264,7 +264,7 @@ sub init {
    $self->container  ( 0 );
    $self->data       ( { fields => [], values => [] } );
    $self->edit       ( 0 );
-   $self->hclass     ( 'normal' );
+   $self->hclass     ( 'std_header' );
    $self->number_rows( 0 );
    $self->select     ( 0 );
    $self->sortable   ( 0 );
@@ -295,7 +295,7 @@ sub render_field {
 
    $self->select eq 'right' and $cells .= $self->$_select_header( $c_no++ );
    $self->edit   eq 'right' and $cells .= $self->$_drag_header  ( $c_no++ );
-   $args = { class => $self->table_class.'_head' };
+   $args = { class => $self->table_class.'_row' };
 
    my $thead = $hacc->thead( $hacc->tr( $args, $cells ) );
 
@@ -313,7 +313,9 @@ sub render_field {
    $self->add_literal_js( 'tables', $self->id, {
       editSide => '"'.$self->edit.'"', selectSide => '"'.$self->select.'"' } );
 
-   $args = { cellspacing => 0, class => $self->table_class, id => $self->id };
+   $args = { cellspacing => 0,
+             class       => $self->table_class.'_table',
+             id          => $self->id };
 
    return $hacc->table( $args, "${caption}\n${thead}\n${tfoot}\n${tbody}" );
 }

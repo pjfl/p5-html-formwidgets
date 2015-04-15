@@ -33,7 +33,7 @@ sub render_field {
       $self->add_literal_js( 'anchors', $self->id, $config );
 
       my $html = $hacc->a( { class => $self->class,
-                             href  => $self->href,
+                             href  => $self->uri_for( $self->href ),
                              id    => $self->id, }, q( ) );
 
       return $hacc->div( { class => 'chooser_panel',

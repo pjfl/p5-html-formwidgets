@@ -29,13 +29,13 @@ sub render_field {
             ? $self->text
             ? $hacc->img ( { alt   => $self->fhelp,
                              class => $self->imgclass,
-                             src   => $self->text } )
+                             src   => $self->uri_for( $self->text ) } )
             : $hacc->span( { class => $self->imgclass } )
             : $self->text || $self->loc( 'link' );
 
    $self->href or return $html; delete $args->{name};
 
-   $args->{class} = $self->class; $args->{href} = $self->href;
+   $args->{class} = $self->class; $args->{href} = $self->uri_for( $self->href );
 
    defined $self->target and $args->{target} = $self->target;
 

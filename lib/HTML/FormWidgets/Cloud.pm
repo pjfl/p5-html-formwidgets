@@ -24,8 +24,9 @@ sub render_field {
       my $ref    = $item->{value} || {};
       my $id     = $ref->{id   }  || $item->{tag};
       my $style  = $ref->{style};
+      my $href   = $self->uri_for( $ref->{href} );
       my $attrs  = { class => $self->class.q(_header fade live_grid),
-                     href  => $ref->{href } || 'javascript:Expand_Collapse()',
+                     href  => $href || 'javascript:Expand_Collapse()',
                      id    => $id };
 
       if ($item->{size}) {

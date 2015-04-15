@@ -162,20 +162,18 @@ my $_add_edit_row = sub {
 my $_field_header = sub {
    my ($self, $data, $field, $c_no) = @_; my $name = "col${c_no}";
 
-   my $args = { class => $self->hclass };
+   my $args = { class => $self->hclass }; my $type = $NUL;
 
    if (exists $data->{hclass}->{ $field }) {
       $data->{hclass}->{ $field } eq 'hide' and return;
       $args->{class} .= $SPC.$data->{hclass}->{ $field };
    }
 
-   exists $data->{widths}->{ $field }
-      and $args->{style} = 'width: '.$data->{widths}->{ $field }.';';
-
-   exists $data->{wrap  }->{ $field } or $args->{class} .= ' nowrap';
-
-   my $type = exists $data->{typelist}->{ $field }
-            ? $data->{typelist}->{ $field } : $NUL;
+   exists $data->{widths  }->{ $field }
+      and $args->{style   } = 'width: '.$data->{widths}->{ $field }.';';
+   exists $data->{wrap    }->{ $field } or $args->{class} .= ' nowrap';
+   exists $data->{typelist}->{ $field }
+      and $type = $data->{typelist}->{ $field };
 
    $args->{id} = $self->id.".${name}".($type ? ".${type}" : $NUL);
 
@@ -183,7 +181,9 @@ my $_field_header = sub {
       $args->{class} .= ' sort tips'; $args->{title} = $self->$_sort_tip;
    }
 
-   return $self->hacc->th( $args, $data->{labels}->{ $field } );
+   my $label = $data->{labels}->{ $field } // ucfirst $field;
+
+   return $self->hacc->th( $args, $label );
 };
 
 my $_number_header = sub {

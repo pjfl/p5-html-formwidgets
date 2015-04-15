@@ -3,13 +3,13 @@ package HTML::FormWidgets;
 use 5.01;
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.21.%d', q$Rev: 13 $ =~ /\d+/gmx );
-use parent                  qw( Class::Accessor::Fast );
+use version; our $VERSION = qv( sprintf '0.21.%d', q$Rev: 14 $ =~ /\d+/gmx );
+use parent 'Class::Accessor::Fast';
 
-use Class::Load             qw( is_class_loaded load_class );
-use English                 qw( -no_match_vars );
+use Class::Load  qw( is_class_loaded load_class );
+use English      qw( -no_match_vars );
 use HTML::Accessors;
-use Scalar::Util            qw( blessed );
+use Scalar::Util qw( blessed );
 use Try::Tiny;
 
 my $COLON   = '&#160;:&#160;';
@@ -31,8 +31,8 @@ my $OPTIONS = {
    ns              => 'default',
    optional_js     => sub { [] },
    pwidth          => 30,
-   skip            => sub { return { qw(options 1 id 1 name 1 type 1) } },
-   uri_for         => sub {},
+   skip            => sub { return { qw( options 1 id 1 name 1 type 1 ) } },
+   uri_for         => undef,
    width           => 1000, };
 my $ATTRS   = {
    check_field     => undef,       class           => $NUL,
@@ -99,14 +99,14 @@ my $_inject = sub {
 };
 
 my $_merge_attributes = sub {
-   my ($dest, $src, $attrs) = @_; $attrs ||= [ keys %{ $src } ];
+   my ($dest, $src) = @_;
 
-   for (grep { not exists $dest->{ $_ } or not defined $dest->{ $_ } }
-            @{ $attrs }) {
-      my $v = $src->{ $_ };
+   for my $k (grep  { not exists $dest->{ $_ } or not defined $dest->{ $_ } }
+              keys %{ $src }) {
+      my $v = $src->{ $k };
 
       defined $v and ref $v eq 'CODE' and $v = $v->();
-      defined $v and $dest->{ $_ } = $v;
+      defined $v and $dest->{ $k } = $v;
    }
 
    return $dest;
@@ -514,6 +514,15 @@ sub render_tip {
    return $hacc->div( { class => 'field_group' }, "\n".$field );
 }
 
+sub uri_for {
+   my ($self, $url) = @_; defined $url or return;
+
+   ($url !~ m{ \A http[s]?: }mx and defined $self->options->{uri_for})
+      and return $self->options->{uri_for}->( $url );
+
+   return $url;
+}
+
 1;
 
 __END__
@@ -526,7 +535,7 @@ HTML::FormWidgets - Create HTML user interface components
 
 =head1 Version
 
-Describes version v0.21.$Rev: 13 $ of L<HTML::FormWidgets>
+Describes version v0.21.$Rev: 14 $ of L<HTML::FormWidgets>
 
 =head1 Synopsis
 
@@ -567,10 +576,6 @@ reflect this modules primary use within a L<Catalyst> application):
 
 Some of the widgets require image files. This attribute is used to
 create the URI for those images
-
-=item C<base>
-
-This is the prefix for our URI
 
 =item C<content_type>
 
@@ -773,6 +778,10 @@ Markup containing the step number on the form if required
 
 Flyover tooltip field help text
 
+=head3 uri_for
+
+Makes absolute URI from relative paths by calling the supplied function
+
 =head2 Private Methods
 
 =head3 _bootstrap
@@ -896,10 +905,8 @@ Default subtype. Like the logfile subtype but without the C<< <pre> >> tags
 =item C<html>
 
 The L</_render> method returns an C<< <iframe> >> element whose C<src>
-attribute is set to C<path>. Paths that begin with C<root> will have
-that replaced with the C<base> attribute value. Paths that do not
-begin with C<http:> will have the C<base> attribute value prepended to
-them
+attribute is set to C<path>. Paths that do not
+begin with C<http:> will passed to L</uri_for>
 
 =item C<logfile>
 

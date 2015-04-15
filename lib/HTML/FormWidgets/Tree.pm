@@ -85,7 +85,7 @@ sub traverse {
       }
 
       if ($url) {
-         $url =~ m{ \A http: }mx or $url = $self->options->{base}.$url;
+         $url = $self->uri_for( $url );
          $self->selected and $url .= '?'.$self->name.'_node='.$node;
          $attrs->{href} = $url;
       }

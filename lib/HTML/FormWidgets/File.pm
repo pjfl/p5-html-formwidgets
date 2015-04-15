@@ -134,12 +134,10 @@ sub _render_html {
 
    my $pat = $self->options->{root}; $self->container( 0 );
 
-   $path  =~ m{ \A $pat }msx
-      and $path = $self->options->{base}.($path =~ s{ \A $pat }{/}msx);
-   $path  = $path =~ m{ \A http: }msx ? $path : $self->options->{base}.$path;
+   $path  =~ m{ \A $pat }msx and $path =~ s{ \A $pat }{/}msx;
 
    return $hacc->iframe( { class     => $self->subtype,
-                           src       => $path,
+                           src       => $self->uri_for( $path ),
                            scrolling => q(auto) }, '&#160;' );
 }
 

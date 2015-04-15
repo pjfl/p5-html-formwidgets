@@ -1,5 +1,6 @@
 Revision history for HTML::FormWidgets
 
+          - Added uri_for method. Dropped options->{base} attr
           - Updated Javascript from most recent app
           - Switched to JSON for ajax calls
           - Rationalised the class names in Table

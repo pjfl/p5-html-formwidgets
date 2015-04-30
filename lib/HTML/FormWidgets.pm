@@ -3,7 +3,7 @@ package HTML::FormWidgets;
 use 5.01;
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.21.%d', q$Rev: 14 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.21.%d', q$Rev: 15 $ =~ /\d+/gmx );
 use parent 'Class::Accessor::Fast';
 
 use Class::Load  qw( is_class_loaded load_class );
@@ -95,7 +95,7 @@ my $_group_fields = sub {
 };
 
 my $_inject = sub {
-   return { %{ $_[ 1 ] }, options => $_[ 0 ] };
+   return { %{ $_[ 0 ] }, options => $_[ 1 ] };
 };
 
 my $_merge_attributes = sub {
@@ -128,7 +128,7 @@ my $_build_widget = sub {
    }
 
    my $widget = blessed $content   ? $content
-              : $content->{widget} ? $class->new( $_inject->( $opts, $content ))
+              : $content->{widget} ? $class->new( $_inject->( $content, $opts ))
                                    : undef;
 
    $widget or return $item;
@@ -153,7 +153,7 @@ my $_bootstrap = sub { # Bare minimum is fields + id to get a useful widget
                                             : (split m{ \_ }mx, $id)[ -1 ] );
    }
 
-   not $id and $name and $id = $self->id( $name ); $args->{options} ||= {};
+   not $id and $name and $id = $self->id( $name ); $args->{options} //= {};
 
    # We can get the widget type from the config file
    if (not $type and $id and exists $args->{options}->{fields}) {
@@ -162,7 +162,7 @@ my $_bootstrap = sub { # Bare minimum is fields + id to get a useful widget
       exists $fields->{ $id } and exists $fields->{ $id }->{type}
          and $type = $self->type( $fields->{ $id }->{type} );
    }
-   else { $args->{options}->{fields} ||= {} }
+   else { $args->{options}->{fields} //= {} }
 
    # This is the default widget type if not overidden in the config
    $type or $type = $self->type( 'textfield' );
@@ -227,7 +227,7 @@ my $_init_hint_title = sub {
 
    $args->{hint_title} and return $self->hint_title( $args->{hint_title} );
 
-   return $self->hint_title( $self->loc( 'form_hint_title' ) );
+   return $self->hint_title( $self->loc( 'Hint' ) );
 };
 
 my $_init_options = sub {
@@ -308,14 +308,14 @@ my $_init = sub {
 
 # Class methods
 sub build {
-   my ($class, $options) = @_; $options ||= {}; my $step = 0;
+   my ($class, $options) = @_; $options //= {}; my $step = 0;
 
-   my $data = delete $options->{data } ||  [];
-   my $key  = $options->{list_key    } ||= $OPTIONS->{list_key    };
-   my $type = $options->{content_type} ||= $OPTIONS->{content_type};
+   my $data = delete $options->{data } //  [];
+   my $key  = $options->{list_key    } //= $OPTIONS->{list_key    };
+   my $type = $options->{content_type} //= $OPTIONS->{content_type};
 
-   $options->{hacc    } ||= HTML::Accessors->new( content_type => $type );
-   $options->{iterator} ||= sub { return ++$step };
+   $options->{hacc    } //= HTML::Accessors->new( content_type => $type );
+   $options->{iterator} //= sub { return ++$step };
 
    for my $list (grep { $_ and ref $_ eq 'HASH' } @{ $data }) {
       ref $list->{ $key } eq 'ARRAY' or next; my @stack = ();
@@ -396,7 +396,7 @@ sub inflate {
 
    (defined $args and ref $args eq 'HASH') or return $args;
 
-   return __PACKAGE__->new( $_inject->( $self->options, $args ) )->render;
+   return __PACKAGE__->new( $_inject->( $args, $self->options ) )->render;
 }
 
 sub init { # Can be overridden in factory subclass
@@ -535,7 +535,7 @@ HTML::FormWidgets - Create HTML user interface components
 
 =head1 Version
 
-Describes version v0.21.$Rev: 14 $ of L<HTML::FormWidgets>
+Describes version v0.21.$Rev: 15 $ of L<HTML::FormWidgets>
 
 =head1 Synopsis
 
@@ -1252,7 +1252,7 @@ Peter Flanigan, C<< <pjfl@cpan.org> >>
 
 =head1 License and Copyright
 
-Copyright (c) 2014 Peter Flanigan. All rights reserved
+Copyright (c) 2015 Peter Flanigan. All rights reserved
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself. See L<perlartistic>

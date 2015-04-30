@@ -229,8 +229,8 @@ sub render_field { # Subtypes: csv, html, logfile, source, and text
 
    -f $path or return $self->loc( 'Path [_1] not found', $path );
 
-   my $error  = $self->loc( 'Path [_1] cannot read', $path );
-   my $rdr    = IO::File->new( $path, 'r' ) or return $error;
+   my $rdr    = IO::File->new( $path, 'r' )
+      or return $self->loc( 'Path [_1] cannot open', $path );
    my $text   = do { local $RS = undef; <$rdr> }; $rdr->close;
    my $method = '_render_'.$self->subtype;
 

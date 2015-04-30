@@ -36,7 +36,7 @@ sub render_field {
 
    for my $item (@{ $data }) {
       $html .= $hacc->li( $item_args,
-                          $self->inflate( $item->{content} || $NBSP ) );
+                          $self->inflate( $item->{content} // $NBSP ) );
    }
 
    $args = { class => $self->class }; $self->id and $args->{id} = $self->id;

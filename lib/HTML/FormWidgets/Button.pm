@@ -13,7 +13,7 @@ my $_image_button = sub {
    my ($self, $args) = @_; my $hacc = $self->hacc;
 
    my $src   = 'http:' eq (substr $self->src, 0, 5)
-             ? $self->src : $self->options->{assets}.$self->src;
+             ? $self->src : ($self->options->{assets} // q()).$self->src;
    my $image = $hacc->img( { alt   => ucfirst $self->name,
                              class => 'button',
                              src   => $src } );
@@ -28,7 +28,7 @@ my $_image_button = sub {
 my $_markup_button = sub {
    my ($self, $args) = @_; my $hacc = $self->hacc; my $html;
 
-   my $class = $self->src->{class} || 'button_replacement';
+   my $class = $self->src->{class} // 'button_replacement';
 
    for my $char (split m{}m, $self->src->{content} || 'Button') {
       $html .= $hacc->span( { class => $class }, $char );
@@ -42,8 +42,8 @@ my $_markup_button = sub {
 my $_reset_button = sub {
    my ($self, $args) = @_;
 
-   $args->{class} = $self->class || 'reset_button';
    $args->{type } = 'reset';
+   $args->{class} = $self->class || 'reset_button';
    $args->{value} = $self->value // $self->name;
 
    return $self->hacc->button( $args, ucfirst $self->name );
@@ -52,9 +52,9 @@ my $_reset_button = sub {
 my $_submit_button = sub {
    my ($self, $args) = @_;
 
+   $args->{type } = 'submit';
    $args->{class} = $self->class || 'submit_button submit';
    $args->{name } = $self->button_name;
-   $args->{type } = 'submit';
    $args->{value} = $self->value // $self->name;
 
    return $self->hacc->button( $args, ucfirst $self->name );

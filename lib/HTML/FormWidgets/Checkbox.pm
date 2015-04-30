@@ -9,26 +9,27 @@ __PACKAGE__->mk_accessors( qw( checked label_class labels value ) );
 sub init {
    my ($self, $args) = @_;
 
-   $self->checked    ( 0 );
-   $self->label_class( q(checkbox_label) );
+   $self->checked    ( 0  );
+   $self->label_class( 'checkbox_label' );
    $self->labels     ( {} );
-   $self->value      ( 1 );
+   $self->value      ( 1  );
    return;
 }
 
 sub render_field {
    my ($self, $args) = @_; my $hacc = $self->hacc;
 
-   $self->checked and $args->{checked} = $self->is_xml ? q(checked) : undef;
+   $self->checked and $args->{checked} = $self->is_xml ? 'checked' : undef;
    $args->{value} = $self->value;
 
-   my $html  = $hacc->checkbox( $args );
-   my $label = exists $self->labels->{ $self->value }
-                    ? $self->labels->{ $self->value } : undef;
+   my $html = $hacc->checkbox( $args );
+
+   my $label; exists $self->labels->{ $self->value }
+      and   $label = $self->labels->{ $self->value };
 
    $label and $html .= $hacc->span( { class => $self->label_class }, $label );
 
-   return $hacc->div( { class => q(checkbox_container) }, $html );
+   return $hacc->div( { class => 'checkbox_container' }, $html );
 }
 
 1;

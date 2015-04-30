@@ -70,10 +70,10 @@ my $_drag_header = sub {
 my $_editable_cell = sub {
    my ($self, $data, $field, $args, $c_no) = @_; my $hacc = $self->hacc;
 
-   $args->{class} = $data->{classes}->{ $field } || $self->class;
+   $args->{class} = $data->{classes}->{ $field } // $self->class;
 
    exists $data->{maxlengths}->{ $field }
-      and $args->{maxlength} = $data->{maxlengths}->{ $field };
+      and $args->{maxlength } = $data->{maxlengths}->{ $field };
 
    my $map        = { date  => 'textfield',
                       money => 'textfield', numeric => 'textfield' };
@@ -82,12 +82,12 @@ my $_editable_cell = sub {
    my $field_type = defined $map->{ $type } ? $type : $NUL;
 
    if ($el_type eq 'textarea') {
-      $args->{cols} = $data->{cols}->{ $field } || 60;
-      $args->{rows} = $data->{rows}->{ $field } || 1;
+      $args->{cols} = $data->{cols}->{ $field } // 60;
+      $args->{rows} = $data->{rows}->{ $field } // 1;
    }
    elsif ($el_type eq 'textfield') {
       exists $data->{sizes}->{ $field }
-         and $args->{size} = $data->{sizes}->{ $field };
+         and $args->{size } = $data->{sizes}->{ $field };
    }
 
    my $class  = 'data_field'.($field_type ? " ${field_type}" : $NUL);
@@ -117,7 +117,7 @@ my $_select_header = sub {
 my $_sort_tip = sub {
    my $self = shift;
 
-   return $self->hint_title.$TTS.$self->loc( 'Sort_table_rows' );
+   return $self->hint_title.$TTS.$self->loc( 'Sort table rows' );
 };
 
 my $_add_edit_row = sub {
@@ -134,7 +134,7 @@ my $_add_edit_row = sub {
       $c_no++;
    }
 
-   my $add_tip = $self->hint_title.$TTS.$self->loc( 'Add_table_row' );
+   my $add_tip = $self->hint_title.$TTS.$self->loc( 'Add table row' );
    my $text    = $hacc->span( { class => 'add_item_icon' }, $SPC );
    my $args    = { class   => 'icon_button tips add',
                    id      => $self->id.'_add',
@@ -142,7 +142,7 @@ my $_add_edit_row = sub {
 
    $text       = $hacc->span( $args, $text );
 
-   my $rm_tip  = $self->hint_title.$TTS.$self->loc( 'Remove_table_row' );
+   my $rm_tip  = $self->hint_title.$TTS.$self->loc( 'Remove table row' );
    my $text1   = $hacc->span( { class => 'remove_item_icon' }, $SPC );
 
    $args       = { class   => 'icon_button tips remove',
@@ -152,7 +152,7 @@ my $_add_edit_row = sub {
    $text       = $hacc->span( { class => 'table_edit_buttons' }, $text );
    $cells     .= $hacc->td( $text );
 
-   my $class   = ($data->{class} || 'edit_row').$_row_class->( $r_no );
+   my $class   = ($data->{class} // 'edit_row').$_row_class->( $r_no );
 
    $args       = { class => $class, id => $self->id.'_edit' };
 

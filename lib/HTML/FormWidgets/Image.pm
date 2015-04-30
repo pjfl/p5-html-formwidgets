@@ -18,12 +18,15 @@ sub init {
 sub render_field {
    my ($self, $args) = @_; my $hacc = $self->hacc;
 
-   $args = { alt => $self->fhelp, src => $self->text };
+   my $src = 'http:' eq (substr $self->text, 0, 5)
+           ? $self->text : ($self->options->{assets} // q()).$self->text;
+
+   $args = { alt => $self->fhelp, src => $src };
 
    $self->class and $args->{class} = $self->class;
    $self->id    and $args->{id   } = $self->id;
 
-   $self->subtype eq q(icon) and return $hacc->span( $args );
+   $self->subtype eq 'icon' and return $hacc->span( $args );
 
    return $hacc->img( $args );
 }

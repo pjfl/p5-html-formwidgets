@@ -25,11 +25,13 @@ sub render_field {
    $self->id and $self->config
       and $self->add_literal_js( 'anchors', $self->id, $self->config );
 
+   my $src  = 'http:' eq (substr $self->text, 0, 5)
+            ? $self->text : ($self->options->{assets} // q()).$self->text;
    my $html = $self->imgclass
             ? $self->text
             ? $hacc->img ( { alt   => $self->fhelp,
                              class => $self->imgclass,
-                             src   => $self->uri_for( $self->text ) } )
+                             src   => $src } )
             : $hacc->span( { class => $self->imgclass } )
             : $self->text || $self->loc( 'link' );
 

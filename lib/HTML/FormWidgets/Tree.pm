@@ -63,18 +63,18 @@ sub traverse {
 
    my $hacc  = $self->hacc; my $prefix = $self->class_prefix; my $html;
    my $class = $prefix.($self->node_count > 0 ? '_branch' : $SPC.$self->class);
-   my $attrs = { class => $class };
+   my $attr  = { class => $class };
 
-   $self->node_count > 0 or $attrs->{id} = $self->id;
+   $self->node_count > 0 or $attr->{id} = $self->id;
 
    for my $key_no (0 .. $#keys) {
-      my $attrs = { class => $prefix.'_link fade' };
-      my $key   = $keys[ $key_no ];
-      my $data  = $args->{data}->{ $key };
-      my $last  = $key_no == $#keys;
-      my $node  = $self->node_id;
-      my $text  = $key;
-      my $tip   = $NUL;
+      my $attr = { class => $prefix.'_link fade' };
+      my $key  = $keys[ $key_no ];
+      my $data = $args->{data}->{ $key };
+      my $last = $key_no == $#keys;
+      my $node = $self->node_id;
+      my $text = $key;
+      my $tip  = $NUL;
       my ($list, $url);
 
       if (ref $data eq 'HASH') {
@@ -87,18 +87,18 @@ sub traverse {
       if ($url) {
          $url = $self->uri_for( $url );
          $self->selected and $url .= '?'.$self->name.'_node='.$node;
-         $attrs->{href} = $url;
+         $attr->{href} = $url;
       }
-      else { $attrs->{href} = '#top' }
+      else { $attr->{href} = '#top' }
 
-      my $link = $hacc->a( $attrs, $text );
+      my $link = $hacc->a( $attr, $text );
 
-      $attrs = { class => 'tips', title => $self->hint_title.$TTS.$tip };
-      $link  = $hacc->span( $attrs, $link );
-      $attrs = { class => $prefix.($last ? '_last' : $NUL).'_fill' };
+      $attr = { class => 'tips', title => $self->hint_title.$TTS.$tip };
+      $link = $hacc->span( $attr, $link );
+      $attr = { class => $prefix.($last ? '_last' : $NUL).'_fill' };
 
       my $fill = $args->{fill}.($self->node_count > 1
-                                ? $hacc->span( $attrs, $SPC ) : $NUL);
+                                ? $hacc->span( $attr, $SPC ) : $NUL);
 
       ref $data eq 'HASH'
          and $list = $self->traverse( { data => $data, fill => $fill } );
@@ -115,7 +115,7 @@ sub traverse {
       $html .= $item.($list ? $hacc->dd( { class => $class }, $list ) : $NUL);
    }
 
-   return $hacc->dl( $attrs, $html );
+   return $hacc->dl( $attr, $html );
 }
 
 1;

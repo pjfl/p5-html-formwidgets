@@ -9,7 +9,7 @@ __PACKAGE__->mk_accessors( qw( data height width ) );
 sub init {
    my ($self, $args) = @_;
 
-   $self->class    ( q(cloud) );
+   $self->class    ( 'cloud' );
    $self->container( 0  );
    $self->data     ( [] );
    $self->height   ( 18 );
@@ -25,7 +25,7 @@ sub render_field {
       my $id     = $ref->{id   }  || $item->{tag};
       my $style  = $ref->{style};
       my $href   = $self->uri_for( $ref->{href} );
-      my $attrs  = { class => $self->class.q(_header fade live_grid),
+      my $attrs  = { class => $self->class.'_header fade live_grid',
                      href  => $href || 'javascript:Expand_Collapse()',
                      id    => $id };
 
@@ -46,14 +46,14 @@ sub render_field {
       my $text   = $item->{tag}.'('.$item->{count}.')';
       my $anchor = $hacc->a( $attrs, "\n".$text );
 
-      $attrs     = { class => $self->class.q(_header) };
+      $attrs     = { class => $self->class.'_header' };
       $html     .= $hacc->div( $attrs, "\n".$anchor )."\n";
 
       $ref->{href} and next;
 
       $style     = defined $self->width ? 'width: '.$self->width.'px;' : q();
-      $html     .= $hacc->div( { class => $self->class.q(_panel),
-                                 id    => $id.q(Disp),
+      $html     .= $hacc->div( { class => $self->class.'_panel',
+                                 id    => "${id}Disp",
                                  style => $style }, 'Loading...' );
    }
 

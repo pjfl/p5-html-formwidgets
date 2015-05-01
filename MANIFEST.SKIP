@@ -62,3 +62,5 @@ Thumbs.db
 # Avoid archives of this distribution
 \bHTML-FormWidgets-v?[\d\.\_]+
 \bColumnizer.pm$
+javascript/05htmlparser\.js
+javascript/10mootools\.js

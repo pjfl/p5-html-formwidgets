@@ -1,5 +1,6 @@
 Revision history for HTML::FormWidgets
 
+0.22.1    2015-05-01 13:58:36
           - Replaced last of q() with single quotes
           - Added uri_for method. Dropped options->{base} attr
           - Updated Javascript from most recent app

@@ -1,16 +1,22 @@
+<div>
+    <a href="https://travis-ci.org/pjfl/p5-html-formwidgets"><img src="https://travis-ci.org/pjfl/p5-html-formwidgets.svg?branch=master" alt="Travis CI Badge"></a>
+    <a href="http://badge.fury.io/pl/HTML-FormWidgets"><img src="https://badge.fury.io/pl/HTML-FormWidgets.svg" alt="CPAN Badge"></a>
+    <a href="http://cpants.cpanauthors.org/dist/HTML-FormWidgets"><img src="http://cpants.cpanauthors.org/dist/HTML-FormWidgets.png" alt="Kwalitee Badge"></a>
+</div>
+
 # Name
 
 HTML::FormWidgets - Create HTML user interface components
 
 # Version
 
-Describes version v0.21.$Rev: 2 $ of [HTML::FormWidgets](https://metacpan.org/module/HTML::FormWidgets)
+Describes version v0.22.$Rev: 3 $ of [HTML::FormWidgets](https://metacpan.org/pod/HTML::FormWidgets)
 
 # Synopsis
 
     use HTML::FormWidgets;
 
-    my $widget = HTML::FormWidgets->new( id => q(test) );
+    my $widget = HTML::FormWidgets->new( id => 'test' );
 
     print $widget->render;
     # <div class="container">
@@ -31,22 +37,18 @@ that input field type. Adding more widget types is straightforward
 This module is using the [MooTools](http://mootools.net/) Javascript
 library to modify default browser behaviour
 
-This module is used by [CatalystX::Usul::View](https://metacpan.org/module/CatalystX::Usul::View) and as such its
-main use is as a form generator within a [Catalyst](https://metacpan.org/module/Catalyst) application
+This module is used by [CatalystX::Usul::View](https://metacpan.org/pod/CatalystX::Usul::View) and as such its
+main use is as a form generator within a [Catalyst](https://metacpan.org/pod/Catalyst) application
 
 # Configuration and Environment
 
 The following are passed to ["build"](#build) in the `config` hash (they
-reflect this modules primary use within a [Catalyst](https://metacpan.org/module/Catalyst) application):
+reflect this modules primary use within a [Catalyst](https://metacpan.org/pod/Catalyst) application):
 
 - `assets`
 
     Some of the widgets require image files. This attribute is used to
     create the URI for those images
-
-- `base`
-
-    This is the prefix for our URI
 
 - `content_type`
 
@@ -62,7 +64,7 @@ reflect this modules primary use within a [Catalyst](https://metacpan.org/module
 
 - `hidden`
 
-    So that the ["File"](#File) and ["Table"](#Table) subclasses can store the number
+    So that the ["File"](#file) and ["Table"](#table) subclasses can store the number
     of rows added as the hidden form attribute `nRows`
 
 - `js_object`
@@ -82,7 +84,7 @@ reflect this modules primary use within a [Catalyst](https://metacpan.org/module
 
 - `templatedir`
 
-    The path to template files used by the ["Template"](#Template) subclass
+    The path to template files used by the ["Template"](#template) subclass
 
 Sensible defaults are provided by `new` if any of the above are undefined
 
@@ -135,8 +137,8 @@ to the list of files which will be included on the page
 
     $widget->inflate( $args );
 
-Creates [new](https://metacpan.org/module/HTML::FormWidgets#new) objects and returns their rendered output.
-Called by the ["\_render"](#\_render) methods in the factory subclasses to inflate
+Creates [new](https://metacpan.org/pod/HTML::FormWidgets#new) objects and returns their rendered output.
+Called by the ["\_render"](#_render) methods in the factory subclasses to inflate
 embeded widget definitions
 
 ### init
@@ -158,7 +160,7 @@ Returns true if the content type matches `xml`
     $message_text = $widget->loc( $message_id, @args );
 
 Use the supplied key to return a value from the `l10n` object. This
-object was passed to the constructor and should localize the key to
+object was passed to the constructor and should localise the key to
 the required language. The `@args` list contains parameters to substituted
 in place of the placeholders which have the form `[_n]`
 
@@ -168,7 +170,7 @@ in place of the placeholders which have the form `[_n]`
 
 Assemble the components of the generated widget. Each component is
 concatenated onto a scalar which is the returned value. This method
-calls ["render\_field"](#render\_field) which should be defined in the factory subclass for
+calls ["render\_field"](#render_field) which should be defined in the factory subclass for
 this widget type.
 
 This method uses these attributes:
@@ -197,7 +199,7 @@ This method uses these attributes:
 
 - `container`
 
-    If true the value return by the ["\_render"](#\_render) method is wrapped in
+    If true the value return by the ["\_render"](#_render) method is wrapped in
     `<span class="container">` element
 
 - `tip`
@@ -243,54 +245,58 @@ Markup containing the step number on the form if required
 
 Flyover tooltip field help text
 
+### uri\_for
+
+Makes absolute URI from relative paths by calling the supplied function
+
 ## Private Methods
 
 ### \_bootstrap
 
-    $widget->_bootstrap( $args );
+    $widget->$_bootstrap( $args );
 
 Determine the `id`, `name` and `type` attributes of the widget from
 the supplied arguments
 
 ### \_ensure\_class\_loaded
 
-    $widget->_ensure_class_loaded( $class );
+    $widget->$_ensure_class_loaded( $class );
 
 Once the factory subclass is known this method ensures that it is loaded
 and then re-blesses the self referential object into the correct class
 
 ### \_set\_error
 
-    $widget->_set_error( $error_text );
+    $widget->$_set_error( $error_text );
 
 Stores the passed error message in the `text` attribute so that it
 gets rendered in place of the widget
 
 ## Private Subroutines
 
-### \_\_arg\_list
+### \_arg\_list
 
-    $args = __arg_list( @args );
+    $args = $_arg_list->( @args );
 
 Accepts either a single argument of a hash ref or a list of key/value
 pairs. Returns a hash ref in either case.
 
-### \_\_form\_wrapper
+### \_form\_wrapper
 
-    $item = __form_wrapper( $options, $item, $stack );
+    $item = $_form_wrapper->( $options, $item, $stack );
 
 Wraps the top `nitems` number of widgets on the build stack in a `<form>` element
 
-### \_\_group\_fields
+### \_group\_fields
 
-    $item = __group_fields( $options, $item, $stack );
+    $item = $_group_fields->( $options, $item, $stack );
 
 Wraps the top `nitems` number of widgets on the build stack in a `<fieldset>` element with a legend
 
 # Factory Subclasses
 
 These are the possible values for the `type` attribute which defaults
-to `textfield`. Each subclass implements the ["\_render"](#\_render) method, it
+to `textfield`. Each subclass implements the ["\_render"](#_render) method, it
 receives a hash ref of options an returns a scalar containing some
 XHTML.
 
@@ -361,21 +367,19 @@ following subtypes:
 
 - `html`
 
-    The ["\_render"](#\_render) method returns an `<iframe>` element whose `src`
-    attribute is set to `path`. Paths that begin with `root` will have
-    that replaced with the `base` attribute value. Paths that do not
-    begin with `http:` will have the `base` attribute value prepended to
-    them
+    The ["\_render"](#_render) method returns an `<iframe>` element whose `src`
+    attribute is set to `path`. Paths that do not
+    begin with `http:` will passed to ["uri\_for"](#uri_for)
 
 - `logfile`
 
-    The ["\_render"](#\_render) method returns a table where each line of the logfile
+    The ["\_render"](#_render) method returns a table where each line of the logfile
     appears as a separate row containing one cell. The logfile lines are
     each wrapped in `<pre>` tags
 
 - `source`
 
-    The module [Syntax::Highlight::Perl](https://metacpan.org/module/Syntax::Highlight::Perl) is used to provide colour
+    The module [Syntax::Highlight::Perl](https://metacpan.org/pod/Syntax::Highlight::Perl) is used to provide colour
     highlights for the Perl source code. Tabs are expanded to
     `tabstop` spaces and the result is returned wrapped in
     `<pre>` tags
@@ -429,7 +433,7 @@ used. The text is wrapped in a c<< <span class="note"> >> with
 
 ## POD
 
-Uses [Pod::Html](https://metacpan.org/module/Pod::Html) to render the POD in the given module as HTML
+Uses [Pod::Html](https://metacpan.org/pod/Pod::Html) to render the POD in the given module as HTML
 
 ## Paragraphs
 
@@ -513,12 +517,12 @@ be set to `onchange`
 
 Generates the markup for a sidebar accordion panel (a "header" `div`
 and a "body" `div`). The panel contents are requested asynchronously
-by the browser. The ["SidebarPanel"](#SidebarPanel) widget defines these attributes:
+by the browser. The ["SidebarPanel"](#sidebarpanel) widget defines these attributes:
 
 - `config`
 
     A hash ref whose keys and values are written out as literal JavaScript by
-    ["add\_literal\_js"](#add\_literal\_js)
+    ["add\_literal\_js"](#add_literal_js)
 
 - `header`
 
@@ -530,7 +534,7 @@ by the browser. The ["SidebarPanel"](#SidebarPanel) widget defines these attribu
 
 ## Slider
 
-Implements a dragable slider which returns an integer value. The ["Slider"](#Slider)
+Implements a dragable slider which returns an integer value. The ["Slider"](#slider)
 widget defines these attributes:
 
 - `display`
@@ -593,7 +597,7 @@ JavaScript class
 
 ## Template
 
-Look in `templatedir` for a [Template::Toolkit](https://metacpan.org/module/Template::Toolkit) template
+Look in `templatedir` for a [Template::Toolkit](https://metacpan.org/pod/Template::Toolkit) template
 called `id` with a `.tt` extension. Slurp it in and return
 it as the content for this widget. This provides for a "user defined"
 widget type
@@ -618,13 +622,13 @@ None
 
 # Dependencies
 
-- [Class::Accessor::Fast](https://metacpan.org/module/Class::Accessor::Fast)
-- [Class::Load](https://metacpan.org/module/Class::Load)
-- [HTML::Accessors](https://metacpan.org/module/HTML::Accessors)
-- [Syntax::Highlight::Perl](https://metacpan.org/module/Syntax::Highlight::Perl)
-- [Text::ParseWords](https://metacpan.org/module/Text::ParseWords)
-- [Text::Tabs](https://metacpan.org/module/Text::Tabs)
-- [Try::Tiny](https://metacpan.org/module/Try::Tiny)
+- [Class::Accessor::Fast](https://metacpan.org/pod/Class::Accessor::Fast)
+- [Class::Load](https://metacpan.org/pod/Class::Load)
+- [HTML::Accessors](https://metacpan.org/pod/HTML::Accessors)
+- [Syntax::Highlight::Perl](https://metacpan.org/pod/Syntax::Highlight::Perl)
+- [Text::ParseWords](https://metacpan.org/pod/Text::ParseWords)
+- [Text::Tabs](https://metacpan.org/pod/Text::Tabs)
+- [Try::Tiny](https://metacpan.org/pod/Try::Tiny)
 
 Included in the distribution are the Javascript files whose methods
 are called by the event handlers associated with these widgets
@@ -661,7 +665,7 @@ Implements the calendar popup used by the `::Date` subclass
 
 ## `behaviour.js`
 
-Is included from the [App::Munchies](https://metacpan.org/module/App::Munchies) default skin. It uses the
+Is included from the [App::Munchies](https://metacpan.org/pod/App::Munchies) default skin. It uses the
 MooTools library to implement the server side field validation
 
 Also included in the `images` subdirectory of the distribution are
@@ -676,9 +680,9 @@ There are no known incompatibilities in this module.
 The installation script does nothing with the Javascript or PNG files
 which are included in the distribution for completeness
 
-There are no known bugs in this module.
-Please report problems to the address below.
-Patches are welcome
+There are no known bugs in this module. Please report problems to
+http://rt.cpan.org/NoAuth/Bugs.html?Dist=HTML-FormWidgets. Patches are
+welcome
 
 # Author
 
@@ -686,10 +690,10 @@ Peter Flanigan, `<pjfl@cpan.org>`
 
 # License and Copyright
 
-Copyright (c) 2012 Peter Flanigan. All rights reserved
+Copyright (c) 2015 Peter Flanigan. All rights reserved
 
 This program is free software; you can redistribute it and/or modify it
-under the same terms as Perl itself. See [perlartistic](https://metacpan.org/module/perlartistic)
+under the same terms as Perl itself. See [perlartistic](https://metacpan.org/pod/perlartistic)
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT WARRANTY; without even the implied warranty of

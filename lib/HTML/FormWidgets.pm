@@ -3,7 +3,7 @@ package HTML::FormWidgets;
 use 5.01;
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.22.%d', q$Rev: 2 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.22.%d', q$Rev: 3 $ =~ /\d+/gmx );
 use parent 'Class::Accessor::Fast';
 
 use Class::Load  qw( is_class_loaded load_class );
@@ -529,13 +529,23 @@ __END__
 
 =pod
 
+=encoding utf8
+
+=begin html
+
+<a href="https://travis-ci.org/pjfl/p5-html-formwidgets"><img src="https://travis-ci.org/pjfl/p5-html-formwidgets.svg?branch=master" alt="Travis CI Badge"></a>
+<a href="http://badge.fury.io/pl/HTML-FormWidgets"><img src="https://badge.fury.io/pl/HTML-FormWidgets.svg" alt="CPAN Badge"></a>
+<a href="http://cpants.cpanauthors.org/dist/HTML-FormWidgets"><img src="http://cpants.cpanauthors.org/dist/HTML-FormWidgets.png" alt="Kwalitee Badge"></a>
+
+=end html
+
 =head1 Name
 
 HTML::FormWidgets - Create HTML user interface components
 
 =head1 Version
 
-Describes version v0.22.$Rev: 2 $ of L<HTML::FormWidgets>
+Describes version v0.22.$Rev: 3 $ of L<HTML::FormWidgets>
 
 =head1 Synopsis
 
@@ -1242,9 +1252,9 @@ There are no known incompatibilities in this module.
 The installation script does nothing with the Javascript or PNG files
 which are included in the distribution for completeness
 
-There are no known bugs in this module.
-Please report problems to the address below.
-Patches are welcome
+There are no known bugs in this module. Please report problems to
+http://rt.cpan.org/NoAuth/Bugs.html?Dist=HTML-FormWidgets. Patches are
+welcome
 
 =head1 Author
 

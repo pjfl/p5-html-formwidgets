@@ -9,10 +9,10 @@ SIGNATURE
 css/colour-green.css
 css/presentation.css
 images/icons.png
-javascript/15html-formwidgets.js
-javascript/50calendar.js
-javascript/51calendar-setup.js
-javascript/60behaviour.js
+javascript/behaviour.js
+javascript/calendar-setup.js
+javascript/calendar.js
+javascript/html-formwidgets.js
 javascript/lang/calendar-de.js
 javascript/lang/calendar-en.js
 javascript/lang/calendar-es.js

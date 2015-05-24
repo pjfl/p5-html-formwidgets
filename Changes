@@ -1,5 +1,6 @@
 Revision history for HTML::FormWidgets
 
+          - Removed numeric prefix from files in javascript directory
           - Added badges and a public repository
 
 0.22.1    2015-05-01 13:58:36

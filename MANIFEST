@@ -1,11 +1,6 @@
 Build.PL
 Changes
-LICENSE
 MANIFEST
-META.json
-META.yml
-README
-SIGNATURE
 css/colour-green.css
 css/presentation.css
 images/icons.png
@@ -53,7 +48,6 @@ lib/HTML/FormWidgets/Template.pm
 lib/HTML/FormWidgets/Textarea.pm
 lib/HTML/FormWidgets/Textfield.pm
 lib/HTML/FormWidgets/Tree.pm
-t/01always_pass.t
 t/02pod.t
 t/07podspelling.t
 t/10base.t

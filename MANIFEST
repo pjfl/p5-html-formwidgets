@@ -51,3 +51,4 @@ lib/HTML/FormWidgets/Tree.pm
 t/02pod.t
 t/07podspelling.t
 t/10base.t
+t/boilerplate.pm

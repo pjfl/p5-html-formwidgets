@@ -1,5 +1,6 @@
 Revision history for HTML::FormWidgets
 
+          - Chooser can set button value attribute
           - Toolchain update
           - Updated prereqs and toolchain
 

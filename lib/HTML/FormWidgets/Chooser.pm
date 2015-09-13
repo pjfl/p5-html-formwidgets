@@ -5,12 +5,12 @@ use warnings;
 use parent 'HTML::FormWidgets';
 
 __PACKAGE__->mk_accessors( qw( button_name config field
-                               href label subtype title value ) );
+                               href subtype title value ) );
 
 my $_stringify = sub {
-   my $hash = shift;
+   my $v = shift;
 
-   return '{ '.(join ', ', map { "${_}: ".$hash->{ $_ } } keys %{ $hash }).' }';
+   return '{ '.(join ', ', map { "${_}: ".$v->{ $_ } } sort keys %{ $v }).' }';
 };
 
 sub init {
@@ -21,10 +21,10 @@ sub init {
    $self->config     ( { height => 500, width => 500, x => 10, y => 10 } );
    $self->field      ( q() );
    $self->href       ( undef );
-   $self->label      ( $self->loc( 'Choose' ) );
    $self->subtype    ( 'window' );
+   $self->text       ( $self->loc( 'Choose' ) );
    $self->title      ( $self->loc( 'Select Item' ) );
-   $self->value      ( lc $self->label );
+   $self->value      ( lc $self->text );
    return;
 }
 
@@ -55,7 +55,7 @@ sub render_field {
    return $hacc->button( { class => $self->class,
                            id    => $self->id,
                            name  => $self->button_name,
-                           value => $self->value, }, $self->label );
+                           value => $self->value, }, $self->text );
 }
 
 1;

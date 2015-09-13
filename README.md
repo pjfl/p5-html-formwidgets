@@ -10,7 +10,7 @@ HTML::FormWidgets - Create HTML user interface components
 
 # Version
 
-Describes version v0.23.$Rev: 3 $ of [HTML::FormWidgets](https://metacpan.org/pod/HTML::FormWidgets)
+Describes version v0.23.$Rev: 5 $ of [HTML::FormWidgets](https://metacpan.org/pod/HTML::FormWidgets)
 
 # Synopsis
 

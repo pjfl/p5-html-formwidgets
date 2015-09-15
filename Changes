@@ -1,5 +1,6 @@
 Revision history for HTML::FormWidgets
 
+          - Replaced css images and js dirs with share directory
           - Better attribute naming in Chooser
           - Chooser can set button value attribute
           - Toolchain update

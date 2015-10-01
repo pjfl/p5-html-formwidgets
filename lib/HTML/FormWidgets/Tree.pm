@@ -78,9 +78,9 @@ sub traverse {
       my ($list, $url);
 
       if (ref $data eq 'HASH') {
-         $node = $data->{_node_id} || $node;
-         $text = $data->{_text   } || $text;
-         $tip  = $data->{_tip    } || $tip;
+         $node = $data->{_node_id} // $node;
+         $text = $data->{_text   } // $text;
+         $tip  = $data->{_tip    } // $tip;
          $url  = $data->{_url    };
       }
 

@@ -1,5 +1,7 @@
 Revision history for HTML::FormWidgets
 
+          - Fewer test dependencies in boilerplate
+
 0.24.1    2015-09-16 17:32:43
           - Replaced css images and js dirs with share directory
           - Better attribute naming in Chooser

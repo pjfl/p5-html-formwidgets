@@ -66,9 +66,6 @@ var Behaviour = new Class( {
          context       : this,
          iconClasses   : opt.iconClasses,
          url           : opt.baseURI } );
-      this.diagram     = new StateDiagram( {
-         context       : this,
-         url           : opt.baseURI } );
       this.replacement = new Replacements( { context: this } );
       this.server      = new ServerUtils( {
          context       : this,
@@ -130,12 +127,13 @@ var Behaviour = new Class( {
    },
 
    statusUpdater: function() {
-      var h = window.getHeight(), w = window.getWidth();
+      if (el = $( 'page-status' ) ) {
+         var h = window.getHeight(), w = window.getWidth();
 
-      var swatch_time = Date.swatchTime();
+         var swatch_time = Date.swatchTime();
 
-      if (el = $( 'page-status' ) )
          el.set( 'html', 'w: ' + w + ' h: ' + h + ' @' + swatch_time );
+      }
    }
 } );
 

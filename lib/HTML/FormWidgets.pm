@@ -3,7 +3,7 @@ package HTML::FormWidgets;
 use 5.01;
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.24.%d', q$Rev: 1 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.24.%d', q$Rev: 2 $ =~ /\d+/gmx );
 use parent 'Class::Accessor::Fast';
 
 use Class::Load  qw( is_class_loaded load_class );
@@ -63,7 +63,7 @@ my $_collect_items = sub {
    my ($nitems, $stack) = @_; my $html = $NUL; $nitems or return $NUL;
 
    for (1 .. $nitems) {
-      my $args = pop @{ $stack }; $html = ($args->{content} || $NUL).$html;
+      my $args = pop @{ $stack }; $html = ($args->{content} // $NUL).$html;
    }
 
    return $html;
@@ -377,7 +377,7 @@ sub add_literal_js {
    }
    else { $list = $config };
 
-   my $obj = $self->options->{js_object}; $self->options->{literal_js} ||= [];
+   my $obj = $self->options->{js_object}; $self->options->{literal_js} //= [];
 
    push @{ $self->options->{literal_js} },
       "${obj}.config.${js_class}[ '${id}' ] = { ${list} };";
@@ -385,7 +385,7 @@ sub add_literal_js {
 }
 
 sub add_optional_js {
-   my ($self, @args) = @_; $self->options->{optional_js} ||= [];
+   my ($self, @args) = @_; $self->options->{optional_js} //= [];
 
    push @{ $self->options->{optional_js} }, @args;
    return;
@@ -545,7 +545,7 @@ HTML::FormWidgets - Create HTML user interface components
 
 =head1 Version
 
-Describes version v0.24.$Rev: 1 $ of L<HTML::FormWidgets>
+Describes version v0.24.$Rev: 2 $ of L<HTML::FormWidgets>
 
 =head1 Synopsis
 

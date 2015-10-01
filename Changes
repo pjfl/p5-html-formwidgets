@@ -1,5 +1,6 @@
 Revision history for HTML::FormWidgets
 
+          - Use containerised builds for Travis CI
           - Fewer test dependencies in boilerplate
 
 0.24.1    2015-09-16 17:32:43

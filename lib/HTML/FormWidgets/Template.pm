@@ -8,20 +8,33 @@ use English qw( -no_match_vars );
 use File::Spec;
 use IO::File;
 
-sub render_field {
+__PACKAGE__->mk_accessors( 'stash_key' );
+
+sub init {
    my ($self, $args) = @_;
 
-   my $path = File::Spec->catfile( $self->options->{template_dir},
-                                   $self->name.q(.tt) );
+   $self->stash_key( 'template_data' );
+   return;
+}
 
-   -f $path or return "Path $path not found";
+sub render_field {
+   my ($self, $args) = @_; my $content;
 
-   my $rdr = IO::File->new( $path, q(r) ) or return "Path $path cannot read";
+   if ($self->text) { $content = $self->text }
+   else {
+      my $path = File::Spec->catfile( $self->options->{template_dir},
+                                      $self->name.'.tt' );
 
-   my $content = do { local $RS = undef; <$rdr> }; $rdr->close();
-   my $id      = $self->id;
+      -f $path or return "Path ${path} not found";
 
-   return "[% ref = template_data.${id}; %]\n${content}";
+      my $rdr = IO::File->new( $path, 'r' ) or return "Path $path cannot read";
+
+      $content = do { local $RS = undef; <$rdr> }; $rdr->close();
+   }
+
+   my $id = $self->id; my $key = $self->stash_key;
+
+   return "[% ref = ${key}.${id}; %]\n${content}";
 }
 
 1;

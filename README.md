@@ -10,7 +10,7 @@ HTML::FormWidgets - Create HTML user interface components
 
 # Version
 
-Describes version v0.24.$Rev: 1 $ of [HTML::FormWidgets](https://metacpan.org/pod/HTML::FormWidgets)
+Describes version v0.24.$Rev: 4 $ of [HTML::FormWidgets](https://metacpan.org/pod/HTML::FormWidgets)
 
 # Synopsis
 
@@ -597,10 +597,11 @@ JavaScript class
 
 ## Template
 
-Look in `templatedir` for a [Template::Toolkit](https://metacpan.org/pod/Template::Toolkit) template
+This provides for a "user defined" widget type.
+Looks in `templatedir` for a [Template::Toolkit](https://metacpan.org/pod/Template::Toolkit) template
 called `id` with a `.tt` extension. Slurp it in and return
-it as the content for this widget. This provides for a "user defined"
-widget type
+it as the content for this widget. Alternatively take the template data
+from the `text` attribute
 
 ## Textarea
 
@@ -614,7 +615,12 @@ to sixty characters wide (`width`)
 
 ## Tree
 
-Implements an expanding tree of selectable objects
+Implements an expanding tree of selectable objects. The tree information is
+contained in the `data` attribute which is a hash reference. If the data
+hash reference has an attribute `_keys` then this array reference will contain
+the list of keys for this level of the tree in the correct display order. If
+this attribute is missing the keys in the `data` hash reference are displayed
+in their natural sort order
 
 # Diagnostics
 

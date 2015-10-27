@@ -1,5 +1,7 @@
 Revision history for HTML::FormWidgets
 
+          - Can use text attr as the Template content
+          - Can specify _keys list in Tree to preserve ordering
           - Use containerised builds for Travis CI
           - Fewer test dependencies in boilerplate
 

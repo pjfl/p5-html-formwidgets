@@ -53,11 +53,14 @@ sub render_field {
 }
 
 sub traverse {
-   my ($self, $args) = @_;
+   my ($self, $args) = @_; my @keys = ();
 
-   my @keys = sort  { lc $a cmp lc $b }
+   if (exists $args->{data}->{_keys}) { @keys = @{ $args->{data}->{_keys} } }
+   else {
+      @keys = sort  { lc $a cmp lc $b }
               grep  { not m{ \A _ }mx }
               keys %{ $args->{data}   };
+   }
 
    $keys[ 0 ] or return $NUL;
 
@@ -82,6 +85,7 @@ sub traverse {
          $text = $data->{_text   } // $text;
          $tip  = $data->{_tip    } // $tip;
          $url  = $data->{_url    };
+         $attr->{class} = $data->{_link_class} // $attr->{class};
       }
 
       if ($url) {

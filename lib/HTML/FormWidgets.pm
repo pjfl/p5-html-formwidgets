@@ -3,7 +3,7 @@ package HTML::FormWidgets;
 use 5.01;
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.24.%d', q$Rev: 3 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.24.%d', q$Rev: 4 $ =~ /\d+/gmx );
 use parent 'Class::Accessor::Fast';
 
 use Class::Load  qw( is_class_loaded load_class );
@@ -545,7 +545,7 @@ HTML::FormWidgets - Create HTML user interface components
 
 =head1 Version
 
-Describes version v0.24.$Rev: 3 $ of L<HTML::FormWidgets>
+Describes version v0.24.$Rev: 4 $ of L<HTML::FormWidgets>
 
 =head1 Synopsis
 
@@ -1159,10 +1159,11 @@ JavaScript class
 
 =head2 Template
 
-Look in C<templatedir> for a L<Template::Toolkit> template
+This provides for a "user defined" widget type.
+Looks in C<templatedir> for a L<Template::Toolkit> template
 called C<id> with a F<.tt> extension. Slurp it in and return
-it as the content for this widget. This provides for a "user defined"
-widget type
+it as the content for this widget. Alternatively take the template data
+from the C<text> attribute
 
 =head2 Textarea
 
@@ -1176,7 +1177,12 @@ to sixty characters wide (C<width>)
 
 =head2 Tree
 
-Implements an expanding tree of selectable objects
+Implements an expanding tree of selectable objects. The tree information is
+contained in the C<data> attribute which is a hash reference. If the data
+hash reference has an attribute C<_keys> then this array reference will contain
+the list of keys for this level of the tree in the correct display order. If
+this attribute is missing the keys in the C<data> hash reference are displayed
+in their natural sort order
 
 =head1 Diagnostics
 

@@ -12,7 +12,7 @@ my $TTS = ' ~ ';
 my $_image_button = sub {
    my ($self, $args) = @_; my $hacc = $self->hacc;
 
-   my $src   = 'http:' eq (substr $self->src, 0, 5)
+   my $src   = 'http' eq (substr $self->src, 0, 4)
              ? $self->src : ($self->options->{assets} // q()).$self->src;
    my $image = $hacc->img( { alt   => ucfirst $self->name,
                              class => 'button',

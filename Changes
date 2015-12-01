@@ -1,5 +1,6 @@
 Revision history for HTML::FormWidgets
 
+          - Added dedup to add_optional_js
           - Can use text attr as the Template content
           - Can specify _keys list in Tree to preserve ordering
           - Use containerised builds for Travis CI

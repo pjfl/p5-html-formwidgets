@@ -3,12 +3,13 @@ package HTML::FormWidgets;
 use 5.01;
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.24.%d', q$Rev: 4 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.24.%d', q$Rev: 5 $ =~ /\d+/gmx );
 use parent 'Class::Accessor::Fast';
 
 use Class::Load  qw( is_class_loaded load_class );
 use English      qw( -no_match_vars );
 use HTML::Accessors;
+use List::Util   qw( any );
 use Scalar::Util qw( blessed );
 use Try::Tiny;
 
@@ -385,9 +386,12 @@ sub add_literal_js {
 }
 
 sub add_optional_js {
-   my ($self, @args) = @_; $self->options->{optional_js} //= [];
+   my ($self, @args) = @_; my $scripts = $self->options->{optional_js} //= [];
 
-   push @{ $self->options->{optional_js} }, @args;
+   for my $file (@args) {
+      any { $_ eq $file } @{ $scripts } or push @{ $scripts }, $file;
+   }
+
    return;
 }
 
@@ -545,7 +549,7 @@ HTML::FormWidgets - Create HTML user interface components
 
 =head1 Version
 
-Describes version v0.24.$Rev: 4 $ of L<HTML::FormWidgets>
+Describes version v0.24.$Rev: 5 $ of L<HTML::FormWidgets>
 
 =head1 Synopsis
 

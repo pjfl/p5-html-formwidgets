@@ -19,9 +19,9 @@ sub render_field {
    my ($self, $args) = @_;
 
    $self->class =~ m{ chzn-select }msx
-      and $self->add_optional_js( q(chosen.js) );
+      and $self->add_optional_js( 'chosen.js' );
 
-   $args->{class} .= q( ).($self->class || q(ifield));
+   $args->{class} .= q( ).($self->class || 'ifield');
    $self->classes  and $args->{classes } = $self->classes;
    $self->onchange and $args->{onchange} = $self->onchange;
 
@@ -29,8 +29,8 @@ sub render_field {
       my $labels = $args->{labels} = $self->labels;
 
       $args->{values} = [ sort {
-         ($labels->{ $a } || q())
-            cmp ($labels->{ $b } || q()) } @{ $self->values } ];
+         ($labels->{ $a } // q())
+            cmp ($labels->{ $b } // q()) } @{ $self->values } ];
    }
    else { $args->{values} = $self->values }
 

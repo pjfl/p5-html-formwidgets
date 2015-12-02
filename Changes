@@ -1,5 +1,6 @@
 Revision history for HTML::FormWidgets
 
+0.25.1    2015-12-02 13:08:10
           - Added dedup to add_optional_js
           - Can use text attr as the Template content
           - Can specify _keys list in Tree to preserve ordering

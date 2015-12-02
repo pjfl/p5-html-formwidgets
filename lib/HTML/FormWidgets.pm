@@ -3,7 +3,7 @@ package HTML::FormWidgets;
 use 5.01;
 use strict;
 use warnings;
-use version; our $VERSION = qv( sprintf '0.24.%d', q$Rev: 5 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.25.%d', q$Rev: 1 $ =~ /\d+/gmx );
 use parent 'Class::Accessor::Fast';
 
 use Class::Load  qw( is_class_loaded load_class );
@@ -357,8 +357,8 @@ sub new {
 sub add_hidden {
    my ($self, $name, $value) = @_;
 
-   my $key    = $self->options->{list_key} || 'items';
-   my $hidden = $self->options->{hidden  } || {}; $hidden->{ $key } ||= [];
+   my $key    = $self->options->{list_key} // 'items';
+   my $hidden = $self->options->{hidden  } // {}; $hidden->{ $key } //= [];
 
    push @{ $hidden->{ $key } }, {
       content => "\n".$self->hacc->input( {
@@ -519,12 +519,12 @@ sub render_tip {
 }
 
 sub uri_for {
-   my ($self, $url) = @_; defined $url or return;
+   my ($self, @args) = @_; defined $args[ 0 ] or return;
 
-   ($url !~ m{ \A http[s]?: }mx and defined $self->options->{uri_for})
-      and return $self->options->{uri_for}->( $url );
+   ($args[ 0 ] !~ m{ \A http[s]?: }mx and defined $self->options->{uri_for})
+      and return $self->options->{uri_for}->( @args );
 
-   return $url;
+   return $args[ 0 ];
 }
 
 1;
@@ -549,7 +549,7 @@ HTML::FormWidgets - Create HTML user interface components
 
 =head1 Version
 
-Describes version v0.24.$Rev: 5 $ of L<HTML::FormWidgets>
+Describes version v0.25.$Rev: 1 $ of L<HTML::FormWidgets>
 
 =head1 Synopsis
 

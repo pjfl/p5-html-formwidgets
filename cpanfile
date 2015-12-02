@@ -1,6 +1,7 @@
 requires "Class::Accessor" => "0.34";
 requires "Class::Load" => "0.22";
 requires "HTML::Accessors" => "v0.13.0";
+requires "List::Util" => "1.42";
 requires "PPI" => "1.220";
 requires "PPI::HTML" => "1.08";
 requires "Pod::Xhtml" => "1.61";

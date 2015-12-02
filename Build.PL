@@ -18,6 +18,7 @@ my $prereqs  = {
     'Class::Accessor' => '0.34',
     'Class::Load' => '0.22',
     'HTML::Accessors' => 'v0.13.0',
+    'List::Util' => '1.42',
     'PPI' => '1.220',
     'PPI::HTML' => '1.08',
     'Pod::Xhtml' => '1.61',
